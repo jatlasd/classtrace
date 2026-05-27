@@ -1,9 +1,15 @@
+import { normalizeTag } from "@/lib/format-tag";
 import {
   draftToDisplay,
   NOTE_TYPE_LABELS,
   type DraftDisplay,
 } from "@/lib/note-processing/draft-to-display";
 import type { NoteDraft } from "@/lib/note-processing/types";
+import {
+  mentionDisplayLabel,
+  resolveStudentMentions,
+  type StudentMentionRef,
+} from "@/lib/students";
 
 export type InterpretationFields = {
   students: string[];
@@ -28,8 +34,8 @@ function buildSummaryLine(
 ): string {
   const parts: string[] = [];
 
-  if (display.students.length > 0) {
-    parts.push(display.students.join(", "));
+  if (display.studentMentions.length > 0) {
+    parts.push(display.studentMentions.map(mentionDisplayLabel).join(", "));
   }
 
   if (display.topic) {
@@ -49,11 +55,17 @@ function buildSummaryLine(
   return parts.join(" · ");
 }
 
+function studentMentionsFromNames(names: string[]): StudentMentionRef[] {
+  return resolveStudentMentions(names);
+}
+
 export function displayToInterpretationFields(
   display: DraftDisplay
 ): InterpretationFields {
   return {
-    students: [...display.students],
+    students: display.studentMentions.map((ref) =>
+      ref.status === "resolved" ? ref.student.displayName : ref.mention
+    ),
     evidenceType: display.evidenceType,
     topic: display.topic,
     performance: display.performance,
@@ -75,9 +87,7 @@ export function parseStudentNames(value: string): string[] {
 }
 
 export function parseTags(value: string): string[] {
-  return parseCommaSeparated(value).map((tag) =>
-    tag.startsWith("#") ? tag : `#${tag}`
-  );
+  return parseCommaSeparated(value).map((tag) => normalizeTag(tag));
 }
 
 export function parseFollowUpNotes(value: string): string[] {
@@ -109,15 +119,20 @@ export function resolveCaptureDisplay(
   }
 
   const { fields } = validation;
+  const studentMentions = studentMentionsFromNames(fields.students);
+  const hasUnresolved = studentMentions.some(
+    (mention) => mention.status === "unresolved"
+  );
+
   const display: Omit<DraftDisplay, "summaryLine"> = {
-    students: fields.students,
+    studentMentions,
     tags: fields.tags,
     evidenceType: fields.evidenceType,
     topic: fields.topic,
     performance: fields.performance,
     behavior: fields.behavior,
     followUps: fields.followUpNotes,
-    needsReview: false,
+    needsReview: hasUnresolved,
   };
 
   return {

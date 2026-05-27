@@ -1,8 +1,13 @@
+import {
+  mentionDisplayLabel,
+  resolveStudentMentions,
+  type StudentMentionRef,
+} from "@/lib/students";
 import { isFieldApplicable } from "./field-applicability";
 import type { MatchResult, NoteDraft } from "./types";
 
 export type DraftDisplay = {
-  students: string[];
+  studentMentions: StudentMentionRef[];
   tags: string[];
   evidenceType: string;
   topic?: string;
@@ -61,8 +66,8 @@ function resolveTopic(draft: NoteDraft): string | undefined {
 function buildSummaryLine(display: Omit<DraftDisplay, "summaryLine">): string {
   const parts: string[] = [];
 
-  if (display.students.length > 0) {
-    parts.push(display.students.join(", "));
+  if (display.studentMentions.length > 0) {
+    parts.push(display.studentMentions.map(mentionDisplayLabel).join(", "));
   }
 
   if (display.topic) {
@@ -84,7 +89,10 @@ function buildSummaryLine(display: Omit<DraftDisplay, "summaryLine">): string {
 
 export function draftToDisplay(draft: NoteDraft): DraftDisplay {
   const applicable = new Set(draft.applicableFields);
-  const students = draft.parsed.mentions;
+  const studentMentions = resolveStudentMentions(draft.parsed.mentions);
+  const hasUnresolved = studentMentions.some(
+    (mention) => mention.status === "unresolved"
+  );
   const tags = draft.parsed.tags;
   const evidenceType = evidenceTypeLabel(draft);
   const topic = resolveTopic(draft);
@@ -108,14 +116,14 @@ export function draftToDisplay(draft: NoteDraft): DraftDisplay {
   }
 
   const display: Omit<DraftDisplay, "summaryLine"> = {
-    students,
+    studentMentions,
     tags,
     evidenceType,
     topic,
     behavior,
     performance,
     followUps: draft.suggestedFollowUps,
-    needsReview: draft.needsTeacherValidation,
+    needsReview: draft.needsTeacherValidation || hasUnresolved,
   };
 
   return {

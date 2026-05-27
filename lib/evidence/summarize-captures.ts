@@ -1,3 +1,4 @@
+import { formatTagLabel } from "@/lib/format-tag";
 import {
   resolveCaptureDisplay,
   type CaptureValidation,
@@ -52,8 +53,13 @@ export function summarizeCaptures(items: CaptureItem[]): CaptureSummary {
   );
   const insights: CaptureInsight[] = [];
 
-  const studentCounts = countBy(displays, (d) =>
-    d.students.length === 1 ? d.students[0] : undefined
+  const studentCounts = countBy(
+    displays.flatMap((d) =>
+      d.studentMentions
+        .filter((ref) => ref.status === "resolved")
+        .map((ref) => ({ name: ref.student.displayName }))
+    ),
+    (item) => item.name
   );
   const topStudent = topEntries(studentCounts, 1)[0];
   if (topStudent && topStudent.count >= 2) {
@@ -69,7 +75,7 @@ export function summarizeCaptures(items: CaptureItem[]): CaptureSummary {
   const topTag = topEntries(tagCounts, 1)[0];
   if (topTag && topTag.count >= 2) {
     insights.push({
-      text: `${topTag.name} showed up ${topTag.count} times recently`,
+      text: `${formatTagLabel(topTag.name)} showed up ${topTag.count} times recently`,
     });
   }
 

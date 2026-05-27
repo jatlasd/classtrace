@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { formatTagLabel } from "@/lib/format-tag";
 import {
   displayToInterpretationFields,
   joinFollowUpNotes,
@@ -39,7 +40,7 @@ function displayToFormState(display: DraftDisplay): FormState {
     topic: fields.topic ?? "",
     performance: fields.performance ?? "",
     behavior: joinOptionalList(fields.behavior),
-    tags: fields.tags.join(", "),
+    tags: fields.tags.map(formatTagLabel).join(", "),
     followUpNotes: joinFollowUpNotes(fields.followUpNotes),
   };
 }

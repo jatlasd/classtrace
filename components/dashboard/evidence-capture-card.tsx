@@ -1,9 +1,11 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { InterpretationReviewPanel } from "@/components/dashboard/interpretation-review-panel";
 import { NoteContent } from "@/components/dashboard/note-content";
 import { Button } from "@/components/ui/button";
+import { formatTagLabel } from "@/lib/format-tag";
 import {
   resolveCaptureDisplay,
   type CaptureValidation,
@@ -11,7 +13,10 @@ import {
 } from "@/lib/evidence/capture-validation";
 import { draftToDisplay } from "@/lib/note-processing/draft-to-display";
 import type { NoteDraft } from "@/lib/note-processing/types";
-import { studentColors } from "@/lib/mock-data";
+import {
+  type Student,
+  type StudentMentionRef,
+} from "@/lib/students";
 
 type EvidenceCaptureCardProps = {
   draft: NoteDraft;
@@ -20,28 +25,72 @@ type EvidenceCaptureCardProps = {
   onValidate: (fields: InterpretationFields) => void;
 };
 
+const chipStyles = {
+  default: "border-border bg-card text-foreground",
+  student:
+    "border-sky-200/80 bg-sky-50 text-sky-900 dark:border-sky-900/50 dark:bg-sky-950/40 dark:text-sky-200",
+  tag: "border-border bg-muted/60 text-link",
+  evidence: "border-primary/20 bg-primary/5 text-primary",
+  unresolved:
+    "border-amber-200/80 bg-amber-50 text-amber-900 dark:border-amber-900/50 dark:bg-amber-950/40 dark:text-amber-200",
+};
+
 function Chip({
   children,
   variant = "default",
+  className = "",
 }: {
   children: React.ReactNode;
-  variant?: "default" | "student" | "tag" | "evidence";
+  variant?: keyof typeof chipStyles;
+  className?: string;
 }) {
-  const styles = {
-    default: "border-border bg-card text-foreground",
-    student:
-      "border-sky-200/80 bg-sky-50 text-sky-900 dark:border-sky-900/50 dark:bg-sky-950/40 dark:text-sky-200",
-    tag: "border-border bg-muted/60 text-link",
-    evidence: "border-primary/20 bg-primary/5 text-primary",
-  };
-
   return (
     <span
-      className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium capitalize ${styles[variant]}`}
+      className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium capitalize ${chipStyles[variant]} ${className}`}
     >
       {children}
     </span>
   );
+}
+
+function StudentAvatar({ student }: { student: Student }) {
+  return (
+    <span
+      className={`mr-1.5 inline-flex size-4 items-center justify-center rounded-full text-[9px] font-bold text-white ${student.colorClass}`}
+    >
+      {student.initials}
+    </span>
+  );
+}
+
+function ResolvedStudentChip({ student }: { student: Student }) {
+  return (
+    <Link
+      href={`/students/${student.id}`}
+      className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium capitalize transition-opacity hover:opacity-80 ${chipStyles.student}`}
+    >
+      <StudentAvatar student={student} />
+      {student.displayName}
+    </Link>
+  );
+}
+
+function UnresolvedStudentChip({ mention }: { mention: string }) {
+  return (
+    <Chip variant="unresolved">
+      Unmatched student
+      <span className="ml-1.5 font-normal normal-case text-amber-800/70 dark:text-amber-200/70">
+        ({mention})
+      </span>
+    </Chip>
+  );
+}
+
+function StudentMentionChip({ ref }: { ref: StudentMentionRef }) {
+  if (ref.status === "resolved") {
+    return <ResolvedStudentChip student={ref.student} />;
+  }
+  return <UnresolvedStudentChip mention={ref.mention} />;
 }
 
 export function EvidenceCaptureCard({
@@ -86,15 +135,15 @@ export function EvidenceCaptureCard({
           </p>
 
           <div className="flex flex-wrap gap-1.5">
-            {display.students.map((student) => (
-              <Chip key={student} variant="student">
-                <span
-                  className={`mr-1.5 inline-flex size-4 items-center justify-center rounded-full text-[9px] font-bold text-white ${studentColors[student] ?? "bg-slate-400"}`}
-                >
-                  {student.charAt(0)}
-                </span>
-                {student}
-              </Chip>
+            {display.studentMentions.map((ref, index) => (
+              <StudentMentionChip
+                key={
+                  ref.status === "resolved"
+                    ? ref.student.id
+                    : `${ref.mention}-${index}`
+                }
+                ref={ref}
+              />
             ))}
 
             {display.topic && <Chip>{display.topic}</Chip>}
@@ -109,7 +158,7 @@ export function EvidenceCaptureCard({
 
             {display.tags.map((tag) => (
               <Chip key={tag} variant="tag">
-                {tag}
+                {formatTagLabel(tag)}
               </Chip>
             ))}
           </div>

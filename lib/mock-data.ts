@@ -22,7 +22,7 @@ export const recentCaptures: Capture[] = [
     id: "1",
     note: "@Jeremy was off-task during multiplying fractions review but got started after a verbal prompt. #behavior #fractions #prompted",
     students: ["Jeremy"],
-    tags: ["#behavior", "#fractions", "#prompted"],
+    tags: ["behavior", "fractions", "prompted"],
     evidenceType: "Behavior",
     timestamp: "Today at 10:42 AM",
     summary:
@@ -34,7 +34,7 @@ export const recentCaptures: Capture[] = [
     id: "2",
     note: "@Stacy solved two-step word problems independently during small group. #math #problem-solving #independent",
     students: ["Stacy"],
-    tags: ["#math", "#problem-solving", "#independent"],
+    tags: ["math", "problem-solving", "independent"],
     evidenceType: "Academic",
     timestamp: "Today at 10:18 AM",
     summary:
@@ -46,7 +46,7 @@ export const recentCaptures: Capture[] = [
     id: "3",
     note: "@Jeff needed reteaching on dividing fractions when the divisor was a mixed number. #fractions #reteach",
     students: ["Jeff"],
-    tags: ["#fractions", "#reteach"],
+    tags: ["fractions", "reteach"],
     evidenceType: "Intervention",
     timestamp: "Today at 9:55 AM",
     summary:
@@ -58,7 +58,7 @@ export const recentCaptures: Capture[] = [
     id: "4",
     note: "Small group with @Jeremy @Mary showed confusion converting mixed numbers before multiplying. #smallgroup #fractions #review",
     students: ["Jeremy", "Mary"],
-    tags: ["#smallgroup", "#fractions", "#review"],
+    tags: ["smallgroup", "fractions", "review"],
     evidenceType: "Small Group",
     timestamp: "Today at 9:30 AM",
     summary:
@@ -85,10 +85,10 @@ export const featuredStudent = {
   concerns:
     "Off-task during independent practice; may need chunked assignments or proximity checks.",
   recentTags: [
-    { tag: "#fractions", count: 2 },
-    { tag: "#behavior", count: 1 },
-    { tag: "#prompted", count: 1 },
-    { tag: "#smallgroup", count: 1 },
+    { tag: "fractions", count: 2 },
+    { tag: "behavior", count: 1 },
+    { tag: "prompted", count: 1 },
+    { tag: "smallgroup", count: 1 },
   ],
   upcoming: [
     {
@@ -105,10 +105,10 @@ export const featuredStudent = {
 };
 
 export const popularTags = [
-  "#fractions",
-  "#behavior",
-  "#prompted",
-  "#smallgroup",
-  "#reteach",
-  "#independent",
+  "fractions",
+  "behavior",
+  "prompted",
+  "smallgroup",
+  "reteach",
+  "independent",
 ];

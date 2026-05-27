@@ -1,5 +1,6 @@
 "use client";
 
+import { formatTagLabel } from "@/lib/format-tag";
 import { summarizeCaptures } from "@/lib/evidence/summarize-captures";
 import type { CaptureValidation } from "@/lib/evidence/capture-validation";
 import { popularTags } from "@/lib/mock-data";
@@ -83,7 +84,7 @@ export function ClassTraceNoticedPanel({ items }: ClassTraceNoticedPanelProps) {
                         key={tag}
                         className="rounded-full border border-border bg-muted/40 px-2 py-0.5 text-[11px] font-medium text-link"
                       >
-                        {tag} · {count}
+                        {formatTagLabel(tag)} · {count}
                       </span>
                     ))}
                   </div>
@@ -103,7 +104,7 @@ export function ClassTraceNoticedPanel({ items }: ClassTraceNoticedPanelProps) {
                     key={tag}
                     className="rounded-full border border-border bg-muted/40 px-2 py-0.5 text-[11px] font-medium text-link"
                   >
-                    {tag}
+                    {formatTagLabel(tag)}
                   </span>
                 ))}
               </div>
