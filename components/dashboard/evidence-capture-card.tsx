@@ -86,11 +86,11 @@ function UnresolvedStudentChip({ mention }: { mention: string }) {
   );
 }
 
-function StudentMentionChip({ ref }: { ref: StudentMentionRef }) {
-  if (ref.status === "resolved") {
-    return <ResolvedStudentChip student={ref.student} />;
+function StudentMentionChip({ mentionRef }: { mentionRef: StudentMentionRef }) {
+  if (mentionRef.status === "resolved") {
+    return <ResolvedStudentChip student={mentionRef.student} />;
   }
-  return <UnresolvedStudentChip mention={ref.mention} />;
+  return <UnresolvedStudentChip mention={mentionRef.mention} />;
 }
 
 export function EvidenceCaptureCard({
@@ -104,6 +104,10 @@ export function EvidenceCaptureCard({
   const parserDisplay = draftToDisplay(draft);
   const showReviewCta =
     display.needsReview && display.validationStatus !== "validated";
+  const unresolvedMentions = display.studentMentions.filter(
+    (ref) => ref.status === "unresolved"
+  );
+  const hasUnresolvedMentions = unresolvedMentions.length > 0;
 
   function handleConfirm(fields: InterpretationFields) {
     onValidate(fields);
@@ -135,14 +139,14 @@ export function EvidenceCaptureCard({
           </p>
 
           <div className="flex flex-wrap gap-1.5">
-            {display.studentMentions.map((ref, index) => (
+            {display.studentMentions.map((mentionRef, index) => (
               <StudentMentionChip
                 key={
-                  ref.status === "resolved"
-                    ? ref.student.id
-                    : `${ref.mention}-${index}`
+                  mentionRef.status === "resolved"
+                    ? mentionRef.student.id
+                    : `${mentionRef.mention}-${index}`
                 }
-                ref={ref}
+                mentionRef={mentionRef}
               />
             ))}
 
@@ -162,6 +166,42 @@ export function EvidenceCaptureCard({
               </Chip>
             ))}
           </div>
+
+          {hasUnresolvedMentions && (
+            <div className="mt-3 rounded-md border border-amber-200/60 bg-amber-50/50 px-3 py-2.5 dark:border-amber-900/40 dark:bg-amber-950/20">
+              <p className="text-xs leading-relaxed text-amber-900 dark:text-amber-100">
+                {unresolvedMentions.length === 1 ? (
+                  <>
+                    <span className="font-medium">@{unresolvedMentions[0].mention}</span>{" "}
+                    isn&apos;t on your roster yet. Add them from My roster, or fix
+                    student names when you review.
+                  </>
+                ) : (
+                  <>
+                    Some @mentions aren&apos;t on your roster yet. Add students from
+                    My roster, or fix student names when you review.
+                  </>
+                )}
+              </p>
+              <div className="mt-2 flex flex-wrap items-center gap-3">
+                <Link
+                  href="/students"
+                  className="text-xs font-medium text-amber-900 underline-offset-2 hover:underline dark:text-amber-100"
+                >
+                  My roster
+                </Link>
+                {showReviewCta && !reviewOpen && (
+                  <button
+                    type="button"
+                    className="text-xs font-medium text-amber-900 underline-offset-2 hover:underline dark:text-amber-100"
+                    onClick={() => setReviewOpen(true)}
+                  >
+                    Review interpretation
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
 
           {display.followUps.length > 0 && (
             <ul className="mt-3 space-y-1 border-t border-border/50 pt-2.5">

@@ -12,7 +12,18 @@ export type StudentMentionRef =
   | { status: "resolved"; student: Student }
   | { status: "unresolved"; mention: string };
 
-const ROSTER: Student[] = [
+export type AddStudentInput = {
+  displayName: string;
+  handle: string;
+  grade?: string;
+  group?: string;
+};
+
+export type AddStudentResult =
+  | { ok: true; student: Student }
+  | { ok: false; error: string };
+
+const DEFAULT_ROSTER: Student[] = [
   {
     id: "jeremy",
     displayName: "Jeremy",
@@ -51,17 +62,100 @@ const ROSTER: Student[] = [
   },
 ];
 
+const COLOR_PALETTE = [
+  "bg-sky-500",
+  "bg-rose-400",
+  "bg-teal-500",
+  "bg-violet-500",
+  "bg-amber-500",
+  "bg-emerald-500",
+  "bg-indigo-500",
+  "bg-orange-500",
+];
+
+let teacherRoster: Student[] = [...DEFAULT_ROSTER];
+
 function normalizeMention(mention: string): string {
   return mention.replace(/^@/, "").trim().toLowerCase();
 }
 
+function deriveInitials(displayName: string): string {
+  const parts = displayName.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) {
+    return "??";
+  }
+  if (parts.length === 1) {
+    return parts[0].slice(0, 2).toUpperCase();
+  }
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+}
+
+function deriveIdFromHandle(handle: string): string {
+  return handle
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+export function resetTeacherRosterForTests(): void {
+  teacherRoster = [...DEFAULT_ROSTER];
+}
+
+export function addStudent(input: AddStudentInput): AddStudentResult {
+  const displayName = input.displayName.trim();
+  const handle = input.handle.trim();
+
+  if (!displayName) {
+    return { ok: false, error: "Display name is required." };
+  }
+
+  if (!handle) {
+    return { ok: false, error: "Handle is required." };
+  }
+
+  const id = deriveIdFromHandle(handle);
+
+  if (!id) {
+    return { ok: false, error: "Handle must include at least one letter or number." };
+  }
+
+  const normalizedHandle = normalizeMention(handle);
+
+  if (teacherRoster.some((student) => student.id === id)) {
+    return { ok: false, error: "A student with this handle already exists on your roster." };
+  }
+
+  if (
+    teacherRoster.some(
+      (student) => student.handle.toLowerCase() === normalizedHandle
+    )
+  ) {
+    return { ok: false, error: "A student with this handle already exists on your roster." };
+  }
+
+  const student: Student = {
+    id,
+    displayName,
+    handle,
+    grade: input.grade?.trim() || undefined,
+    group: input.group?.trim() || undefined,
+    initials: deriveInitials(displayName),
+    colorClass: COLOR_PALETTE[teacherRoster.length % COLOR_PALETTE.length],
+  };
+
+  teacherRoster = [...teacherRoster, student];
+
+  return { ok: true, student };
+}
+
 export function getStudentById(id: string): Student | undefined {
-  return ROSTER.find((student) => student.id === id.toLowerCase());
+  return teacherRoster.find((student) => student.id === id.toLowerCase());
 }
 
 export function getStudentByHandle(handle: string): Student | undefined {
   const normalized = normalizeMention(handle);
-  return ROSTER.find(
+  return teacherRoster.find(
     (student) => student.handle.toLowerCase() === normalized
   );
 }
@@ -70,7 +164,7 @@ export function resolveStudentMention(mention: string): Student | undefined {
   const normalized = normalizeMention(mention);
   return (
     getStudentById(normalized) ??
-    ROSTER.find((student) => student.handle.toLowerCase() === normalized)
+    teacherRoster.find((student) => student.handle.toLowerCase() === normalized)
   );
 }
 
@@ -98,5 +192,5 @@ export function studentMentionsToNames(refs: StudentMentionRef[]): string[] {
 }
 
 export function getAllStudents(): Student[] {
-  return [...ROSTER];
+  return [...teacherRoster];
 }

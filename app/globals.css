@@ -129,3 +129,9 @@
     font-family: var(--font-hand), cursive;
   }
 }
+
+.quick-capture-mentions textarea:focus,
+.quick-capture-mentions textarea:focus-visible {
+  outline: none;
+  box-shadow: none;
+}

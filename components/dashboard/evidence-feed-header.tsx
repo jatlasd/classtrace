@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export function EvidenceFeedHeader() {
   return (
     <header className="mb-5 space-y-1">
@@ -12,7 +14,7 @@ export function EvidenceFeedHeader() {
       </div>
 
       <div className="flex flex-wrap items-center gap-x-1 pt-2 text-xs text-muted-foreground">
-        <SecondaryLink label="Students" />
+        <SecondaryLink href="/students" label="My roster" />
         <span aria-hidden>·</span>
         <SecondaryLink label="Tags" />
         <span aria-hidden>·</span>
@@ -22,12 +24,26 @@ export function EvidenceFeedHeader() {
   );
 }
 
-function SecondaryLink({ label }: { label: string }) {
+function SecondaryLink({
+  href,
+  label,
+}: {
+  href?: string;
+  label: string;
+}) {
+  const className =
+    "font-medium transition-colors hover:text-foreground";
+
+  if (href) {
+    return (
+      <Link href={href} className={className}>
+        {label}
+      </Link>
+    );
+  }
+
   return (
-    <button
-      type="button"
-      className="font-medium transition-colors hover:text-foreground"
-    >
+    <button type="button" className={className}>
       {label}
     </button>
   );

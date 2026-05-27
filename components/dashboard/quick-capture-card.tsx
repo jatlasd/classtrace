@@ -1,10 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import { MentionsInput, Mention } from "react-mentions";
+import type { MentionsInputStyle } from "react-mentions";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import { buildNoteDraft } from "@/lib/note-processing";
 import type { NoteDraft } from "@/lib/note-processing/types";
+import { recentCaptures } from "@/lib/mock-data";
+import { getAllStudents } from "@/lib/students";
 import {
   AtSign,
   Camera,
@@ -22,23 +25,105 @@ const actions = [
   { icon: Hash, label: "Tag" },
 ];
 
+const quickCaptureMentionsStyle: MentionsInputStyle = {
+  control: {
+    fontSize: 15,
+    lineHeight: 1.5,
+  },
+  "&multiLine": {
+    control: {
+      minHeight: 120,
+    },
+    highlighter: {
+      padding: 0,
+      minHeight: 120,
+      border: "1px solid transparent",
+    },
+    input: {
+      padding: 0,
+      outline: 0,
+      border: 0,
+      minHeight: 120,
+      overflow: "auto",
+    },
+  },
+  suggestions: {
+    zIndex: 50,
+    backgroundColor: "var(--popover)",
+    border: "1px solid var(--border)",
+    borderRadius: "var(--radius-lg)",
+    boxShadow: "0 4px 12px oklch(0 0 0 / 8%)",
+    minWidth: 160,
+    marginTop: 4,
+    list: {
+      margin: 0,
+      padding: 4,
+      listStyleType: "none",
+    },
+    item: {
+      padding: "6px 10px",
+      borderRadius: "calc(var(--radius-lg) * 0.75)",
+      fontSize: 14,
+      color: "var(--foreground)",
+      cursor: "pointer",
+      "&focused": {
+        backgroundColor: "var(--muted)",
+      },
+    },
+  },
+};
+
+const mentionHighlightStyle = {
+  color: "var(--primary)",
+  fontWeight: 500,
+};
+
 type QuickCaptureCardProps = {
   onDraft: (draft: NoteDraft) => void;
 };
 
 export function QuickCaptureCard({ onDraft }: QuickCaptureCardProps) {
-  const [note, setNote] = useState("");
+  // markupValue is react-mentions' internal serialized form (e.g. @[Jeremy](Jeremy));
+  // plainText is what the teacher sees and what parseRawNote / buildNoteDraft expect (@Jeremy, #fractions).
+  const [markupValue, setMarkupValue] = useState("");
+  const [plainText, setPlainText] = useState("");
   const [posted, setPosted] = useState(false);
 
+  const studentSuggestions = useMemo(
+    () =>
+      getAllStudents().map((student) => ({
+        id: student.handle,
+        display: student.displayName,
+      })),
+    []
+  );
+
+  const tagSuggestions = useMemo(() => {
+    const tags = new Set(recentCaptures.flatMap((capture) => capture.tags));
+    return [...tags].sort().map((tag) => ({ id: tag, display: tag }));
+  }, []);
+
+  function handleChange(
+    _event: { target: { value: string } },
+    newMarkupValue: string,
+    newPlainTextValue: string
+  ) {
+    setMarkupValue(newMarkupValue);
+    setPlainText(newPlainTextValue);
+  }
+
   function handlePost() {
-    if (!note.trim()) return;
-    onDraft(buildNoteDraft(note.trim()));
+    if (!plainText.trim()) return;
+    onDraft(buildNoteDraft(plainText.trim()));
     setPosted(true);
-    setNote("");
+    setMarkupValue("");
+    setPlainText("");
     window.setTimeout(() => setPosted(false), 2000);
   }
 
-  function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
+  function handleKeyDown(
+    e: React.KeyboardEvent<HTMLTextAreaElement | HTMLInputElement>
+  ) {
     if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
       e.preventDefault();
       handlePost();
@@ -54,15 +139,34 @@ export function QuickCaptureCard({ onDraft }: QuickCaptureCardProps) {
         >
           What happened?
         </label>
-        <Textarea
-          id="quick-capture"
-          value={note}
-          onChange={(e) => setNote(e.target.value)}
-          onKeyDown={handleKeyDown}
-          placeholder="@Jeremy still struggling on multiplying fractions review #fractions #review #checkin"
-          rows={4}
-          className="min-h-[120px] resize-none border-0 bg-transparent px-0 text-[15px] shadow-none focus-visible:ring-0"
-        />
+        <div className="quick-capture-mentions">
+          <MentionsInput
+            id="quick-capture"
+            value={markupValue}
+            onChange={handleChange}
+            onKeyDown={handleKeyDown}
+            placeholder="@Jeremy still struggling on multiplying fractions review #fractions #review #checkin"
+            style={quickCaptureMentionsStyle}
+            allowSuggestionsAboveCursor
+          >
+            <Mention
+              trigger="@"
+              data={studentSuggestions}
+              markup="@[__display__](__id__)"
+              displayTransform={(id) => `@${id}`}
+              appendSpaceOnAdd
+              style={mentionHighlightStyle}
+            />
+            <Mention
+              trigger="#"
+              data={tagSuggestions}
+              markup="#[__display__](__id__)"
+              displayTransform={(id) => `#${id}`}
+              appendSpaceOnAdd
+              style={mentionHighlightStyle}
+            />
+          </MentionsInput>
+        </div>
         <p className="mt-1 text-xs text-muted-foreground">
           Use @student and #tag in your note
         </p>
@@ -84,7 +188,7 @@ export function QuickCaptureCard({ onDraft }: QuickCaptureCardProps) {
 
         <Button
           onClick={handlePost}
-          disabled={!note.trim()}
+          disabled={!plainText.trim()}
           className="h-9 rounded-lg px-5 text-sm font-semibold shadow-sm"
         >
           {posted ? (

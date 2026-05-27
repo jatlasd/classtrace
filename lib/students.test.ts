@@ -1,13 +1,20 @@
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 import { getCapturesForStudent } from "@/lib/evidence/student-captures";
 import {
+  addStudent,
+  getAllStudents,
   getStudentByHandle,
   getStudentById,
+  resetTeacherRosterForTests,
   resolveStudentMention,
   resolveStudentMentions,
 } from "./students";
 
 describe("student roster", () => {
+  beforeEach(() => {
+    resetTeacherRosterForTests();
+  });
+
   it("looks up students by id", () => {
     expect(getStudentById("jeremy")?.displayName).toBe("Jeremy");
     expect(getStudentById("unknown")).toBeUndefined();
@@ -39,5 +46,57 @@ describe("student roster", () => {
 
     const maryCaptures = getCapturesForStudent("mary");
     expect(maryCaptures.map((c) => c.id)).toEqual(["4"]);
+  });
+
+  it("adds a student to the teacher roster", () => {
+    const result = addStudent({
+      displayName: "Alex Rivera",
+      handle: "AlexR",
+      grade: "4th Grade",
+      group: "Period 1",
+    });
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+
+    expect(result.student).toMatchObject({
+      id: "alexr",
+      displayName: "Alex Rivera",
+      handle: "AlexR",
+      grade: "4th Grade",
+      group: "Period 1",
+      initials: "AR",
+    });
+
+    expect(getAllStudents()).toHaveLength(5);
+    expect(getStudentById("alexr")?.displayName).toBe("Alex Rivera");
+  });
+
+  it("resolves mentions for newly added students", () => {
+    addStudent({
+      displayName: "Alex Rivera",
+      handle: "AlexR",
+    });
+
+    expect(resolveStudentMention("@AlexR")?.id).toBe("alexr");
+    expect(resolveStudentMention("alexr")?.displayName).toBe("Alex Rivera");
+  });
+
+  it("rejects duplicate handles", () => {
+    addStudent({
+      displayName: "Alex Rivera",
+      handle: "AlexR",
+    });
+
+    const duplicate = addStudent({
+      displayName: "Alex R",
+      handle: "AlexR",
+    });
+
+    expect(duplicate).toEqual({
+      ok: false,
+      error: "A student with this handle already exists on your roster.",
+    });
+    expect(getAllStudents()).toHaveLength(5);
   });
 });

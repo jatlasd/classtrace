@@ -1,3 +1,7 @@
+"use client";
+
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { teacher } from "@/lib/mock-data";
 import {
   BarChart3,
@@ -10,13 +14,15 @@ import {
 } from "lucide-react";
 
 const navItems = [
-  { label: "Feed", icon: LayoutList, active: true },
-  { label: "Students", icon: Users, active: false },
-  { label: "Tags", icon: Hash, active: false },
-  { label: "Reports", icon: BarChart3, active: false },
+  { label: "Feed", href: "/", icon: LayoutList },
+  { label: "Roster", href: "/students", icon: Users },
+  { label: "Tags", href: "#", icon: Hash },
+  { label: "Reports", href: "#", icon: BarChart3 },
 ];
 
 export function AppSidebar() {
+  const pathname = usePathname();
+
   return (
     <aside className="hidden w-[72px] shrink-0 flex-col border-r border-sidebar-border bg-sidebar lg:flex xl:w-[220px]">
       <div className="flex h-16 items-center justify-center border-b border-sidebar-border xl:justify-start xl:px-5">
@@ -29,26 +35,33 @@ export function AppSidebar() {
       </div>
 
       <nav className="flex flex-1 flex-col gap-1 px-2 py-4">
-        {navItems.map((item) => (
-          <button
-            key={item.label}
-            type="button"
-            className={`group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
-              item.active
-                ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
-            }`}
-          >
-            <item.icon
-              className={`size-[18px] shrink-0 ${item.active ? "text-sidebar-primary" : ""}`}
-              strokeWidth={2}
-            />
-            <span className="hidden xl:block">{item.label}</span>
-            {item.active && (
-              <span className="ml-auto hidden size-1.5 rounded-full bg-sidebar-primary xl:block" />
-            )}
-          </button>
-        ))}
+        {navItems.map((item) => {
+          const active =
+            item.href === "/"
+              ? pathname === "/"
+              : pathname.startsWith(item.href);
+
+          return (
+            <Link
+              key={item.label}
+              href={item.href}
+              className={`group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
+                active
+                  ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                  : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+              }`}
+            >
+              <item.icon
+                className={`size-[18px] shrink-0 ${active ? "text-sidebar-primary" : ""}`}
+                strokeWidth={2}
+              />
+              <span className="hidden xl:block">{item.label}</span>
+              {active && (
+                <span className="ml-auto hidden size-1.5 rounded-full bg-sidebar-primary xl:block" />
+              )}
+            </Link>
+          );
+        })}
       </nav>
 
       <div className="border-t border-sidebar-border px-2 py-4">

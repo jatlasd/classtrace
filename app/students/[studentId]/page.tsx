@@ -1,5 +1,7 @@
+"use client";
+
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { use } from "react";
 import { ArrowLeft } from "lucide-react";
 import { NoteContent } from "@/components/dashboard/note-content";
 import { getCapturesForStudent } from "@/lib/evidence/student-captures";
@@ -12,14 +14,35 @@ type StudentProfilePageProps = {
   params: Promise<{ studentId: string }>;
 };
 
-export default async function StudentProfilePage({
-  params,
-}: StudentProfilePageProps) {
-  const { studentId } = await params;
+export default function StudentProfilePage({ params }: StudentProfilePageProps) {
+  const { studentId } = use(params);
   const student = getStudentById(studentId);
 
   if (!student) {
-    notFound();
+    return (
+      <div className="min-h-screen bg-background">
+        <div className="mx-auto max-w-2xl px-4 py-8 sm:px-6">
+          <div className="mb-6 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
+            <Link
+              href="/"
+              className="inline-flex items-center gap-1.5 text-muted-foreground transition-colors hover:text-foreground"
+            >
+              <ArrowLeft className="size-4" />
+              Back to feed
+            </Link>
+            <Link
+              href="/students"
+              className="text-muted-foreground transition-colors hover:text-foreground"
+            >
+              My roster
+            </Link>
+          </div>
+          <p className="rounded-xl border border-border bg-card p-6 text-sm text-muted-foreground">
+            Student not found on your roster.
+          </p>
+        </div>
+      </div>
+    );
   }
 
   const captures = getCapturesForStudent(studentId);
@@ -27,13 +50,21 @@ export default async function StudentProfilePage({
   return (
     <div className="min-h-screen bg-background">
       <div className="mx-auto max-w-2xl px-4 py-8 sm:px-6">
-        <Link
-          href="/"
-          className="mb-6 inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
-        >
-          <ArrowLeft className="size-4" />
-          Back to feed
-        </Link>
+        <div className="mb-6 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
+          <Link
+            href="/"
+            className="inline-flex items-center gap-1.5 text-muted-foreground transition-colors hover:text-foreground"
+          >
+            <ArrowLeft className="size-4" />
+            Back to feed
+          </Link>
+          <Link
+            href="/students"
+            className="text-muted-foreground transition-colors hover:text-foreground"
+          >
+            My roster
+          </Link>
+        </div>
 
         <header className="mb-8 flex items-start gap-4">
           <div
@@ -48,6 +79,7 @@ export default async function StudentProfilePage({
             <p className="mt-1 text-sm text-muted-foreground">
               {[student.grade, student.group].filter(Boolean).join(" · ")}
             </p>
+            <p className="mt-1 text-sm text-muted-foreground">@{student.handle}</p>
             <p className="mt-2 text-sm text-muted-foreground">
               {captures.length}{" "}
               {captures.length === 1 ? "capture" : "captures"} on record
