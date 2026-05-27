@@ -3,10 +3,11 @@ export function EvidenceFeedHeader() {
     <header className="mb-5 space-y-1">
       <div>
         <h1 className="text-xl font-bold tracking-tight text-foreground">
-          Evidence Feed
+          Evidence inbox
         </h1>
         <p className="text-sm text-muted-foreground">
-          Capture the messy moment now. Organize the evidence later.
+          Quick captures land here first—not final records until you validate
+          them. Review and organize evidence when you&apos;re ready.
         </p>
       </div>
 
@@ -35,7 +36,7 @@ function SecondaryLink({ label }: { label: string }) {
 export function RecentCapturesLabel() {
   return (
     <h2 className="px-1 pb-1 pt-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-      Recent captures
+      Inbox
     </h2>
   );
 }

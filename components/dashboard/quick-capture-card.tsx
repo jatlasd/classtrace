@@ -90,10 +90,10 @@ export function QuickCaptureCard({ onDraft }: QuickCaptureCardProps) {
           {posted ? (
             <>
               <Check className="size-4" />
-              Posted
+              Captured
             </>
           ) : (
-            "Post"
+            "Capture"
           )}
         </Button>
       </div>
