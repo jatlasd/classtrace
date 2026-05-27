@@ -1,16 +1,22 @@
 "use client";
 
 import { summarizeCaptures } from "@/lib/evidence/summarize-captures";
+import type { CaptureValidation } from "@/lib/evidence/capture-validation";
 import { popularTags } from "@/lib/mock-data";
 import type { NoteDraft } from "@/lib/note-processing/types";
 import { Sparkles } from "lucide-react";
 
-type ClassTraceNoticedPanelProps = {
-  drafts: NoteDraft[];
+type FeedSummaryItem = {
+  draft: NoteDraft;
+  validation?: CaptureValidation;
 };
 
-export function ClassTraceNoticedPanel({ drafts }: ClassTraceNoticedPanelProps) {
-  const summary = summarizeCaptures(drafts);
+type ClassTraceNoticedPanelProps = {
+  items: FeedSummaryItem[];
+};
+
+export function ClassTraceNoticedPanel({ items }: ClassTraceNoticedPanelProps) {
+  const summary = summarizeCaptures(items);
   const hasInsights = summary.insights.length > 0;
   const fallbackTags = popularTags.slice(0, 4);
 
@@ -86,7 +92,7 @@ export function ClassTraceNoticedPanel({ drafts }: ClassTraceNoticedPanelProps) 
             </div>
           )}
 
-          {!hasInsights && drafts.length === 0 && (
+          {!hasInsights && items.length === 0 && (
             <div className="mt-4 border-t border-border/60 pt-3">
               <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
                 Common tags

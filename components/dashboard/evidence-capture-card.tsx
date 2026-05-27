@@ -1,4 +1,14 @@
+"use client";
+
+import { useState } from "react";
+import { InterpretationReviewPanel } from "@/components/dashboard/interpretation-review-panel";
 import { NoteContent } from "@/components/dashboard/note-content";
+import { Button } from "@/components/ui/button";
+import {
+  resolveCaptureDisplay,
+  type CaptureValidation,
+  type InterpretationFields,
+} from "@/lib/evidence/capture-validation";
 import { draftToDisplay } from "@/lib/note-processing/draft-to-display";
 import type { NoteDraft } from "@/lib/note-processing/types";
 import { studentColors } from "@/lib/mock-data";
@@ -6,6 +16,8 @@ import { studentColors } from "@/lib/mock-data";
 type EvidenceCaptureCardProps = {
   draft: NoteDraft;
   timestamp?: string;
+  validation?: CaptureValidation;
+  onValidate: (fields: InterpretationFields) => void;
 };
 
 function Chip({
@@ -17,7 +29,8 @@ function Chip({
 }) {
   const styles = {
     default: "border-border bg-card text-foreground",
-    student: "border-sky-200/80 bg-sky-50 text-sky-900 dark:border-sky-900/50 dark:bg-sky-950/40 dark:text-sky-200",
+    student:
+      "border-sky-200/80 bg-sky-50 text-sky-900 dark:border-sky-900/50 dark:bg-sky-950/40 dark:text-sky-200",
     tag: "border-border bg-muted/60 text-link",
     evidence: "border-primary/20 bg-primary/5 text-primary",
   };
@@ -34,17 +47,33 @@ function Chip({
 export function EvidenceCaptureCard({
   draft,
   timestamp = "Just now",
+  validation,
+  onValidate,
 }: EvidenceCaptureCardProps) {
-  const display = draftToDisplay(draft);
+  const [reviewOpen, setReviewOpen] = useState(false);
+  const display = resolveCaptureDisplay(draft, validation);
+  const parserDisplay = draftToDisplay(draft);
+  const showReviewCta =
+    display.needsReview && display.validationStatus !== "validated";
+
+  function handleConfirm(fields: InterpretationFields) {
+    onValidate(fields);
+    setReviewOpen(false);
+  }
 
   return (
     <article className="rounded-xl border border-border bg-card shadow-sm">
       <div className="space-y-3 p-4">
         <div className="flex flex-wrap items-center gap-2">
           <span className="text-xs text-muted-foreground">{timestamp}</span>
-          {display.needsReview && (
+          {showReviewCta && (
             <span className="rounded-full border border-amber-200/80 bg-amber-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-900 dark:border-amber-900/50 dark:bg-amber-950/40 dark:text-amber-200">
               Needs review
+            </span>
+          )}
+          {display.validationStatus === "validated" && (
+            <span className="rounded-full border border-emerald-200/80 bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-emerald-900 dark:border-emerald-900/50 dark:bg-emerald-950/40 dark:text-emerald-200">
+              Validated
             </span>
           )}
         </div>
@@ -99,6 +128,25 @@ export function EvidenceCaptureCard({
             </ul>
           )}
         </div>
+
+        {showReviewCta && !reviewOpen && (
+          <Button
+            variant="outline"
+            size="sm"
+            className="w-full sm:w-auto"
+            onClick={() => setReviewOpen(true)}
+          >
+            Review interpretation
+          </Button>
+        )}
+
+        {showReviewCta && reviewOpen && (
+          <InterpretationReviewPanel
+            display={parserDisplay}
+            onConfirm={handleConfirm}
+            onDismiss={() => setReviewOpen(false)}
+          />
+        )}
       </div>
     </article>
   );

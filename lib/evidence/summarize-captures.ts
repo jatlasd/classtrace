@@ -1,4 +1,7 @@
-import { draftToDisplay } from "@/lib/note-processing/draft-to-display";
+import {
+  resolveCaptureDisplay,
+  type CaptureValidation,
+} from "@/lib/evidence/capture-validation";
 import type { NoteDraft } from "@/lib/note-processing/types";
 
 export type CaptureInsight = {
@@ -9,6 +12,11 @@ export type CaptureSummary = {
   insights: CaptureInsight[];
   topStudents: { name: string; count: number }[];
   topTags: { tag: string; count: number }[];
+};
+
+type CaptureItem = {
+  draft: NoteDraft;
+  validation?: CaptureValidation;
 };
 
 function countBy<T>(
@@ -34,12 +42,14 @@ function topEntries(
     .map(([name, count]) => ({ name, count }));
 }
 
-export function summarizeCaptures(drafts: NoteDraft[]): CaptureSummary {
-  if (drafts.length === 0) {
+export function summarizeCaptures(items: CaptureItem[]): CaptureSummary {
+  if (items.length === 0) {
     return { insights: [], topStudents: [], topTags: [] };
   }
 
-  const displays = drafts.map(draftToDisplay);
+  const displays = items.map((item) =>
+    resolveCaptureDisplay(item.draft, item.validation)
+  );
   const insights: CaptureInsight[] = [];
 
   const studentCounts = countBy(displays, (d) =>
@@ -48,7 +58,7 @@ export function summarizeCaptures(drafts: NoteDraft[]): CaptureSummary {
   const topStudent = topEntries(studentCounts, 1)[0];
   if (topStudent && topStudent.count >= 2) {
     insights.push({
-      text: `${topStudent.name} appears in ${topStudent.count} of your last ${drafts.length} captures`,
+      text: `${topStudent.name} appears in ${topStudent.count} of your last ${items.length} captures`,
     });
   }
 

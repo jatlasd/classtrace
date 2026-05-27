@@ -8,6 +8,10 @@ import {
   RecentCapturesLabel,
 } from "@/components/dashboard/evidence-feed-header";
 import { QuickCaptureCard } from "@/components/dashboard/quick-capture-card";
+import type {
+  CaptureValidation,
+  InterpretationFields,
+} from "@/lib/evidence/capture-validation";
 import { buildNoteDraft } from "@/lib/note-processing";
 import type { NoteDraft } from "@/lib/note-processing/types";
 import { recentCaptures } from "@/lib/mock-data";
@@ -16,6 +20,7 @@ type FeedItem = {
   id: string;
   draft: NoteDraft;
   timestamp: string;
+  validation?: CaptureValidation;
 };
 
 function seedFeedItems(): FeedItem[] {
@@ -29,7 +34,14 @@ function seedFeedItems(): FeedItem[] {
 export function EvidenceFeed() {
   const [items, setItems] = useState<FeedItem[]>(() => seedFeedItems());
 
-  const drafts = useMemo(() => items.map((item) => item.draft), [items]);
+  const summaryItems = useMemo(
+    () =>
+      items.map((item) => ({
+        draft: item.draft,
+        validation: item.validation,
+      })),
+    [items]
+  );
 
   function handleDraft(draft: NoteDraft) {
     setItems((current) => [
@@ -40,6 +52,23 @@ export function EvidenceFeed() {
       },
       ...current,
     ]);
+  }
+
+  function handleValidate(id: string, fields: InterpretationFields) {
+    setItems((current) =>
+      current.map((item) =>
+        item.id === id
+          ? {
+              ...item,
+              validation: {
+                status: "validated",
+                fields,
+                validatedAt: Date.now(),
+              },
+            }
+          : item
+      )
+    );
   }
 
   return (
@@ -59,13 +88,15 @@ export function EvidenceFeed() {
                 key={item.id}
                 draft={item.draft}
                 timestamp={item.timestamp}
+                validation={item.validation}
+                onValidate={(fields) => handleValidate(item.id, fields)}
               />
             ))
           )}
         </div>
       </div>
 
-      <ClassTraceNoticedPanel drafts={drafts} />
+      <ClassTraceNoticedPanel items={summaryItems} />
     </div>
   );
 }

@@ -13,7 +13,7 @@ export type DraftDisplay = {
   summaryLine: string;
 };
 
-const NOTE_TYPE_LABELS: Record<string, string> = {
+export const NOTE_TYPE_LABELS: Record<string, string> = {
   academic_check_in: "Academic check-in",
   behavior_observation: "Behavior observation",
   communication_log: "Communication log",
