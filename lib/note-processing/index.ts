@@ -14,6 +14,8 @@ export {
 export { notApplicableResult } from "./matcher-utils";
 
 export { buildNoteDraft } from "./build-note-draft";
+export { draftToDisplay } from "./draft-to-display";
+export type { DraftDisplay } from "./draft-to-display";
 export { parseRawNote } from "./parse-raw-note";
 
 export { matchNoteType } from "./match-note-type";

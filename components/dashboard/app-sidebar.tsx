@@ -1,21 +1,19 @@
+import { teacher } from "@/lib/mock-data";
 import {
   BarChart3,
-  FolderOpen,
+  Hash,
   LayoutList,
   PenLine,
   Search,
   Settings,
   Users,
-  UsersRound,
 } from "lucide-react";
 
 const navItems = [
   { label: "Feed", icon: LayoutList, active: true },
-  { label: "Students", icon: Users },
-  { label: "Groups", icon: UsersRound },
-  { label: "Insights", icon: BarChart3 },
-  { label: "Resources", icon: FolderOpen },
-  { label: "Drawings", icon: PenLine },
+  { label: "Students", icon: Users, active: false },
+  { label: "Tags", icon: Hash, active: false },
+  { label: "Reports", icon: BarChart3, active: false },
 ];
 
 export function AppSidebar() {
@@ -72,14 +70,14 @@ export function AppSidebar() {
         </div>
         <div className="flex items-center justify-center gap-3 rounded-lg px-2 py-2 xl:justify-start xl:px-3">
           <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-sidebar-primary text-xs font-semibold text-sidebar-primary-foreground">
-            CT
+            {teacher.initials}
           </div>
           <div className="hidden min-w-0 xl:block">
             <p className="truncate text-sm font-medium text-sidebar-foreground">
-              ClassTrace
+              {teacher.name}
             </p>
             <p className="truncate text-xs text-sidebar-foreground/60">
-              Teacher
+              {teacher.role}
             </p>
           </div>
         </div>

@@ -1,36 +1,71 @@
 "use client";
 
-import { useState } from "react";
-import { EvidenceFeedHeader } from "@/components/dashboard/evidence-feed-header";
-import { ParsedNoteCard } from "@/components/dashboard/parsed-note-card";
+import { useMemo, useState } from "react";
+import { ClassTraceNoticedPanel } from "@/components/dashboard/classtrace-noticed-panel";
+import { EvidenceCaptureCard } from "@/components/dashboard/evidence-capture-card";
+import {
+  EvidenceFeedHeader,
+  RecentCapturesLabel,
+} from "@/components/dashboard/evidence-feed-header";
 import { QuickCaptureCard } from "@/components/dashboard/quick-capture-card";
+import { buildNoteDraft } from "@/lib/note-processing";
 import type { NoteDraft } from "@/lib/note-processing/types";
+import { recentCaptures } from "@/lib/mock-data";
+
+type FeedItem = {
+  id: string;
+  draft: NoteDraft;
+  timestamp: string;
+};
+
+function seedFeedItems(): FeedItem[] {
+  return recentCaptures.map((capture) => ({
+    id: capture.id,
+    draft: buildNoteDraft(capture.note),
+    timestamp: capture.timestamp,
+  }));
+}
 
 export function EvidenceFeed() {
-  const [drafts, setDrafts] = useState<NoteDraft[]>([]);
+  const [items, setItems] = useState<FeedItem[]>(() => seedFeedItems());
+
+  const drafts = useMemo(() => items.map((item) => item.draft), [items]);
 
   function handleDraft(draft: NoteDraft) {
-    setDrafts((current) => [draft, ...current]);
+    setItems((current) => [
+      {
+        id: crypto.randomUUID(),
+        draft,
+        timestamp: "Just now",
+      },
+      ...current,
+    ]);
   }
 
   return (
-    <div className="mx-auto w-full max-w-[640px] px-4 py-6 sm:px-6 lg:py-8">
-      <EvidenceFeedHeader />
-      <div className="space-y-4">
-        <QuickCaptureCard onDraft={handleDraft} />
-        {drafts.length === 0 ? (
-          <p className="px-1 py-8 text-center text-sm text-muted-foreground">
-            Post a note to see how it parses and matches.
-          </p>
-        ) : (
-          drafts.map((draft, index) => (
-            <ParsedNoteCard
-              key={`${draft.parsed.rawNote}-${index}`}
-              draft={draft}
-            />
-          ))
-        )}
+    <div className="flex flex-col lg:flex-row">
+      <div className="mx-auto w-full max-w-[640px] flex-1 px-4 py-6 sm:px-6 lg:py-8">
+        <EvidenceFeedHeader />
+        <div className="space-y-4">
+          <QuickCaptureCard onDraft={handleDraft} />
+          <RecentCapturesLabel />
+          {items.length === 0 ? (
+            <p className="px-1 py-8 text-center text-sm text-muted-foreground">
+              Your evidence inbox is empty — capture what you noticed in class.
+            </p>
+          ) : (
+            items.map((item) => (
+              <EvidenceCaptureCard
+                key={item.id}
+                draft={item.draft}
+                timestamp={item.timestamp}
+              />
+            ))
+          )}
+        </div>
       </div>
+
+      <ClassTraceNoticedPanel drafts={drafts} />
     </div>
   );
 }

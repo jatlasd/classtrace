@@ -38,16 +38,34 @@ export function QuickCaptureCard({ onDraft }: QuickCaptureCardProps) {
     window.setTimeout(() => setPosted(false), 2000);
   }
 
+  function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
+    if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
+      e.preventDefault();
+      handlePost();
+    }
+  }
+
   return (
-    <div className="rounded-xl border border-border bg-card shadow-sm">
-      <div className="p-4 pb-3">
+    <div className="rounded-xl border border-border bg-card shadow-sm ring-1 ring-transparent transition-shadow focus-within:ring-primary/20">
+      <div className="p-4 pb-2">
+        <label
+          htmlFor="quick-capture"
+          className="mb-2 block text-base font-semibold text-foreground"
+        >
+          What happened?
+        </label>
         <Textarea
+          id="quick-capture"
           value={note}
           onChange={(e) => setNote(e.target.value)}
-          placeholder="What evidence did you see?"
-          rows={3}
-          className="min-h-[88px] resize-none border-0 bg-transparent px-0 text-[15px] shadow-none focus-visible:ring-0"
+          onKeyDown={handleKeyDown}
+          placeholder="@Jeremy still struggling on multiplying fractions review #fractions #review #checkin"
+          rows={4}
+          className="min-h-[120px] resize-none border-0 bg-transparent px-0 text-[15px] shadow-none focus-visible:ring-0"
         />
+        <p className="mt-1 text-xs text-muted-foreground">
+          Use @student and #tag in your note
+        </p>
       </div>
 
       <div className="flex items-center justify-between gap-3 border-t border-border px-4 py-3">

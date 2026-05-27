@@ -1,10 +1,10 @@
-import { LayoutList, Search, Settings, Users } from "lucide-react";
+import { BarChart3, Hash, LayoutList, Users } from "lucide-react";
 
 const items = [
   { icon: LayoutList, label: "Feed", active: true },
-  { icon: Users, label: "Students" },
-  { icon: Search, label: "Search" },
-  { icon: Settings, label: "Settings" },
+  { icon: Users, label: "Students", active: false },
+  { icon: Hash, label: "Tags", active: false },
+  { icon: BarChart3, label: "Reports", active: false },
 ];
 
 export function MobileNav() {
