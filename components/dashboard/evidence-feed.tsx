@@ -231,6 +231,39 @@ export function EvidenceFeed() {
     });
   }
 
+  function handleEditCapture(id: string, rawNote: string) {
+    const trimmed = rawNote.trim();
+    if (!trimmed) {
+      return;
+    }
+
+    setItems((current) => {
+      const next = current.map((item) => {
+        if (item.id !== id) {
+          return item;
+        }
+
+        const rawChanged = trimmed !== item.draft.parsed.rawNote;
+
+        return {
+          ...item,
+          draft: buildNoteDraft(trimmed),
+          validation: rawChanged ? undefined : item.validation,
+        };
+      });
+      persistFeedItems(next);
+      return next;
+    });
+  }
+
+  function handleDeleteCapture(id: string) {
+    setItems((current) => {
+      const next = current.filter((item) => item.id !== id);
+      persistFeedItems(next);
+      return next;
+    });
+  }
+
   function handleExport() {
     const payload = items.map((item) => {
       const display = resolveCaptureDisplay(item.draft, item.validation);
@@ -293,6 +326,8 @@ export function EvidenceFeed() {
                 timestamp={item.timestamp}
                 validation={item.validation}
                 onValidate={(fields) => handleValidate(item.id, fields)}
+                onEdit={(rawNote) => handleEditCapture(item.id, rawNote)}
+                onDelete={() => handleDeleteCapture(item.id)}
               />
             ))
           )}

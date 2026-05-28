@@ -5,6 +5,7 @@ import { useState } from "react";
 import { InterpretationReviewPanel } from "@/components/dashboard/interpretation-review-panel";
 import { NoteContent } from "@/components/dashboard/note-content";
 import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 import { formatTagLabel } from "@/lib/format-tag";
 import {
   resolveCaptureDisplay,
@@ -23,6 +24,8 @@ type EvidenceCaptureCardProps = {
   timestamp?: string;
   validation?: CaptureValidation;
   onValidate: (fields: InterpretationFields) => void;
+  onEdit?: (rawNote: string) => void;
+  onDelete?: () => void;
 };
 
 const chipStyles = {
@@ -98,8 +101,12 @@ export function EvidenceCaptureCard({
   timestamp = "Just now",
   validation,
   onValidate,
+  onEdit,
+  onDelete,
 }: EvidenceCaptureCardProps) {
   const [reviewOpen, setReviewOpen] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editText, setEditText] = useState("");
   const display = resolveCaptureDisplay(draft, validation);
   const parserDisplay = draftToDisplay(draft);
   const showReviewCta =
@@ -108,10 +115,41 @@ export function EvidenceCaptureCard({
     (ref) => ref.status === "unresolved"
   );
   const hasUnresolvedMentions = unresolvedMentions.length > 0;
+  const showActions = Boolean(onEdit || onDelete);
+  const canSaveEdit = editText.trim().length > 0;
 
   function handleConfirm(fields: InterpretationFields) {
     onValidate(fields);
     setReviewOpen(false);
+  }
+
+  function handleStartEdit() {
+    setEditText(draft.parsed.rawNote);
+    setReviewOpen(false);
+    setIsEditing(true);
+  }
+
+  function handleSaveEdit() {
+    const trimmed = editText.trim();
+    if (!trimmed) {
+      return;
+    }
+    onEdit?.(trimmed);
+    setIsEditing(false);
+  }
+
+  function handleCancelEdit() {
+    setIsEditing(false);
+  }
+
+  function handleDelete() {
+    if (
+      window.confirm(
+        "Delete this capture? It will be removed from this browser."
+      )
+    ) {
+      onDelete?.();
+    }
   }
 
   return (
@@ -119,20 +157,75 @@ export function EvidenceCaptureCard({
       <div className="space-y-3 p-4">
         <div className="flex flex-wrap items-center gap-2">
           <span className="text-xs text-muted-foreground">{timestamp}</span>
-          {showReviewCta && (
+          {!isEditing && showReviewCta && (
             <span className="rounded-full border border-amber-200/80 bg-amber-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-900 dark:border-amber-900/50 dark:bg-amber-950/40 dark:text-amber-200">
               Needs review
             </span>
           )}
-          {display.validationStatus === "validated" && (
+          {!isEditing && display.validationStatus === "validated" && (
             <span className="rounded-full border border-emerald-200/80 bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-emerald-900 dark:border-emerald-900/50 dark:bg-emerald-950/40 dark:text-emerald-200">
               Validated
             </span>
           )}
+          {showActions && !isEditing && (
+            <div className="ml-auto flex flex-wrap items-center gap-1">
+              {onEdit && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="xs"
+                  onClick={handleStartEdit}
+                >
+                  Edit
+                </Button>
+              )}
+              {onDelete && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="xs"
+                  className="text-destructive hover:text-destructive"
+                  onClick={handleDelete}
+                >
+                  Delete
+                </Button>
+              )}
+            </div>
+          )}
         </div>
 
-        <NoteContent text={draft.parsed.rawNote} />
+        {isEditing ? (
+          <div className="space-y-2">
+            <Textarea
+              value={editText}
+              onChange={(event) => setEditText(event.target.value)}
+              className="min-h-[120px] text-[15px] leading-relaxed"
+              aria-label="Edit capture note"
+            />
+            <div className="flex flex-wrap gap-2">
+              <Button
+                type="button"
+                size="sm"
+                disabled={!canSaveEdit}
+                onClick={handleSaveEdit}
+              >
+                Save
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={handleCancelEdit}
+              >
+                Cancel
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <NoteContent text={draft.parsed.rawNote} />
+        )}
 
+        {!isEditing && (
         <div className="rounded-lg border border-border/60 bg-muted/30 px-3 py-3">
           <p className="mb-2.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
             ClassTrace read this as
@@ -217,8 +310,9 @@ export function EvidenceCaptureCard({
             </ul>
           )}
         </div>
+        )}
 
-        {showReviewCta && !reviewOpen && (
+        {!isEditing && showReviewCta && !reviewOpen && (
           <Button
             variant="outline"
             size="sm"
@@ -229,7 +323,7 @@ export function EvidenceCaptureCard({
           </Button>
         )}
 
-        {showReviewCta && reviewOpen && (
+        {!isEditing && showReviewCta && reviewOpen && (
           <InterpretationReviewPanel
             display={parserDisplay}
             onConfirm={handleConfirm}
