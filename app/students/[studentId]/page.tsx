@@ -1,14 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { use } from "react";
+import { use, useEffect, useState } from "react";
 import { ArrowLeft } from "lucide-react";
 import { NoteContent } from "@/components/dashboard/note-content";
 import { getCapturesForStudent } from "@/lib/evidence/student-captures";
 import { formatTagLabel } from "@/lib/format-tag";
 import { buildNoteDraft } from "@/lib/note-processing/build-note-draft";
 import { draftToDisplay } from "@/lib/note-processing/draft-to-display";
-import { getStudentById } from "@/lib/students";
+import { getStudentById, type Student } from "@/lib/students";
 
 type StudentProfilePageProps = {
   params: Promise<{ studentId: string }>;
@@ -16,7 +16,16 @@ type StudentProfilePageProps = {
 
 export default function StudentProfilePage({ params }: StudentProfilePageProps) {
   const { studentId } = use(params);
-  const student = getStudentById(studentId);
+  const [student, setStudent] = useState<Student | undefined>(() =>
+    getStudentById(studentId)
+  );
+  const [captures, setCaptures] = useState(() => getCapturesForStudent(studentId));
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- hydrate student profile from localStorage after mount
+    setStudent(getStudentById(studentId));
+    setCaptures(getCapturesForStudent(studentId));
+  }, [studentId]);
 
   if (!student) {
     return (
@@ -44,8 +53,6 @@ export default function StudentProfilePage({ params }: StudentProfilePageProps) 
       </div>
     );
   }
-
-  const captures = getCapturesForStudent(studentId);
 
   return (
     <div className="min-h-screen bg-background">

@@ -6,7 +6,6 @@ import type { MentionsInputStyle } from "react-mentions";
 import { Button } from "@/components/ui/button";
 import { buildNoteDraft } from "@/lib/note-processing";
 import type { NoteDraft } from "@/lib/note-processing/types";
-import { recentCaptures } from "@/lib/mock-data";
 import { getAllStudents } from "@/lib/students";
 import {
   AtSign,
@@ -98,10 +97,7 @@ export function QuickCaptureCard({ onDraft }: QuickCaptureCardProps) {
     []
   );
 
-  const tagSuggestions = useMemo(() => {
-    const tags = new Set(recentCaptures.flatMap((capture) => capture.tags));
-    return [...tags].sort().map((tag) => ({ id: tag, display: tag }));
-  }, []);
+  const tagSuggestions = useMemo(() => [], []);
 
   function handleChange(
     _event: { target: { value: string } },

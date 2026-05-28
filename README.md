@@ -18,6 +18,25 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
+## POC mode
+
+This branch supports a personal, browser-only proof of concept. No database, auth, or backend is required.
+
+1. Run `npm run dev` and open the app.
+2. Go to **My roster** and add students (for example, display name `Anthony`, handle `Anthony` or `@Anthony`).
+3. On the home feed, capture a note such as `@Anthony was distractible during multiplying fractions review #behavior #fractions`.
+4. Refresh the browser — your capture stays in the evidence inbox.
+5. Open the student profile (for example `/students/anthony`) — the capture appears on that student's timeline.
+6. Validate interpreted fields on a capture — refresh again and validation persists.
+7. Use **Export JSON** on the feed to download `classtrace-poc-export.json`.
+
+**Limitations**
+
+- Data lives in this browser only (`localStorage`); it does not sync across devices or browsers.
+- Not FERPA-ready or production-safe — for personal POC use only.
+- No authentication, no database, no real AI processing yet.
+- Clearing site data or using **Clear captures** removes stored evidence from this browser.
+
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
 ## Learn More

@@ -1,5 +1,6 @@
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 import { buildNoteDraft } from "@/lib/note-processing/build-note-draft";
+import { addStudent, resetTeacherRosterForTests } from "@/lib/students";
 import {
   parseStudentNames,
   parseTags,
@@ -7,6 +8,11 @@ import {
 } from "./capture-validation";
 
 describe("resolveCaptureDisplay", () => {
+  beforeEach(() => {
+    resetTeacherRosterForTests();
+    addStudent({ displayName: "Jeremy", handle: "Jeremy" });
+    addStudent({ displayName: "Mary", handle: "Mary" });
+  });
   it("keeps parser needsReview when validation is pending", () => {
     const draft = buildNoteDraft(
       "@Jeremy still struggling on multiplying fractions review #fractions #review #checkin"

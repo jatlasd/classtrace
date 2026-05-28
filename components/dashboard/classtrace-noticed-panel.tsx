@@ -3,7 +3,6 @@
 import { formatTagLabel } from "@/lib/format-tag";
 import { summarizeCaptures } from "@/lib/evidence/summarize-captures";
 import type { CaptureValidation } from "@/lib/evidence/capture-validation";
-import { popularTags } from "@/lib/mock-data";
 import type { NoteDraft } from "@/lib/note-processing/types";
 import { Sparkles } from "lucide-react";
 
@@ -19,7 +18,6 @@ type ClassTraceNoticedPanelProps = {
 export function ClassTraceNoticedPanel({ items }: ClassTraceNoticedPanelProps) {
   const summary = summarizeCaptures(items);
   const hasInsights = summary.insights.length > 0;
-  const fallbackTags = popularTags.slice(0, 4);
 
   return (
     <aside className="w-full shrink-0 border-t border-border bg-card/50 lg:w-[300px] lg:border-t-0 lg:border-l xl:w-[320px]">
@@ -90,24 +88,6 @@ export function ClassTraceNoticedPanel({ items }: ClassTraceNoticedPanelProps) {
                   </div>
                 </div>
               )}
-            </div>
-          )}
-
-          {!hasInsights && items.length === 0 && (
-            <div className="mt-4 border-t border-border/60 pt-3">
-              <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                Common tags
-              </p>
-              <div className="flex flex-wrap gap-1.5">
-                {fallbackTags.map((tag) => (
-                  <span
-                    key={tag}
-                    className="rounded-full border border-border bg-muted/40 px-2 py-0.5 text-[11px] font-medium text-link"
-                  >
-                    {formatTagLabel(tag)}
-                  </span>
-                ))}
-              </div>
             </div>
           )}
         </div>
