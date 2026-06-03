@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { use, useEffect, useState } from "react";
-import { ArrowLeft } from "lucide-react";
+import { use, useEffect, useMemo, useState } from "react";
+import { ArrowLeft, Sparkles } from "lucide-react";
 import { NoteContent } from "@/components/dashboard/note-content";
+import { summarizeStudentCaptures } from "@/lib/evidence/summarize-student-captures";
 import { getCapturesForStudent } from "@/lib/evidence/student-captures";
 import { formatTagLabel } from "@/lib/format-tag";
 import { buildNoteDraft } from "@/lib/note-processing/build-note-draft";
@@ -20,6 +21,10 @@ export default function StudentProfilePage({ params }: StudentProfilePageProps) 
     getStudentById(studentId)
   );
   const [captures, setCaptures] = useState(() => getCapturesForStudent(studentId));
+  const synthesis = useMemo(
+    () => summarizeStudentCaptures(captures),
+    [captures]
+  );
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- hydrate student profile from localStorage after mount
@@ -54,6 +59,9 @@ export default function StudentProfilePage({ params }: StudentProfilePageProps) 
     );
   }
 
+  const { snapshot, insights, patterns } = synthesis;
+  const hasCaptures = captures.length > 0;
+
   return (
     <div className="min-h-screen bg-background">
       <div className="mx-auto max-w-2xl px-4 py-8 sm:px-6">
@@ -87,12 +95,143 @@ export default function StudentProfilePage({ params }: StudentProfilePageProps) 
               {[student.grade, student.group].filter(Boolean).join(" · ")}
             </p>
             <p className="mt-1 text-sm text-muted-foreground">@{student.handle}</p>
-            <p className="mt-2 text-sm text-muted-foreground">
-              {captures.length}{" "}
-              {captures.length === 1 ? "capture" : "captures"} on record
-            </p>
           </div>
         </header>
+
+        <section className="mb-8">
+          <h2 className="mb-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            Evidence snapshot
+          </h2>
+          <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
+            <dl className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+              <div>
+                <dt className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                  Total captures
+                </dt>
+                <dd className="mt-1 text-sm font-medium text-foreground">
+                  {snapshot.totalCaptures}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                  Most recent
+                </dt>
+                <dd className="mt-1 text-sm font-medium text-foreground">
+                  {snapshot.mostRecentTimestamp ?? "No captures yet"}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                  Follow-ups
+                </dt>
+                <dd className="mt-1 text-sm font-medium text-foreground">
+                  {snapshot.followUpCount}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                  Top tag
+                </dt>
+                <dd className="mt-1 text-sm font-medium text-foreground">
+                  {snapshot.topTag
+                    ? formatTagLabel(snapshot.topTag.tag)
+                    : "No tags yet"}
+                </dd>
+              </div>
+            </dl>
+          </div>
+        </section>
+
+        <section className="mb-8">
+          <div className="mb-4 flex items-center gap-2">
+            <div className="flex size-7 items-center justify-center rounded-lg bg-primary/10 text-primary">
+              <Sparkles className="size-3.5" strokeWidth={2} />
+            </div>
+            <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              What ClassTrace is noticing
+            </h2>
+          </div>
+          <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
+            {insights.length > 0 ? (
+              <ul className="space-y-2">
+                {insights.map((insight) => (
+                  <li
+                    key={insight}
+                    className="text-sm leading-relaxed text-muted-foreground"
+                  >
+                    <span className="mr-1.5 text-primary">•</span>
+                    {insight}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-sm leading-relaxed text-muted-foreground">
+                No evidence mentioning {student.displayName} yet. Patterns will
+                appear here once you capture notes that @mention this student.
+              </p>
+            )}
+          </div>
+        </section>
+
+        <section className="mb-8">
+          <h2 className="mb-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            Patterns
+          </h2>
+          <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
+            {!hasCaptures ? (
+              <p className="text-sm text-muted-foreground">No patterns yet.</p>
+            ) : (
+              <div className="space-y-4">
+                {patterns.tags.length > 0 && (
+                  <div>
+                    <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                      Tags
+                    </p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {patterns.tags.map(({ tag, count }) => (
+                        <span
+                          key={tag}
+                          className="rounded-full border border-border bg-muted/40 px-2 py-0.5 text-[11px] font-medium text-link"
+                        >
+                          {formatTagLabel(tag)} · {count}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {patterns.evidenceTypes.length > 0 && (
+                  <div>
+                    <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                      Evidence types
+                    </p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {patterns.evidenceTypes.map(({ evidenceType, count }) => (
+                        <span
+                          key={evidenceType}
+                          className="rounded-full border border-border bg-muted/40 px-2 py-0.5 text-[11px] font-medium text-foreground"
+                        >
+                          {evidenceType} · {count}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {patterns.followUpCount > 0 && (
+                  <div>
+                    <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                      Follow-up
+                    </p>
+                    <span className="inline-flex rounded-full border border-border bg-muted/40 px-2 py-0.5 text-[11px] font-medium text-foreground">
+                      Follow-up suggested · {patterns.followUpCount}
+                    </span>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </section>
 
         <section>
           <h2 className="mb-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
