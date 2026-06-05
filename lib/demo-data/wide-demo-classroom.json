@@ -1,0 +1,1003 @@
+{
+  "name": "ClassTrace POC wide demo classroom",
+  "description": "Sanitized localStorage-ready seed with five fake students and broad teacher-evidence coverage: academics across subjects, behavior, executive functioning, communication, participation, confidence, peer interaction, and positives.",
+  "storageKeys": {
+    "roster": "classtrace.poc.roster.v1",
+    "captures": "classtrace.poc.captures.v1"
+  },
+  "roster": [
+    {
+      "id": "maya",
+      "displayName": "Maya",
+      "handle": "Maya",
+      "grade": "6th Grade",
+      "group": "Period 1",
+      "initials": "MY",
+      "colorClass": "bg-sky-500"
+    },
+    {
+      "id": "jalen",
+      "displayName": "Jalen",
+      "handle": "Jalen",
+      "grade": "6th Grade",
+      "group": "Period 1",
+      "initials": "JA",
+      "colorClass": "bg-rose-400"
+    },
+    {
+      "id": "brielle",
+      "displayName": "Brielle",
+      "handle": "Brielle",
+      "grade": "6th Grade",
+      "group": "Period 2",
+      "initials": "BR",
+      "colorClass": "bg-teal-500"
+    },
+    {
+      "id": "mateo",
+      "displayName": "Mateo",
+      "handle": "Mateo",
+      "grade": "6th Grade",
+      "group": "Period 2",
+      "initials": "MT",
+      "colorClass": "bg-violet-500"
+    },
+    {
+      "id": "noah",
+      "displayName": "Noah",
+      "handle": "Noah",
+      "grade": "6th Grade",
+      "group": "Period 3",
+      "initials": "NO",
+      "colorClass": "bg-amber-500"
+    }
+  ],
+  "captures": [
+    {
+      "id": "f6d732b8-75db-5cdc-b572-544f6df00fc6",
+      "capturedAt": "2026-06-03T18:08:38.525Z",
+      "timestampMs": 1780510118525,
+      "rawNote": "@Maya not as distractible today #workethic #perseverance",
+      "validation": {
+        "status": "validated",
+        "fields": {
+          "students": [
+            "Maya"
+          ],
+          "evidenceType": "General observation",
+          "tags": [
+            "workethic",
+            "perseverance"
+          ],
+          "followUpNotes": []
+        },
+        "validatedAt": 1780510208525
+      }
+    },
+    {
+      "id": "4591f423-eb65-52fd-984d-df0df7019889",
+      "capturedAt": "2026-06-03T18:03:46.325Z",
+      "timestampMs": 1780509826325,
+      "rawNote": "@Maya is quick to understand fundamentals today #positive #productive"
+    },
+    {
+      "id": "a7a85bff-9aea-5705-90d9-6fce510d17ae",
+      "capturedAt": "2026-06-03T17:55:27.526Z",
+      "timestampMs": 1780509327526,
+      "rawNote": "@Brielle taking back seat to her partner again #concern #groupwork",
+      "validation": {
+        "status": "validated",
+        "fields": {
+          "students": [
+            "Brielle"
+          ],
+          "evidenceType": "General observation",
+          "topic": "Peer interaction",
+          "tags": [
+            "concern",
+            "groupwork"
+          ],
+          "followUpNotes": [
+            "Check whether Brielle is unsure or just letting partner lead"
+          ]
+        },
+        "validatedAt": 1780509417526
+      }
+    },
+    {
+      "id": "8a981d18-2fe7-50f7-ae76-d6e496360123",
+      "capturedAt": "2026-06-03T17:51:13.599Z",
+      "timestampMs": 1780509073599,
+      "rawNote": "@Maya and @Noah working very well together and taking initiative #positive"
+    },
+    {
+      "id": "f4159149-04c9-58fa-a10c-63b6be4307a8",
+      "capturedAt": "2026-06-03T17:39:50.681Z",
+      "timestampMs": 1780508390681,
+      "rawNote": "@Mateo still #struggling with basic fact operations #support #reteach",
+      "validation": {
+        "status": "validated",
+        "fields": {
+          "students": [
+            "Mateo"
+          ],
+          "evidenceType": "Academic check-in",
+          "topic": "math",
+          "performance": "struggling",
+          "tags": [
+            "struggling",
+            "support",
+            "reteach"
+          ],
+          "followUpNotes": [
+            "Consider reteach or small-group support"
+          ]
+        },
+        "validatedAt": 1780508480681
+      }
+    },
+    {
+      "id": "c815ddd2-0df7-5215-90ce-9849e86bb35a",
+      "capturedAt": "2026-06-03T17:30:18.433Z",
+      "timestampMs": 1780507818433,
+      "rawNote": "@Jalen appears to be distracting his group rather than contributing",
+      "validation": {
+        "status": "validated",
+        "fields": {
+          "students": [
+            "Jalen"
+          ],
+          "evidenceType": "Behavior observation",
+          "topic": "Peer interaction",
+          "behavior": [
+            "off task"
+          ],
+          "tags": [],
+          "followUpNotes": []
+        },
+        "validatedAt": 1780507908433
+      }
+    },
+    {
+      "id": "fb439055-5cd4-53e4-a1ef-db280114edee",
+      "capturedAt": "2026-06-03T17:18:39.909Z",
+      "timestampMs": 1780507119909,
+      "rawNote": "@Noah requested help much faster today #independence"
+    },
+    {
+      "id": "d8cae02d-05f5-5d88-a0ee-30b46a4cd6f2",
+      "capturedAt": "2026-06-03T17:09:35.173Z",
+      "timestampMs": 1780506575173,
+      "rawNote": "@Noah seems motivated to work independently today #project"
+    },
+    {
+      "id": "33d7b72e-1e52-505e-b88c-e01103723ca8",
+      "capturedAt": "2026-06-03T13:14:43.560Z",
+      "timestampMs": 1780492483560,
+      "rawNote": "@Jalen throwing erasers across the room #behavior",
+      "validation": {
+        "status": "validated",
+        "fields": {
+          "students": [
+            "Jalen"
+          ],
+          "evidenceType": "Behavior observation",
+          "topic": "behavior social emotional",
+          "behavior": [
+            "disruptive"
+          ],
+          "tags": [
+            "behavior"
+          ],
+          "followUpNotes": [
+            "Document if repeated during unstructured time"
+          ]
+        },
+        "validatedAt": 1780492573560
+      }
+    },
+    {
+      "id": "7d7c491f-3f38-51f2-8ae3-dce194807b25",
+      "capturedAt": "2026-06-03T12:43:09.452Z",
+      "timestampMs": 1780490589452,
+      "rawNote": "@Mateo unsure of main idea vs detail during reading group #review #reading",
+      "validation": {
+        "status": "validated",
+        "fields": {
+          "students": [
+            "Mateo"
+          ],
+          "evidenceType": "Academic check-in",
+          "topic": "reading",
+          "performance": "needs support",
+          "tags": [
+            "review",
+            "reading"
+          ],
+          "followUpNotes": [
+            "Review main idea/detail with short passage"
+          ]
+        },
+        "validatedAt": 1780490679452
+      }
+    },
+    {
+      "id": "2869ad78-fc71-5bb2-8ea3-4c2ef7958dd5",
+      "capturedAt": "2026-06-03T11:59:13.185Z",
+      "timestampMs": 1780487953185,
+      "rawNote": "@Jalen very talkative 1st period #behavior #talking",
+      "validation": {
+        "status": "validated",
+        "fields": {
+          "students": [
+            "Jalen"
+          ],
+          "evidenceType": "Behavior observation",
+          "topic": "behavior social emotional",
+          "behavior": [
+            "off task"
+          ],
+          "tags": [
+            "behavior",
+            "talking"
+          ],
+          "followUpNotes": []
+        },
+        "validatedAt": 1780488043185
+      }
+    },
+    {
+      "id": "d3853e50-a410-5e95-9b37-80e9db8e89ab",
+      "capturedAt": "2026-06-03T11:53:57.936Z",
+      "timestampMs": 1780487637936,
+      "rawNote": "@Noah had his iready time at the start of class #work-completion #independence",
+      "validation": {
+        "status": "validated",
+        "fields": {
+          "students": [
+            "Noah"
+          ],
+          "evidenceType": "General observation",
+          "tags": [
+            "work-completion",
+            "independence"
+          ],
+          "followUpNotes": []
+        },
+        "validatedAt": 1780487727936
+      }
+    },
+    {
+      "id": "011a53a5-4472-54de-9af2-6b27164e4d2e",
+      "capturedAt": "2026-06-02T18:07:20.000Z",
+      "timestampMs": 1780423640000,
+      "rawNote": "@Brielle answered correctly after I asked her directly but would not volunteer #participation #confidence",
+      "validation": {
+        "status": "validated",
+        "fields": {
+          "students": [
+            "Brielle"
+          ],
+          "evidenceType": "Academic check-in",
+          "topic": "executive functioning",
+          "performance": "correct with prompting",
+          "tags": [
+            "participation",
+            "confidence"
+          ],
+          "followUpNotes": [
+            "Continue prompting Brielle to explain thinking out loud"
+          ]
+        },
+        "validatedAt": 1780423730000
+      }
+    },
+    {
+      "id": "ed1568a6-4474-5190-9e4d-783eb86a1ed2",
+      "capturedAt": "2026-06-02T17:58:02.000Z",
+      "timestampMs": 1780423082000,
+      "rawNote": "@Mateo mixed up claim and evidence again in written response #writing #reteach",
+      "validation": {
+        "status": "validated",
+        "fields": {
+          "students": [
+            "Mateo"
+          ],
+          "evidenceType": "Academic check-in",
+          "topic": "writing",
+          "performance": "struggling",
+          "tags": [
+            "writing",
+            "reteach"
+          ],
+          "followUpNotes": [
+            "Use sentence frame for claim/evidence"
+          ]
+        },
+        "validatedAt": 1780423172000
+      }
+    },
+    {
+      "id": "c1e3fd93-3116-54fc-9a99-c858bab5bdda",
+      "capturedAt": "2026-06-02T17:46:10.000Z",
+      "timestampMs": 1780422370000,
+      "rawNote": "@Maya helped explain vocabulary to @Brielle without taking over #positive #peer-support"
+    },
+    {
+      "id": "d4df53e7-1ca6-53c8-b28a-823b48f2f495",
+      "capturedAt": "2026-06-02T16:58:31.000Z",
+      "timestampMs": 1780419511000,
+      "rawNote": "@Jalen started the warmup after 3 redirects #behavior #workinitiation",
+      "validation": {
+        "status": "validated",
+        "fields": {
+          "students": [
+            "Jalen"
+          ],
+          "evidenceType": "Behavior observation",
+          "topic": "executive functioning",
+          "behavior": [
+            "off task"
+          ],
+          "tags": [
+            "behavior",
+            "workinitiation"
+          ],
+          "followUpNotes": [
+            "Track how many redirects before task initiation"
+          ]
+        },
+        "validatedAt": 1780419601000
+      }
+    },
+    {
+      "id": "51d66c54-8894-50cc-9226-779a0c26b413",
+      "capturedAt": "2026-06-02T13:07:44.000Z",
+      "timestampMs": 1780405664000,
+      "rawNote": "@Noah finished the review without rushing and checked answers #productive #work-completion"
+    },
+    {
+      "id": "7eef2d57-025e-5e5d-8975-f89196ee046b",
+      "capturedAt": "2026-06-02T12:49:15.000Z",
+      "timestampMs": 1780404555000,
+      "rawNote": "@Brielle had the correct text evidence but waited for someone else to say it #reading #confidence"
+    },
+    {
+      "id": "cf3d7488-bed4-5386-ba24-9bb602c6b7d4",
+      "capturedAt": "2026-06-02T12:34:55.000Z",
+      "timestampMs": 1780403695000,
+      "rawNote": "@Mateo needed directions repeated twice before starting science vocab sort #directions #support",
+      "validation": {
+        "status": "validated",
+        "fields": {
+          "students": [
+            "Mateo"
+          ],
+          "evidenceType": "Academic check-in",
+          "topic": "executive functioning",
+          "performance": "needs support",
+          "tags": [
+            "directions",
+            "support"
+          ],
+          "followUpNotes": [
+            "Check understanding of directions before independent work"
+          ]
+        },
+        "validatedAt": 1780403785000
+      }
+    },
+    {
+      "id": "61473607-b05a-5f3c-8bc8-f4127f257529",
+      "capturedAt": "2026-06-01T18:12:15.000Z",
+      "timestampMs": 1780337535000,
+      "rawNote": "@Mateo needed calculator for basic multiplication facts during statistics practice #facts #support",
+      "validation": {
+        "status": "validated",
+        "fields": {
+          "students": [
+            "Mateo"
+          ],
+          "evidenceType": "Academic check-in",
+          "topic": "math",
+          "performance": "needs support",
+          "tags": [
+            "facts",
+            "support"
+          ],
+          "followUpNotes": [
+            "Add fact fluency support before multi-step tasks"
+          ]
+        },
+        "validatedAt": 1780337625000
+      }
+    },
+    {
+      "id": "bf4c3aba-8c88-5768-9364-f004da15b64a",
+      "capturedAt": "2026-06-01T17:55:40.000Z",
+      "timestampMs": 1780336540000,
+      "rawNote": "@Brielle let partner do most of the graphing work #concern #groupwork"
+    },
+    {
+      "id": "b3c9842a-caba-5396-8b0e-3f29048c82c5",
+      "capturedAt": "2026-06-01T17:35:27.000Z",
+      "timestampMs": 1780335327000,
+      "rawNote": "@Maya came in ready and got straight to the warmup #positive #routine"
+    },
+    {
+      "id": "f50f970f-11e9-5968-b3d3-078978ed70c9",
+      "capturedAt": "2026-06-01T17:18:05.000Z",
+      "timestampMs": 1780334285000,
+      "rawNote": "@Jalen and @Mateo were feeding off each other during group work #behavior #peer",
+      "validation": {
+        "status": "validated",
+        "fields": {
+          "students": [
+            "Jalen",
+            "Mateo"
+          ],
+          "evidenceType": "Behavior observation",
+          "topic": "Peer interaction",
+          "behavior": [
+            "off task"
+          ],
+          "tags": [
+            "behavior",
+            "peer"
+          ],
+          "followUpNotes": [
+            "Consider separating during group tasks"
+          ]
+        },
+        "validatedAt": 1780334375000
+      }
+    },
+    {
+      "id": "814a8c76-1b30-5dce-b274-d667174f86a6",
+      "capturedAt": "2026-06-01T12:58:16.000Z",
+      "timestampMs": 1780318696000,
+      "rawNote": "@Noah asked if he could redo the problem before I corrected it #selfmonitoring #positive"
+    },
+    {
+      "id": "0d920847-3e9c-540d-bc82-82e45e68cda7",
+      "capturedAt": "2026-06-01T12:35:03.000Z",
+      "timestampMs": 1780317303000,
+      "rawNote": "@Maya used complete sentences in science response without reminder #writing #positive",
+      "validation": {
+        "status": "validated",
+        "fields": {
+          "students": [
+            "Maya"
+          ],
+          "evidenceType": "Academic check-in",
+          "topic": "writing",
+          "performance": "independent",
+          "tags": [
+            "writing",
+            "positive"
+          ],
+          "followUpNotes": []
+        },
+        "validatedAt": 1780317393000
+      }
+    },
+    {
+      "id": "8da2b495-65fb-5ea0-a445-04dd612565c5",
+      "capturedAt": "2026-05-29T18:06:12.000Z",
+      "timestampMs": 1780077972000,
+      "rawNote": "@Maya productive during independent practice and finished all but the last question #workethic"
+    },
+    {
+      "id": "2aa6ca26-1578-53e0-a561-a7baff1e937e",
+      "capturedAt": "2026-05-29T17:52:33.000Z",
+      "timestampMs": 1780077153000,
+      "rawNote": "@Mateo understands the steps when I sit with him but loses it independently #support #fractions",
+      "validation": {
+        "status": "validated",
+        "fields": {
+          "students": [
+            "Mateo"
+          ],
+          "evidenceType": "Academic check-in",
+          "topic": "math",
+          "performance": "needs support",
+          "tags": [
+            "support",
+            "fractions"
+          ],
+          "followUpNotes": [
+            "Check for independence after guided example"
+          ]
+        },
+        "validatedAt": 1780077243000
+      }
+    },
+    {
+      "id": "5e073424-bd47-5e2d-b9c4-a403a91dd749",
+      "capturedAt": "2026-05-29T17:38:47.000Z",
+      "timestampMs": 1780076327000,
+      "rawNote": "@Brielle had correct work but erased it when partner disagreed #confidence #concern",
+      "validation": {
+        "status": "validated",
+        "fields": {
+          "students": [
+            "Brielle"
+          ],
+          "evidenceType": "General observation",
+          "topic": "Peer interaction",
+          "tags": [
+            "confidence",
+            "concern"
+          ],
+          "followUpNotes": [
+            "Encourage Brielle to keep and defend her work"
+          ]
+        },
+        "validatedAt": 1780076417000
+      }
+    },
+    {
+      "id": "2a335886-ee38-5408-8915-8107529f3335",
+      "capturedAt": "2026-05-29T17:22:58.000Z",
+      "timestampMs": 1780075378000,
+      "rawNote": "@Jalen receptive after hallway reset and came back calmer #behavior #positive",
+      "validation": {
+        "status": "validated",
+        "fields": {
+          "students": [
+            "Jalen"
+          ],
+          "evidenceType": "Behavior observation",
+          "topic": "behavior social emotional",
+          "behavior": [
+            "de-escalated"
+          ],
+          "tags": [
+            "behavior",
+            "positive"
+          ],
+          "followUpNotes": []
+        },
+        "validatedAt": 1780075468000
+      }
+    },
+    {
+      "id": "a3292279-90b6-5323-9d5b-4d0e3585833e",
+      "capturedAt": "2026-05-29T13:45:21.000Z",
+      "timestampMs": 1780062321000,
+      "rawNote": "@Noah forgot materials again but borrowed pencil and started quickly #materials #workinitiation"
+    },
+    {
+      "id": "2a35489c-ce5c-5964-9f4b-95245481a3b4",
+      "capturedAt": "2026-05-29T12:50:09.000Z",
+      "timestampMs": 1780059009000,
+      "rawNote": "@Mateo read the question too quickly and answered the wrong thing #reading #attention",
+      "validation": {
+        "status": "validated",
+        "fields": {
+          "students": [
+            "Mateo"
+          ],
+          "evidenceType": "Academic check-in",
+          "topic": "reading",
+          "performance": "needs support",
+          "tags": [
+            "reading",
+            "attention"
+          ],
+          "followUpNotes": [
+            "Prompt to underline what the question is asking"
+          ]
+        },
+        "validatedAt": 1780059099000
+      }
+    },
+    {
+      "id": "407b5c30-ccf2-5751-8862-661c2c77934c",
+      "capturedAt": "2026-05-28T18:11:09.000Z",
+      "timestampMs": 1779991869000,
+      "rawNote": "@Brielle did better when I gave her first step then backed off #independence #support"
+    },
+    {
+      "id": "c79ca443-e2ec-51b4-9020-8ff9d779fb27",
+      "capturedAt": "2026-05-28T17:48:22.000Z",
+      "timestampMs": 1779990502000,
+      "rawNote": "@Mateo struggling to explain why quartiles split the data #statistics #review"
+    },
+    {
+      "id": "bb7a1ef0-af29-5c2a-af03-db03359d43cf",
+      "capturedAt": "2026-05-28T17:31:10.000Z",
+      "timestampMs": 1779989470000,
+      "rawNote": "@Maya asked a strong question about outliers #statistics #positive"
+    },
+    {
+      "id": "765714e5-888c-56d1-ae6e-0a3fe458f385",
+      "capturedAt": "2026-05-28T16:55:45.000Z",
+      "timestampMs": 1779987345000,
+      "rawNote": "@Jalen out of seat multiple times during notes #behavior #redirection",
+      "validation": {
+        "status": "validated",
+        "fields": {
+          "students": [
+            "Jalen"
+          ],
+          "evidenceType": "Behavior observation",
+          "topic": "behavior social emotional",
+          "behavior": [
+            "off task"
+          ],
+          "tags": [
+            "behavior",
+            "redirection"
+          ],
+          "followUpNotes": [
+            "Monitor seat-leaving during direct instruction"
+          ]
+        },
+        "validatedAt": 1779987435000
+      }
+    },
+    {
+      "id": "6e241a70-ed6b-5b73-8df9-4503351a284a",
+      "capturedAt": "2026-05-28T13:33:18.000Z",
+      "timestampMs": 1779975198000,
+      "rawNote": "@Noah stayed on iready the whole assigned time #work-completion #independence",
+      "validation": {
+        "status": "validated",
+        "fields": {
+          "students": [
+            "Noah"
+          ],
+          "evidenceType": "General observation",
+          "tags": [
+            "work-completion",
+            "independence"
+          ],
+          "followUpNotes": []
+        },
+        "validatedAt": 1779975288000
+      }
+    },
+    {
+      "id": "77ac4657-e50b-57bf-b0b2-b85cacf16c6e",
+      "capturedAt": "2026-05-28T12:45:41.000Z",
+      "timestampMs": 1779972341000,
+      "rawNote": "@Brielle needed help starting paragraph but had good ideas once she started #writing #initiation",
+      "validation": {
+        "status": "validated",
+        "fields": {
+          "students": [
+            "Brielle"
+          ],
+          "evidenceType": "Academic check-in",
+          "topic": "writing",
+          "performance": "completed with support",
+          "tags": [
+            "writing",
+            "initiation"
+          ],
+          "followUpNotes": [
+            "Offer first-sentence support before writing tasks"
+          ]
+        },
+        "validatedAt": 1779972431000
+      }
+    },
+    {
+      "id": "7b16e705-b8dd-56cd-9e06-873b22e5dfa1",
+      "capturedAt": "2026-05-27T18:03:11.000Z",
+      "timestampMs": 1779904991000,
+      "rawNote": "@Mateo guessed on most of the review instead of using notes #review #concern"
+    },
+    {
+      "id": "dbfee54d-86b8-5333-a119-8194ae4cec8f",
+      "capturedAt": "2026-05-27T17:42:02.000Z",
+      "timestampMs": 1779903722000,
+      "rawNote": "@Brielle participated more in small group than whole group #participation"
+    },
+    {
+      "id": "1904a37a-f716-5cc6-ab12-f98d6e880577",
+      "capturedAt": "2026-05-27T17:14:44.000Z",
+      "timestampMs": 1779902084000,
+      "rawNote": "@Maya distracted at start but recovered without me saying much #selfmonitoring #positive"
+    },
+    {
+      "id": "bbc4448b-efb9-569b-ad34-8956a54d5bcb",
+      "capturedAt": "2026-05-27T13:01:19.000Z",
+      "timestampMs": 1779886879000,
+      "rawNote": "@Jalen needed repeated reminders to stop talking across the room #behavior #talking"
+    },
+    {
+      "id": "0fa16181-d479-5a2a-b150-dcb0ad5bb098",
+      "capturedAt": "2026-05-27T12:50:07.000Z",
+      "timestampMs": 1779886207000,
+      "rawNote": "@Noah needed help finding missing assignments but then completed one #organization #work-completion",
+      "validation": {
+        "status": "validated",
+        "fields": {
+          "students": [
+            "Noah"
+          ],
+          "evidenceType": "Academic check-in",
+          "topic": "executive functioning",
+          "performance": "completed with support",
+          "tags": [
+            "organization",
+            "work-completion"
+          ],
+          "followUpNotes": [
+            "Check missing assignment tracker again next class"
+          ]
+        },
+        "validatedAt": 1779886297000
+      }
+    },
+    {
+      "id": "8da099cc-b61e-5cdb-8666-0d59e7621325",
+      "capturedAt": "2026-05-27T12:27:33.000Z",
+      "timestampMs": 1779884853000,
+      "rawNote": "@Maya independently used notes to fix mistake on social studies map #selfmonitoring #positive"
+    },
+    {
+      "id": "d743af59-6f05-501b-b47e-d560d0c37485",
+      "capturedAt": "2026-05-26T18:08:34.000Z",
+      "timestampMs": 1779818914000,
+      "rawNote": "@Mateo could solve with multiplication chart but not without it #facts #support"
+    },
+    {
+      "id": "3ca15c3a-f2f9-57f6-b36e-eb8563c0fb1d",
+      "capturedAt": "2026-05-26T17:51:18.000Z",
+      "timestampMs": 1779817878000,
+      "rawNote": "@Brielle whispered answer to me but would not share with group #confidence #participation"
+    },
+    {
+      "id": "06f3492c-dcff-5972-a094-03bf6e5b1cb8",
+      "capturedAt": "2026-05-26T17:33:39.000Z",
+      "timestampMs": 1779816819000,
+      "rawNote": "@Maya and @Noah both on task during partner review #positive #productive"
+    },
+    {
+      "id": "95100b4b-a749-5315-9fd8-503a7766d49f",
+      "capturedAt": "2026-05-26T13:23:00.000Z",
+      "timestampMs": 1779801780000,
+      "rawNote": "@Jalen refused first direction but completed warmup after choice was given #behavior #workinitiation",
+      "validation": {
+        "status": "validated",
+        "fields": {
+          "students": [
+            "Jalen"
+          ],
+          "evidenceType": "Behavior observation",
+          "topic": "executive functioning",
+          "behavior": [
+            "refusal"
+          ],
+          "tags": [
+            "behavior",
+            "workinitiation"
+          ],
+          "followUpNotes": [
+            "Choice seemed to help with task initiation"
+          ]
+        },
+        "validatedAt": 1779801870000
+      }
+    },
+    {
+      "id": "1c4d9c4a-7b7b-5f68-9dfd-e37dd87959b7",
+      "capturedAt": "2026-05-26T12:44:12.000Z",
+      "timestampMs": 1779799452000,
+      "rawNote": "@Noah email home sent about missing project pieces #communication #missingwork",
+      "validation": {
+        "status": "validated",
+        "fields": {
+          "students": [
+            "Noah"
+          ],
+          "evidenceType": "Family communication",
+          "topic": "communication",
+          "tags": [
+            "communication",
+            "missingwork"
+          ],
+          "followUpNotes": [
+            "Check whether project pieces come back next class"
+          ]
+        },
+        "validatedAt": 1779799542000
+      }
+    },
+    {
+      "id": "d0dc8a29-3e5f-5dc3-af79-68874c214020",
+      "capturedAt": "2026-05-22T18:02:18.000Z",
+      "timestampMs": 1779472938000,
+      "rawNote": "@Maya finished early and asked for extension activity #positive #enrichment"
+    },
+    {
+      "id": "f056358d-de9f-54f9-bd69-d99b6cd8c99c",
+      "capturedAt": "2026-05-22T17:49:55.000Z",
+      "timestampMs": 1779472195000,
+      "rawNote": "@Jalen apologized to group after redirect #behavior #repair",
+      "validation": {
+        "status": "validated",
+        "fields": {
+          "students": [
+            "Jalen"
+          ],
+          "evidenceType": "Behavior observation",
+          "topic": "behavior social emotional",
+          "behavior": [
+            "apology"
+          ],
+          "tags": [
+            "behavior",
+            "repair"
+          ],
+          "followUpNotes": []
+        },
+        "validatedAt": 1779472285000
+      }
+    },
+    {
+      "id": "7cd54f75-f5c4-5d02-807c-d1a6fa5b70af",
+      "capturedAt": "2026-05-22T17:21:08.000Z",
+      "timestampMs": 1779470468000,
+      "rawNote": "@Mateo copied definition but could not explain it in his own words #vocabulary #science",
+      "validation": {
+        "status": "validated",
+        "fields": {
+          "students": [
+            "Mateo"
+          ],
+          "evidenceType": "Academic check-in",
+          "topic": "science",
+          "performance": "needs support",
+          "tags": [
+            "vocabulary",
+            "science"
+          ],
+          "followUpNotes": [
+            "Have Mateo explain vocab verbally before writing"
+          ]
+        },
+        "validatedAt": 1779470558000
+      }
+    },
+    {
+      "id": "6e6c9c72-ca91-5d67-a974-d6e155be7d7c",
+      "capturedAt": "2026-05-22T13:11:42.000Z",
+      "timestampMs": 1779455502000,
+      "rawNote": "@Brielle completed reading response after sentence starter #writing #support"
+    },
+    {
+      "id": "5e3da6f2-9188-50a7-914f-cc8faedbdaa5",
+      "capturedAt": "2026-05-22T12:38:19.000Z",
+      "timestampMs": 1779453499000,
+      "rawNote": "@Noah used checklist without being reminded #organization #positive"
+    },
+    {
+      "id": "486e5eba-37d7-5206-9d8f-3ed997ecbee1",
+      "capturedAt": "2026-05-21T18:10:25.000Z",
+      "timestampMs": 1779387025000,
+      "rawNote": "@Jalen put head down for first 10 minutes but joined after check-in #behavior #checkin",
+      "validation": {
+        "status": "validated",
+        "fields": {
+          "students": [
+            "Jalen"
+          ],
+          "evidenceType": "Behavior observation",
+          "topic": "behavior social emotional",
+          "behavior": [
+            "withdrawn"
+          ],
+          "tags": [
+            "behavior",
+            "checkin"
+          ],
+          "followUpNotes": [
+            "Check in privately before independent work"
+          ]
+        },
+        "validatedAt": 1779387115000
+      }
+    },
+    {
+      "id": "0d6a6fcb-c68a-5d16-b0b8-aa3b7da7e438",
+      "capturedAt": "2026-05-21T17:52:44.000Z",
+      "timestampMs": 1779385964000,
+      "rawNote": "@Mateo needed help organizing written response into order #writing #organization"
+    },
+    {
+      "id": "2dcd2b39-3e03-5125-8848-3fb6a65dec77",
+      "capturedAt": "2026-05-21T17:26:17.000Z",
+      "timestampMs": 1779384377000,
+      "rawNote": "@Brielle explained answer well one on one #confidence #positive"
+    },
+    {
+      "id": "cc0e4c3d-5747-59cf-bc10-2131ddbde978",
+      "capturedAt": "2026-05-21T13:03:06.000Z",
+      "timestampMs": 1779368586000,
+      "rawNote": "@Noah submitted late assignment after reminder #missingwork #followup",
+      "validation": {
+        "status": "validated",
+        "fields": {
+          "students": [
+            "Noah"
+          ],
+          "evidenceType": "Academic check-in",
+          "topic": "executive functioning",
+          "performance": "completed with reminder",
+          "tags": [
+            "missingwork",
+            "followup"
+          ],
+          "followUpNotes": []
+        },
+        "validatedAt": 1779368676000
+      }
+    },
+    {
+      "id": "8b40f35f-e8d7-559c-9aff-37db5016ebac",
+      "capturedAt": "2026-05-21T12:41:29.000Z",
+      "timestampMs": 1779367289000,
+      "rawNote": "@Maya caught her own mistake in written explanation #selfmonitoring #writing"
+    },
+    {
+      "id": "ee174803-af61-55a3-a726-6f87f1e6d616",
+      "capturedAt": "2026-05-20T18:06:00.000Z",
+      "timestampMs": 1779300360000,
+      "rawNote": "@Mateo needed repeated support with multi-step directions #directions #executivefunctioning",
+      "validation": {
+        "status": "validated",
+        "fields": {
+          "students": [
+            "Mateo"
+          ],
+          "evidenceType": "Academic check-in",
+          "topic": "executive functioning",
+          "performance": "needs support",
+          "tags": [
+            "directions",
+            "executivefunctioning"
+          ],
+          "followUpNotes": [
+            "Break multi-step directions into checklist"
+          ]
+        },
+        "validatedAt": 1779300450000
+      }
+    },
+    {
+      "id": "6c4f2df4-fa34-547a-a45f-1a8940e4c3aa",
+      "capturedAt": "2026-05-20T17:44:22.000Z",
+      "timestampMs": 1779299062000,
+      "rawNote": "@Jalen worked better once moved away from peer group #behavior #seating"
+    },
+    {
+      "id": "b6eaf5b8-bbd5-591a-b601-b7023361b7f5",
+      "capturedAt": "2026-05-20T17:30:10.000Z",
+      "timestampMs": 1779298210000,
+      "rawNote": "@Brielle did not start until I sat next to her #workinitiation #support"
+    },
+    {
+      "id": "13fd8678-b8b3-58bb-be38-dc77358bcfa6",
+      "capturedAt": "2026-05-20T13:16:40.000Z",
+      "timestampMs": 1779283000000,
+      "rawNote": "@Noah lost worksheet but found it in binder after prompt #organization"
+    },
+    {
+      "id": "9e5dec41-2da1-5231-9d61-ac6501577b99",
+      "capturedAt": "2026-05-20T12:58:52.000Z",
+      "timestampMs": 1779281932000,
+      "rawNote": "@Maya helped clean up materials without being asked #positive #responsibility"
+    }
+  ],
+  "patternGuide": {
+    "Maya": "Mostly positive/productive; self-monitoring, leadership, writing/science/math strengths, occasional distractibility.",
+    "Jalen": "Behavior, task initiation, peer distraction, talking/out of seat; improves with reset, choice, seating, and check-ins.",
+    "Brielle": "Confidence and participation pattern; knows more than she shows, quiet in groups, benefits from prompting/sentence starters.",
+    "Mateo": "Broad academic support pattern across math facts, reading comprehension, writing, science vocabulary, directions, and independence.",
+    "Noah": "Executive functioning/work completion pattern; materials, missing work, organization, independence, iReady, communication home."
+  }
+}

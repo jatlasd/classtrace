@@ -24,6 +24,10 @@ import {
 } from "@/lib/students";
 import { X } from "lucide-react";
 import {
+  hasExistingPocData,
+  loadWideDemoClassroom,
+} from "@/lib/demo-data/load-wide-demo-classroom";
+import {
   clearStoredCaptures,
   formatStoredCaptureTimestamp,
   hasStoredCaptureState,
@@ -277,9 +281,11 @@ function FilterEmptyMessage({ filter }: { filter: InboxFilter }) {
 }
 
 function PocModeCard({
+  onLoadDemo,
   onExport,
   onClear,
 }: {
+  onLoadDemo: () => void;
   onExport: () => void;
   onClear: () => void;
 }) {
@@ -291,6 +297,9 @@ function PocModeCard({
         keeps them here, but they are not shared across devices or browsers.
       </p>
       <div className="mt-3 flex flex-wrap gap-2">
+        <Button type="button" variant="outline" size="sm" onClick={onLoadDemo}>
+          Load demo classroom
+        </Button>
         <Button type="button" variant="outline" size="sm" onClick={onExport}>
           Export JSON
         </Button>
@@ -441,13 +450,33 @@ export function EvidenceFeed() {
     setSearchQuery("");
   }
 
+  function handleLoadDemo() {
+    if (
+      hasExistingPocData() &&
+      !window.confirm(
+        "Load demo classroom? This will replace the roster and captures stored in this browser."
+      )
+    ) {
+      return;
+    }
+
+    const captures = loadWideDemoClassroom();
+    setItems(captures.map(storedCaptureToFeedItem));
+    setFilter("all");
+    setSearchQuery("");
+  }
+
   return (
     <div className="flex flex-col lg:flex-row">
       <div className="mx-auto w-full max-w-[640px] flex-1 px-4 py-6 sm:px-6 lg:py-8">
         <EvidenceFeedHeader />
         <div className="space-y-4">
           <QuickCaptureCard onDraft={handleDraft} />
-          <PocModeCard onExport={handleExport} onClear={handleClear} />
+          <PocModeCard
+            onLoadDemo={handleLoadDemo}
+            onExport={handleExport}
+            onClear={handleClear}
+          />
           <RecentCapturesLabel />
           <div className="flex flex-col gap-2">
             <EvidenceSearchControl

@@ -206,6 +206,12 @@ export function resetTeacherRosterForTests(): void {
   teacherRoster = [...DEFAULT_ROSTER];
 }
 
+export function replaceTeacherRosterForPoc(students: Student[]): void {
+  teacherRoster = [...students];
+  rosterHydrated = true;
+  writeStoredRoster(students);
+}
+
 export function addStudent(input: AddStudentInput): AddStudentResult {
   ensureRosterHydrated();
 

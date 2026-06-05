@@ -23,7 +23,7 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 This branch supports a personal, browser-only proof of concept. No database, auth, or backend is required.
 
 1. Run `npm run dev` and open the app.
-2. Go to **My roster** and add students (for example, display name `Anthony`, handle `Anthony` or `@Anthony`).
+2. On the home feed, click **Load demo classroom** to populate 5 fake students and a broad evidence history — or go to **My roster** and add your own students (for example, display name `Anthony`, handle `Anthony` or `@Anthony`).
 3. On the home feed, capture a note such as `@Anthony was distractible during multiplying fractions review #behavior #fractions`.
 4. Refresh the browser — your capture stays in the evidence inbox.
 5. Open the student profile (for example `/students/anthony`) — the capture appears on that student's timeline.
