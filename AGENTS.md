@@ -31,10 +31,12 @@ Before implementing or making architectural decisions, read these files in this 
 1. `context/project-overview.md` — product definition, V1 scope, user flow, in-scope and out-of-scope features
 2. `context/architecture.md` — stack, system boundaries, storage model, auth/access model, and invariants
 3. `context/ui-context.md` — visual language, tokens, typography, layout patterns, component conventions, and icon rules
-4. `context/code-standards.md` — TypeScript, Next.js, file organization, server actions, database, dependency, and testing rules
-5. `context/ai-workflow-rules.md` — agent workflow, scoping rules, ambiguity handling, verification, and stop conditions
-6. `context/progress-tracker.md` — current phase, completed work, open questions, and next steps
-7. Current unit spec in `context/specs/`, if one exists
+4. `context/ui-registry.md` — actual component patterns already used in the app
+5. `context/code-standards.md` — TypeScript, Next.js, file organization, server actions, database, dependency, and testing rules
+6. `context/ai-workflow-rules.md` — agent workflow, scoping rules, ambiguity handling, verification, and stop conditions
+7. `context/build-plan.md` — ordered implementation phases and build units
+8. `context/progress-tracker.md` — current phase, completed work, open questions, and next steps
+9. Current unit spec in `context/specs/`, if one exists
 
 If these files conflict with each other, stop and ask for clarification before coding.
 
