@@ -1,96 +1,135 @@
+---
+description: Instructions for AI coding agents working on ClassTrace
+globs: *
+alwaysApply: true
+---
+
 # AGENTS.md
 
-This file is the operating guide for AI coding agents working on ClassTrace.
+This is the operating guide for AI coding agents working on ClassTrace.
 
-ClassTrace must stay understandable to its human owner. The goal is not to make the codebase look impressive. The goal is to keep the product concept clear, the architecture boring, and every change small enough to review.
+ClassTrace must stay understandable to its human owner. The goal is not impressive code. The goal is a clear product, boring architecture, small reviewable changes, and strong protection of the teacher-first student evidence model.
 
-## Product identity
+The human remains the architect. The AI agent is the implementation engine.
 
-ClassTrace is a private, teacher-native student evidence capture system.
+---
 
-It is capture-first and post-first. The teacher should be able to quickly write what happened, tag students with `@mentions`, add optional `#tags`, and save without being forced through a form, profile page, category picker, or review screen first.
+## Read Before Anything Else
+
+Before implementing or making architectural decisions, read these files in this exact order:
+
+1. `context/project-overview.md` — product definition, V1 scope, user flow, in-scope and out-of-scope features
+2. `context/architecture.md` — stack, system boundaries, storage model, auth/access model, and invariants
+3. `context/ui-context.md` — visual language, tokens, typography, layout patterns, component conventions, and icon rules
+4. `context/code-standards.md` — TypeScript, Next.js, file organization, server actions, database, dependency, and testing rules
+5. `context/ai-workflow-rules.md` — agent workflow, scoping rules, ambiguity handling, verification, and stop conditions
+6. `context/progress-tracker.md` — current phase, completed work, open questions, and next steps
+7. Current unit spec in `context/specs/`, if one exists
+
+If these files conflict with each other, stop and ask for clarification before coding.
+
+Do not assume the product or architecture from the code alone. The context files are the source of truth.
+
+---
+
+## Next.js Version Warning
+
+This project uses modern Next.js.
+
+Framework behavior, APIs, conventions, caching, routing, Server Actions, middleware/proxy behavior, and auth integration may differ from older training data.
+
+Before implementing Next.js-specific features, verify the current project patterns and check current documentation when needed.
+
+Do not guess on framework behavior.
+
+---
+
+## Product Identity
+
+ClassTrace is a teacher-first student evidence capture system.
 
 The core product loop is:
 
-    messy teacher capture -> parsed/structured draft -> teacher validation -> organized evidence
+messy teacher capture → structured draft → teacher validation → organized student evidence
 
 ClassTrace is not:
 
-- a gradebook
-- an SIS
-- an IEP-writing system
-- a district data warehouse
-- a dashboard-first MTSS platform
-- an employee surveillance tool
-- an admin evaluation tool
-- a generic notes app
-- an AI system that invents teacher documentation
+- A general teacher notebook
+- A gradebook
+- An SIS
+- An IEP-writing system
+- A parent communication tool
+- A district data warehouse
+- An admin dashboard
+- An employee surveillance tool
+- An AI system that invents teacher documentation
 
-The strongest beachhead users are special education teachers, case managers, interventionists, behavior/support staff, and classroom teachers who need lightweight evidence for progress monitoring, parent communication, meetings, interventions, and student support.
+The strongest early users are special education teachers, case managers, interventionists, resource teachers, co-teachers, and teachers with heavy documentation needs.
 
-## Non-negotiable product rules
+---
 
-1. Capture must stay fast.
-   Do not make the user choose a student, category, class, standard, or form before capturing a note unless explicitly asked.
+## Rules That Never Change
 
-2. Save means captured, not finalized.
-   A saved quick capture can appear in the evidence inbox immediately, but it should not be treated as a polished official record until teacher validation happens.
+- ClassTrace is for student evidence, not general teacher notes.
+- V1 saved evidence must belong to exactly one resolved roster student.
+- Captures with zero resolved students must not be saved.
+- Captures with multiple students must not be saved in V1.
+- Teacher validation is required before evidence becomes permanent.
+- Production V1 must not permanently store raw draft notes.
+- V1 uses deterministic parsing only; do not add generative AI.
+- V1 is text-only; do not add file, photo, audio, PDF, or attachment handling.
+- Student records are isolated per teacher in V1.
+- Do not add district/admin dashboards, shared student identities, SIS sync, gradebook features, IEP writing, or parent communication tools in V1.
+- Do not add dependencies, auth, database, external services, analytics, or background jobs unless the current unit/spec explicitly requires them.
+- Update `context/progress-tracker.md` after every meaningful implementation change.
+- If a change affects product scope, architecture, code standards, workflow, or UI rules, update the relevant context file before continuing.
+- If the same issue remains after one focused correction attempt, stop and ask for human direction.
 
-3. Organization happens after capture.
-   Use parsing, matchers, tags, timelines, and validation flows to organize the note after the teacher writes naturally.
+---
 
-4. Teacher validation is required.
-   Structured interpretations, rewrites, categories, evidence types, behavior labels, skills, topics, severities, and follow-ups must remain teacher-reviewable. Do not remove or bypass `needsTeacherValidation` unless the user explicitly asks for a specific validation-state change.
+## Current Project Phase
 
-5. Do not invent facts.
-   The system may infer lightweight labels from the raw note, but it must not add details that were not present. Suggestions should be framed as suggestions, not facts.
+This repo began as a browser-only proof of concept.
 
-6. Raw capture is sensitive.
-   For the current proof of concept, raw text may exist in local/in-memory state so the demo works. Do not persist raw notes to a database, logs, analytics, telemetry, browser storage, server logs, screenshots, or external APIs unless explicitly asked.
+The current context setup phase is for creating the JSM-style project foundation:
 
-7. The intended future privacy model is minimization-first.
-   Production architecture should treat raw teacher input as a transient capture buffer. Any AI-facing or external-processing payload should be minimized, tokenized/pseudonymized where appropriate, and never described as automatically FERPA-exempt or legally de-identified without legal review.
+- `context/project-overview.md`
+- `context/architecture.md`
+- `context/code-standards.md`
+- `context/ai-workflow-rules.md`
+- `context/ui-context.md`
+- `context/progress-tracker.md`
+- Future specs in `context/specs/`
 
-8. The maintained record should be the validated/professionalized evidence, not the unfiltered teacher brain dump.
+Do not begin production implementation work until the user explicitly returns to code mode.
 
-## Current architecture to preserve
+---
 
-Use the existing structure. Do not create parallel systems.
+## Working Modes
 
-- `app/` is for Next.js routes and page composition.
-- `components/` is for UI components.
-- `components/dashboard/` is for the current teacher-facing dashboard/feed experience.
-- `lib/note-processing/` owns raw-note parsing, deterministic matchers, note-draft building, display conversion, and note-processing types.
-- `lib/evidence/` owns capture validation, resolved display state, and interpretation fields.
-- `lib/mock-data/` owns fake/demo data.
-- `lib/students/` owns demo student resolution and mention display behavior.
-- `lib/format-tag` and similar small utilities should stay small and focused.
+Use the correct mode for the task:
 
-Important existing concepts:
+- Planning mode — clarify product, architecture, build order, or specs before coding.
+- Implementation mode — implement one approved unit/spec only.
+- Review mode — inspect code against context files, invariants, and verification requirements.
+- Recovery mode — stop broad changes, identify what broke, and propose the smallest safe fix.
 
-- `parseRawNote(rawNote)` extracts `@mentions`, `#tags`, and clean text.
-- `buildNoteDraft(rawNote)` is the main deterministic processing pipeline.
-- `NoteDraft` is the main structured draft type.
-- Matchers should stay small, deterministic, and easy to test.
-- Supports and behavior can return arrays.
-- Tags are searchable text, not rigid taxonomy unless explicitly changed.
+Do not mix modes unless explicitly instructed.
 
-When adding new behavior, prefer extending the existing note-processing pipeline instead of creating a second parser, second draft type, or second validation model.
+---
 
-## Agent change discipline
+## Scope Discipline
 
 Make the smallest useful change.
 
-Default limits:
+Default rules:
 
-- Touch no more than 3 to 5 files per task unless the prompt explicitly allows more.
-- Do not rename folders or move files unless explicitly asked.
-- Do not introduce new dependencies unless explicitly asked.
-- Do not add a database unless explicitly asked.
-- Do not add auth unless explicitly asked.
-- Do not add Prisma, Clerk, Supabase, Neon, server actions, API routes, background jobs, queues, analytics, AI SDKs, or external services unless explicitly asked.
+- Work on one unit at a time.
+- Touch only the files needed for the current task.
 - Do not perform broad refactors while implementing a feature.
 - Do not redesign the app while fixing a bug.
+- Do not introduce new dependencies unless the current unit/spec requires them.
+- Do not add auth, database, Prisma, Clerk, Neon, server actions, API routes, analytics, background jobs, queues, AI SDKs, or external services unless explicitly required by the current unit/spec.
 - Do not change product language, information architecture, or workflow assumptions without making that change explicit.
 
 One layer per task:
@@ -98,98 +137,94 @@ One layer per task:
 - UI-only task: do not change note-processing logic.
 - Logic-only task: do not redesign UI.
 - Type-only task: do not change runtime behavior.
-- Test-only task: do not change implementation unless the prompt asks.
+- Test-only task: do not change implementation unless asked.
 - Copy/content task: do not restructure components.
 - Styling task: do not alter data flow.
 
-If the requested change requires crossing layers, explain that before coding and keep the implementation narrow.
+If the requested change crosses layers, explain why before coding and keep the implementation narrow.
 
-## TypeScript rules
+---
 
-This codebase should stay TypeScript, but the TypeScript should be readable to someone still learning it.
+## Refactor Rules
 
-Prefer:
+Refactoring is allowed only when it supports the current unit.
 
-- explicit named types
-- simple object shapes
-- readable function names
-- small helper functions
-- plain unions such as `"pending" | "validated"`
-- type imports with `import type`
+Allowed without asking:
 
-Avoid:
+- Small local cleanup inside files already being changed
+- Extracting a helper from a component when the unit needs it
+- Moving domain logic into the correct `lib/` folder when directly related to the unit
+- Removing dead code made obsolete by the unit
+- Renaming local variables or functions for clarity
 
-- `any`
-- unnecessary generics
-- clever utility types
-- giant type files
-- deeply nested conditional types
-- broad casts such as `as unknown as Something`
-- suppressing errors with `// @ts-ignore`
-- weakening `tsconfig` or disabling strictness to make errors disappear
+Ask before doing:
 
-If a type is confusing, simplify the design before making the type more clever.
+- Large folder restructures
+- Route restructures
+- Replacing major components
+- Rewriting the capture flow
+- Rewriting the roster model
+- Rewriting note-processing architecture
+- Replacing existing UI patterns
+- Changing the app’s visual language
+- Changing the chosen stack
+- Removing existing working POC behavior before the replacement is ready
 
-## Note-processing rules
+Do not surprise the user with a large rewrite.
 
-The note-processing layer is the heart of the product. Treat it carefully.
+---
 
-The deterministic processing flow should generally be:
+## Note-Processing Rules
 
-    raw note
-      -> parse mentions/tags/clean text
-      -> match note type
-      -> match domain
-      -> decide applicable fields
-      -> match skill/performance/context/supports/behavior/communication/severity/evidence quality
-      -> suggest follow-ups
-      -> mark needsTeacherValidation when confidence is not high or fields are unclear
+The note-processing layer is central to ClassTrace.
 
-Matcher rules:
+Use the existing deterministic pipeline unless a unit/spec explicitly changes it.
 
-- Keep matchers deterministic for the proof of concept.
-- Prefer phrase dictionaries and obvious text matching before adding AI.
-- Matchers should return confidence and source information when the existing type expects it.
-- Do not make matchers mutate state.
-- Do not make matchers depend on UI components.
-- Do not make matchers call external services.
-- Add or update tests when changing matcher behavior.
-- A matcher should say `unclear` or `not_applicable` rather than pretending to know.
+General flow:
 
-Structured output rules:
+raw note → parse mentions/tags/clean text → match type/domain/fields → build structured draft → teacher validation → saved evidence
 
-- Do not invent student actions, accommodations, services, diagnoses, disabilities, intent, motivation, severity, or outcomes.
-- Do not turn a messy note into a stronger claim than the note supports.
-- Professional rewrites must preserve uncertainty.
-- Follow-up suggestions should ask for more evidence or suggest a teacher action; they should not assert missing facts.
+Rules:
 
-## Validation and record-state rules
+- Keep parsing deterministic in V1.
+- Do not call external services from note-processing code.
+- Do not add generative AI.
+- Do not invent facts.
+- Do not turn uncertain notes into stronger claims than the note supports.
+- Parser output is draft-only until teacher validation.
+- Parser/matcher changes require tests.
 
-ClassTrace should distinguish between these states:
+---
 
-1. Raw quick capture: what the teacher typed.
-2. Parsed/structured draft: the app's best interpretation.
-3. Teacher-validated evidence: the reviewed record-like version.
-4. Reports/timelines: downstream views generated from validated or clearly labeled draft evidence.
+## Validation and Evidence Rules
 
-Do not collapse these states unless explicitly asked.
+ClassTrace must distinguish these states:
 
-Validation UI should make it clear that the teacher can correct students, evidence type, topic, performance, behavior, tags, and follow-up notes.
+1. Raw draft input
+2. Parsed/structured draft
+3. Teacher-validated evidence
+4. Timeline/export views from validated evidence
 
-Reports, summaries, parent-facing language, meeting-prep language, or official-sounding documentation should not silently use unvalidated interpretations as if they were final records.
+Do not collapse these states.
 
-## Privacy, compliance, and safety boundaries
+Production V1 permanent evidence must be teacher-validated structured evidence only.
 
-Do not claim that the app is FERPA-compliant, legally de-identified, audit-ready, district-approved, or production-safe unless the user explicitly asks for a compliance document and the answer is framed cautiously.
+Raw draft note text may be temporary during composing/review, but must not become the durable production record.
+
+---
+
+## Privacy and Compliance Boundaries
+
+Do not claim the app is FERPA-compliant, legally de-identified, audit-ready, district-approved, or production-safe unless explicitly asked for a cautious compliance document.
 
 For code changes:
 
-- Do not send student notes to external APIs.
-- Do not add telemetry or analytics.
+- Do not send student notes to external AI APIs.
+- Do not add telemetry or analytics casually.
 - Do not log raw notes.
-- Do not store raw notes outside the current in-memory proof-of-concept flow.
-- Do not add sample data that looks like a real student record.
-- Do not include disability labels, medical details, discipline conclusions, or sensitive family information in demo data unless the user explicitly provides safe fictional content.
+- Do not permanently store raw draft notes in production V1.
+- Do not add demo data that looks like real student records.
+- Do not include disability labels, medical details, discipline conclusions, or sensitive family information in demo data unless explicitly provided as safe fictional content.
 - Do not use real student names.
 
 Allowed fictional/demo names for examples and tests:
@@ -201,55 +236,41 @@ Allowed fictional/demo names for examples and tests:
 
 Do not use `Jayden` in examples, tests, seed data, screenshots, or mock content.
 
-## UI and UX rules
+---
+
+## UI and UX Rules
 
 The teacher-facing experience should feel like a calm evidence inbox, not an enterprise dashboard.
 
 Default UX priorities:
 
-- quick capture first
-- readable feed second
-- validation/editing third
-- organization/reporting downstream
+1. Quick capture
+2. Readable feed
+3. Validation/editing
+4. Student timeline
+5. Export/reporting downstream
 
-The capture composer should remain prominent. Avoid designs where the teacher has to start from a student profile, roster table, analytics dashboard, or report screen.
+The capture composer should remain prominent.
 
-Prefer plain teacher language:
+Avoid designs where the teacher has to start from a student profile, roster table, analytics dashboard, or report screen.
 
-- "Capture"
-- "Evidence inbox"
-- "What ClassTrace noticed"
-- "Needs review"
-- "Validate"
-- "Student mentions"
-- "Tags"
-- "Follow-up"
+Use plain teacher language:
+
+- Capture
+- Evidence feed
+- What happened?
+- Needs review
+- Validate
+- Student
+- Tags
+- Follow-up
+- Timeline
 
 Avoid overbuilt admin language unless the task is specifically about admin/reporting surfaces.
 
-## Styling rules
+---
 
-Use the existing Next.js, React, Tailwind, and shadcn-style patterns already in the project.
-
-Do not add a component library, icon library, animation library, charting library, or CSS framework unless explicitly asked.
-
-Prefer:
-
-- accessible buttons and labels
-- responsive layouts
-- semantic HTML where practical
-- simple component boundaries
-- readable class names
-
-Avoid:
-
-- massive components
-- hidden state machines
-- UI that only works on desktop
-- hard-coded layouts that break mobile capture
-- decorative complexity that makes the product harder to understand
-
-## Testing and quality gates
+## Testing and Quality Gates
 
 Before considering a task complete, run the relevant checks when possible:
 
@@ -264,39 +285,60 @@ At minimum:
 - Matcher changes require tests for likely match, unclear match, and false-positive prevention.
 - Validation changes require tests or a clear manual verification note.
 - UI-only changes require at least lint/build when possible.
+- Auth/database changes must verify ownership boundaries.
+- Export/delete changes must verify student scoping.
 
-Do not declare success if checks fail. Report the failure clearly and explain what remains.
+Do not declare success if checks fail.
 
-## Documentation rules
+Do not claim checks passed unless they were actually run.
 
-Update documentation when a change affects product behavior, architecture, or developer workflow.
+---
 
-Good docs are short and concrete. Do not write long speculative architecture documents unless asked.
+## Documentation Rules
 
-When documenting the product, preserve these principles:
+Update documentation when a change affects product behavior, architecture, code standards, UI rules, or developer workflow.
 
-    Capture should be unstructured.
-    Organization should be automated.
-    Approval should be human.
+Use these rules:
 
-## Cursor / coding-agent response format
+- Product scope change → update `context/project-overview.md`
+- Architecture change → update `context/architecture.md`
+- Code pattern change → update `context/code-standards.md`
+- UI/design change → update `context/ui-context.md`
+- Workflow/process change → update `context/ai-workflow-rules.md`
+- Progress/status change → update `context/progress-tracker.md`
+
+Do not let documentation drift from implementation.
+
+Do not change documentation just to justify accidental code drift.
+
+---
+
+## Coding-Agent Response Format
 
 When finishing a coding task, report:
 
-1. Files changed.
-2. What changed in plain English.
-3. Tests/checks run.
-4. Anything not done.
-5. Any risk or follow-up the human should review.
+1. Files changed
+2. What changed in plain English
+3. Tests/checks run
+4. Anything not done
+5. Any risk or follow-up the human should review
 
 Do not bury important caveats.
 
-## When unsure
+Do not claim production readiness unless the verified unit actually makes it true.
 
-If a requested change is ambiguous, choose the option that keeps the codebase smaller, more local, more testable, and closer to the capture-first product loop.
+Do not claim compliance readiness.
+
+---
+
+## When Unsure
+
+If a requested change is ambiguous, choose the option that keeps the codebase smaller, more local, more testable, and closer to the capture-first student evidence loop.
 
 If there is a conflict between a clever technical pattern and human maintainability, choose human maintainability.
 
 If there is a conflict between dashboard/reporting features and fast teacher capture, protect fast teacher capture.
 
 If there is a conflict between automation and teacher judgment, protect teacher judgment.
+
+If the system is unclear, stop and ask one focused question.
