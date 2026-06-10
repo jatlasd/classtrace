@@ -4,6 +4,16 @@ globs: *
 alwaysApply: true
 ---
 
+<!-- BEGIN:nextjs-agent-rules -->
+
+# This is NOT the Next.js you know
+
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` before writing any code. Heed deprecation notices.
+
+<!-- END:nextjs-agent-rules -->
+
+---
+
 # AGENTS.md
 
 This is the operating guide for AI coding agents working on ClassTrace.
@@ -29,6 +39,17 @@ Before implementing or making architectural decisions, read these files in this 
 If these files conflict with each other, stop and ask for clarification before coding.
 
 Do not assume the product or architecture from the code alone. The context files are the source of truth.
+
+---
+
+## Available Skills
+
+- `/architect` — before any complex feature. Think before building.
+- `/imprint` — after any new UI component. Capture patterns.
+- `/review` — before demo or when something feels off.
+- `/recover` — when something breaks after one failed correction.
+- `/remember save` — when a feature spans multiple sessions.
+- `/remember restore` — when returning after a multi-session feature.
 
 ---
 
