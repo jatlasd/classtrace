@@ -1,4 +1,6 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+ClassTrace is a teacher-first student evidence capture app. The repo is currently a browser-only proof of concept moving toward production V1.
+
+**For AI agents and contributors:** start with [`AGENTS.md`](AGENTS.md), then read the context files it lists in order.
 
 ## Getting Started
 

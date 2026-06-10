@@ -58,7 +58,7 @@ function computeNeedsTeacherValidation(
   fields: { key: NoteFieldKey; match: MatchResult }[]
 ): boolean {
   return fields
-    .filter(({ key, match }) => isFieldApplicable(key, applicable))
+    .filter(({ key }) => isFieldApplicable(key, applicable))
     .filter(({ match }) => match.value !== "not_applicable")
     .some(
       (field) =>

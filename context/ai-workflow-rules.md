@@ -12,11 +12,14 @@ Before making any code change, read these files in order:
 
 1. `context/project-overview.md`
 2. `context/architecture.md`
-3. `context/code-standards.md`
-4. `context/ui-context.md`
-5. `context/progress-tracker.md`
-6. The current unit spec in `context/specs/`, if one exists
-7. `AGENTS.md`
+3. `context/ui-context.md`
+4. `context/ui-registry.md`
+5. `context/code-standards.md`
+6. `context/ai-workflow-rules.md`
+7. `context/build-plan.md`
+8. `context/progress-tracker.md`
+9. The current unit spec in `context/specs/`, if one exists
+10. `AGENTS.md`
 
 Do not start implementation until you understand:
 
@@ -72,10 +75,12 @@ The goal of this phase is to create the project context system:
 - `context/code-standards.md`
 - `context/ai-workflow-rules.md`
 - `context/ui-context.md`
+- `context/ui-registry.md`
+- `context/build-plan.md`
 - `context/progress-tracker.md`
-- Future `context/specs/` build plan and unit specs
+- Future unit specs in `context/specs/`
 
-Implementation work begins only after the context framework is complete and the user explicitly returns to code mode.
+Phase 0 is complete on branch `implement-arch`. Implementation work begins only after that branch is merged and the user explicitly returns to code mode.
 
 ---
 

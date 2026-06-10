@@ -6,15 +6,16 @@ Update this file after every meaningful implementation change.
 
 ## Current Phase
 
-- JSM context framework setup
+- Phase 0 complete — context and agent foundation
+- Ready to merge `implement-arch` into `main`
+- Production implementation (Phase 1) begins only after merge and explicit return to code mode
 
 ---
 
 ## Current Goal
 
-- Create the initial context files that define ClassTrace before returning to code mode.
-- Establish the agent entry point, product rules, architecture direction, UI rules, workflow rules, and current project status.
-- Do not implement production features yet.
+- Merge the context framework branch so future work branches from an up-to-date `main`.
+- Do not implement production features until the next unit spec is written and code mode is explicitly requested.
 
 ---
 
@@ -25,46 +26,44 @@ Update this file after every meaningful implementation change.
 - V1 technical direction clarified.
 - V1 design direction clarified.
 - V1 process/workflow rules clarified.
-- `context/project-overview.md` drafted.
-- `context/architecture.md` drafted.
-- `context/code-standards.md` drafted.
-- `context/ai-workflow-rules.md` drafted.
-- `context/ui-context.md` drafted.
-- Replacement `AGENTS.md` drafted as the agent entry point.
+- `context/project-overview.md` created.
+- `context/architecture.md` created.
+- `context/code-standards.md` created.
+- `context/ai-workflow-rules.md` created.
+- `context/ui-context.md` created.
+- `context/ui-registry.md` created.
+- `context/build-plan.md` created.
+- `context/progress-tracker.md` created.
+- Root `AGENTS.md` replaced as the agent entry point with correct context read order.
+- Agent skills installed under `.agents/skills/` and committed.
+- `skills-lock.json` created.
+- Phase 0 unit 01 (Context Framework) done criteria met.
 
 ---
 
 ## In Progress
 
-- Manually adding the JSM context framework files to the repo.
-- Creating `context/progress-tracker.md`.
+- Nothing active. Awaiting merge of `implement-arch` into `main`.
 
 ---
 
 ## Next Up
 
-- Confirm all six context files exist in the repo:
-  - `context/project-overview.md`
-  - `context/architecture.md`
-  - `context/code-standards.md`
-  - `context/ai-workflow-rules.md`
-  - `context/ui-context.md`
-  - `context/progress-tracker.md`
-- Replace or update root `AGENTS.md` so it points agents to the context files first.
-- Decide whether root `README.md` should stay minimal or be updated to describe the new context system.
-- Create `context/specs/00-build-plan.md` before returning to implementation/code mode.
+1. Merge `implement-arch` into `main`.
+2. Branch from `main` for Phase 1, unit 02 (Route Map and App Shell) per `context/build-plan.md`.
+3. Create a focused unit spec in `context/specs/` before starting unit 02.
+4. Optionally update `README.md` with a short pointer to `AGENTS.md` and the context framework.
 
 ---
 
 ## Open Questions
 
-- Has the replacement `AGENTS.md` been applied to the repo yet?
-- Should the root `README.md` be updated now or after the build plan exists?
-- Should `context/specs/00-build-plan.md` be created in this setup branch or in the next planning step?
+- Should the root `README.md` be updated now or when Phase 1 begins?
 - Exact production route names are still flexible, though the product structure is clear.
 - Exact roster import format is not fully specified yet.
 - Exact Prisma schema is not written yet.
 - Exact deployment setup is not decided yet.
+- Demo data and tests still use `Anthony` as an example name; allowed fictional names per `AGENTS.md` are Jeremy, Stacy, Jeff, and Mary. Rename when touching demo/test data next.
 
 ---
 
@@ -142,9 +141,8 @@ Update this file after every meaningful implementation change.
 - The project is not starting from zero. The current repo is a working browser-only POC.
 - The current POC uses `localStorage`, no auth, no database, and no real AI processing.
 - The current POC already has quick capture, roster management, deterministic note processing, validation, demo data, export, and student timelines.
-- The current setup branch should create the context framework before production implementation begins.
+- Phase 0 context framework is complete on branch `implement-arch`.
 - Do not let future agents blindly rewrite the app.
 - Do not let future agents treat the existing POC as production architecture.
 - Preserve useful POC behavior, but allow restructuring when needed for the planned production V1.
-- The next major planning artifact should be `context/specs/00-build-plan.md`.
-- After the build plan exists, each implementation unit should get its own spec file before coding.
+- Each implementation unit should get its own spec file in `context/specs/` before coding.

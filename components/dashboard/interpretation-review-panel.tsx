@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { formatTagLabel } from "@/lib/format-tag";
@@ -88,18 +88,28 @@ function FieldRow({
   );
 }
 
-export function InterpretationReviewPanel({
+function draftDisplayKey(display: DraftDisplay): string {
+  return [
+    display.summaryLine,
+    display.evidenceType,
+    display.studentMentions
+      .map((mention) =>
+        mention.status === "resolved"
+          ? mention.student.handle
+          : mention.mention
+      )
+      .join(","),
+    display.tags.join(","),
+  ].join("|");
+}
+
+function InterpretationReviewPanelContent({
   display,
   onConfirm,
   onDismiss,
 }: InterpretationReviewPanelProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [form, setForm] = useState<FormState>(() => displayToFormState(display));
-
-  useEffect(() => {
-    setForm(displayToFormState(display));
-    setIsEditing(false);
-  }, [display]);
 
   function updateField<K extends keyof FormState>(key: K, value: FormState[K]) {
     setForm((current) => ({ ...current, [key]: value }));
@@ -252,5 +262,16 @@ export function InterpretationReviewPanel({
         </Button>
       </div>
     </div>
+  );
+}
+
+export function InterpretationReviewPanel(
+  props: InterpretationReviewPanelProps
+) {
+  return (
+    <InterpretationReviewPanelContent
+      key={draftDisplayKey(props.display)}
+      {...props}
+    />
   );
 }

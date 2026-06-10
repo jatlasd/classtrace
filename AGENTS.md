@@ -114,15 +114,17 @@ The strongest early users are special education teachers, case managers, interve
 
 This repo began as a browser-only proof of concept.
 
-The current context setup phase is for creating the JSM-style project foundation:
+Phase 0 (context and agent foundation) is complete. The JSM-style project foundation exists:
 
 - `context/project-overview.md`
 - `context/architecture.md`
 - `context/code-standards.md`
 - `context/ai-workflow-rules.md`
 - `context/ui-context.md`
+- `context/ui-registry.md`
+- `context/build-plan.md`
 - `context/progress-tracker.md`
-- Future specs in `context/specs/`
+- Future unit specs in `context/specs/`
 
 Do not begin production implementation work until the user explicitly returns to code mode.
 
