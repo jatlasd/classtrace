@@ -256,6 +256,112 @@ ClassTrace should feel readable and practical. Use small labels and metadata, bu
 
 ---
 
+### Landing Header
+
+File: `components/landing/landing-header.tsx`  
+Last updated: 2026-06-11
+
+| Property | Class |
+|---|---|
+| Shell | `sticky top-0 z-40 border-b border-border/60 bg-background/90 backdrop-blur` |
+| Inner row | `mx-auto flex h-16 max-w-6xl items-center justify-between px-4 md:px-6 lg:px-8` |
+| Logo mark | `flex size-9 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground` |
+| Wordmark | `text-[15px] font-semibold tracking-tight text-foreground` |
+| Header text link | `rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground` |
+| Header button | `Button` default with `h-9 rounded-lg px-4 text-sm font-semibold shadow-sm` |
+
+**Pattern notes:**  
+The public header reuses the sidebar logo mark (`bg-sidebar-primary`) for brand continuity but is otherwise a light surface. Sign-in is a quiet text link; sign-up is the only filled button. Sticky with translucent background and blur so the page scrolls underneath calmly.
+
+---
+
+### Landing Hero ("teacher's desk" direction)
+
+File: `components/landing/landing-hero.tsx`  
+Last updated: 2026-06-11
+
+| Property | Class |
+|---|---|
+| Ruled-paper texture | `pointer-events-none absolute inset-0 opacity-40 [background-image:repeating-linear-gradient(to_bottom,transparent,transparent_35px,var(--border)_35px,var(--border)_36px)]` with `aria-hidden` |
+| Atmosphere blob | `pointer-events-none absolute ... rounded-full bg-accent/70 blur-3xl` with `aria-hidden` |
+| Eyebrow pill | `inline-flex items-center gap-2 rounded-full border border-border bg-card px-3.5 py-1.5 text-xs font-semibold text-muted-foreground shadow-sm` |
+| Headline | `text-5xl font-semibold leading-[1.02] tracking-tighter text-foreground sm:text-6xl lg:text-7xl` |
+| Headline accent word | `font-hand relative font-medium text-primary` with highlighter sweep behind: `absolute inset-x-[-4px] bottom-[0.08em] top-[0.18em] -rotate-1 rounded-sm bg-primary/15` |
+| Subhead | `text-base leading-relaxed text-muted-foreground lg:text-lg` |
+| Primary CTA | `Button` default with `h-11 rounded-lg px-7 text-[15px] font-semibold shadow-sm` |
+| Handwritten aside | `font-hand text-lg text-muted-foreground` |
+| Rotated note card | Standard card shell + `-rotate-2` / `rotate-1` with `transition-transform duration-500 hover:rotate-0` and `shadow-md` |
+| Tape strip | `absolute -top-3 left-1/2 h-6 w-24 -translate-x-1/2 rotate-2 rounded-sm border border-border/50 bg-accent/80` with `aria-hidden` |
+| Raw note text | `font-hand text-2xl leading-snug text-foreground` |
+| Handwritten connector | `font-hand text-xl text-muted-foreground` ("you review it ↓") with `aria-hidden` |
+| Entrance motion | `animate-in fade-in slide-in-from-bottom-6 [animation-delay:150ms] [animation-fill-mode:backwards]` staggered per card |
+
+**Pattern notes:**  
+Public landing uses an editorial "teacher's desk" direction: ruled-paper texture from the `--border` token, rotated paper-note cards with tape strips that straighten on hover, and Caveat handwriting doing real annotation work (margin notes, connectors, step asides). The structured card reuses the exact Evidence Chips and Validated badge classes from the app. All motion is CSS-only via `tw-animate-css` and respects the staggered page-load pattern; decorative elements carry `aria-hidden`. This expressive treatment is for the public landing page only — never inside the authenticated app.
+
+---
+
+### Landing Section
+
+File: `components/landing/landing-how-it-works.tsx`, `landing-audience.tsx`, `landing-closing-cta.tsx`  
+Last updated: 2026-06-11
+
+| Property | Class |
+|---|---|
+| Section padding | `mx-auto max-w-6xl px-4 py-20 md:px-6 lg:px-8 lg:py-28` |
+| Eyebrow | `text-[11px] font-semibold uppercase tracking-wider text-muted-foreground` |
+| Section title | `text-3xl font-semibold tracking-tight text-foreground lg:text-4xl` with optional `font-hand font-medium text-primary` accent phrase |
+| Big step numeral | `font-hand text-6xl font-semibold leading-none text-primary/25` |
+| Dashed connector | `h-px flex-1 border-t border-dashed border-border` with `aria-hidden` |
+| Step annotation | `font-hand text-lg text-primary` |
+| Audience strip | `border-y border-border/60 bg-card/50` row with `font-hand text-primary/60` `✱` separators |
+| Closing headline | `text-4xl font-semibold tracking-tighter text-foreground lg:text-5xl` preceded by `font-hand text-2xl text-primary` lead-in |
+
+**Pattern notes:**  
+How-it-works steps use oversized Caveat numerals at low opacity with dashed-rule connectors (lesson-plan feel) instead of icon-tile cards. Each step ends with a short handwritten aside in primary. The audience strip is a single quiet band with handwritten asterisk separators, not a pill grid.
+
+---
+
+### Landing Dark Band
+
+File: `components/landing/landing-not-dashboard.tsx`  
+Last updated: 2026-06-11
+
+| Property | Class |
+|---|---|
+| Section shell | `bg-sidebar text-sidebar-foreground` |
+| Eyebrow | `text-[11px] font-semibold uppercase tracking-wider text-sidebar-foreground/60` |
+| Headline de-emphasis | `text-sidebar-foreground/50` inside the heading |
+| Struck list item | `text-sidebar-foreground/50 line-through decoration-sidebar-primary/70 decoration-2` with `font-hand text-sidebar-primary` `✗` marker |
+| Handwritten payoff | `font-hand text-3xl leading-snug text-sidebar-foreground` |
+| Inner panel | `rounded-2xl border border-sidebar-border bg-sidebar-accent/60 p-6 lg:p-8` |
+| Panel body | `text-[15px] leading-relaxed text-sidebar-foreground/80` |
+| Panel footnote | `border-t border-sidebar-border pt-4 text-xs text-sidebar-foreground/60` |
+
+**Pattern notes:**  
+One dramatic dark band per landing page, using sidebar tokens as the brand-dark surface (echoes the app shell). Carries the "what ClassTrace is not" message with struck-through items and a handwritten payoff line, plus the teacher-control panel. Sidebar tokens on a non-nav surface are a landing-page-only exception — documented here intentionally; do not repeat inside the authenticated app.
+
+---
+
+### Landing Footer
+
+File: `components/landing/landing-footer.tsx`  
+Last updated: 2026-06-11
+
+| Property | Class |
+|---|---|
+| Shell | `border-t border-border/60` |
+| Inner row | `mx-auto flex max-w-6xl flex-col gap-4 px-4 py-8 md:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8` |
+| Small logo mark | `flex size-7 items-center justify-center rounded-md bg-sidebar-primary text-sidebar-primary-foreground` |
+| Footer link | `text-xs font-medium text-muted-foreground transition-colors hover:text-foreground` |
+| Dev/utility link | `text-xs text-muted-foreground/60 transition-colors hover:text-muted-foreground` |
+| Copyright | `text-xs text-muted-foreground/60` |
+
+**Pattern notes:**  
+The footer is intentionally quiet. The "Open app workspace" dev link uses the most muted treatment so it never competes with sign-up/sign-in. Remove or repoint that link when Clerk auth lands in unit 04.
+
+---
+
 ## Layout Patterns
 
 ### Authenticated App Shell
@@ -339,5 +445,4 @@ These patterns should be added or refined when they are built or audited:
 - Archive confirmation dialog
 - Permanent delete confirmation dialog
 - Clerk sign-in/sign-up screens
-- Public landing page
 - Settings page

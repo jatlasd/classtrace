@@ -8,13 +8,47 @@ Update this file after every meaningful implementation change.
 
 - Phase 1 in progress — production app foundation
 - Unit 02 complete and verified — Route Map and App Shell (`context/specs/02-route-map-and-app-shell.md`)
+- Unit 03 complete and verified — Public Landing Page UI (`context/specs/03-public-landing-page-ui.md`)
 
 ---
 
 ## Current Goal
 
-- Prepare for Phase 1, unit 03 (Public Landing Page UI).
-- Do not start unit 03 until its spec exists in `context/specs/`.
+- Prepare for Phase 1, unit 04 (Clerk Auth Foundation).
+- Do not start unit 04 until its spec exists in `context/specs/`.
+
+---
+
+## Unit 03 — Public Landing Page UI (Complete)
+
+Spec: `context/specs/03-public-landing-page-ui.md`
+
+### What was completed
+
+- Replaced the temporary `/` → `/app/feed` redirect with a real public landing page.
+- Landing components under `components/landing/`: `landing-header.tsx`, `landing-hero.tsx`, `landing-audience.tsx`, `landing-how-it-works.tsx`, `landing-not-dashboard.tsx`, `landing-closing-cta.tsx`, `landing-footer.tsx`.
+- Redesigned after first pass with a "teacher's desk" editorial direction: ruled-paper texture (token-backed), rotated paper-note cards with tape strips that straighten on hover, Caveat handwriting used for real annotations (margin notes, connectors, step asides), oversized handwritten step numerals, and one dark band using sidebar tokens for the "what ClassTrace is not" message.
+- Hero shows the product loop: handwritten raw capture (fictional student Stacy) → reviewed, validated structured evidence card using the app's exact chip/badge patterns.
+- Sections: header, hero, audience strip, how-it-works (4 steps), dark "not another platform" band with teacher-control panel, closing CTA, footer.
+- Primary CTA → `/sign-up`; sign-in in header, hero, closing CTA, footer; muted "Open app workspace" dev link in footer → `/app/feed`.
+- CSS-only staggered entrance motion via existing `tw-animate-css`; decorative elements `aria-hidden`.
+- Page-level metadata added for `/`; all paths via `lib/routes.ts`; Server Components only; no new dependencies.
+- No Clerk, middleware, database, or `/app/*` changes.
+- UI exceptions documented in `context/ui-registry.md`: sidebar tokens as the landing dark-band surface and expressive Caveat usage are landing-page-only patterns.
+
+### Verification (passed)
+
+- `npm run lint` — pass
+- `npm run test` — pass (45 tests)
+- `npm run build` — pass; `/` static, all routes present
+- Browser checks (rerun after redesign): `/` renders landing (no redirect), sign-up/sign-in routes load, `/app/feed` POC behavior intact, mobile (~375px, no horizontal overflow) and desktop layouts verified, copy contains no AI/FERPA/district claims
+- A dev-overlay hydration warning observed during browser checks was traced to automation-injected `data-cursor-ref` attributes, not app code
+
+### Remaining risks / follow-ups (deferred)
+
+- Footer "Open app workspace" dev link should be removed or repointed when Clerk auth lands in unit 04.
+- Unit 04 will add signed-in redirect behavior for `/`; not implemented in unit 03 by design.
+- Landing copy may deserve a final tone pass during unit 23 (Privacy and Safety Copy Pass).
 
 ---
 
@@ -103,6 +137,8 @@ Legacy:
 - Phase 0 unit 01 (Context Framework) done criteria met.
 - `context/specs/02-route-map-and-app-shell.md` created for Phase 1 unit 02.
 - Phase 1 unit 02 (Route Map and App Shell) implemented, reviewed, fixed, and verified — see **Unit 02 — Route Map and App Shell (Complete)** above.
+- `context/specs/03-public-landing-page-ui.md` created for Phase 1 unit 03.
+- Phase 1 unit 03 (Public Landing Page UI) implemented and verified — see **Unit 03 — Public Landing Page UI (Complete)** above.
 
 ---
 
@@ -114,11 +150,10 @@ Legacy:
 
 ## Next Up
 
-1. Write `context/specs/03-public-landing-page-ui.md` (or equivalent) before coding unit 03.
-2. Build Phase 1, unit 03 (Public Landing Page UI) from `context/build-plan.md`.
-3. Replace the temporary `/` redirect with the real public landing page in unit 03.
-4. Keep `/app/feed` as the development/app workspace entry while auth remains unwired.
-5. Optionally expand `README.md` with a short pointer to `AGENTS.md` and the context framework beyond the Unit 02 route updates already made.
+1. Write `context/specs/04-clerk-auth-foundation.md` (or equivalent) before coding unit 04.
+2. Build Phase 1, unit 04 (Clerk Auth Foundation) from `context/build-plan.md`.
+3. Remove or repoint the landing footer "Open app workspace" dev link when auth lands.
+4. Optionally expand `README.md` with a short pointer to `AGENTS.md` and the context framework beyond the Unit 02 route updates already made.
 
 ---
 
