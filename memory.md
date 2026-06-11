@@ -1,42 +1,53 @@
-# Memory — Unit 03 Public Landing Page UI
+# Memory — Warm-Paper Design System Overhaul
 
-Last updated: 2026-06-11 8:41 AM (UTC-4)
+Last updated: 2026-06-11
 
 ## What was built
 
-- `context/specs/03-public-landing-page-ui.md` — full unit spec written before implementation (goal, scope, out of scope, UI/logic/data requirements, acceptance criteria, verification, risks).
-- `app/page.tsx` — `/` redirect to `/app/feed` removed; now composes the public landing page with route-level metadata.
-- `components/landing/` — seven components: `landing-header.tsx`, `landing-hero.tsx`, `landing-audience.tsx`, `landing-how-it-works.tsx`, `landing-not-dashboard.tsx`, `landing-closing-cta.tsx`, `landing-footer.tsx`. All Server Components, all paths via `lib/routes.ts`, no new dependencies.
-- The page was built twice: a first safe pass, then a full redesign (user said it "had no personality") using the frontend-design skill with a "teacher's desk" editorial direction — ruled-paper texture from the `--border` token, rotated note cards with tape strips that straighten on hover, Caveat handwriting as working annotations, oversized handwritten step numerals, dark indigo band using sidebar tokens, CSS-only staggered entrance motion via `tw-animate-css`.
-- `context/ui-registry.md` — imprinted Landing Header, Landing Hero, Landing Section, Landing Dark Band, Landing Footer patterns; landing page removed from open gaps.
-- `context/progress-tracker.md` — Unit 03 marked complete with verification record; Next Up points to Unit 04.
+- `classtrace_asset_kit/` — added to repo (mockups, `design-tokens.json`, `landing-page-copy.md`, README).
+- `app/globals.css` — warm-paper token system (`#f3eadc` background, rust primary, navy secondary, chalkboard sidebar, validated green, audience label tokens); utilities: `paper-grain`, `ruled-lines`, `shadow-paper`, `shadow-floating`, `rounded-card`, `tape-tab`.
+- `app/layout.tsx` — Fraunces (display), Inter (body), Caveat (hand); replaced Plus Jakarta Sans.
+- `components/ui/button.tsx` — `navy` variant; primary uses rust + `shadow-paper`.
+- `components/ui/card.tsx` — `rounded-card`, `border-border`, `shadow-paper`.
+- `components/landing/` — full rebuild to asset-kit copy and visuals; new `landing-timeline.tsx`; how-it-works step preview panels + dashed connectors.
+- `components/dashboard/*` — evidence cards, quick capture, review panel, sidebar wordmark, parsed-note-card, etc. migrated to new tokens.
+- `app/app/*`, `app/sign-in/page.tsx`, `app/sign-up/page.tsx` — `rounded-card` / `shadow-paper` surfaces.
+- `context/ui-context.md`, `context/ui-registry.md`, `context/progress-tracker.md`, `context/specs/03-public-landing-page-ui.md` — updated for asset kit direction and Unit 03 amendment.
 
 ## Decisions made
 
-- "Teacher's desk" is the committed landing aesthetic: editorial type scale (up to `text-7xl`), highlighter sweep behind a Caveat accent word, paper/tape vignette demonstrating the capture → validated evidence loop with the app's real chip/badge classes.
-- Two documented landing-page-only exceptions to `ui-context.md`: sidebar tokens (`bg-sidebar`, etc.) used as the dark-band surface outside a nav, and expressive (more than one accent) Caveat usage. Both recorded in `ui-registry.md` pattern notes; not formalized in `ui-context.md` yet — user was offered that option and has not answered.
-- Footer keeps a deliberately muted "Open app workspace" dev link to `/app/feed` for pre-auth development; must be removed or repointed in Unit 04.
-- No signed-in redirect on `/` — explicitly deferred to Unit 04 (Clerk).
-- Fictional student Stacy used in hero mock content (allowed names: Jeremy, Stacy, Jeff, Mary).
+- `classtrace_asset_kit/design-tokens.json` + `app/globals.css` are the design source of truth; components use semantic Tailwind tokens only (no raw hex in components).
+- Landing public logo marks use `bg-navy`, not `bg-sidebar-primary` (asset kit direction; documented in Unit 03 amendment).
+- Primary landing CTA copy: **“Capture your first note”** (links to `/sign-up`); secondary hero CTA is navy **“See how one moment becomes evidence”** anchoring `#how-it-works`.
+- Audience label pastels tokenized as `bg-audience-*` (landing-only); interventionists reuse `bg-validated`.
+- Authenticated app keeps chalkboard sidebar (`#262725`) with gold chalk accent; main workspace is warm paper.
+- Footer dev link **“Open app workspace”** → `/app/feed` remains until Unit 04 Clerk auth.
 
 ## Problems solved
 
-- Next.js dev overlay showed a hydration mismatch on `/` during browser verification. Root cause: `data-cursor-ref` attributes injected by the Cursor browser automation tooling, not app code. Do not chase this again; it does not appear in normal use.
+- Design system review found doc drift, hardcoded audience hex, untracked `landing-timeline.tsx`, and incomplete card/capture migration — all fixed before commit.
+- Hydration mismatch from Cursor browser `data-cursor-ref` injection (pre-existing; not app code).
 
 ## Current state
 
-- Phase 1: Units 02 and 03 complete and verified. Unit 04 (Clerk Auth Foundation) not started and has no spec.
-- All checks pass after the redesign: `npm run lint`, `npm run test` (45 tests), `npm run build` (`/` prerendered static). Browser-verified on desktop and 375px mobile (no horizontal overflow); copy contains no AI/FERPA/district claims.
-- App remains a localStorage POC behind the landing page; `/app/*` is unauthenticated by design until Unit 04.
-- A dev server may still be running at `http://localhost:3000` from this session.
+- Branch: `landing`, **5 commits ahead of `origin/landing`**, working tree clean, **not pushed**.
+- Commits (oldest → newest): asset kit → design tokens → landing rebuild → app shell migration → context docs.
+- Phase 1: Units 02 and 03 complete. Unit 04 (Clerk Auth Foundation) **not started**; no `context/specs/04-clerk-auth-foundation.md` yet.
+- App is still localStorage POC; `/app/*` unauthenticated until Unit 04.
+- Checks pass: `npm run lint`, `npm run test` (45), `npm run build`.
+- Browser visual pass on the design overhaul was **not** recorded this session — worth a quick check on `/` and `/app/feed` at desktop + mobile.
 
 ## Next session starts with
 
-Write `context/specs/04-clerk-auth-foundation.md` from `context/build-plan.md` (Phase 1 → 04) before any Unit 04 implementation. Per workflow rules, do not implement from the build plan alone.
+1. Read `AGENTS.md` context files in order, then run `/remember restore`.
+2. Push `landing` to origin if ready, or open a PR.
+3. Write `context/specs/04-clerk-auth-foundation.md` from `context/build-plan.md` before any Unit 04 implementation.
+4. Remove or repoint footer “Open app workspace” dev link when Clerk lands.
 
 ## Open questions
 
-- Should `ui-context.md` gain a "public landing" subsection formalizing the two landing-only exceptions (sidebar tokens as brand-dark surface, expressive Caveat)? Offered to user; unanswered.
-- Should `README.md` get a fuller Phase 1 refresh (carried over from Unit 02)?
-- Exact roster import format, Prisma schema, and deployment setup remain undecided (pre-existing).
-- Demo data/tests still use `Anthony` as an example name; rename to an allowed name when touching demo/test data next (pre-existing).
+- Push `landing` now or wait for visual QA on the warm-paper overhaul?
+- Should `ui-context.md` add a formal “public landing” subsection for landing-only patterns (sidebar tokens on dark band, expressive Caveat, audience tape labels)?
+- Should `README.md` get a fuller Phase 1 refresh?
+- Exact roster import format, Prisma schema, deployment setup still undecided.
+- Demo data/tests still use `Anthony`; rename to allowed fictional name when touching demo/test data next.
