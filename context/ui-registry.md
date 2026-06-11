@@ -261,106 +261,106 @@ ClassTrace should feel readable and practical. Use small labels and metadata, bu
 ### Landing Header
 
 File: `components/landing/landing-header.tsx`  
-Last updated: 2026-06-11
+Last updated: 2026-06-11 (full-mockup rebuild)
 
 | Property | Class |
 |---|---|
-| Shell | `sticky top-0 z-40 border-b border-border/60 bg-background/90 backdrop-blur` |
+| Shell | `sticky top-0 z-40 border-b border-border/70 bg-background/95 backdrop-blur` |
 | Inner row | `mx-auto flex h-16 max-w-6xl items-center justify-between px-4 md:px-6 lg:px-8` |
-| Logo mark | `flex size-9 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground` |
-| Wordmark | `text-[15px] font-semibold tracking-tight text-foreground` |
-| Header text link | `rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground` |
-| Header button | `Button` default with `h-9 rounded-lg px-4 text-sm font-semibold shadow-sm` |
+| Logo mark | `NotebookPen` line icon, `size-7 text-navy`, `strokeWidth={2}` — no filled block |
+| Wordmark | `font-display text-xl font-semibold tracking-tight text-foreground` |
+| Header text link | `hidden ... text-sm font-medium text-foreground/80 hover:text-foreground sm:block` |
+| Header button | `Button variant="navy"` with `h-9 rounded-md px-4 text-sm font-semibold` |
 
 **Pattern notes:**  
-The public header reuses the sidebar logo mark (`bg-sidebar-primary`) for brand continuity but is otherwise a light surface. Sign-in is a quiet text link; sign-up is the only filled button. Sticky with translucent background and blur so the page scrolls underneath calmly.
+Per the `classtrace-full-mockup.png` rebuild, the public logo is a line-art `NotebookPen` icon in navy (no filled tile) and the header CTA is the navy variant labeled "Capture your first note". Sign-in is hidden below `sm` to avoid mobile overflow; it remains available in the footer and closing CTA.
 
 ---
 
 ### Landing Hero ("teacher's desk" direction)
 
 File: `components/landing/landing-hero.tsx`  
-Last updated: 2026-06-11
+Last updated: 2026-06-11 (full-mockup rebuild)
 
 | Property | Class |
 |---|---|
-| Ruled-paper texture | `pointer-events-none absolute inset-0 opacity-40 [background-image:repeating-linear-gradient(to_bottom,transparent,transparent_35px,var(--border)_35px,var(--border)_36px)]` with `aria-hidden` |
-| Atmosphere blob | `pointer-events-none absolute ... rounded-full bg-accent/70 blur-3xl` with `aria-hidden` |
-| Eyebrow pill | `inline-flex items-center gap-2 rounded-full border border-border bg-card px-3.5 py-1.5 text-xs font-semibold text-muted-foreground shadow-sm` |
-| Headline | `text-5xl font-semibold leading-[1.02] tracking-tighter text-foreground sm:text-6xl lg:text-7xl` |
-| Headline accent word | `font-hand relative font-medium text-primary` with highlighter sweep behind: `absolute inset-x-[-4px] bottom-[0.08em] top-[0.18em] -rotate-1 rounded-sm bg-primary/15` |
-| Subhead | `text-base leading-relaxed text-muted-foreground lg:text-lg` |
-| Primary CTA | `Button` default with `h-11 rounded-lg px-7 text-[15px] font-semibold shadow-sm` |
-| Handwritten aside | `font-hand text-lg text-muted-foreground` |
-| Rotated note card | Standard card shell + `-rotate-2` / `rotate-1` with `transition-transform duration-500 hover:rotate-0` and `shadow-md` |
-| Tape strip | `absolute -top-3 left-1/2 h-6 w-24 -translate-x-1/2 rotate-2 rounded-sm border border-border/50 bg-accent/80` with `aria-hidden` |
-| Raw note text | `font-hand text-2xl leading-snug text-foreground` |
-| Handwritten connector | `font-hand text-xl text-muted-foreground` ("you review it ↓") with `aria-hidden` |
-| Entrance motion | `animate-in fade-in slide-in-from-bottom-6 [animation-delay:150ms] [animation-fill-mode:backwards]` staggered per card |
+| Ruled-paper texture | `pointer-events-none absolute inset-0 opacity-40 ruled-lines` with `aria-hidden` |
+| Curved section bottom | Hero `section` uses `pb-8`; a bottom background shape uses `absolute inset-x-[-8%] bottom-[-76px] h-36 rounded-[0_0_50%_50%/0_0_100%_100%] bg-secondary/60` to create the slight curve into the flow band |
+| Headline | `font-display text-4xl font-semibold leading-[1.12] tracking-tight sm:text-5xl lg:text-[3.4rem]` |
+| Subhead | `text-[15px] leading-relaxed text-muted-foreground` |
+| Primary CTA | `Button` default with `h-11 rounded-md px-7 text-[15px] font-semibold` |
+| Secondary CTA | Underlined text link: `border-b border-link pb-0.5 text-sm font-medium text-link hover:text-foreground` ("See how one moment becomes evidence →") |
+| Handwritten margin note | `font-hand ... rotate-[-4deg] text-xl text-primary` absolute beside the CTA with `aria-hidden` ("for teachers who have to remember everything ↘") |
+| Raw note card | `-rotate-1 rounded-sm bg-accent/60 shadow-floating hover:rotate-0` with tape strip and inner ruled-line overlay; all text in `font-hand text-xl/2xl leading-[2rem]` |
+| Handwritten connector | `font-hand text-xl text-foreground` ("you review it ↓") with dashed leader line |
+| Evidence card | `rotate-1 rounded-card border border-border bg-card p-5 pl-7 shadow-floating hover:rotate-0` with red pin dot (`bg-primary/70`) |
+| Evidence card rows | `dl` with `divide-y divide-border/70`, labels/values in `font-mono text-[13px]` ("Student:", "Category:", "Status:", "Evidence:") |
+| Validated pill | `rounded-full border border-validated-foreground/20 bg-validated px-2.5 py-0.5 font-mono text-xs text-validated-foreground` |
+| Card footer | `border-t border-border/70 pt-3 font-mono text-xs text-muted-foreground` + small `Check` icon |
+| Entrance motion | `animate-in fade-in slide-in-from-bottom-6 [animation-delay:...] [animation-fill-mode:backwards]` staggered per card |
 
 **Pattern notes:**  
-Public landing uses an editorial "teacher's desk" direction: ruled-paper texture from the `--border` token, rotated paper-note cards with tape strips that straighten on hover, and Caveat handwriting doing real annotation work (margin notes, connectors, step asides). The structured card reuses the exact Evidence Chips and Validated badge classes from the app. All motion is CSS-only via `tw-animate-css` and respects the staggered page-load pattern; decorative elements carry `aria-hidden`. This expressive treatment is for the public landing page only — never inside the authenticated app.
+Rebuilt to match `classtrace_asset_kit/classtrace-full-mockup.png`. The hero secondary action is an underlined text link, not a button. The reviewed-evidence card uses labeled monospace rows (form-like) rather than app chips, per the mockup. The raw note is a ruled yellow sticky with handwritten date line and note text. Expressive treatment remains landing-page-only.
 
 ---
 
 ### Landing Section
 
-File: `components/landing/landing-how-it-works.tsx`, `landing-audience.tsx`, `landing-closing-cta.tsx`  
-Last updated: 2026-06-11
+File: `components/landing/landing-how-it-works.tsx`, `landing-timeline.tsx`, `landing-audience.tsx`, `landing-closing-cta.tsx`  
+Last updated: 2026-06-11 (full-mockup rebuild)
 
 | Property | Class |
 |---|---|
-| Section padding | `mx-auto max-w-6xl px-4 py-20 md:px-6 lg:px-8 lg:py-28` |
-| Eyebrow | `text-[11px] font-semibold uppercase tracking-wider text-muted-foreground` |
-| Section title | `text-3xl font-semibold tracking-tight text-foreground lg:text-4xl` with optional `font-hand font-medium text-primary` accent phrase |
-| Big step numeral | `font-hand text-6xl font-semibold leading-none text-primary/25` |
-| Dashed connector | `h-px flex-1 border-t border-dashed border-border` with `aria-hidden` |
-| Step annotation | `font-hand text-lg text-primary` |
-| Audience strip | `border-y border-border/60 bg-card/50` row with `font-hand text-primary/60` `✱` separators |
-| Closing headline | `text-4xl font-semibold tracking-tighter text-foreground lg:text-5xl` preceded by `font-hand text-2xl text-primary` lead-in |
+| Flow band shell | `border-y border-border/70 bg-secondary/60` with centered `font-display text-2xl/3xl` heading |
+| Step card | `flex h-full flex-col rounded-card border border-border bg-card p-5 shadow-paper` |
+| Circled step numeral | `font-hand flex size-9 items-center justify-center rounded-full border-2 text-xl` colored per step (`border-primary text-primary`, validated, link) |
+| Step arrow connector | `font-hand absolute -right-9 top-24 text-xl text-muted-foreground` rendering `-->` (desktop only, `aria-hidden`) |
+| Step preview | Mini mock at card bottom: sticky note (`bg-accent/70 -rotate-2 shadow-paper`), composer mock with icon row + navy `Save`, checkbox review rows + `Validated ✓` pill, mini timeline with squiggle lines |
+| Timeline paper card | `-rotate-1 rounded-[0.7rem] border border-border bg-card pl-[4.5rem] shadow-floating hover:rotate-0 lg:min-h-[272px]` with tape strip, red margin rule (`left-12 w-px bg-destructive/45`), ruled-line overlay, entries in `font-hand text-[1.35rem] leading-[1.55rem]`, handwritten dates, and larger colored dots |
+| Timeline headline | `font-display text-4xl/5xl` with `hand-underline-blue` on "the receipts" and `hand-underline-rust` on "the easiest ones to lose" |
+| Audience heading | Centered `font-display text-2xl/3xl` |
+| Audience labels | `font-hand rounded-sm px-5 py-2 text-lg shadow-paper bg-audience-*` with small centered `tape-tab` and alternating ±1° rotation |
+| Closing CTA layout | Three-column paper strip: left handwritten `font-hand text-[1.65rem] text-link` note + oversized arrow, centered headline with `hand-underline-rust` on "need it later", centered rust CTA button, `font-hand text-7xl text-primary` star, and visible right-edge punched holes (`size-4 rounded-full border border-border/90 bg-card shadow-inner`) over `ruled-lines` |
 
 **Pattern notes:**  
-How-it-works steps use oversized Caveat numerals at low opacity with dashed-rule connectors (lesson-plan feel) instead of icon-tile cards. Each step ends with a short handwritten aside in primary. The audience strip is a single quiet band with handwritten asterisk separators, not a pill grid.
+Rebuilt to match the full mockup: the flow is a muted centered band with circled hand-drawn numbers and `-->` arrows between cards; previews sit at the bottom of each card. The timeline card is notebook paper with a red margin line. The audience section is centered taped labels, and the closing CTA uses handwritten asides on both flanks.
 
 ---
 
 ### Landing Dark Band
 
 File: `components/landing/landing-not-dashboard.tsx`  
-Last updated: 2026-06-11
+Last updated: 2026-06-11 (full-mockup rebuild)
 
 | Property | Class |
 |---|---|
-| Section shell | `bg-sidebar text-sidebar-foreground` |
-| Eyebrow | `text-[11px] font-semibold uppercase tracking-wider text-sidebar-foreground/60` |
-| Headline de-emphasis | `text-sidebar-foreground/50` inside the heading |
-| Struck list item | `text-sidebar-foreground/50 line-through decoration-sidebar-primary/70 decoration-2` with `font-hand text-sidebar-primary` `✗` marker |
-| Handwritten payoff | `font-hand text-3xl leading-snug text-sidebar-foreground` |
-| Inner panel | `rounded-2xl border border-sidebar-border bg-sidebar-accent/60 p-6 lg:p-8` |
-| Panel body | `text-[15px] leading-relaxed text-sidebar-foreground/80` |
-| Panel footnote | `border-t border-sidebar-border pt-4 text-xs text-sidebar-foreground/60` |
+| Section shell | `bg-sidebar text-sidebar-foreground` with centered `max-w-4xl` column |
+| Headline | `font-display text-3xl/4xl font-semibold tracking-tight` |
+| Crossed-out tape strip | `bg-audience-tan px-5 py-2.5 shadow-paper` with alternating ±1° rotation; X drawn via two thin diagonal `linear-gradient` overlays in `var(--destructive)` at `opacity-60`, `aria-hidden`; label in `font-hand text-lg text-foreground` |
+| Gold payoff line | `font-display text-2xl/3xl font-semibold text-sidebar-primary` ("It's your private documentation memory.") |
+| Body | `max-w-2xl text-[15px] leading-relaxed text-sidebar-foreground/80` centered |
+| Handwritten closer | `font-hand text-xl/2xl text-sidebar-primary` with `underline decoration-sidebar-primary/70 underline-offset-4` on "One teacher, one workspace." |
 
 **Pattern notes:**  
-One dramatic dark band per landing page, using sidebar tokens as the brand-dark surface (echoes the app shell). Carries the "what ClassTrace is not" message with struck-through items and a handwritten payoff line, plus the teacher-control panel. Sidebar tokens on a non-nav surface are a landing-page-only exception — documented here intentionally; do not repeat inside the authenticated app.
+Rebuilt as a fully centered chalkboard band per the mockup: heading, a row of four tan tape strips with thin rust X cross-outs ("Not a gradebook" etc.), gold serif payoff, centered body paragraph, and a handwritten gold closing line. Sidebar tokens on a non-nav surface remain a landing-page-only exception.
 
 ---
 
 ### Landing Footer
 
 File: `components/landing/landing-footer.tsx`  
-Last updated: 2026-06-11
+Last updated: 2026-06-11 (full-mockup rebuild)
 
 | Property | Class |
 |---|---|
-| Shell | `border-t border-border/60` |
-| Inner row | `mx-auto flex max-w-6xl flex-col gap-4 px-4 py-8 md:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8` |
-| Small logo mark | `flex size-7 items-center justify-center rounded-md bg-sidebar-primary text-sidebar-primary-foreground` |
-| Footer link | `text-xs font-medium text-muted-foreground transition-colors hover:text-foreground` |
-| Dev/utility link | `text-xs text-muted-foreground/60 transition-colors hover:text-muted-foreground` |
-| Copyright | `text-xs text-muted-foreground/60` |
+| Shell | `border-t border-border/70` |
+| Inner row | `mx-auto flex max-w-6xl flex-col gap-4 px-4 py-6 md:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8` |
+| Logo | `NotebookPen` line icon `size-6 text-navy` + `font-display text-lg font-semibold` wordmark |
+| Sign in link | `text-sm font-medium text-foreground/80 hover:text-foreground` |
+| Dev/utility link | `text-sm text-muted-foreground hover:text-foreground` ("Open app workspace →") |
 
 **Pattern notes:**  
-The footer is intentionally quiet. The "Open app workspace" dev link uses the most muted treatment so it never competes with sign-up/sign-in. Remove or repoint that link when Clerk auth lands in unit 04.
+Matches the mockup footer exactly: logo left, "Sign in" and "Open app workspace →" right. No copyright line per the mockup. Remove or repoint the workspace dev link when Clerk auth lands in unit 04.
 
 ---
 

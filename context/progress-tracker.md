@@ -158,6 +158,28 @@ Applied `classtrace_asset_kit/design-tokens.json` and mockup references across t
 - `npm run test` — pass (45 tests)
 - `npm run build` — pass
 
+### Full-mockup landing rebuild (2026-06-11)
+
+Rebuilt the landing page section-by-section to match `classtrace_asset_kit/classtrace-full-mockup.png` exactly:
+
+- `landing-header.tsx` / `landing-footer.tsx` — line-art `NotebookPen` navy logo (no filled tile), navy header CTA, footer reduced to Sign in + "Open app workspace →" (copyright removed per mockup); Sign in hidden below `sm` in header to prevent mobile overflow
+- `landing-hero.tsx` — secondary CTA is now an underlined text link; handwritten "for teachers who have to remember everything" margin note beside the rust button; ruled yellow sticky note; evidence card rebuilt as labeled monospace rows (Student/Category/Status/Evidence) with red pin and check footer
+- `landing-how-it-works.tsx` — centered muted band, circled hand-drawn step numbers, `-->` arrows between cards, previews at card bottoms (sticky, composer mock with navy Save, checkbox review + Validated pill, mini timeline)
+- `landing-timeline.tsx` — notebook-paper card with red margin rule, ruled lines, tape, monospace dated entries; right column headline with wavy underlines and heart
+- `landing-not-dashboard.tsx` — fully centered chalkboard band with four crossed-out tan tape strips, gold serif payoff, centered body, handwritten gold closer
+- `landing-audience.tsx` — centered heading with centered taped handwritten labels
+- `landing-closing-cta.tsx` — handwritten navy aside + arrow on left, underlined "need it later", rust star on right
+
+Verification: `npm run lint` pass, `npm run test` pass (45), `npm run build` pass; browser-checked desktop sections against the mockup and mobile at 375px (no horizontal overflow after header fix). `context/ui-registry.md` landing entries refreshed.
+
+Follow-up refinement after visual review:
+
+- Added the slightly curved hero bottom transition into the transformation band.
+- Reworked the timeline card to better match the mockup: larger notebook-paper surface, stronger shadow, red margin rule, tape, larger colored dots, and handwritten dates/entry text.
+- Rebuilt the closing CTA strip to match the asset more closely: left handwritten note and arrow, tighter centered content, centered rust CTA, larger rust star, and visible punched paper holes along the right edge.
+
+Verification after refinement: `npm run lint` pass, `npm run build` pass, `npm run test` pass (45), mobile 375px no horizontal overflow.
+
 ### Review follow-up fixes (2026-06-11)
 
 - Tokenized landing audience label colors (`bg-audience-*`, `bg-validated`)
