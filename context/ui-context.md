@@ -10,7 +10,7 @@ ClassTrace should feel like a calm teacher workspace for capturing student evide
 
 ## Visual Direction
 
-ClassTrace uses a calm, light workspace with a dark sidebar.
+ClassTrace uses a warm paper workspace with a chalkboard-dark sidebar in the authenticated app. The public landing page leans into an editorial “teacher’s desk” direction with ruled lines, tape tabs, and handwritten annotations.
 
 The visual style should feel:
 
@@ -45,17 +45,22 @@ Use the existing token system unless a unit explicitly changes the design system
 
 | Area | Current Choice |
 |---|---|
-| Color format | OKLCH CSS variables |
+| Color format | CSS variables (hex in `globals.css`, semantic Tailwind tokens in components) |
 | Styling | Tailwind CSS |
 | Component style | shadcn/Radix-style primitives |
-| Main font | Plus Jakarta Sans |
-| Accent/handwritten font | Caveat |
-| Radius base | `0.625rem` |
-| Sidebar | Dark blue/indigo surface |
-| Main workspace | Light gray-blue background |
-| Cards | White surface, subtle border, soft shadow |
-| Accent | Calm blue |
+| Display font | Fraunces (`--font-display`, `font-display`) |
+| Body font | Inter (`--font-body`, `font-sans`) |
+| Handwritten accent | Caveat (`--font-hand`, `font-hand`) |
+| Card radius | `1.125rem` (`--radius-card`, `rounded-card`) |
+| Button radius | `0.5rem` (`--radius`) |
+| Sidebar | Chalkboard dark `#262725` |
+| Main workspace | Warm paper `#f3eadc` |
+| Cards | Paper surface `#fbf7ed`, warm border, `shadow-paper` |
+| Primary action | Rust CTA `#b85a32` |
+| Secondary action | Navy `#1d2f4b` |
+| Validated state | Sage green `#c7d4a6` |
 | Icons | lucide-react |
+| Source of truth | `classtrace_asset_kit/design-tokens.json` + `app/globals.css` |
 
 ---
 
@@ -75,43 +80,44 @@ Components should use Tailwind classes backed by CSS variables:
 - `text-primary-foreground`
 - `bg-sidebar`
 - `text-sidebar-foreground`
+- `bg-navy` / `text-navy-foreground` — secondary actions, public logo marks
+- `bg-validated` / `text-validated-foreground` — validated evidence state
+- `bg-audience-*` — landing audience label surfaces only (`audience-blue`, `audience-gold`, `audience-rose`, `audience-lavender`, `audience-tan`)
+
+Define token values only in `app/globals.css`. Components use semantic Tailwind classes, not raw hex/OKLCH.
 
 ### Light Theme Tokens
 
 | Token | CSS Variable | Current Value | Usage |
 |---|---|---|---|
-| Background | `--background` | `oklch(0.97 0.004 250)` | Main app background |
-| Foreground | `--foreground` | `oklch(0.22 0.02 260)` | Primary text |
-| Card | `--card` | `oklch(1 0 0)` | Card surfaces |
-| Card Foreground | `--card-foreground` | `oklch(0.22 0.02 260)` | Text on cards |
-| Popover | `--popover` | `oklch(1 0 0)` | Dropdowns, popovers, floating surfaces |
-| Popover Foreground | `--popover-foreground` | `oklch(0.22 0.02 260)` | Text in popovers |
-| Primary | `--primary` | `oklch(0.52 0.19 255)` | Primary actions, focus accents |
-| Primary Foreground | `--primary-foreground` | `oklch(0.99 0 0)` | Text/icons on primary |
-| Link | `--link` | `oklch(0.52 0.19 255)` | Links |
-| Secondary | `--secondary` | `oklch(0.96 0.006 250)` | Secondary surfaces |
-| Secondary Foreground | `--secondary-foreground` | `oklch(0.32 0.02 260)` | Text on secondary surfaces |
-| Muted | `--muted` | `oklch(0.955 0.006 250)` | Muted backgrounds |
-| Muted Foreground | `--muted-foreground` | `oklch(0.52 0.02 260)` | Secondary text |
-| Accent | `--accent` | `oklch(0.94 0.02 255)` | Light accent backgrounds |
-| Accent Foreground | `--accent-foreground` | `oklch(0.32 0.02 260)` | Text on accent backgrounds |
-| Destructive | `--destructive` | `oklch(0.577 0.245 27.325)` | Delete/destructive actions |
-| Border | `--border` | `oklch(0.91 0.008 250)` | Borders and dividers |
-| Input | `--input` | `oklch(0.91 0.008 250)` | Input borders |
-| Ring | `--ring` | `oklch(0.52 0.19 255)` | Focus rings |
+| Background | `--background` | `#f3eadc` | Main app background (warm paper) |
+| Foreground | `--foreground` | `#182536` | Primary text (ink) |
+| Card | `--card` | `#fbf7ed` | Card surfaces (paper) |
+| Card Foreground | `--card-foreground` | `#182536` | Text on cards |
+| Popover | `--popover` | `#fbf7ed` | Dropdowns, popovers |
+| Primary | `--primary` | `#b85a32` | Primary actions (rust CTA) |
+| Primary Foreground | `--primary-foreground` | `#fbf7ed` | Text on primary |
+| Link | `--link` | `#2c526f` | Links |
+| Secondary | `--secondary` | `#ebe3d6` | Secondary surfaces |
+| Muted | `--muted` | `#ebe3d6` | Muted backgrounds |
+| Muted Foreground | `--muted-foreground` | `#5d554a` | Secondary text |
+| Accent | `--accent` | `#e7bd64` | Gold chalk accent, sticky notes |
+| Validated | `--validated` | `#c7d4a6` | Validated evidence badges |
+| Navy | `--navy` | `#1d2f4b` | Secondary buttons, public logo marks |
+| Tape | `--tape` | `#9db3ca` | Tape tab decorations |
+| Destructive | `--destructive` | `#a33d2e` | Delete/destructive actions |
+| Border | `--border` | `#ddd0be` | Borders and dividers |
+| Ring | `--ring` | `#b85a32` | Focus rings |
 
 ### Sidebar Tokens
 
 | Token | CSS Variable | Current Value | Usage |
 |---|---|---|---|
-| Sidebar | `--sidebar` | `oklch(0.27 0.04 260)` | Main sidebar background |
-| Sidebar Foreground | `--sidebar-foreground` | `oklch(0.92 0.01 250)` | Sidebar text/icons |
-| Sidebar Primary | `--sidebar-primary` | `oklch(0.52 0.19 255)` | Logo mark, active indicator |
-| Sidebar Primary Foreground | `--sidebar-primary-foreground` | `oklch(0.99 0 0)` | Text/icons on sidebar primary |
-| Sidebar Accent | `--sidebar-accent` | `oklch(0.33 0.05 260)` | Active/hover sidebar item |
-| Sidebar Accent Foreground | `--sidebar-accent-foreground` | `oklch(0.95 0.01 250)` | Active sidebar text |
-| Sidebar Border | `--sidebar-border` | `oklch(0.35 0.04 260)` | Sidebar dividers |
-| Sidebar Ring | `--sidebar-ring` | `oklch(0.52 0.19 255)` | Sidebar focus ring |
+| Sidebar | `--sidebar` | `#262725` | Chalkboard sidebar background |
+| Sidebar Foreground | `--sidebar-foreground` | `#f3eadc` | Sidebar text/icons |
+| Sidebar Primary | `--sidebar-primary` | `#e7bd64` | Logo mark, active indicator |
+| Sidebar Accent | `--sidebar-accent` | `#333330` | Active/hover sidebar item |
+| Sidebar Border | `--sidebar-border` | `#3d3d3a` | Sidebar dividers |
 
 ---
 
@@ -136,13 +142,14 @@ Components should use Tailwind classes backed by CSS variables:
 
 | Role | Font | Variable | Usage |
 |---|---|---|---|
-| Primary sans | Plus Jakarta Sans | `--font-jakarta` | App UI, headings, body text |
+| Display serif | Fraunces | `--font-display` | Headings (`font-display`, `h1`–`h3`) |
+| Body sans | Inter | `--font-body` | App UI, body text (`font-sans`) |
 | Monospace | System monospace | `--font-mono` | Code-like values only |
-| Hand accent | Caveat | `--font-hand` | Rare handwritten accent only |
+| Hand accent | Caveat | `--font-hand` | Landing annotations, sticky-note copy |
 
-The app should use `font-sans` by default.
+The app should use `font-sans` (Inter) by default. Use `font-display` (Fraunces) for page titles and section headings.
 
-The handwritten font is an accent, not a main UI font. Use it rarely and only when it supports the teacher-native brand. Do not use it for important instructions, data, validation states, or dense UI.
+Caveat is for landing/editorial accents and informal annotations. Do not use it for validation states, dense forms, or critical instructions inside the authenticated app.
 
 ### Typography Scale
 
@@ -162,26 +169,20 @@ Do not use huge marketing typography inside the authenticated app. The app shoul
 
 ## Border Radius
 
-The current radius base is `0.625rem`.
+Button radius base is `0.5rem` (`--radius`). Card radius is `1.125rem` (`--radius-card`, utility `rounded-card`).
 
-Use the mapped Tailwind radius tokens from the theme.
-
-| Token | Value Rule | Usage |
+| Token / utility | Value | Usage |
 |---|---|---|
-| `rounded-sm` | `calc(var(--radius) * 0.6)` | Small badges, tiny controls |
-| `rounded-md` | `calc(var(--radius) * 0.8)` | Inputs, compact buttons |
-| `rounded-lg` | `var(--radius)` | Buttons, nav items, small cards |
-| `rounded-xl` | `calc(var(--radius) * 1.4)` | Main cards |
-| `rounded-2xl` | `calc(var(--radius) * 1.8)` | Large panels |
-| `rounded-3xl` | `calc(var(--radius) * 2.2)` | Rare large containers |
-| `rounded-4xl` | `calc(var(--radius) * 2.6)` | Avoid unless intentionally designed |
+| `rounded-md` | `var(--radius)` | Buttons, compact controls |
+| `rounded-lg` | `calc(var(--radius) * 1.125)` | Nav items, inputs |
+| `rounded-card` | `var(--radius-card)` | Evidence cards, panels, shadcn Card |
+| `rounded-full` | pill | Badges, chips, avatars |
 
 Default choices:
 
-- Buttons: `rounded-lg`
-- Inputs: `rounded-lg` or `rounded-md`
-- Evidence cards: `rounded-xl`
-- Main panels: `rounded-xl` or `rounded-2xl`
+- Buttons: `rounded-md`
+- Inputs: `rounded-md` or `rounded-lg`
+- Evidence cards and panels: `rounded-card` with `shadow-paper`
 - Sidebar nav items: `rounded-lg`
 - Avatars: `rounded-full`
 

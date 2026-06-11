@@ -6,6 +6,8 @@ Read this before building any new ClassTrace component. Match existing patterns 
 
 This file records actual UI patterns used in the app. `ui-context.md` defines the design rules; this file documents the concrete component patterns already in use.
 
+**2026-06-11 design system:** Tokens from `classtrace_asset_kit/design-tokens.json` via `app/globals.css`. Use `rounded-card`, `shadow-paper`, `shadow-floating`, `font-display`, `bg-validated`, `bg-navy`, `text-link`, `tape-tab`, and `bg-audience-*` (landing only). Registry entries below were refreshed for the warm-paper overhaul.
+
 ---
 
 ## How to Use
@@ -34,14 +36,14 @@ Run `/imprint` after building UI components so new patterns are captured here.
 ### App Sidebar
 
 File: `components/dashboard/app-sidebar.tsx`  
-Last updated: 2026-06-10
+Last updated: 2026-06-11
 
 | Property | Class |
 |---|---|
 | Shell | `hidden w-[72px] shrink-0 flex-col border-r border-sidebar-border bg-sidebar lg:flex xl:w-[220px]` |
 | Header | `flex h-16 items-center justify-center border-b border-sidebar-border xl:justify-start xl:px-5` |
 | Logo mark | `flex size-9 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground` |
-| Logo text | `ml-3 hidden text-[15px] font-semibold tracking-tight text-sidebar-foreground xl:block` |
+| Logo text | `font-display ml-3 hidden text-[15px] font-semibold tracking-tight text-sidebar-foreground xl:block` |
 | Nav list | `flex flex-1 flex-col gap-1 px-2 py-4` |
 | Nav item | `group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors` |
 | Active nav item | `bg-sidebar-accent text-sidebar-accent-foreground` |
@@ -81,19 +83,19 @@ Mobile navigation is fixed to the bottom and only appears below `lg`. It uses th
 ### Quick Capture Card
 
 File: `components/dashboard/quick-capture-card.tsx`  
-Last updated: 2026-06-10
+Last updated: 2026-06-11
 
 | Property | Class |
 |---|---|
-| Shell | `rounded-xl border border-border bg-card shadow-sm ring-1 ring-transparent transition-shadow focus-within:ring-primary/20` |
+| Shell | `rounded-card border border-border bg-card shadow-paper ring-1 ring-transparent transition-shadow focus-within:ring-primary/20` |
 | Main padding | `p-4 pb-2` |
-| Label | `mb-2 block text-base font-semibold text-foreground` |
+| Label | `font-display mb-2 block text-base font-semibold text-foreground` |
 | Help text | `mt-1 text-xs text-muted-foreground` |
 | Footer | `flex items-center justify-between gap-3 border-t border-border px-4 py-3` |
 | Action icon row | `flex items-center gap-0.5` |
 | Icon button | `flex size-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground` |
 | Icon | `size-[18px]` with `strokeWidth={1.75}` |
-| Capture button | `h-9 rounded-lg px-5 text-sm font-semibold shadow-sm` |
+| Capture button | `h-9 rounded-lg px-5 text-sm font-semibold` |
 
 **Pattern notes:**  
 The quick capture card is the most important UI pattern in ClassTrace. Keep it fast, calm, and uncluttered. The prompt should be direct teacher language: “What happened?” The composer should remain visually prominent and should not become a long form. The footer uses a top border and keeps secondary icon actions visually quiet. V1 should block saving until exactly one resolved roster student is selected.
@@ -103,11 +105,11 @@ The quick capture card is the most important UI pattern in ClassTrace. Keep it f
 ### Evidence Capture Card
 
 File: `components/dashboard/evidence-capture-card.tsx`  
-Last updated: 2026-06-10
+Last updated: 2026-06-11
 
 | Property | Class |
 |---|---|
-| Shell | `rounded-xl border border-border bg-card shadow-sm` |
+| Shell | `rounded-card border border-border bg-card shadow-paper` |
 | Inner spacing | `space-y-3 p-4` |
 | Metadata row | `flex flex-wrap items-center gap-2` |
 | Timestamp text | `text-xs text-muted-foreground` |
@@ -127,16 +129,16 @@ Evidence cards use the standard card surface and a quiet interpretation panel in
 ### Evidence Chips
 
 File: `components/dashboard/evidence-capture-card.tsx`  
-Last updated: 2026-06-10
+Last updated: 2026-06-11
 
 | Variant | Class |
 |---|---|
 | Base chip | `inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium capitalize` |
 | Default chip | `border-border bg-card text-foreground` |
-| Student chip | `border-sky-200/80 bg-sky-50 text-sky-900 dark:border-sky-900/50 dark:bg-sky-950/40 dark:text-sky-200` |
+| Student chip | `border-border bg-secondary text-foreground` |
 | Tag chip | `border-border bg-muted/60 text-link` |
-| Evidence chip | `border-primary/20 bg-primary/5 text-primary` |
-| Unresolved chip | `border-amber-200/80 bg-amber-50 text-amber-900 dark:border-amber-900/50 dark:bg-amber-950/40 dark:text-amber-200` |
+| Evidence chip | `border-primary/25 bg-primary/10 text-primary` |
+| Unresolved chip | `border-accent/50 bg-accent/25 text-foreground` |
 | Student avatar inside chip | `mr-1.5 inline-flex size-4 items-center justify-center rounded-full text-[9px] font-bold text-white` |
 | Resolved student link hover | `transition-opacity hover:opacity-80` |
 
@@ -148,12 +150,12 @@ Chips are compact, rounded, and low-contrast. Student chips currently use sky st
 ### Review Status Badges
 
 File: `components/dashboard/evidence-capture-card.tsx`  
-Last updated: 2026-06-10
+Last updated: 2026-06-11
 
 | State | Class |
 |---|---|
-| Needs review | `rounded-full border border-amber-200/80 bg-amber-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-900 dark:border-amber-900/50 dark:bg-amber-950/40 dark:text-amber-200` |
-| Validated | `rounded-full border border-emerald-200/80 bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-emerald-900 dark:border-emerald-900/50 dark:bg-emerald-950/40 dark:text-emerald-200` |
+| Needs review | `rounded-full border border-accent/50 bg-accent/30 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-foreground` |
+| Validated | `rounded-full border border-validated/60 bg-validated px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-validated-foreground` |
 
 **Pattern notes:**  
 Status badges are small, uppercase, and secondary. They should help the teacher scan review state without making the card feel like an enterprise workflow ticket.
@@ -204,7 +206,7 @@ Last updated: 2026-06-10
 
 | Property | Class |
 |---|---|
-| Shell | `rounded-xl border border-border bg-card shadow-sm` |
+| Shell | `rounded-card border border-border bg-card shadow-paper` |
 | Inner spacing | `p-4` or `space-y-3 p-4` |
 | Secondary panel | `rounded-lg border border-border/60 bg-muted/30 px-3 py-3` |
 | Divider | `border-t border-border` or `border-t border-border/50` |

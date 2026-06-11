@@ -4,6 +4,19 @@ Phase 1, build unit 03. Spec only — no implementation in this document.
 
 Reference: `context/build-plan.md` (Phase 1 → 03 Public Landing Page UI).
 
+### Asset kit amendment (2026-06-11)
+
+The landing page visual system was updated to match `classtrace_asset_kit/`. When this spec conflicts with the asset kit on **visual design** (colors, typography, CTA copy, section layout), follow the asset kit and `context/ui-context.md`.
+
+Notable differences from the original Unit 03 spec:
+
+- Primary CTA label: **“Capture your first note”** (links to `/sign-up`)
+- Secondary hero CTA: **“See how one moment becomes evidence”** (`variant="navy"`, anchors `#how-it-works`)
+- Public header/footer logo mark: `bg-navy` (not `bg-sidebar-primary`)
+- Typography: Fraunces display + Inter body + Caveat hand accents
+- Added **timeline section** (`landing-timeline.tsx`) between how-it-works and not-dashboard
+- Footer dev link: Sign in + Open app workspace only (per asset kit copy)
+
 ---
 
 ## Goal

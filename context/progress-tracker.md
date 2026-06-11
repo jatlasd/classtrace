@@ -9,6 +9,7 @@ Update this file after every meaningful implementation change.
 - Phase 1 in progress — production app foundation
 - Unit 02 complete and verified — Route Map and App Shell (`context/specs/02-route-map-and-app-shell.md`)
 - Unit 03 complete and verified — Public Landing Page UI (`context/specs/03-public-landing-page-ui.md`)
+- Design system overhaul applied from `classtrace_asset_kit/` (warm paper palette, Fraunces + Inter + Caveat, landing copy/layout aligned to asset kit)
 
 ---
 
@@ -139,6 +140,31 @@ Legacy:
 - Phase 1 unit 02 (Route Map and App Shell) implemented, reviewed, fixed, and verified — see **Unit 02 — Route Map and App Shell (Complete)** above.
 - `context/specs/03-public-landing-page-ui.md` created for Phase 1 unit 03.
 - Phase 1 unit 03 (Public Landing Page UI) implemented and verified — see **Unit 03 — Public Landing Page UI (Complete)** above.
+
+---
+
+## Design System Overhaul (2026-06-11)
+
+Applied `classtrace_asset_kit/design-tokens.json` and mockup references across the app:
+
+- `app/globals.css` — warm paper tokens (`#f3eadc` background, `#fbf7ed` cards, rust primary `#b85a32`, navy `#1d2f4b`, chalkboard sidebar `#262725`, validated green `#c7d4a6`, gold chalk accent `#e7bd64`); paper-grain, ruled-lines, shadow-paper, shadow-floating, tape-tab utilities
+- `app/layout.tsx` — Fraunces (display), Inter (body), Caveat (hand); replaced Plus Jakarta Sans
+- Landing page rebuilt to asset-kit copy (`landing-page-copy.md`): new timeline section, taped audience labels, chalkboard “not another platform” band, rust/navy CTAs
+- App shell + dashboard cards updated to `rounded-card`, `shadow-paper`, semantic validated/navy/link tokens; removed sky/emerald/amber hardcoded chip colors
+
+### Verification (passed)
+
+- `npm run lint` — pass
+- `npm run test` — pass (45 tests)
+- `npm run build` — pass
+
+### Review follow-up fixes (2026-06-11)
+
+- Tokenized landing audience label colors (`bg-audience-*`, `bg-validated`)
+- Updated `components/ui/card.tsx`, quick capture, interpretation review panel, app sidebar wordmark
+- Enhanced how-it-works with step preview panels and dashed connectors
+- Synced `context/ui-context.md`, `context/ui-registry.md`, Unit 03 spec amendment
+- Added `landing-timeline.tsx` to the landing page tree (ensure it is committed with the rest)
 
 ---
 
