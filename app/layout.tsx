@@ -1,9 +1,14 @@
 import type { Metadata } from "next";
-import { Caveat, Plus_Jakarta_Sans } from "next/font/google";
+import { Caveat, Fraunces, Inter } from "next/font/google";
 import "./globals.css";
 
-const plusJakarta = Plus_Jakarta_Sans({
-  variable: "--font-jakarta",
+const fraunces = Fraunces({
+  variable: "--font-display",
+  subsets: ["latin"],
+});
+
+const inter = Inter({
+  variable: "--font-body",
   subsets: ["latin"],
 });
 
@@ -26,9 +31,11 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${plusJakarta.variable} ${caveat.variable} h-full antialiased`}
+      className={`${fraunces.variable} ${inter.variable} ${caveat.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col font-sans">{children}</body>
+      <body className="paper-grain min-h-full flex flex-col font-sans">
+        {children}
+      </body>
     </html>
   );
 }
