@@ -120,10 +120,10 @@ function InterpretationReviewPanelContent({
   }
 
   return (
-    <div className="mt-3 rounded-lg border border-primary/15 bg-primary/3 px-3 py-3">
+    <div className="mt-3 rounded-card border border-border bg-muted/30 px-3 py-3 shadow-paper">
       <div className="mb-3">
-        <p className="text-sm font-semibold text-foreground">
-          ClassTrace guessed this. Confirm or adjust it.
+        <p className="font-display text-sm font-semibold text-foreground">
+          Review before saving
         </p>
         <p className="mt-0.5 text-xs text-muted-foreground">
           Adjust anything that looks off, then confirm.

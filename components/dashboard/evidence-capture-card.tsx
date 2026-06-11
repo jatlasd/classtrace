@@ -31,12 +31,11 @@ type EvidenceCaptureCardProps = {
 
 const chipStyles = {
   default: "border-border bg-card text-foreground",
-  student:
-    "border-sky-200/80 bg-sky-50 text-sky-900 dark:border-sky-900/50 dark:bg-sky-950/40 dark:text-sky-200",
+  student: "border-border bg-secondary text-foreground",
   tag: "border-border bg-muted/60 text-link",
-  evidence: "border-primary/20 bg-primary/5 text-primary",
+  evidence: "border-primary/25 bg-primary/10 text-primary",
   unresolved:
-    "border-amber-200/80 bg-amber-50 text-amber-900 dark:border-amber-900/50 dark:bg-amber-950/40 dark:text-amber-200",
+    "border-accent/50 bg-accent/25 text-foreground",
 };
 
 function Chip({
@@ -83,7 +82,7 @@ function UnresolvedStudentChip({ mention }: { mention: string }) {
   return (
     <Chip variant="unresolved">
       Unmatched student
-      <span className="ml-1.5 font-normal normal-case text-amber-800/70 dark:text-amber-200/70">
+      <span className="ml-1.5 font-normal normal-case text-muted-foreground">
         ({mention})
       </span>
     </Chip>
@@ -154,17 +153,17 @@ export function EvidenceCaptureCard({
   }
 
   return (
-    <article className="rounded-xl border border-border bg-card shadow-sm">
+    <article className="rounded-card border border-border bg-card shadow-paper">
       <div className="space-y-3 p-4">
         <div className="flex flex-wrap items-center gap-2">
           <span className="text-xs text-muted-foreground">{timestamp}</span>
           {!isEditing && showReviewCta && (
-            <span className="rounded-full border border-amber-200/80 bg-amber-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-900 dark:border-amber-900/50 dark:bg-amber-950/40 dark:text-amber-200">
+            <span className="rounded-full border border-accent/50 bg-accent/30 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-foreground">
               Needs review
             </span>
           )}
           {!isEditing && display.validationStatus === "validated" && (
-            <span className="rounded-full border border-emerald-200/80 bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-emerald-900 dark:border-emerald-900/50 dark:bg-emerald-950/40 dark:text-emerald-200">
+            <span className="rounded-full border border-validated/60 bg-validated px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-validated-foreground">
               Validated
             </span>
           )}
@@ -262,8 +261,8 @@ export function EvidenceCaptureCard({
           </div>
 
           {hasUnresolvedMentions && (
-            <div className="mt-3 rounded-md border border-amber-200/60 bg-amber-50/50 px-3 py-2.5 dark:border-amber-900/40 dark:bg-amber-950/20">
-              <p className="text-xs leading-relaxed text-amber-900 dark:text-amber-100">
+            <div className="mt-3 rounded-md border border-accent/40 bg-accent/15 px-3 py-2.5">
+              <p className="text-xs leading-relaxed text-foreground">
                 {unresolvedMentions.length === 1 ? (
                   <>
                     <span className="font-medium">@{unresolvedMentions[0].mention}</span>{" "}
@@ -280,14 +279,14 @@ export function EvidenceCaptureCard({
               <div className="mt-2 flex flex-wrap items-center gap-3">
                 <Link
                   href={routes.roster}
-                  className="text-xs font-medium text-amber-900 underline-offset-2 hover:underline dark:text-amber-100"
+                  className="text-xs font-medium text-link underline-offset-2 hover:underline"
                 >
                   My roster
                 </Link>
                 {showReviewCta && !reviewOpen && (
                   <button
                     type="button"
-                    className="text-xs font-medium text-amber-900 underline-offset-2 hover:underline dark:text-amber-100"
+                    className="text-xs font-medium text-link underline-offset-2 hover:underline"
                     onClick={() => setReviewOpen(true)}
                   >
                     Review interpretation

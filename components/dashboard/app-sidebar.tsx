@@ -44,7 +44,7 @@ export function AppSidebar() {
         <div className="flex size-9 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
           <PenLine className="size-4.5" strokeWidth={2.5} />
         </div>
-        <span className="ml-3 hidden text-[15px] font-semibold tracking-tight text-sidebar-foreground xl:block">
+        <span className="font-display ml-3 hidden text-[15px] font-semibold tracking-tight text-sidebar-foreground xl:block">
           ClassTrace
         </span>
       </div>

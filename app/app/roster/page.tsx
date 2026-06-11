@@ -212,7 +212,7 @@ export default function RosterPage() {
   return (
     <div className="mx-auto max-w-2xl px-4 py-8 sm:px-6">
       <header className="mb-8">
-        <h1 className="text-2xl font-semibold text-foreground">My roster</h1>
+        <h1 className="font-display text-2xl font-semibold text-foreground">My roster</h1>
         <p className="mt-1 text-sm text-muted-foreground">
           Students you can @mention in captures.
         </p>
@@ -221,7 +221,7 @@ export default function RosterPage() {
         </p>
       </header>
 
-      <section className="mb-8 rounded-xl border border-border bg-card p-4 shadow-sm">
+      <section className="mb-8 rounded-card border border-border bg-card p-4 shadow-paper">
         <h2 className="mb-1 text-sm font-semibold text-foreground">Add student</h2>
         <p className="mb-4 text-xs text-muted-foreground">
           Use a handle that matches how you type @mentions (for example, @Mary).
@@ -246,7 +246,7 @@ export default function RosterPage() {
         )}
 
         {students.length === 0 ? (
-          <p className="rounded-xl border border-border bg-card p-6 text-sm text-muted-foreground">
+          <p className="rounded-card border border-border bg-card p-6 text-sm text-muted-foreground">
             No students on your roster yet.
           </p>
         ) : (
@@ -254,7 +254,7 @@ export default function RosterPage() {
             {students.map((student) => (
               <li
                 key={student.id}
-                className="rounded-xl border border-border bg-card p-4 shadow-sm"
+                className="rounded-card border border-border bg-card p-4 shadow-paper"
               >
                 {editingId === student.id ? (
                   <StudentEditor

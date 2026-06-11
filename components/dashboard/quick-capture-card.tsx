@@ -51,7 +51,7 @@ const quickCaptureMentionsStyle: MentionsInputStyle = {
     backgroundColor: "var(--popover)",
     border: "1px solid var(--border)",
     borderRadius: "var(--radius-lg)",
-    boxShadow: "0 4px 12px oklch(0 0 0 / 8%)",
+    boxShadow: "var(--shadow-paper)",
     minWidth: 160,
     marginTop: 4,
     list: {
@@ -127,11 +127,11 @@ export function QuickCaptureCard({ onDraft }: QuickCaptureCardProps) {
   }
 
   return (
-    <div className="rounded-xl border border-border bg-card shadow-sm ring-1 ring-transparent transition-shadow focus-within:ring-primary/20">
+    <div className="rounded-card border border-border bg-card shadow-paper ring-1 ring-transparent transition-shadow focus-within:ring-primary/20">
       <div className="p-4 pb-2">
         <label
           htmlFor="quick-capture"
-          className="mb-2 block text-base font-semibold text-foreground"
+          className="font-display mb-2 block text-base font-semibold text-foreground"
         >
           What happened?
         </label>
@@ -185,7 +185,7 @@ export function QuickCaptureCard({ onDraft }: QuickCaptureCardProps) {
         <Button
           onClick={handlePost}
           disabled={!plainText.trim()}
-          className="h-9 rounded-lg px-5 text-sm font-semibold shadow-sm"
+          className="h-9 rounded-lg px-5 text-sm font-semibold"
         >
           {posted ? (
             <>

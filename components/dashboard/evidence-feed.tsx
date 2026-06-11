@@ -290,8 +290,8 @@ function PocModeCard({
   onClear: () => void;
 }) {
   return (
-    <section className="rounded-xl border border-border bg-card p-4 shadow-sm">
-      <h2 className="text-sm font-semibold text-foreground">Usable POC mode</h2>
+    <section className="rounded-card border border-border bg-card p-4 shadow-paper">
+      <h2 className="font-display text-sm font-semibold text-foreground">Usable POC mode</h2>
       <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
         Captures and your roster save in this browser only. Refreshing the page
         keeps them here, but they are not shared across devices or browsers.

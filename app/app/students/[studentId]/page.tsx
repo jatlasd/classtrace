@@ -35,7 +35,7 @@ export default function StudentProfilePage({ params }: StudentProfilePageProps) 
   if (!student) {
     return (
       <div className="mx-auto max-w-2xl px-4 py-8 sm:px-6">
-        <p className="rounded-xl border border-border bg-card p-6 text-sm text-muted-foreground">
+        <p className="rounded-card border border-border bg-card p-6 text-sm text-muted-foreground">
           Student not found on your roster.
         </p>
       </div>
@@ -54,7 +54,7 @@ export default function StudentProfilePage({ params }: StudentProfilePageProps) 
           {student.initials}
         </div>
         <div>
-          <h1 className="text-2xl font-semibold text-foreground">
+          <h1 className="font-display text-2xl font-semibold text-foreground">
             {student.displayName}
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
@@ -68,7 +68,7 @@ export default function StudentProfilePage({ params }: StudentProfilePageProps) 
         <h2 className="mb-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
           Evidence snapshot
         </h2>
-        <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
+        <div className="rounded-card border border-border bg-card p-4 shadow-paper">
           <dl className="grid grid-cols-2 gap-3 sm:grid-cols-4">
             <div>
               <dt className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
@@ -115,7 +115,7 @@ export default function StudentProfilePage({ params }: StudentProfilePageProps) 
             What ClassTrace is noticing
           </h2>
         </div>
-        <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
+        <div className="rounded-card border border-border bg-card p-4 shadow-paper">
           {insights.length > 0 ? (
             <ul className="space-y-2">
               {insights.map((insight) => (
@@ -141,7 +141,7 @@ export default function StudentProfilePage({ params }: StudentProfilePageProps) 
         <h2 className="mb-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
           Patterns
         </h2>
-        <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
+        <div className="rounded-card border border-border bg-card p-4 shadow-paper">
           {!hasCaptures ? (
             <p className="text-sm text-muted-foreground">No patterns yet.</p>
           ) : (
@@ -203,7 +203,7 @@ export default function StudentProfilePage({ params }: StudentProfilePageProps) 
         </h2>
 
         {captures.length === 0 ? (
-          <p className="rounded-xl border border-border bg-card p-6 text-sm text-muted-foreground">
+          <p className="rounded-card border border-border bg-card p-6 text-sm text-muted-foreground">
             No evidence captures mention {student.displayName} yet.
           </p>
         ) : (
@@ -215,7 +215,7 @@ export default function StudentProfilePage({ params }: StudentProfilePageProps) 
               return (
                 <li
                   key={capture.id}
-                  className="rounded-xl border border-border bg-card p-4 shadow-sm"
+                  className="rounded-card border border-border bg-card p-4 shadow-paper"
                 >
                   <p className="mb-3 text-xs text-muted-foreground">
                     {capture.timestamp}

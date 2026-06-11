@@ -32,7 +32,7 @@ export function MobileNav() {
   }
 
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-50 flex items-center justify-around border-t border-border bg-card px-2 py-2 lg:hidden">
+    <nav className="fixed inset-x-0 bottom-0 z-50 flex items-center justify-around border-t border-border bg-card/95 px-2 py-2 backdrop-blur lg:hidden">
       {items.map((item) => {
         const active = isActive(item.match);
 

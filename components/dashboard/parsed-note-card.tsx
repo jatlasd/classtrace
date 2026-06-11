@@ -10,10 +10,10 @@ export function ParsedNoteCard({ draft }: { draft: NoteDraft }) {
   const applicable = new Set(draft.applicableFields);
 
   return (
-    <article className="rounded-xl border border-border bg-card shadow-sm">
+    <article className="rounded-card border border-border bg-card shadow-paper">
       <div className="space-y-4 p-4">
         {draft.needsTeacherValidation && (
-          <p className="rounded-lg border border-amber-200/80 bg-amber-50 px-3 py-2 text-xs font-medium text-amber-900 dark:border-amber-900/50 dark:bg-amber-950/40 dark:text-amber-200">
+          <p className="rounded-lg border border-accent/50 bg-accent/25 px-3 py-2 text-xs font-medium text-foreground">
             Needs teacher validation
           </p>
         )}
@@ -98,8 +98,8 @@ function formatValue(value: string): string {
 
 function ConfidenceBadge({ confidence }: { confidence: Confidence }) {
   const styles: Record<Confidence, string> = {
-    high: "border-emerald-200/80 bg-emerald-50 text-emerald-800 dark:border-emerald-900/50 dark:bg-emerald-950/40 dark:text-emerald-300",
-    medium: "border-sky-200/80 bg-sky-50 text-sky-800 dark:border-sky-900/50 dark:bg-sky-950/40 dark:text-sky-300",
+    high: "border-validated/60 bg-validated text-validated-foreground",
+    medium: "border-link/30 bg-secondary text-link",
     low: "border-border bg-muted/60 text-muted-foreground",
   };
 

@@ -5,11 +5,11 @@ import { routes } from "@/lib/routes";
 export default function SignInPage() {
   return (
     <main className="flex min-h-screen items-center justify-center bg-background px-4 py-8">
-      <section className="w-full max-w-md rounded-xl border border-border bg-card p-6 text-center shadow-sm">
+      <section className="w-full max-w-md rounded-card border border-border bg-card p-6 text-center shadow-paper">
         <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
           Sign in
         </p>
-        <h1 className="mt-2 text-2xl font-semibold text-foreground">
+        <h1 className="font-display mt-2 text-2xl font-semibold text-foreground">
           Sign-in coming soon
         </h1>
         <p className="mt-2 text-sm leading-relaxed text-muted-foreground">

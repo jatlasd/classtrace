@@ -5,7 +5,7 @@ export function EvidenceFeedHeader() {
   return (
     <header className="mb-5 space-y-1">
       <div>
-        <h1 className="text-xl font-bold tracking-tight text-foreground">
+        <h1 className="font-display text-xl font-semibold tracking-tight text-foreground">
           Evidence inbox
         </h1>
         <p className="text-sm text-muted-foreground">

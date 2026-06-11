@@ -22,12 +22,12 @@ export function ClassTraceNoticedPanel({ items }: ClassTraceNoticedPanelProps) {
   return (
     <aside className="w-full shrink-0 border-t border-border bg-card/50 lg:w-[300px] lg:border-t-0 lg:border-l xl:w-[320px]">
       <div className="p-5 lg:sticky lg:top-0 lg:max-h-screen lg:overflow-y-auto">
-        <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
+        <div className="rounded-card border border-border bg-card p-4 shadow-paper">
           <div className="mb-3 flex items-center gap-2">
             <div className="flex size-7 items-center justify-center rounded-lg bg-primary/10 text-primary">
               <Sparkles className="size-3.5" strokeWidth={2} />
             </div>
-            <h2 className="text-sm font-semibold text-foreground">
+            <h2 className="font-display text-sm font-semibold text-foreground">
               ClassTrace noticed…
             </h2>
           </div>
