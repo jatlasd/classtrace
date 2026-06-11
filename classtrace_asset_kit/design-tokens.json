@@ -1,0 +1,30 @@
+{
+  "colors": {
+    "background_warm_paper": "#f3eadc",
+    "paper_surface": "#fbf7ed",
+    "ink_primary": "#182536",
+    "muted_ink": "#5d554a",
+    "cta_rust": "#b85a32",
+    "button_navy": "#1d2f4b",
+    "validated_green": "#c7d4a6",
+    "chalkboard_dark": "#262725",
+    "gold_chalk": "#e7bd64",
+    "link_blue": "#2c526f",
+    "tape_blue": "#9db3ca"
+  },
+  "radii": {
+    "card": "18px",
+    "button": "8px",
+    "pill": "999px"
+  },
+  "shadows": {
+    "paper": "0 10px 24px rgba(31, 25, 17, 0.12)",
+    "floating_note": "0 18px 28px rgba(31, 25, 17, 0.22)"
+  },
+  "type_suggestions": {
+    "display": "serif/editorial such as Fraunces, Lora, or Source Serif 4",
+    "body": "clean humanist sans such as Inter, Atkinson Hyperlegible, or Nunito Sans",
+    "handwritten": "optional accent font such as Caveat or Patrick Hand"
+  },
+  "texture_notes": "Use subtle paper grain, ruled notebook lines, low-opacity dashed arrows, tape tabs, and small imperfect rotations."
+}
