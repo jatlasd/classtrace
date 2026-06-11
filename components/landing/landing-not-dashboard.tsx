@@ -1,4 +1,9 @@
-const nots = ["a gradebook", "an IEP generator", "an admin dashboard", "a surveillance tool"];
+const nots = [
+  "a gradebook",
+  "an IEP generator",
+  "an admin dashboard",
+  "a surveillance tool",
+];
 
 export function LandingNotDashboard() {
   return (
@@ -8,45 +13,42 @@ export function LandingNotDashboard() {
           <p className="text-[11px] font-semibold uppercase tracking-wider text-sidebar-foreground/60">
             What ClassTrace is not
           </p>
-          <h2 className="mt-4 text-3xl font-semibold tracking-tight lg:text-4xl">
-            This is not{" "}
-            <span className="text-sidebar-foreground/50">another platform</span>{" "}
-            your district bought.
+          <h2 className="font-display mt-4 text-3xl font-semibold tracking-tight lg:text-4xl">
+            This is not another platform your district bought.
           </h2>
-          <ul className="mt-8 space-y-3">
+          <ul className="mt-8 flex flex-wrap gap-3">
             {nots.map((item) => (
-              <li key={item} className="flex items-baseline gap-3 text-lg">
-                <span aria-hidden="true" className="font-hand text-xl text-sidebar-primary">
-                  ✗
-                </span>
-                <span className="text-sidebar-foreground/50 line-through decoration-sidebar-primary/70 decoration-2">
+              <li
+                key={item}
+                className="tape-tab relative rounded-sm px-4 py-2.5"
+              >
+                <span className="font-hand text-base text-sidebar-foreground line-through decoration-destructive decoration-2">
                   Not {item}
                 </span>
               </li>
             ))}
           </ul>
-          <p className="font-hand mt-8 text-3xl leading-snug text-sidebar-foreground">
-            It&apos;s your documentation memory.
+          <p className="font-display mt-10 text-3xl font-medium leading-snug text-accent">
+            It&apos;s your private documentation memory.
           </p>
         </div>
-        <div className="rounded-2xl border border-sidebar-border bg-sidebar-accent/60 p-6 lg:p-8">
-          <h3 className="text-lg font-semibold">You stay in control</h3>
-          <div className="mt-5 space-y-4 text-[15px] leading-relaxed text-sidebar-foreground/80">
+        <div className="rounded-card border border-sidebar-border bg-sidebar-accent/60 p-6 lg:p-8">
+          <div className="space-y-4 text-[15px] leading-relaxed text-sidebar-foreground/85">
             <p>
-              Every saved record is one <em>you</em> reviewed and validated.
-              ClassTrace structures your words — it never invents
-              documentation, never guesses on your behalf, and never saves
-              anything without your sign-off.
+              Every saved record is one you reviewed and validated. ClassTrace
+              structures your words — it never invents documentation, never
+              guesses on your behalf, and never saves anything without your
+              sign-off.
             </p>
             <p>
-              Your roster is yours. Your evidence is yours. One teacher, one
-              workspace — no shared student records, no district visibility.
+              <span className="font-display text-lg text-accent">
+                Your roster is yours. Your evidence is yours.
+              </span>{" "}
+              <span className="font-hand text-xl text-accent">
+                One teacher, one workspace.
+              </span>
             </p>
           </div>
-          <p className="mt-6 border-t border-sidebar-border pt-4 text-xs text-sidebar-foreground/60">
-            Captures save only when exactly one student is attached and you
-            approve the structured evidence.
-          </p>
         </div>
       </div>
     </section>
