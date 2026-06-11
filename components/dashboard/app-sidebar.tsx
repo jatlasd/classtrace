@@ -2,10 +2,9 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { isStudentProfilePath, routes } from "@/lib/routes";
 import { teacher } from "@/lib/mock-data";
 import {
-  BarChart3,
-  Hash,
   LayoutList,
   PenLine,
   Search,
@@ -14,14 +13,30 @@ import {
 } from "lucide-react";
 
 const navItems = [
-  { label: "Feed", href: "/", icon: LayoutList },
-  { label: "Roster", href: "/students", icon: Users },
-  { label: "Tags", href: "#", icon: Hash },
-  { label: "Reports", href: "#", icon: BarChart3 },
+  { label: "Evidence Feed", href: routes.feed, icon: LayoutList, match: "feed" },
+  { label: "Roster", href: routes.roster, icon: Users, match: "roster" },
+  { label: "Students", href: routes.roster, icon: Users, match: "students" },
+  { label: "Settings", href: routes.settings, icon: Settings, match: "settings" },
 ];
 
 export function AppSidebar() {
   const pathname = usePathname();
+
+  function isActive(match: string): boolean {
+    if (match === "feed") {
+      return pathname === routes.feed;
+    }
+    if (match === "roster") {
+      return pathname === routes.roster;
+    }
+    if (match === "students") {
+      return isStudentProfilePath(pathname);
+    }
+    if (match === "settings") {
+      return pathname === routes.settings;
+    }
+    return false;
+  }
 
   return (
     <aside className="hidden w-[72px] shrink-0 flex-col border-r border-sidebar-border bg-sidebar lg:flex xl:w-[220px]">
@@ -36,10 +51,7 @@ export function AppSidebar() {
 
       <nav className="flex flex-1 flex-col gap-1 px-2 py-4">
         {navItems.map((item) => {
-          const active =
-            item.href === "/"
-              ? pathname === "/"
-              : pathname.startsWith(item.href);
+          const active = isActive(item.match);
 
           return (
             <Link
@@ -72,13 +84,6 @@ export function AppSidebar() {
           >
             <Search className="size-[18px]" strokeWidth={2} />
             <span className="hidden text-sm xl:block">Search</span>
-          </button>
-          <button
-            type="button"
-            className="flex items-center justify-center gap-3 rounded-lg px-3 py-2.5 text-sidebar-foreground/70 transition-colors hover:bg-sidebar-accent/50 hover:text-sidebar-foreground xl:justify-start"
-          >
-            <Settings className="size-[18px]" strokeWidth={2} />
-            <span className="hidden text-sm xl:block">Settings</span>
           </button>
         </div>
         <div className="flex items-center justify-center gap-3 rounded-lg px-2 py-2 xl:justify-start xl:px-3">

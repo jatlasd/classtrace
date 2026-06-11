@@ -2,25 +2,39 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BarChart3, Hash, LayoutList, Users } from "lucide-react";
+import { LayoutList, Settings, Users } from "lucide-react";
+import { isStudentProfilePath, routes } from "@/lib/routes";
 
 const items = [
-  { icon: LayoutList, label: "Feed", href: "/" },
-  { icon: Users, label: "Roster", href: "/students" },
-  { icon: Hash, label: "Tags", href: "#" },
-  { icon: BarChart3, label: "Reports", href: "#" },
+  { icon: LayoutList, label: "Evidence Feed", href: routes.feed, match: "feed" },
+  { icon: Users, label: "Roster", href: routes.roster, match: "roster" },
+  { icon: Users, label: "Students", href: routes.roster, match: "students" },
+  { icon: Settings, label: "Settings", href: routes.settings, match: "settings" },
 ];
 
 export function MobileNav() {
   const pathname = usePathname();
 
+  function isActive(match: string): boolean {
+    if (match === "feed") {
+      return pathname === routes.feed;
+    }
+    if (match === "roster") {
+      return pathname === routes.roster;
+    }
+    if (match === "students") {
+      return isStudentProfilePath(pathname);
+    }
+    if (match === "settings") {
+      return pathname === routes.settings;
+    }
+    return false;
+  }
+
   return (
     <nav className="fixed inset-x-0 bottom-0 z-50 flex items-center justify-around border-t border-border bg-card px-2 py-2 lg:hidden">
       {items.map((item) => {
-        const active =
-          item.href === "/"
-            ? pathname === "/"
-            : pathname.startsWith(item.href);
+        const active = isActive(item.match);
 
         return (
           <Link

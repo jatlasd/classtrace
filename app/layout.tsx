@@ -13,7 +13,7 @@ const caveat = Caveat({
 });
 
 export const metadata: Metadata = {
-  title: "ClassTrace — Evidence Feed",
+  title: "ClassTrace",
   description:
     "Quick capture for classroom evidence. Capture the messy moment now. Organize the evidence later.",
 };

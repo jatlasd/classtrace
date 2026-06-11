@@ -14,6 +14,7 @@ import {
 } from "@/lib/evidence/capture-validation";
 import { draftToDisplay } from "@/lib/note-processing/draft-to-display";
 import type { NoteDraft } from "@/lib/note-processing/types";
+import { routes } from "@/lib/routes";
 import {
   type Student,
   type StudentMentionRef,
@@ -69,7 +70,7 @@ function StudentAvatar({ student }: { student: Student }) {
 function ResolvedStudentChip({ student }: { student: Student }) {
   return (
     <Link
-      href={`/students/${student.id}`}
+      href={routes.student(student.id)}
       className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium capitalize transition-opacity hover:opacity-80 ${chipStyles.student}`}
     >
       <StudentAvatar student={student} />
@@ -278,7 +279,7 @@ export function EvidenceCaptureCard({
               </p>
               <div className="mt-2 flex flex-wrap items-center gap-3">
                 <Link
-                  href="/students"
+                  href={routes.roster}
                   className="text-xs font-medium text-amber-900 underline-offset-2 hover:underline dark:text-amber-100"
                 >
                   My roster

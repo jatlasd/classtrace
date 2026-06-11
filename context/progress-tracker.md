@@ -6,16 +6,79 @@ Update this file after every meaningful implementation change.
 
 ## Current Phase
 
-- Phase 0 complete — context and agent foundation
-- Ready to merge `implement-arch` into `main`
-- Production implementation (Phase 1) begins only after merge and explicit return to code mode
+- Phase 1 in progress — production app foundation
+- Unit 02 complete and verified — Route Map and App Shell (`context/specs/02-route-map-and-app-shell.md`)
 
 ---
 
 ## Current Goal
 
-- Merge the context framework branch so future work branches from an up-to-date `main`.
-- Do not implement production features until the next unit spec is written and code mode is explicitly requested.
+- Prepare for Phase 1, unit 03 (Public Landing Page UI).
+- Do not start unit 03 until its spec exists in `context/specs/`.
+
+---
+
+## Unit 02 — Route Map and App Shell (Complete)
+
+Spec: `context/specs/02-route-map-and-app-shell.md`
+
+### What was completed
+
+- Separated public, auth, and authenticated app areas in the Next.js route map.
+- Added shared `/app/*` app shell with desktop sidebar, mobile bottom nav, and light main workspace (`app/app/layout.tsx`).
+- Moved POC feed, roster, and student timeline into canonical routes without changing capture, validation, or localStorage behavior.
+- Added placeholder routes for `/sign-in`, `/sign-up`, and `/app/settings`.
+- Set `/` to a temporary dev redirect to `/app/feed` and `/app` to redirect to `/app/feed`.
+- Added legacy redirects from `/students` and `/students/[studentId]` to the new `/app/*` routes.
+- Centralized route paths in `lib/routes.ts` and updated in-app links in sidebar, mobile nav, feed header, and capture cards.
+- Aligned V1 primary navigation to Evidence Feed, Roster, Students, and Settings; removed out-of-scope Tags and Reports from primary nav.
+- Did not add Clerk, Prisma, database work, auth guards, landing-page content, roster onboarding changes, or evidence persistence changes.
+
+### Canonical route map (post-unit)
+
+```txt
+/                         → temporary redirect to /app/feed (landing in unit 03)
+/sign-in                  → auth placeholder (Clerk in unit 04)
+/sign-up                  → auth placeholder (Clerk in unit 04)
+/app                      → redirect to /app/feed
+/app/feed                 → evidence feed (POC home behavior)
+/app/roster               → roster management (POC /students behavior)
+/app/students/[studentId] → student timeline (POC profile behavior)
+/app/settings             → settings placeholder
+
+Legacy:
+/students                 → redirect to /app/roster
+/students/[studentId]     → redirect to /app/students/[studentId]
+```
+
+### Review issues fixed
+
+- Renamed primary nav label from `Feed` to `Evidence Feed` to match `ui-context.md` and `project-overview.md`.
+- Removed duplicate Settings link from the sidebar footer; Settings remains in primary nav only.
+- Replaced hardcoded `/app/students` active-state checks with `routes.studentsPrefix` and `isStudentProfilePath()` in `lib/routes.ts`.
+- Updated `/sign-in` and `/sign-up` placeholders to use the shared `Button` component.
+- Updated `README.md` POC steps to reference canonical `/app/*` routes.
+
+### Verification (passed)
+
+- `npm run lint` — pass
+- `npm run test` — pass (45 tests, including `lib/routes.test.ts`)
+- `npm run build` — pass; all Unit 02 routes present in build output
+- Implementation reviewed against `context/specs/02-route-map-and-app-shell.md` with no critical or important blockers remaining
+
+### Remaining risks / follow-ups (deferred)
+
+- Roster page logic remains inline in `app/app/roster/page.tsx` (moved as-is from POC; extract to a feature component in a later unit if desired).
+- Non-functional Search control remains in the sidebar footer (POC leftover; not V1 primary nav).
+- Roster and Students nav items share the same `Users` icon.
+- Root layout metadata title is generic `ClassTrace` rather than route-specific.
+- Mobile nav label `Evidence Feed` may feel tight on very small screens — worth a quick browser resize check.
+- Manual browser walkthrough from the unit spec was not recorded in the tracker; run if desired before demo.
+- Demo data and README examples still reference `Anthony`; allowed fictional names per `AGENTS.md` are Jeremy, Stacy, Jeff, and Mary — rename when touching demo/test data next.
+
+### Next unit (`context/build-plan.md`)
+
+**03 Public Landing Page UI** — create the public entry point for ClassTrace; replace the temporary `/` redirect with a calm teacher-native landing page, clear signup CTA (can link to placeholder auth routes), no Clerk/database/auth logic yet.
 
 ---
 
@@ -38,28 +101,30 @@ Update this file after every meaningful implementation change.
 - Agent skills installed under `.agents/skills/` and committed.
 - `skills-lock.json` created.
 - Phase 0 unit 01 (Context Framework) done criteria met.
+- `context/specs/02-route-map-and-app-shell.md` created for Phase 1 unit 02.
+- Phase 1 unit 02 (Route Map and App Shell) implemented, reviewed, fixed, and verified — see **Unit 02 — Route Map and App Shell (Complete)** above.
 
 ---
 
 ## In Progress
 
-- Nothing active. Awaiting merge of `implement-arch` into `main`.
+- None.
 
 ---
 
 ## Next Up
 
-1. Merge `implement-arch` into `main`.
-2. Branch from `main` for Phase 1, unit 02 (Route Map and App Shell) per `context/build-plan.md`.
-3. Create a focused unit spec in `context/specs/` before starting unit 02.
-4. Optionally update `README.md` with a short pointer to `AGENTS.md` and the context framework.
+1. Write `context/specs/03-public-landing-page-ui.md` (or equivalent) before coding unit 03.
+2. Build Phase 1, unit 03 (Public Landing Page UI) from `context/build-plan.md`.
+3. Replace the temporary `/` redirect with the real public landing page in unit 03.
+4. Keep `/app/feed` as the development/app workspace entry while auth remains unwired.
+5. Optionally expand `README.md` with a short pointer to `AGENTS.md` and the context framework beyond the Unit 02 route updates already made.
 
 ---
 
 ## Open Questions
 
-- Should the root `README.md` be updated now or when Phase 1 begins?
-- Exact production route names are still flexible, though the product structure is clear.
+- Should `README.md` get a fuller Phase 1 refresh beyond the Unit 02 route/path updates?
 - Exact roster import format is not fully specified yet.
 - Exact Prisma schema is not written yet.
 - Exact deployment setup is not decided yet.
@@ -96,6 +161,9 @@ Update this file after every meaningful implementation change.
 - Current Tailwind + shadcn/Radix-style component approach should be preserved.
 - Major refactors are allowed only when they support the current unit and are explained first.
 - A build unit is only done when relevant tests/build checks pass.
+- `/app/*` is the future authenticated teacher workspace route group, but Unit 02 does not enforce authentication.
+- Until Unit 03 replaces it, `/` redirects to `/app/feed` for local development continuity.
+- Route-level redirects are used for `/app`, `/students`, and `/students/[studentId]`.
 
 ---
 
@@ -146,3 +214,5 @@ Update this file after every meaningful implementation change.
 - Do not let future agents treat the existing POC as production architecture.
 - Preserve useful POC behavior, but allow restructuring when needed for the planned production V1.
 - Each implementation unit should get its own spec file in `context/specs/` before coding.
+- Unit 02 kept existing localStorage-backed POC feature behavior intact while moving the feed, roster, and student timeline into the shared `/app` shell.
+- Unit 02 is done; next work is unit 03 (Public Landing Page UI) only after its spec is written — do not start implementation from the build plan alone.
