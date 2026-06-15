@@ -6,7 +6,7 @@ Update this file after every meaningful implementation change.
 
 ## Current Phase
 
-- Phase 2 in progress — roster onboarding
+- Phase 2 complete — roster onboarding
 - Unit 02 complete and verified — Route Map and App Shell (`context/specs/02-route-map-and-app-shell.md`)
 - Unit 03 complete and verified — Public Landing Page UI (`context/specs/03-public-landing-page-ui.md`)
 - Unit 04 complete and verified — Clerk Auth Foundation (`context/specs/04-clerk-auth-foundation.md`)
@@ -15,14 +15,50 @@ Update this file after every meaningful implementation change.
 - Unit 07 complete and verified — Student Roster Database Model and Queries (`context/specs/07-student-roster-database-model-and-queries.md`)
 - Unit 08 implemented and verified with automated checks — Manual Student Entry (`context/specs/08-manual-student-entry.md`)
 - Unit 09 implemented and verified with automated checks — Roster Import (`context/specs/09-roster-import.md`)
+- Unit 10 implemented and verified with automated checks — Onboarding Completion (`context/specs/10-onboarding-completion.md`)
 - Design system overhaul applied from `classtrace_asset_kit/` (warm paper palette, Fraunces + Inter + Caveat, landing copy/layout aligned to asset kit)
 
 ---
 
 ## Current Goal
 
-- Prepare the next focused unit spec before starting Phase 2, Unit 10 — Onboarding Completion.
-- Do not start Unit 10 implementation until its spec exists and the human explicitly confirms.
+- Prepare the next focused unit spec before starting Phase 3, Unit 11 — Production Evidence Feed UI Pass.
+- Do not start Unit 11 implementation until its spec exists and the human explicitly confirms.
+
+---
+
+## Unit 10 — Onboarding Completion (Implemented)
+
+Spec: `context/specs/10-onboarding-completion.md`
+
+### What was completed
+
+- Added `hasActiveRosterStudentsForWorkspace` in `lib/students/roster-students.ts` to check active roster presence inside a trusted workspace.
+- Updated `/app` to resolve the current workspace server-side and redirect by active database roster state.
+- Updated `/app/feed` to resolve the current workspace server-side and redirect empty active rosters to `/app/roster` before rendering the existing feed.
+- Added a calm continue-to-feed action on `/app/roster` when at least one active database roster student exists.
+- Added focused tests for onboarding route wiring, feed gating, roster continuation UI, and active roster helper behavior.
+- Review follow-up: removed the empty-roster "Back to evidence feed" action because `/app/feed` now redirects empty active rosters back to roster setup, and changed the active-roster helper to use a scoped count instead of overfetching a roster record.
+- Updated `context/ui-registry.md` with the Roster Continue Action pattern.
+- Kept `proxy.ts` unchanged; roster-count routing stays in Server Components.
+- Kept onboarding completion derived from active database roster count; no persistent onboarding flag, schema change, or migration was added.
+- Deferred a visible first-capture prompt to Unit 11 because the current `EvidenceFeed` remains localStorage-backed POC UI and broad feed changes are outside Unit 10.
+- Did not add capture enforcement, deterministic student resolution, evidence persistence, student timeline database wiring, archive/delete, export, organizations, admin behavior, AI, uploads, analytics, billing, or new dependencies.
+
+### Verification
+
+- `npm.cmd run test -- lib/onboarding-routing.test.ts lib/students/roster-students.test.ts lib/student-roster-database-ui.test.ts` — pass (15 tests).
+- `npm.cmd run lint` — pass.
+- `npm.cmd run test` — pass (103 tests).
+- `npm.cmd run build` — pass.
+- Review follow-up verification: `npm.cmd run test -- lib/onboarding-routing.test.ts lib/students/roster-students.test.ts lib/student-roster-database-ui.test.ts` — pass (15 tests); `npm.cmd run lint` — pass; `npm.cmd run test` — pass (103 tests); `npm.cmd run build` — pass.
+
+### Remaining risks / follow-ups
+
+- Manual signed-in browser verification is still needed when an interactive Clerk/browser session is available.
+- `/app/feed` still renders the existing localStorage-backed POC feed after the database roster gate passes; Unit 11/15 remain responsible for production feed UI and database-backed evidence.
+- The first-capture prompt is intentionally deferred to Unit 11 to avoid rewriting feed behavior in the routing unit.
+- Student profile/timeline routes still do not read database roster records, so roster rows remain read-only until later units.
 
 ---
 
@@ -403,6 +439,8 @@ Legacy:
 - Phase 2 unit 08 (Manual Student Entry) implemented and verified with automated checks — see **Unit 08 — Manual Student Entry (Implemented)** above.
 - `context/specs/09-roster-import.md` created for Phase 2 unit 09.
 - Phase 2 unit 09 (Roster Import) implemented and verified with automated checks — see **Unit 09 — Roster Import (Implemented)** above.
+- `context/specs/10-onboarding-completion.md` created for Phase 2 unit 10.
+- Phase 2 unit 10 (Onboarding Completion) implemented and verified with automated checks — see **Unit 10 — Onboarding Completion (Implemented)** above.
 
 ---
 
@@ -461,7 +499,7 @@ Verification after refinement: `npm run lint` pass, `npm run build` pass, `npm r
 
 ## Next Up
 
-1. Write `context/specs/10-onboarding-completion.md` before implementing Phase 2, Unit 10.
+1. Write `context/specs/11-production-evidence-feed-ui-pass.md` before implementing Phase 3, Unit 11.
 2. Optionally expand `README.md` with a short pointer to `AGENTS.md` and the context framework beyond the Unit 02 route updates already made.
 
 ---
@@ -581,3 +619,5 @@ Verification after refinement: `npm run lint` pass, `npm run build` pass, `npm r
 - Unit 08 spec was created on 2026-06-15. It scopes Manual Student Entry as the teacher-facing database-backed add-student form on `/app/roster`: display name, auto-generated editable mention handle, optional school/local ID, possible narrow class/group handling or explicit deferral, inline errors, and saved roster refresh. It explicitly excludes roster import, onboarding completion, capture enforcement, evidence persistence, archive/delete, export, student timeline database wiring, AI, uploads, organizations, admin behavior, and new dependencies.
 - Unit 09 spec was created on 2026-06-15. It scopes Roster Import as a database-backed paste-list workflow on `/app/roster`: one student per line, optional handle, optional school/local ID, preview before save, row-level validation, duplicate detection within the import and current workspace roster including archived-row uniqueness constraints, atomic all-or-nothing confirmed save, and no file upload, external sync, class/group import, onboarding completion, capture enforcement, evidence persistence, AI, uploads, organizations, admin behavior, or new dependencies.
 - Unit 09 implementation completed on 2026-06-15. `/app/roster` now supports database-backed pasted roster import with preview-before-save, row-level validation, archived-row uniqueness conflict checks, and atomic confirmed save.
+- Unit 10 spec was created on 2026-06-15. It scopes Onboarding Completion as a database-roster-aware route handoff: `/app` and `/app/feed` should redirect empty active rosters to `/app/roster`, route roster-ready workspaces to `/app/feed`, and add a clear continue-to-feed action on `/app/roster` without adding persistent onboarding state, capture enforcement, evidence persistence, student timeline database wiring, AI, uploads, organizations, admin behavior, or new dependencies.
+- Unit 10 implementation completed on 2026-06-15. `/app` and `/app/feed` now gate by active database roster count, `/app/roster` shows a continue-to-feed action after roster setup has started, and the first-capture prompt remains deferred to Unit 11 to avoid broad feed rewrites.

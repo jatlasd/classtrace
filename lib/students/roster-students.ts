@@ -37,6 +37,13 @@ type RosterStudentFindFirstArgs = {
   };
 };
 
+type RosterStudentCountArgs = {
+  where: {
+    workspaceId: string;
+    archivedAt: null;
+  };
+};
+
 type ClassGroupFindFirstArgs = {
   where: {
     id: string;
@@ -86,6 +93,7 @@ export type RosterStudentDatabase = {
   rosterStudent: {
     findMany(args: RosterStudentListArgs): Promise<RosterStudentRecord[]>;
     findFirst(args: RosterStudentFindFirstArgs): Promise<RosterStudentRecord | null>;
+    count(args: RosterStudentCountArgs): Promise<number>;
     create(args: RosterStudentCreateArgs): Promise<RosterStudentRecord>;
   };
   classGroup: {
@@ -126,6 +134,7 @@ const rosterStudentDatabase: RosterStudentDatabase = {
   rosterStudent: {
     findMany: (args) => prisma.rosterStudent.findMany(args),
     findFirst: (args) => prisma.rosterStudent.findFirst(args),
+    count: (args) => prisma.rosterStudent.count(args),
     create: (args) => prisma.rosterStudent.create(args),
   },
   classGroup: {
@@ -190,6 +199,17 @@ export async function listActiveRosterStudentsForWorkspace(
   });
 
   return students.map(toRosterStudentDisplay);
+}
+
+export async function hasActiveRosterStudentsForWorkspace(
+  workspaceId: string,
+  database: RosterStudentDatabase = rosterStudentDatabase
+): Promise<boolean> {
+  const activeStudentCount = await database.rosterStudent.count({
+    where: { workspaceId, archivedAt: null },
+  });
+
+  return activeStudentCount > 0;
 }
 
 export async function getRosterStudentForWorkspace(

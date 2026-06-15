@@ -72,6 +72,19 @@ export default async function RosterPage() {
           <p>Your roster is private to your ClassTrace workspace.</p>
           <p className="text-xs">Roster records now read from your database workspace.</p>
         </div>
+        {!rosterIsEmpty && (
+          <div className="mt-4 rounded-card border border-border bg-card p-4 shadow-paper">
+            <p className="font-display text-lg font-semibold text-foreground">
+              Roster setup started.
+            </p>
+            <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+              You can keep adding students here or continue to the evidence feed.
+            </p>
+            <Button asChild size="sm" className="mt-3">
+              <Link href={routes.feed}>Continue to evidence feed</Link>
+            </Button>
+          </div>
+        )}
       </header>
 
       <div className="mb-8 grid gap-4 lg:grid-cols-[minmax(0,1.35fr)_minmax(220px,0.65fr)]">
@@ -93,12 +106,9 @@ export default async function RosterPage() {
           <div className="rounded-card border border-border bg-card p-6 text-sm leading-relaxed text-muted-foreground shadow-paper">
             <p className="font-medium text-foreground">No students on your roster yet.</p>
             <p className="mt-1">
-              Add one student above. After roster setup, you can return to the
-              evidence feed for your first student-specific capture.
+              Add one student above before opening the evidence feed for your first
+              student-specific capture.
             </p>
-            <Button asChild variant="outline" size="sm" className="mt-4">
-              <Link href={routes.feed}>Back to evidence feed</Link>
-            </Button>
           </div>
         ) : (
           <ul className="space-y-3">

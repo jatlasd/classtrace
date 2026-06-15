@@ -24,4 +24,10 @@ describe("Unit 07 roster database bridge", () => {
   it("does not link database roster rows to the localStorage student profile route", () => {
     expect(rosterPage).not.toContain("routes.student");
   });
+
+  it("shows a feed continuation action after roster setup has started", () => {
+    expect(rosterPage).toContain("Roster setup started.");
+    expect(rosterPage).toContain("Continue to evidence feed");
+    expect(rosterPage).toContain("routes.feed");
+  });
 });

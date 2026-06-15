@@ -481,6 +481,23 @@ The Unit 07 roster list is read-only and database-backed. Rows are intentionally
 
 ---
 
+### Roster Continue Action
+
+File: `app/app/roster/page.tsx`  
+Last updated: 2026-06-15
+
+| Property | Class |
+|---|---|
+| Shell | `rounded-card border border-border bg-card p-4 shadow-paper` |
+| Title | `font-display text-lg font-semibold text-foreground` |
+| Helper copy | `mt-1 text-sm leading-relaxed text-muted-foreground` |
+| Action | Existing `Button` with `size="sm"` |
+
+**Pattern notes:**  
+The roster continue action appears only after the teacher has at least one active database roster student. It should feel like a calm next step, not a completion badge or wizard. Keep the copy plain: teachers can continue to the evidence feed or keep adding students. This pattern does not hide the roster page or remove manual entry/import controls.
+
+---
+
 ### Manual Student Entry Form
 
 File: `components/roster/manual-student-entry-form.tsx`  

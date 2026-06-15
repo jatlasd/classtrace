@@ -8,6 +8,7 @@ vi.mock("@/lib/db/prisma", () => ({
     rosterStudent: {
       findMany: vi.fn(),
       findFirst: vi.fn(),
+      count: vi.fn(),
       create: vi.fn(),
     },
     classGroup: {
@@ -18,6 +19,7 @@ vi.mock("@/lib/db/prisma", () => ({
 
 import {
   createRosterStudentForWorkspace,
+  hasActiveRosterStudentsForWorkspace,
   listActiveRosterStudentsForWorkspace,
   type RosterStudentDatabase,
 } from "@/lib/students/roster-students";
@@ -60,6 +62,7 @@ describe("roster student database helpers", () => {
           return [buildRecord({ id: "student_1", workspaceId: "workspace_1", displayName: "Mary", mentionHandle: "mary" })];
         },
         findFirst: async () => null,
+        count: async () => 0,
         create: async () => buildRecord({ id: "unused", workspaceId: "workspace_1", displayName: "Unused", mentionHandle: "unused" }),
       },
       classGroup: {
@@ -88,6 +91,69 @@ describe("roster student database helpers", () => {
     ]);
   });
 
+  it("checks active roster presence with an active scoped count", async () => {
+    const calls: unknown[] = [];
+    const database = {
+      rosterStudent: {
+        findMany: async () => [],
+        findFirst: async () => null,
+        count: async (args) => {
+          calls.push(args);
+          return 1;
+        },
+        create: async () =>
+          buildRecord({
+            id: "unused",
+            workspaceId: "workspace_1",
+            displayName: "Unused",
+            mentionHandle: "unused",
+          }),
+      },
+      classGroup: {
+        findFirst: async () => null,
+      },
+    } satisfies RosterStudentDatabase;
+
+    const hasStudents = await hasActiveRosterStudentsForWorkspace(
+      "workspace_1",
+      database
+    );
+
+    expect(calls).toEqual([
+      {
+        where: { workspaceId: "workspace_1", archivedAt: null },
+      },
+    ]);
+    expect(hasStudents).toBe(true);
+  });
+
+  it("returns false when a workspace has no active roster students", async () => {
+    const database = {
+      rosterStudent: {
+        findMany: async () => [],
+        findFirst: async () => null,
+        count: async () => 0,
+        create: async () =>
+          buildRecord({
+            id: "unused",
+            workspaceId: "workspace_1",
+            displayName: "Unused",
+            mentionHandle: "unused",
+          }),
+      },
+      classGroup: {
+        findFirst: async () => null,
+      },
+    } satisfies RosterStudentDatabase;
+
+    const hasStudents = await hasActiveRosterStudentsForWorkspace(
+      "workspace_1",
+      database
+    );
+
+    expect(hasStudents).toBe(false);
+  });
+
   it("blocks duplicate handles inside the workspace before create", async () => {
     let createCalled = false;
     const database = {
@@ -100,6 +166,7 @@ describe("roster student database helpers", () => {
             displayName: "Jeremy",
             mentionHandle: "jeremy",
           }),
+        count: async () => 0,
         create: async () => {
           createCalled = true;
           return buildRecord({
@@ -137,6 +204,7 @@ describe("roster student database helpers", () => {
       rosterStudent: {
         findMany: async () => [],
         findFirst: async () => null,
+        count: async () => 0,
         create: async (args) => {
           createCalls.push(args);
           return buildRecord({
@@ -210,6 +278,7 @@ describe("roster student database helpers", () => {
 
           return null;
         },
+        count: async () => 0,
         create: async () => {
           createCalled = true;
           return buildRecord({
@@ -262,6 +331,7 @@ describe("roster student database helpers", () => {
       rosterStudent: {
         findMany: async () => [],
         findFirst: async () => null,
+        count: async () => 0,
         create: async () => {
           throw {
             code: "P2002",
