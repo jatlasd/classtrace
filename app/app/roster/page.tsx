@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useId, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { routes } from "@/lib/routes";
 import {
@@ -56,6 +56,10 @@ function StudentEditor({
     student ? studentToGradeGroup(student) : ""
   );
   const [error, setError] = useState<string | null>(null);
+  const fieldId = useId();
+  const displayNameId = `${fieldId}-display-name`;
+  const handleId = `${fieldId}-handle`;
+  const gradeGroupId = `${fieldId}-grade-group`;
 
   function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
@@ -77,10 +81,14 @@ function StudentEditor({
   return (
     <form onSubmit={handleSubmit} className="space-y-3">
       <div className="space-y-1">
-        <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+        <label
+          htmlFor={displayNameId}
+          className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground"
+        >
           Display name
         </label>
         <input
+          id={displayNameId}
           type="text"
           value={displayName}
           onChange={(event) => setDisplayName(event.target.value)}
@@ -89,10 +97,14 @@ function StudentEditor({
       </div>
 
       <div className="space-y-1">
-        <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+        <label
+          htmlFor={handleId}
+          className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground"
+        >
           Handle
         </label>
         <input
+          id={handleId}
           type="text"
           value={handle}
           onChange={(event) => setHandle(event.target.value)}
@@ -101,10 +113,14 @@ function StudentEditor({
       </div>
 
       <div className="space-y-1">
-        <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+        <label
+          htmlFor={gradeGroupId}
+          className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground"
+        >
           Grade / group
         </label>
         <input
+          id={gradeGroupId}
           type="text"
           value={gradeGroup}
           onChange={(event) => setGradeGroup(event.target.value)}
@@ -137,6 +153,7 @@ export default function RosterPage() {
   const [students, setStudents] = useState<Student[]>(() => getAllStudents());
   const [editingId, setEditingId] = useState<string | null>(null);
   const [listError, setListError] = useState<string | null>(null);
+  const rosterIsEmpty = students.length === 0;
 
   useEffect(() => {
     queueMicrotask(() => {
@@ -210,29 +227,66 @@ export default function RosterPage() {
   }
 
   return (
-    <div className="mx-auto max-w-2xl px-4 py-8 sm:px-6">
+    <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6">
       <header className="mb-8">
-        <h1 className="font-display text-2xl font-semibold text-foreground">My roster</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Students you can @mention in captures.
+        <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          Roster setup
         </p>
-        <p className="mt-1 text-xs text-muted-foreground">
-          For this POC, your roster saves in this browser only.
-        </p>
+        <h1 className="font-display text-2xl font-semibold tracking-tight text-foreground">
+          {rosterIsEmpty
+            ? "Add your first student to start capturing evidence."
+            : "My roster"}
+        </h1>
+        <div className="mt-2 space-y-1 text-sm leading-relaxed text-muted-foreground">
+          <p>
+            Captures need one student from your roster before they can become useful
+            evidence.
+          </p>
+          <p>Your roster is private to your ClassTrace workspace.</p>
+          <p className="text-xs">
+            For this POC, your roster saves in this browser only.
+          </p>
+        </div>
       </header>
 
-      <section className="mb-8 rounded-card border border-border bg-card p-4 shadow-paper">
-        <h2 className="mb-1 text-sm font-semibold text-foreground">Add student</h2>
-        <p className="mb-4 text-xs text-muted-foreground">
-          Use a handle that matches how you type @mentions (for example, @Mary).
-        </p>
+      <div className="mb-8 grid gap-4 lg:grid-cols-[minmax(0,1.35fr)_minmax(220px,0.65fr)]">
+        <section className="rounded-card border border-border bg-card p-4 shadow-paper">
+          <div className="mb-4">
+            <p className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+              Recommended first step
+            </p>
+            <h2 className="font-display text-lg font-semibold text-foreground">
+              Start with one student
+            </h2>
+            <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+              Use a name and handle your capture notes will recognize. You can add
+              more students after the first one.
+            </p>
+          </div>
 
-        <StudentEditor
-          key={`add-${students.length}`}
-          submitLabel="Add to roster"
-          onSubmit={handleAddStudent}
-        />
-      </section>
+          <StudentEditor
+            key={`add-${students.length}`}
+            submitLabel="Add to roster"
+            onSubmit={handleAddStudent}
+          />
+        </section>
+
+        <aside className="rounded-card border border-border bg-card p-4 shadow-paper">
+          <p className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+            Another setup path
+          </p>
+          <h2 className="font-display text-lg font-semibold text-foreground">
+            Import a basic list later
+          </h2>
+          <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+            Roster import will preview students before saving. For now, start with
+            one student and add more when you need them.
+          </p>
+          <Button type="button" variant="outline" size="sm" disabled className="mt-4">
+            Import planned
+          </Button>
+        </aside>
+      </div>
 
       <section>
         <h2 className="mb-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
@@ -246,9 +300,16 @@ export default function RosterPage() {
         )}
 
         {students.length === 0 ? (
-          <p className="rounded-card border border-border bg-card p-6 text-sm text-muted-foreground">
-            No students on your roster yet.
-          </p>
+          <div className="rounded-card border border-border bg-card p-6 text-sm leading-relaxed text-muted-foreground shadow-paper">
+            <p className="font-medium text-foreground">No students on your roster yet.</p>
+            <p className="mt-1">
+              Add your first student above, then return to the evidence feed for your
+              first student-specific capture.
+            </p>
+            <Button asChild variant="outline" size="sm" className="mt-4">
+              <Link href={routes.feed}>Back to evidence feed</Link>
+            </Button>
+          </div>
         ) : (
           <ul className="space-y-3">
             {students.map((student) => (

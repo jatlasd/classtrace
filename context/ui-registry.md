@@ -438,6 +438,46 @@ Roster and student screens should support capture and evidence review. They shou
 
 ---
 
+### Guided Roster Setup Cards
+
+File: `app/app/roster/page.tsx`  
+Last updated: 2026-06-15
+
+| Property | Class |
+|---|---|
+| Page shell | `mx-auto max-w-3xl px-4 py-8 sm:px-6` |
+| Eyebrow | `text-xs font-semibold uppercase tracking-wider text-muted-foreground` |
+| Page title | `font-display text-2xl font-semibold tracking-tight text-foreground` |
+| Helper copy | `text-sm leading-relaxed text-muted-foreground` |
+| Card grid | `grid gap-4 lg:grid-cols-[minmax(0,1.35fr)_minmax(220px,0.65fr)]` |
+| Setup card | `rounded-card border border-border bg-card p-4 shadow-paper` |
+| Card title | `font-display text-lg font-semibold text-foreground` |
+| Card helper | `text-xs leading-relaxed text-muted-foreground` |
+| Empty roster card | `rounded-card border border-border bg-card p-6 text-sm leading-relaxed text-muted-foreground shadow-paper` |
+
+**Pattern notes:**  
+Guided roster setup lives inside the authenticated app shell, not a full-screen wizard. The manual-entry card is visually primary and the import card is secondary/non-saving until import is built later. Copy should explain that roster setup comes before evidence capture and avoid district, SIS, or admin language.
+
+---
+
+### Feed Roster Required State
+
+File: `components/dashboard/evidence-feed.tsx`  
+Last updated: 2026-06-15
+
+| Property | Class |
+|---|---|
+| Shell | `rounded-card border border-border bg-card p-4 shadow-paper` |
+| Eyebrow | `text-[10px] font-semibold uppercase tracking-wider text-muted-foreground` |
+| Title | `font-display text-lg font-semibold text-foreground` |
+| Body | `text-sm leading-relaxed text-muted-foreground` |
+| Primary action | Existing `Button` with `h-9 rounded-lg px-5 text-sm font-semibold` |
+
+**Pattern notes:**  
+When the local roster is empty, the feed shows this setup prompt in the composer position so teachers are guided toward one-student roster setup before capture. This is UI guidance only for Unit 06; full one-student capture enforcement belongs to a later unit.
+
+---
+
 ## Registry Update Rules
 
 After building or changing a UI component:
@@ -458,7 +498,6 @@ Do not let this registry drift from the actual UI.
 
 These patterns should be added or refined when they are built or audited:
 
-- Guided roster setup card
 - Manual student entry form
 - Roster import preview table
 - Student profile header

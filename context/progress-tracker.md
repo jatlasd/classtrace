@@ -6,19 +6,61 @@ Update this file after every meaningful implementation change.
 
 ## Current Phase
 
-- Phase 1 in progress — production app foundation
+- Phase 2 in progress — roster onboarding
 - Unit 02 complete and verified — Route Map and App Shell (`context/specs/02-route-map-and-app-shell.md`)
 - Unit 03 complete and verified — Public Landing Page UI (`context/specs/03-public-landing-page-ui.md`)
 - Unit 04 complete and verified — Clerk Auth Foundation (`context/specs/04-clerk-auth-foundation.md`)
 - Unit 05 complete and verified — Prisma and Neon Database Foundation (`context/specs/05-prisma-and-neon-database-foundation.md`)
+- Unit 06 complete and verified — Guided Roster Setup UI (`context/specs/06-guided-roster-setup-ui.md`)
 - Design system overhaul applied from `classtrace_asset_kit/` (warm paper palette, Fraunces + Inter + Caveat, landing copy/layout aligned to asset kit)
 
 ---
 
 ## Current Goal
 
-- Prepare the next focused unit spec before starting Phase 2, Unit 06 — Guided Roster Setup UI.
-- Do not start Unit 06 implementation until its spec exists and the human explicitly confirms.
+- Prepare the next focused unit spec before starting Phase 2, Unit 07 — Student Roster Database Model and Queries.
+- Do not start Unit 07 implementation until its spec exists and the human explicitly confirms.
+
+---
+
+## Unit 06 — Guided Roster Setup UI (Complete)
+
+Spec: `context/specs/06-guided-roster-setup-ui.md`
+
+### What was completed
+
+- Adapted `/app/roster` so an empty local roster is framed as first-time roster setup instead of a blank management page.
+- Added teacher-native setup copy explaining that roster setup comes before capture and that the roster is private to the teacher workspace.
+- Repositioned the existing localStorage-backed manual add-student form as the recommended first setup path.
+- Added a secondary non-saving import card that explains basic import is planned later and does not add SIS/district sync.
+- Added a local roster-required state in the evidence feed that replaces the quick capture composer when the local roster is empty and links to `/app/roster`.
+- Preserved the existing localStorage-backed roster and capture behavior for non-empty roster state.
+- Added `lib/guided-roster-setup-ui.test.ts` to guard Unit 06 copy and scope boundaries.
+- Updated `context/ui-registry.md` with Guided Roster Setup Cards and Feed Roster Required State patterns.
+
+### Verification
+
+- `npm run test -- lib/guided-roster-setup-ui.test.ts` — failed before implementation for missing roster setup and feed guidance copy; passed after implementation (3 tests).
+- Review follow-up: tightened `lib/guided-roster-setup-ui.test.ts` to guard import-card vocabulary and empty-roster feed copy; failed before fixes and passed after fixes.
+- Initial combined PowerShell command using `&&` failed before checks ran because this shell does not support `&&`; verification was rerun with PowerShell-compatible exit-code checks.
+- `npm run lint` — pass.
+- `npm run test` — pass (56 tests).
+- `npm run build` — pass.
+- IDE lints for edited files — no linter errors found after accessibility fixes.
+- Browser checks with local dev server — pass:
+  - `/app/roster` empty local roster shows guided setup, manual add path, disabled import path, and app-shell navigation.
+  - `/app/feed` empty local roster shows the roster-required card instead of the quick capture composer.
+  - Local POC manual add still works with allowed fictional student Mary using handle `M`.
+  - `/app/feed` with non-empty local roster shows the quick capture composer.
+  - Desktop viewport had no horizontal overflow.
+  - Mobile emulation at 375px had no horizontal overflow and mobile nav was present.
+
+### Remaining risks / follow-ups
+
+- This unit intentionally does not wire roster reads/writes to Prisma.
+- This unit intentionally does not parse or save imports.
+- This unit intentionally does not persist onboarding completion.
+- This unit intentionally does not enforce exactly one resolved student in capture save behavior; full enforcement remains Unit 12.
 
 ---
 
@@ -230,6 +272,8 @@ Legacy:
 - Phase 1 unit 04 (Clerk Auth Foundation) implemented and verified — see **Unit 04 — Clerk Auth Foundation (Complete)** above.
 - `context/specs/05-prisma-and-neon-database-foundation.md` created for Phase 1 unit 05.
 - Phase 1 unit 05 (Prisma and Neon Database Foundation) implemented and verified — see **Unit 05 — Prisma and Neon Database Foundation (Complete)** above.
+- `context/specs/06-guided-roster-setup-ui.md` created for Phase 2 unit 06.
+- Phase 2 unit 06 (Guided Roster Setup UI) implemented and verified — see **Unit 06 — Guided Roster Setup UI (Complete)** above.
 
 ---
 
@@ -288,7 +332,7 @@ Verification after refinement: `npm run lint` pass, `npm run build` pass, `npm r
 
 ## Next Up
 
-1. Write `context/specs/06-guided-roster-setup-ui.md` before implementing Phase 2, Unit 06.
+1. Write `context/specs/07-student-roster-database-model-and-queries.md` before implementing Phase 2, Unit 07.
 2. Optionally expand `README.md` with a short pointer to `AGENTS.md` and the context framework beyond the Unit 02 route updates already made.
 
 ---
@@ -399,3 +443,5 @@ Verification after refinement: `npm run lint` pass, `npm run build` pass, `npm r
 - Unit 02 kept existing localStorage-backed POC feature behavior intact while moving the feed, roster, and student timeline into the shared `/app` shell.
 - Unit 02 is done; next work is unit 03 (Public Landing Page UI) only after its spec is written — do not start implementation from the build plan alone.
 - The local review skill was intentionally renamed from `.agents/skills/review` to `.agents/skills/pleasereview` because `/review` conflicted with other review tooling; do not treat that skill-folder change as accidental auth-unit drift.
+- Unit 06 spec was created on 2026-06-15. It scopes Guided Roster Setup UI as a UI/workflow-framing unit only: no Prisma roster wiring, no server actions, no import parsing, no onboarding persistence, and no capture enforcement changes.
+- Unit 06 implementation completed on 2026-06-15. It preserved localStorage-backed POC roster behavior while adding guided empty-roster setup and feed guidance.

@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { ClassTraceNoticedPanel } from "@/components/dashboard/classtrace-noticed-panel";
 import { EvidenceCaptureCard } from "@/components/dashboard/evidence-capture-card";
@@ -21,7 +22,10 @@ import { buildNoteDraft } from "@/lib/note-processing";
 import type { NoteDraft } from "@/lib/note-processing/types";
 import {
   mentionDisplayLabel,
+  getAllStudents,
+  type Student,
 } from "@/lib/students";
+import { routes } from "@/lib/routes";
 import { X } from "lucide-react";
 import {
   hasExistingPocData,
@@ -245,7 +249,6 @@ function InboxFilterControl({
         <button
           key={option.value}
           type="button"
-          aria-pressed={filter === option.value ? "true" : "false"}
           onClick={() => onFilterChange(option.value)}
           className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
             filter === option.value
@@ -254,6 +257,7 @@ function InboxFilterControl({
           }`}
         >
           {option.label}
+          {filter === option.value ? <span className="sr-only"> selected</span> : null}
         </button>
       ))}
     </div>
@@ -311,15 +315,40 @@ function PocModeCard({
   );
 }
 
+function RosterRequiredState() {
+  return (
+    <section className="rounded-card border border-border bg-card p-4 shadow-paper">
+      <p className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+        Roster needed
+      </p>
+      <h2 className="font-display text-lg font-semibold text-foreground">
+        Add one student before capturing evidence.
+      </h2>
+      <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+        Captures need one student from your roster. Start with a name and handle,
+        then come back here for your first student-specific capture.
+      </p>
+      <Button asChild className="mt-4 h-9 rounded-lg px-5 text-sm font-semibold">
+        <Link href={routes.roster}>Set up roster</Link>
+      </Button>
+    </section>
+  );
+}
+
 export function EvidenceFeed() {
   const [items, setItems] = useState<FeedItem[]>(() => seedFeedItems());
+  const [rosterStudents, setRosterStudents] = useState<Student[]>(() =>
+    getAllStudents()
+  );
   const [filter, setFilter] = useState<InboxFilter>("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [hydrated, setHydrated] = useState(false);
+  const rosterSetupNeeded = hydrated && rosterStudents.length === 0;
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- hydrate captures from localStorage after mount
     setItems(loadInitialFeedItems());
+    setRosterStudents(getAllStudents());
     setHydrated(true);
   }, []);
 
@@ -462,6 +491,7 @@ export function EvidenceFeed() {
 
     const captures = loadWideDemoClassroom();
     setItems(captures.map(storedCaptureToFeedItem));
+    setRosterStudents(getAllStudents());
     setFilter("all");
     setSearchQuery("");
   }
@@ -471,7 +501,11 @@ export function EvidenceFeed() {
       <div className="mx-auto w-full max-w-[640px] flex-1 px-4 py-6 sm:px-6 lg:py-8">
         <EvidenceFeedHeader />
         <div className="space-y-4">
-          <QuickCaptureCard onDraft={handleDraft} />
+          {rosterSetupNeeded ? (
+            <RosterRequiredState />
+          ) : (
+            <QuickCaptureCard onDraft={handleDraft} />
+          )}
           <PocModeCard
             onLoadDemo={handleLoadDemo}
             onExport={handleExport}
@@ -488,6 +522,10 @@ export function EvidenceFeed() {
           {!hydrated ? (
             <p className="px-1 py-8 text-center text-sm text-muted-foreground">
               Loading your evidence inbox…
+            </p>
+          ) : items.length === 0 && rosterSetupNeeded ? (
+            <p className="px-1 py-8 text-center text-sm text-muted-foreground">
+              Your evidence inbox will start here after roster setup.
             </p>
           ) : items.length === 0 ? (
             <p className="px-1 py-8 text-center text-sm text-muted-foreground">
