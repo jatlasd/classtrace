@@ -481,6 +481,33 @@ The Unit 07 roster list is read-only and database-backed. Rows are intentionally
 
 ---
 
+### Manual Student Entry Form
+
+File: `components/roster/manual-student-entry-form.tsx`  
+Last updated: 2026-06-15
+
+| Property | Class |
+|---|---|
+| Form shell | `space-y-4` |
+| Eyebrow | `text-[10px] font-semibold uppercase tracking-wider text-muted-foreground` |
+| Title | `font-display text-lg font-semibold text-foreground` |
+| Helper copy | `text-xs leading-relaxed text-muted-foreground` |
+| Field group | `space-y-1.5` |
+| Label | `text-sm font-medium text-foreground` |
+| Standard input | `h-10 w-full rounded-md border border-border bg-card px-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/20 disabled:cursor-not-allowed disabled:opacity-50` |
+| Handle input shell | `flex h-10 rounded-md border border-border bg-card focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/20` |
+| Handle prefix | `flex items-center border-r border-border px-3 text-sm text-muted-foreground` |
+| Handle input | `min-w-0 flex-1 bg-transparent px-3 text-sm text-foreground outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50` |
+| Status message area | `min-h-5 text-sm` |
+| Error text | `text-destructive` |
+| Success text | `text-muted-foreground` |
+| Submit button | Existing `Button` with `size="lg"` and `h-9 rounded-lg px-5 text-sm font-semibold` |
+
+**Pattern notes:**  
+The manual entry form lives inside the guided roster setup card and replaces the Unit 07 transition copy. It keeps the form short: student name, editable mention handle, and optional school/local ID. Class/group creation stays deferred because a free-text class/group field would introduce class-group management behavior outside Unit 08. The handle field uses a muted `@` prefix while submitting the normalized handle value to the existing workspace-scoped server action.
+
+---
+
 ### Feed Roster Required State
 
 File: `components/dashboard/evidence-feed.tsx`  

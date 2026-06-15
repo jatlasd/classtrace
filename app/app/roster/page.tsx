@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ManualStudentEntryForm } from "@/components/roster/manual-student-entry-form";
 import { Button } from "@/components/ui/button";
 import { getCurrentWorkspace } from "@/lib/auth/get-current-workspace";
 import { routes } from "@/lib/routes";
@@ -70,21 +71,7 @@ export default async function RosterPage() {
 
       <div className="mb-8 grid gap-4 lg:grid-cols-[minmax(0,1.35fr)_minmax(220px,0.65fr)]">
         <section className="rounded-card border border-border bg-card p-4 shadow-paper">
-          <div className="mb-4">
-            <p className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-              Recommended first step
-            </p>
-            <h2 className="font-display text-lg font-semibold text-foreground">
-              Manual entry connects next
-            </h2>
-            <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-              Unit 07 adds the secure roster database layer. The next unit connects
-              the teacher-facing form for adding students.
-            </p>
-          </div>
-          <Button asChild size="sm" variant="outline">
-            <Link href={routes.feed}>Back to evidence feed</Link>
-          </Button>
+          <ManualStudentEntryForm />
         </section>
 
         <aside className="rounded-card border border-border bg-card p-4 shadow-paper">
@@ -113,9 +100,8 @@ export default async function RosterPage() {
           <div className="rounded-card border border-border bg-card p-6 text-sm leading-relaxed text-muted-foreground shadow-paper">
             <p className="font-medium text-foreground">No students on your roster yet.</p>
             <p className="mt-1">
-              Manual entry will connect to this database-backed roster in the next
-              unit. After that, you can return to the evidence feed for your first
-              student-specific capture.
+              Add one student above. After roster setup, you can return to the
+              evidence feed for your first student-specific capture.
             </p>
             <Button asChild variant="outline" size="sm" className="mt-4">
               <Link href={routes.feed}>Back to evidence feed</Link>

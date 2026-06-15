@@ -13,14 +13,58 @@ Update this file after every meaningful implementation change.
 - Unit 05 complete and verified — Prisma and Neon Database Foundation (`context/specs/05-prisma-and-neon-database-foundation.md`)
 - Unit 06 complete and verified — Guided Roster Setup UI (`context/specs/06-guided-roster-setup-ui.md`)
 - Unit 07 complete and verified — Student Roster Database Model and Queries (`context/specs/07-student-roster-database-model-and-queries.md`)
+- Unit 08 implemented and verified with automated checks — Manual Student Entry (`context/specs/08-manual-student-entry.md`)
 - Design system overhaul applied from `classtrace_asset_kit/` (warm paper palette, Fraunces + Inter + Caveat, landing copy/layout aligned to asset kit)
 
 ---
 
 ## Current Goal
 
-- Prepare the next focused unit spec before starting Phase 2, Unit 08 — Manual Student Entry.
-- Do not start Unit 08 implementation until its spec exists and the human explicitly confirms.
+- Prepare the next focused unit spec before starting Phase 2, Unit 09 — Roster Import.
+- Do not start Unit 09 implementation until its spec exists and the human explicitly confirms.
+
+---
+
+## Unit 08 — Manual Student Entry (Implemented)
+
+Spec: `context/specs/08-manual-student-entry.md`
+
+### What was completed
+
+- Added `lib/students/derive-mention-handle.ts` to create simple handle suggestions from display names.
+- Added `components/roster/manual-student-entry-form.tsx` as a small Client Component for adding one student to the database-backed roster.
+- Wired `/app/roster` to show the manual entry form in the recommended first-step card.
+- Kept roster rows read-only/non-navigational because database-backed student timelines remain later work.
+- Kept import as a non-saving Unit 09 placeholder.
+- Included required student name and mention handle fields plus optional school/local ID.
+- Deferred class/group creation to a later roster unit rather than introducing class-group management behavior.
+- Preserved server-side ownership by submitting through `actions/roster.ts`; no client workspace, teacher, or Clerk IDs are accepted by the form.
+- Added duplicate school/local ID detection in `lib/students/roster-students.ts` so that optional field does not reuse the handle-duplicate error.
+- Review follow-up: changed school/local ID duplicate detection to match the workspace-wide database uniqueness rule, including archived roster students, and mapped Prisma `P2002` school/local ID constraint errors to field-specific copy.
+- Added focused tests for handle suggestion, manual-entry UI bridging, and duplicate school/local ID handling.
+- Updated `context/ui-registry.md` with the Manual Student Entry Form pattern.
+- Did not add roster import, onboarding completion, feed redirects, capture enforcement, evidence persistence, timeline database wiring, archive/delete, export, organizations, admin behavior, AI, uploads, analytics, billing, or new dependencies.
+
+### Verification
+
+- Initial focused test command using `npm run test ...` was blocked by PowerShell execution policy for `npm.ps1`; reran with `npm.cmd`.
+- `npm.cmd run test -- lib/students/derive-mention-handle.test.ts lib/manual-student-entry.test.ts lib/student-roster-database-ui.test.ts lib/students/roster-students.test.ts` — pass (17 tests).
+- `npm.cmd run lint` — pass.
+- `npm.cmd run test` — initially failed because `lib/guided-roster-setup-ui.test.ts` still expected the Unit 07 "Manual entry connects next" copy; updated the stale assertion to expect `ManualStudentEntryForm`.
+- `npm.cmd run test` — pass after test update (81 tests).
+- `npm.cmd run build` — pass.
+- Review follow-up verification: `npm.cmd run test -- lib/students/roster-students.test.ts` — pass (6 tests); `npm.cmd run lint` — pass; `npm.cmd run test` — pass (82 tests); `npm.cmd run build` — pass.
+- Signed-out route check with `Invoke-WebRequest -UseBasicParsing -Method Head http://localhost:3000/app/roster` — pass; returns `307`.
+- Signed-in browser verification was attempted with the Browser plugin but blocked by a Browser runtime startup failure in this Windows sandbox (`CreateProcessAsUserW failed: 5`). No signed-in browser behavior is claimed as verified.
+
+### Remaining risks / follow-ups
+
+- Manual signed-in browser verification is still needed when the Browser plugin or an interactive browser session is available.
+- Class/group creation is intentionally deferred; Unit 08 does not save class/group text.
+- Unit 08 intentionally does not implement roster import; Unit 09 remains responsible for import parsing and preview.
+- Unit 08 intentionally does not persist onboarding completion or redirect users based on database roster count; Unit 10 remains responsible for onboarding completion.
+- `/app/feed` still uses the existing localStorage-backed POC roster presence check until later capture/feed units replace local persistence.
+- Student profile/timeline routes still do not read database roster records, so roster rows remain read-only until later units.
 
 ---
 
@@ -313,6 +357,11 @@ Legacy:
 - `context/specs/06-guided-roster-setup-ui.md` created for Phase 2 unit 06.
 - Phase 2 unit 06 (Guided Roster Setup UI) implemented and verified — see **Unit 06 — Guided Roster Setup UI (Complete)** above.
 
+- `context/specs/07-student-roster-database-model-and-queries.md` created for Phase 2 unit 07.
+- Phase 2 unit 07 (Student Roster Database Model and Queries) implemented and verified — see **Unit 07 — Student Roster Database Model and Queries (Complete)** above.
+- `context/specs/08-manual-student-entry.md` created for Phase 2 unit 08.
+- Phase 2 unit 08 (Manual Student Entry) implemented and verified with automated checks — see **Unit 08 — Manual Student Entry (Implemented)** above.
+
 ---
 
 ## Design System Overhaul (2026-06-11)
@@ -370,7 +419,7 @@ Verification after refinement: `npm run lint` pass, `npm run build` pass, `npm r
 
 ## Next Up
 
-1. Write `context/specs/08-manual-student-entry.md` before implementing Phase 2, Unit 08.
+1. Write `context/specs/09-roster-import.md` before implementing Phase 2, Unit 09.
 2. Optionally expand `README.md` with a short pointer to `AGENTS.md` and the context framework beyond the Unit 02 route updates already made.
 
 ---
@@ -488,3 +537,4 @@ Verification after refinement: `npm run lint` pass, `npm run build` pass, `npm r
 - Unit 07 spec was created on 2026-06-15. It scopes Student Roster Database Model and Queries as the server-side current-workspace and workspace-scoped roster access layer: no final manual-entry UI, no import parsing, no onboarding completion, no capture enforcement, and no evidence persistence changes.
 - Unit 07 implementation completed on 2026-06-15. `/app/roster` now reads database-backed active roster students for the signed-in teacher workspace and shows a Unit 08 transition state instead of the old browser-local add/edit/delete form.
 - Unit 07 review follow-up removed roster-row navigation to `/app/students/[studentId]` because that route still reads browser-local roster data.
+- Unit 08 spec was created on 2026-06-15. It scopes Manual Student Entry as the teacher-facing database-backed add-student form on `/app/roster`: display name, auto-generated editable mention handle, optional school/local ID, possible narrow class/group handling or explicit deferral, inline errors, and saved roster refresh. It explicitly excludes roster import, onboarding completion, capture enforcement, evidence persistence, archive/delete, export, student timeline database wiring, AI, uploads, organizations, admin behavior, and new dependencies.

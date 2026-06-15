@@ -186,6 +186,110 @@ describe("roster student database helpers", () => {
     });
   });
 
+  it("blocks duplicate school/local IDs inside the workspace before create", async () => {
+    let createCalled = false;
+    const findFirstCalls: unknown[] = [];
+    const database = {
+      rosterStudent: {
+        findMany: async () => [],
+        findFirst: async (args) => {
+          findFirstCalls.push(args);
+
+          if (
+            typeof args.where === "object" &&
+            args.where !== null &&
+            "schoolLocalId" in args.where
+          ) {
+            return buildRecord({
+              id: "student_existing",
+              workspaceId: "workspace_1",
+              displayName: "Jeff",
+              mentionHandle: "jeff",
+            });
+          }
+
+          return null;
+        },
+        create: async () => {
+          createCalled = true;
+          return buildRecord({
+            id: "student_created",
+            workspaceId: "workspace_1",
+            displayName: "Mary",
+            mentionHandle: "mary",
+          });
+        },
+      },
+      classGroup: {
+        findFirst: async () => null,
+      },
+    } satisfies RosterStudentDatabase;
+
+    const result = await createRosterStudentForWorkspace(
+      {
+        workspaceId: "workspace_1",
+        displayName: "Mary",
+        mentionHandle: "mary",
+        schoolLocalId: " local-1 ",
+      },
+      database
+    );
+
+    expect(findFirstCalls).toContainEqual({
+      where: {
+        workspaceId: "workspace_1",
+        mentionHandle: "mary",
+        archivedAt: null,
+      },
+      include: { classGroup: { select: { name: true } } },
+    });
+    expect(findFirstCalls).toContainEqual({
+      where: {
+        workspaceId: "workspace_1",
+        schoolLocalId: "local-1",
+      },
+      include: { classGroup: { select: { name: true } } },
+    });
+    expect(result).toEqual({
+      success: false,
+      error: "A student with this school/local ID already exists on your roster.",
+    });
+    expect(createCalled).toBe(false);
+  });
+
+  it("maps school/local ID unique constraint errors to school/local ID copy", async () => {
+    const database = {
+      rosterStudent: {
+        findMany: async () => [],
+        findFirst: async () => null,
+        create: async () => {
+          throw {
+            code: "P2002",
+            meta: { target: ["workspaceId", "schoolLocalId"] },
+          };
+        },
+      },
+      classGroup: {
+        findFirst: async () => null,
+      },
+    } satisfies RosterStudentDatabase;
+
+    const result = await createRosterStudentForWorkspace(
+      {
+        workspaceId: "workspace_1",
+        displayName: "Mary",
+        mentionHandle: "mary",
+        schoolLocalId: "local-1",
+      },
+      database
+    );
+
+    expect(result).toEqual({
+      success: false,
+      error: "A student with this school/local ID already exists on your roster.",
+    });
+  });
+
   it("keeps server helpers separate from POC browser storage", () => {
     expect(source).toContain("server-only");
     expect(source).not.toMatch(/localStorage|window|poc-storage/);

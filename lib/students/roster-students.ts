@@ -25,6 +25,7 @@ type RosterStudentFindFirstArgs = {
     workspaceId: string;
     id?: string;
     mentionHandle?: string;
+    schoolLocalId?: string;
     archivedAt?: null;
   };
   include: {
@@ -148,13 +149,34 @@ function normalizeOptionalInput(value: string | undefined): string | undefined {
   return normalized || undefined;
 }
 
-function isUniqueConstraintError(error: unknown): boolean {
+type UniqueConstraintError = {
+  code: "P2002";
+  meta?: unknown;
+};
+
+function isUniqueConstraintError(error: unknown): error is UniqueConstraintError {
   return (
     typeof error === "object" &&
     error !== null &&
     "code" in error &&
     error.code === "P2002"
   );
+}
+
+function uniqueConstraintIncludes(error: unknown, field: string): boolean {
+  if (!isUniqueConstraintError(error) || !("meta" in error)) {
+    return false;
+  }
+
+  const meta = error.meta;
+
+  if (typeof meta !== "object" || meta === null || !("target" in meta)) {
+    return false;
+  }
+
+  const target = meta.target;
+
+  return Array.isArray(target) && target.includes(field);
 }
 
 export async function listActiveRosterStudentsForWorkspace(
@@ -232,6 +254,23 @@ export async function createRosterStudentForWorkspace(
     };
   }
 
+  if (schoolLocalId) {
+    const duplicateSchoolLocalId = await database.rosterStudent.findFirst({
+      where: {
+        workspaceId: input.workspaceId,
+        schoolLocalId,
+      },
+      include: classGroupInclude,
+    });
+
+    if (duplicateSchoolLocalId) {
+      return {
+        success: false,
+        error: "A student with this school/local ID already exists on your roster.",
+      };
+    }
+  }
+
   try {
     const student = await database.rosterStudent.create({
       data: {
@@ -246,7 +285,14 @@ export async function createRosterStudentForWorkspace(
 
     return { success: true, student: toRosterStudentDisplay(student) };
   } catch (error) {
-    if (isUniqueConstraintError(error)) {
+    if (uniqueConstraintIncludes(error, "schoolLocalId")) {
+      return {
+        success: false,
+        error: "A student with this school/local ID already exists on your roster.",
+      };
+    }
+
+    if (uniqueConstraintIncludes(error, "mentionHandle") || isUniqueConstraintError(error)) {
       return {
         success: false,
         error: "A student with this handle already exists on your roster.",

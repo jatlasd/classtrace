@@ -18,7 +18,7 @@ describe("Unit 06 guided roster setup UI", () => {
   it("frames the empty roster page as the first setup step", () => {
     expect(rosterPage).toContain("Add your first student to start capturing evidence.");
     expect(rosterPage).toContain("Your roster is private to your ClassTrace workspace.");
-    expect(rosterPage).toContain("Manual entry connects next");
+    expect(rosterPage).toContain("ManualStudentEntryForm");
     expect(rosterPage).toContain("Import a basic list later");
     expect(rosterPage).not.toMatch(/\b(SIS|district)\b/i);
   });
