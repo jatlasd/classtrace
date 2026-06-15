@@ -9,19 +9,61 @@ Update this file after every meaningful implementation change.
 - Phase 1 in progress — production app foundation
 - Unit 02 complete and verified — Route Map and App Shell (`context/specs/02-route-map-and-app-shell.md`)
 - Unit 03 complete and verified — Public Landing Page UI (`context/specs/03-public-landing-page-ui.md`)
-- Unit 04 implemented with automated checks passing and signed-out runtime protection verified — Clerk Auth Foundation (`context/specs/04-clerk-auth-foundation.md`); signed-in browser access check remains manual
+- Unit 04 complete and verified — Clerk Auth Foundation (`context/specs/04-clerk-auth-foundation.md`)
+- Unit 05 complete and verified — Prisma and Neon Database Foundation (`context/specs/05-prisma-and-neon-database-foundation.md`)
 - Design system overhaul applied from `classtrace_asset_kit/` (warm paper palette, Fraunces + Inter + Caveat, landing copy/layout aligned to asset kit)
 
 ---
 
 ## Current Goal
 
-- Finish the signed-in browser access check for Phase 1, unit 04 when a Clerk test account/session is available.
-- Do not start unit 05 until the signed-in auth walkthrough is complete or the human explicitly accepts the remaining manual verification gap.
+- Prepare the next focused unit spec before starting Phase 2, Unit 06 — Guided Roster Setup UI.
+- Do not start Unit 06 implementation until its spec exists and the human explicitly confirms.
 
 ---
 
-## Unit 04 — Clerk Auth Foundation (Implemented; Signed-In Verification Pending)
+## Unit 05 — Prisma and Neon Database Foundation (Complete)
+
+Spec: `context/specs/05-prisma-and-neon-database-foundation.md`
+
+### What was completed
+
+- Validated the existing partial Prisma setup and kept the Prisma 7 generated-client path at `lib/generated/prisma`.
+- Added database scripts: `db:generate`, `db:migrate`, and `db:studio`.
+- Added Prisma generation lifecycle scripts: `postinstall`, `prebuild`, and `pretest`.
+- Added database placeholders to `.env.example` for `DATABASE_URL` and `DIRECT_URL`.
+- Replaced the placeholder Prisma schema with initial V1 models for `TeacherProfile`, `Workspace`, `ClassGroup`, `RosterStudent`, and `EvidenceRecord`.
+- Added workspace-scoped uniqueness for class-group names, roster mention handles, and optional school/local IDs.
+- Added archive metadata for class groups, roster students, and evidence records.
+- Added cascade behavior from workspace-owned records and from roster students to evidence records, with class-group references set to null when a class group is deleted.
+- Added a server-only Prisma client helper in `lib/db/prisma.ts`.
+- Added `lib/db/prisma-foundation.test.ts` to guard schema ownership, no raw draft note persistence, no out-of-scope V1 models, database env docs/scripts, and the DB helper shape.
+- Created and applied initial migration `prisma/migrations/20260615014925_init/migration.sql`.
+- Did not wire database reads or writes into roster, capture, evidence feed, validation, timeline, archive/delete, export, or onboarding workflows.
+- Did not add organizations, admin roles, district features, SIS sync, AI tables, file storage, analytics, billing, seed data, or demo database records.
+
+### Verification
+
+- `npm run test -- lib/db/prisma-foundation.test.ts` — failed before implementation for missing V1 models, missing database env placeholders/scripts, and missing DB helper; passed after implementation (5 tests).
+- `npm run db:generate` — pass; generated Prisma Client 7.8.0 to `lib/generated/prisma`.
+- `npm run db:migrate -- --name init` — pass; applied migration `20260615014925_init` to the configured Postgres database.
+- Review fix verification: after removing the ignored generated client directory, `npm run build` ran `prebuild`, regenerated Prisma Client 7.8.0 to `lib/generated/prisma`, and completed successfully.
+- `npm run lint` — pass.
+- `npm run test` — pass (53 tests); `pretest` regenerates Prisma Client before Vitest runs.
+- `npm run build` — pass.
+- Signed-out `HEAD /app/feed` smoke check — pass; returns `307` to `/sign-in?redirect_url=...`.
+- IDE lints for edited files — no linter errors found.
+
+### Remaining risks / follow-ups
+
+- `lib/generated/prisma` is generated and ignored by git; `postinstall`, `prebuild`, and `pretest` now regenerate it for normal install/build/test paths.
+- The database foundation is not wired to app workflows yet; roster and evidence behavior remain localStorage-backed POC behavior until later units.
+- Later delete UI must still show strong warnings before triggering cascade-backed permanent delete behavior.
+- `DIRECT_URL` is documented as a placeholder for Neon/Prisma migration setups, but the current Prisma config uses `DATABASE_URL`.
+
+---
+
+## Unit 04 — Clerk Auth Foundation (Complete)
 
 Spec: `context/specs/04-clerk-auth-foundation.md`
 
@@ -49,14 +91,18 @@ Spec: `context/specs/04-clerk-auth-foundation.md`
   - `GET /`, `/sign-in`, and `/sign-up` return `200`
   - signed-out `HEAD /app`, `/app/feed`, `/app/roster`, and `/app/settings` return `307` to `/sign-in` with return URLs
 
-### Verification pending
+### Signed-in browser verification
 
-- Signed-in browser access to `/app` and nested `/app/*` routes still needs a manual Clerk login session.
-- No signed-in runtime claim has been made yet.
+- Manual Clerk login session verified in browser on 2026-06-14.
+- `/app` redirects to `/app/feed` while signed in.
+- `/app/feed` renders the protected evidence inbox and capture composer while signed in.
+- `/app/roster` renders the protected roster page while signed in.
+- `/app/settings` renders the protected settings placeholder while signed in.
+- `/app/students/jeremy` renders the protected student route while signed in; the current browser roster is empty, so the page shows the expected "Student not found on your roster." state instead of redirecting to sign-in.
 
 ### Remaining risks / follow-ups
 
-- After signed-in browser verification passes, update this section to complete and move to unit 05 only with an approved spec.
+- Move to Unit 05 only after the human explicitly confirms implementation should start.
 
 ---
 
@@ -181,7 +227,9 @@ Legacy:
 - `context/specs/03-public-landing-page-ui.md` created for Phase 1 unit 03.
 - Phase 1 unit 03 (Public Landing Page UI) implemented and verified — see **Unit 03 — Public Landing Page UI (Complete)** above.
 - `context/specs/04-clerk-auth-foundation.md` created for Phase 1 unit 04.
-- Phase 1 unit 04 (Clerk Auth Foundation) implemented with automated checks passing and signed-out route protection verified — see **Unit 04 — Clerk Auth Foundation (Implemented; Signed-In Verification Pending)** above.
+- Phase 1 unit 04 (Clerk Auth Foundation) implemented and verified — see **Unit 04 — Clerk Auth Foundation (Complete)** above.
+- `context/specs/05-prisma-and-neon-database-foundation.md` created for Phase 1 unit 05.
+- Phase 1 unit 05 (Prisma and Neon Database Foundation) implemented and verified — see **Unit 05 — Prisma and Neon Database Foundation (Complete)** above.
 
 ---
 
@@ -234,16 +282,14 @@ Verification after refinement: `npm run lint` pass, `npm run build` pass, `npm r
 
 ## In Progress
 
-- Signed-in browser verification for Unit 04.
+- No implementation unit in progress.
 
 ---
 
 ## Next Up
 
-1. Run the signed-in auth walkthrough after manual Clerk login: `/app`, `/app/feed`, `/app/roster`, `/app/settings`, and a sample `/app/students/[studentId]` route.
-2. Mark Unit 04 complete after signed-in access is verified or the human accepts the remaining manual verification gap.
-3. Write `context/specs/05-prisma-and-neon-database-foundation.md` only after Unit 04 verification is settled.
-4. Optionally expand `README.md` with a short pointer to `AGENTS.md` and the context framework beyond the Unit 02 route updates already made.
+1. Write `context/specs/06-guided-roster-setup-ui.md` before implementing Phase 2, Unit 06.
+2. Optionally expand `README.md` with a short pointer to `AGENTS.md` and the context framework beyond the Unit 02 route updates already made.
 
 ---
 
@@ -251,7 +297,7 @@ Verification after refinement: `npm run lint` pass, `npm run build` pass, `npm r
 
 - Should `README.md` get a fuller Phase 1 refresh beyond the Unit 02 route/path updates?
 - Exact roster import format is not fully specified yet.
-- Exact Prisma schema is not written yet.
+- Exact Prisma schema has an initial migrated foundation, but future workflow units may refine fields as validation/export needs become concrete.
 - Exact deployment setup is not decided yet.
 - Demo data and tests still use `Anthony` as an example name; allowed fictional names per `AGENTS.md` are Jeremy, Stacy, Jeff, and Mary. Rename when touching demo/test data next.
 
@@ -269,9 +315,14 @@ Verification after refinement: `npm run lint` pass, `npm run build` pass, `npm r
 - Clerk post-auth fallback redirects point to `/app`, which preserves the existing `/app` to `/app/feed` app entry redirect until roster onboarding is added later.
 - V1 database direction is Neon Postgres.
 - V1 ORM direction is Prisma.
+- Prisma 7 generates the client into `lib/generated/prisma`, which remains ignored by git.
+- Server-side database access starts from `lib/db/prisma.ts`; Client Components must not import Prisma.
 - V1 has one personal teacher workspace per user.
+- The initial database ownership chain is `TeacherProfile` → `Workspace` → `RosterStudent` / `ClassGroup` / `EvidenceRecord`.
 - V1 has no organizations, admin dashboards, or shared student identities.
 - V1 students are isolated teacher-owned roster entries.
+- Roster student `mentionHandle` values are unique inside one workspace.
+- Optional `schoolLocalId` values are unique inside one workspace.
 - V1 captures are text-only.
 - V1 uses deterministic parsing only.
 - V1 does not include generative AI.
@@ -286,6 +337,7 @@ Verification after refinement: `npm run lint` pass, `npm run build` pass, `npm r
 - Archive is the safer/default cleanup action.
 - Permanent delete requires strong warning.
 - Deleting a student also deletes that student’s evidence records after sufficient warning.
+- The initial schema uses database cascade from `RosterStudent` to `EvidenceRecord`; later UI/actions must still require explicit warning before triggering permanent delete.
 - V1 export is individual-student export only.
 - Current calm ClassTrace visual style should be preserved.
 - Current Tailwind + shadcn/Radix-style component approach should be preserved.

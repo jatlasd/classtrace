@@ -1,0 +1,95 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model TeacherProfile {
+  id          String    @id @default(cuid())
+  clerkUserId String    @unique
+  displayName String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  workspace   Workspace?
+}
+
+model Workspace {
+  id               String           @id @default(cuid())
+  teacherProfileId String           @unique
+  name             String           @default("Personal workspace")
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+  teacherProfile   TeacherProfile   @relation(fields: [teacherProfileId], references: [id], onDelete: Cascade)
+  classGroups      ClassGroup[]
+  rosterStudents   RosterStudent[]
+  evidenceRecords  EvidenceRecord[]
+}
+
+model ClassGroup {
+  id              String           @id @default(cuid())
+  workspaceId     String
+  name            String
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  archivedAt      DateTime?
+  workspace       Workspace        @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  rosterStudents  RosterStudent[]
+  evidenceRecords EvidenceRecord[]
+
+  @@unique([workspaceId, name])
+  @@index([workspaceId])
+}
+
+model RosterStudent {
+  id              String           @id @default(cuid())
+  workspaceId     String
+  classGroupId    String?
+  displayName     String
+  mentionHandle   String
+  schoolLocalId   String?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  archivedAt      DateTime?
+  workspace       Workspace        @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  classGroup      ClassGroup?      @relation(fields: [classGroupId], references: [id], onDelete: SetNull)
+  evidenceRecords EvidenceRecord[]
+
+  @@unique([workspaceId, mentionHandle])
+  @@unique([workspaceId, schoolLocalId])
+  @@index([workspaceId])
+  @@index([classGroupId])
+}
+
+model EvidenceRecord {
+  id              String         @id @default(cuid())
+  workspaceId     String
+  rosterStudentId String
+  classGroupId    String?
+  evidenceDate    DateTime       @default(now())
+  summary         String
+  evidenceType    String
+  topic           String?
+  supportLevel    String?
+  context         String?
+  performance     String?
+  communication   String?
+  behavior        String?
+  tags            String[]       @default([])
+  followUpNeeded  Boolean        @default(false)
+  followUpNotes   String?
+  validatedAt     DateTime
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  archivedAt      DateTime?
+  workspace       Workspace      @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  rosterStudent   RosterStudent  @relation(fields: [rosterStudentId], references: [id], onDelete: Cascade)
+  classGroup      ClassGroup?    @relation(fields: [classGroupId], references: [id], onDelete: SetNull)
+
+  @@index([workspaceId, createdAt])
+  @@index([workspaceId, rosterStudentId])
+  @@index([rosterStudentId, evidenceDate])
+  @@index([classGroupId])
+}
