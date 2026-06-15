@@ -48,7 +48,7 @@ Do not assume the product or architecture from the code alone. The context files
 
 - `/architect` — before any complex feature. Think before building.
 - `/imprint` — after any new UI component. Capture patterns.
-- `/review` — before demo or when something feels off.
+- `/pleasereview` — before demo or when something feels off.
 - `/recover` — when something breaks after one failed correction.
 - `/remember save` — when a feature spans multiple sessions.
 - `/remember restore` — when returning after a multi-session feature.
