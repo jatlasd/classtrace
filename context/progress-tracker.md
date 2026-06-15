@@ -12,14 +12,52 @@ Update this file after every meaningful implementation change.
 - Unit 04 complete and verified — Clerk Auth Foundation (`context/specs/04-clerk-auth-foundation.md`)
 - Unit 05 complete and verified — Prisma and Neon Database Foundation (`context/specs/05-prisma-and-neon-database-foundation.md`)
 - Unit 06 complete and verified — Guided Roster Setup UI (`context/specs/06-guided-roster-setup-ui.md`)
+- Unit 07 complete and verified — Student Roster Database Model and Queries (`context/specs/07-student-roster-database-model-and-queries.md`)
 - Design system overhaul applied from `classtrace_asset_kit/` (warm paper palette, Fraunces + Inter + Caveat, landing copy/layout aligned to asset kit)
 
 ---
 
 ## Current Goal
 
-- Prepare the next focused unit spec before starting Phase 2, Unit 07 — Student Roster Database Model and Queries.
-- Do not start Unit 07 implementation until its spec exists and the human explicitly confirms.
+- Prepare the next focused unit spec before starting Phase 2, Unit 08 — Manual Student Entry.
+- Do not start Unit 08 implementation until its spec exists and the human explicitly confirms.
+
+---
+
+## Unit 07 — Student Roster Database Model and Queries (Complete)
+
+Spec: `context/specs/07-student-roster-database-model-and-queries.md`
+
+### What was completed
+
+- Added `lib/auth/get-current-workspace.ts` to resolve the signed-in Clerk user to one app-owned `TeacherProfile` and one personal `Workspace` server-side.
+- Added `lib/students/normalize-mention-handle.ts` for production mention-handle normalization.
+- Added `lib/students/roster-students.ts` with server-only, workspace-scoped helpers to list active roster students, get one roster student by ID, and create a roster student.
+- Added `actions/roster.ts` with a narrow `createRosterStudent` server action that resolves the current workspace server-side and revalidates `/app/roster` after successful create.
+- Converted `/app/roster` from the localStorage-backed Client Component to a Server Component that reads active database-backed roster students for the current workspace.
+- Preserved the guided empty-roster framing while changing the primary card to a Unit 07 transition state: manual entry connects in Unit 08.
+- Updated `context/ui-registry.md` with the database roster list pattern and the Unit 07 roster setup transition.
+- Added focused tests for handle normalization, roster helper boundaries, current-workspace helper structure, roster action structure, and the roster database UI bridge.
+- Did not add final manual-entry UI, roster import parsing, onboarding completion, capture enforcement, evidence persistence, archive/delete, export, organizations, admin behavior, AI, uploads, analytics, billing, or new dependencies.
+
+### Verification
+
+- `npm run test -- actions/roster.test.ts lib/students/normalize-mention-handle.test.ts lib/students/roster-students.test.ts lib/auth/get-current-workspace.test.ts lib/student-roster-database-ui.test.ts lib/guided-roster-setup-ui.test.ts` — failed before implementation for missing Unit 07 files and localStorage roster page; passed after implementation (17 tests).
+- `npm run lint` — pass.
+- `npm run test` — pass (70 tests).
+- `npm run build` — initially failed on a Prisma return-shape type mismatch in `lib/students/roster-students.ts`; fixed by requiring the class-group include on roster `findFirst` calls; passed after fix.
+- IDE lints for edited files — no linter errors found.
+- Signed-out route check with `curl.exe -I http://localhost:3000/app/roster` — pass; returns `307` to `/sign-in?redirect_url=...`.
+- Signed-in browser check at `/app/roster` — pass; renders app shell, guided roster setup, "Manual entry connects next", disabled import placeholder, and database-backed empty roster state without crashing.
+- Review follow-up: database-backed roster rows were changed to read-only/non-navigational so they do not link into the still-localStorage-backed student profile route; `lib/student-roster-database-ui.test.ts` now guards this.
+
+### Remaining risks / follow-ups
+
+- Unit 07 intentionally does not provide the final teacher-facing manual student entry form; Unit 08 should connect the form to `actions/roster.ts`.
+- Unit 07 intentionally does not implement roster import; Unit 09 remains responsible for import parsing and preview.
+- Unit 07 intentionally does not persist onboarding completion or redirect users based on database roster count; Unit 10 remains responsible for onboarding completion.
+- `/app/feed` still uses the existing localStorage-backed POC roster presence check until later capture/feed units replace local persistence.
+- The roster page is now database-backed while some other POC surfaces still read browser-local roster data; later units must remove that split deliberately before re-enabling roster-to-profile navigation.
 
 ---
 
@@ -332,7 +370,7 @@ Verification after refinement: `npm run lint` pass, `npm run build` pass, `npm r
 
 ## Next Up
 
-1. Write `context/specs/07-student-roster-database-model-and-queries.md` before implementing Phase 2, Unit 07.
+1. Write `context/specs/08-manual-student-entry.md` before implementing Phase 2, Unit 08.
 2. Optionally expand `README.md` with a short pointer to `AGENTS.md` and the context framework beyond the Unit 02 route updates already made.
 
 ---
@@ -361,6 +399,8 @@ Verification after refinement: `npm run lint` pass, `npm run build` pass, `npm r
 - V1 ORM direction is Prisma.
 - Prisma 7 generates the client into `lib/generated/prisma`, which remains ignored by git.
 - Server-side database access starts from `lib/db/prisma.ts`; Client Components must not import Prisma.
+- Current teacher workspace resolution starts from `lib/auth/get-current-workspace.ts`, using Clerk server identity and creating/finding one `TeacherProfile` plus one personal `Workspace`.
+- Database-backed roster access starts from `lib/students/roster-students.ts`, with reads and creates scoped by the resolved workspace ID.
 - V1 has one personal teacher workspace per user.
 - The initial database ownership chain is `TeacherProfile` → `Workspace` → `RosterStudent` / `ClassGroup` / `EvidenceRecord`.
 - V1 has no organizations, admin dashboards, or shared student identities.
@@ -445,3 +485,6 @@ Verification after refinement: `npm run lint` pass, `npm run build` pass, `npm r
 - The local review skill was intentionally renamed from `.agents/skills/review` to `.agents/skills/pleasereview` because `/review` conflicted with other review tooling; do not treat that skill-folder change as accidental auth-unit drift.
 - Unit 06 spec was created on 2026-06-15. It scopes Guided Roster Setup UI as a UI/workflow-framing unit only: no Prisma roster wiring, no server actions, no import parsing, no onboarding persistence, and no capture enforcement changes.
 - Unit 06 implementation completed on 2026-06-15. It preserved localStorage-backed POC roster behavior while adding guided empty-roster setup and feed guidance.
+- Unit 07 spec was created on 2026-06-15. It scopes Student Roster Database Model and Queries as the server-side current-workspace and workspace-scoped roster access layer: no final manual-entry UI, no import parsing, no onboarding completion, no capture enforcement, and no evidence persistence changes.
+- Unit 07 implementation completed on 2026-06-15. `/app/roster` now reads database-backed active roster students for the signed-in teacher workspace and shows a Unit 08 transition state instead of the old browser-local add/edit/delete form.
+- Unit 07 review follow-up removed roster-row navigation to `/app/students/[studentId]` because that route still reads browser-local roster data.

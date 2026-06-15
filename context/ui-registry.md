@@ -454,9 +454,30 @@ Last updated: 2026-06-15
 | Card title | `font-display text-lg font-semibold text-foreground` |
 | Card helper | `text-xs leading-relaxed text-muted-foreground` |
 | Empty roster card | `rounded-card border border-border bg-card p-6 text-sm leading-relaxed text-muted-foreground shadow-paper` |
+| Transition action | Existing `Button` with `variant="outline"` and `size="sm"` |
 
 **Pattern notes:**  
-Guided roster setup lives inside the authenticated app shell, not a full-screen wizard. The manual-entry card is visually primary and the import card is secondary/non-saving until import is built later. Copy should explain that roster setup comes before evidence capture and avoid district, SIS, or admin language.
+Guided roster setup lives inside the authenticated app shell, not a full-screen wizard. As of Unit 07, this page reads active roster students from the database and uses a transition card labeled "Manual entry connects next" until Unit 08 wires the teacher-facing create form. The import card remains secondary/non-saving until import is built later. Copy should explain that roster setup comes before evidence capture and avoid district, SIS, or admin language.
+
+---
+
+### Database Roster List
+
+File: `app/app/roster/page.tsx`  
+Last updated: 2026-06-15
+
+| Property | Class |
+|---|---|
+| List shell | `space-y-3` |
+| Student row | `rounded-card border border-border bg-card p-4 shadow-paper` |
+| Student content row | `flex min-w-0 items-center gap-4` |
+| Avatar | `flex size-10 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-bold text-foreground` |
+| Student name | `font-medium text-foreground` |
+| Handle text | `text-sm text-muted-foreground` |
+| Class/group text | `mt-0.5 text-xs text-muted-foreground` |
+
+**Pattern notes:**  
+The Unit 07 roster list is read-only and database-backed. Rows are intentionally non-navigational until student timelines are database-backed because the current student profile route still reads the old local POC roster. It uses muted token avatars instead of the old POC color palette so the roster view stays quiet and token-based. Edit, delete, archive, and final manual-entry controls remain deferred to later units.
 
 ---
 

@@ -18,13 +18,12 @@ describe("Unit 06 guided roster setup UI", () => {
   it("frames the empty roster page as the first setup step", () => {
     expect(rosterPage).toContain("Add your first student to start capturing evidence.");
     expect(rosterPage).toContain("Your roster is private to your ClassTrace workspace.");
-    expect(rosterPage).toContain("Start with one student");
+    expect(rosterPage).toContain("Manual entry connects next");
     expect(rosterPage).toContain("Import a basic list later");
     expect(rosterPage).not.toMatch(/\b(SIS|district)\b/i);
   });
 
-  it("keeps Unit 06 out of database and server mutation scope", () => {
-    expect(rosterPage).not.toMatch(/@\/lib\/db|@\/actions|@\/app\/api/);
+  it("keeps the evidence feed out of database and server mutation scope", () => {
     expect(evidenceFeed).not.toMatch(/@\/lib\/db|@\/actions|@\/app\/api/);
   });
 
