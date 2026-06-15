@@ -14,14 +14,54 @@ Update this file after every meaningful implementation change.
 - Unit 06 complete and verified — Guided Roster Setup UI (`context/specs/06-guided-roster-setup-ui.md`)
 - Unit 07 complete and verified — Student Roster Database Model and Queries (`context/specs/07-student-roster-database-model-and-queries.md`)
 - Unit 08 implemented and verified with automated checks — Manual Student Entry (`context/specs/08-manual-student-entry.md`)
+- Unit 09 implemented and verified with automated checks — Roster Import (`context/specs/09-roster-import.md`)
 - Design system overhaul applied from `classtrace_asset_kit/` (warm paper palette, Fraunces + Inter + Caveat, landing copy/layout aligned to asset kit)
 
 ---
 
 ## Current Goal
 
-- Prepare the next focused unit spec before starting Phase 2, Unit 09 — Roster Import.
-- Do not start Unit 09 implementation until its spec exists and the human explicitly confirms.
+- Prepare the next focused unit spec before starting Phase 2, Unit 10 — Onboarding Completion.
+- Do not start Unit 10 implementation until its spec exists and the human explicitly confirms.
+
+---
+
+## Unit 09 — Roster Import (Implemented)
+
+Spec: `context/specs/09-roster-import.md`
+
+### What was completed
+
+- Added `lib/import/parse-roster-import.ts` as a pure pasted-roster parser and preview builder.
+- Added `lib/import/roster-import.ts` as a server-only workspace-scoped import helper.
+- Added atomic confirmed import saving through a Prisma transaction-backed helper.
+- Added `importRosterStudents` to `actions/roster.ts`, resolving the current workspace server-side and revalidating `/app/roster` after successful import.
+- Added `components/roster/roster-import-form.tsx` as a Client Component for paste, preview, confirm, clear, row-level errors, and success/error status.
+- Replaced the Unit 08 disabled import placeholder on `/app/roster` with the working import form.
+- Loaded import conflict data from the server-rendered roster page, including archived-row uniqueness constraints for handles and school/local IDs.
+- Kept database access server-side; the import Client Component receives only mention handles and optional school/local IDs for preview and never receives workspace, teacher, or Clerk IDs.
+- Kept class/group import deferred.
+- Kept roster rows read-only/non-navigational because database-backed student timelines remain later work.
+- Added focused tests for parser behavior, import helper behavior, server action wiring, and UI bridge.
+- Updated `context/ui-registry.md` with the Roster Import Form pattern.
+- Did not add file upload, CSV file picker, external roster sync, onboarding completion, feed redirects, capture enforcement, evidence persistence, timeline database wiring, archive/delete, export, organizations, admin behavior, AI, uploads, analytics, billing, or new dependencies.
+
+### Verification
+
+- `npm.cmd run test -- lib/import/parse-roster-import.test.ts lib/import/roster-import.test.ts lib/roster-import-ui.test.ts actions/roster.test.ts lib/manual-student-entry.test.ts lib/student-roster-database-ui.test.ts` — pass (25 tests).
+- `npm.cmd run test` — initially failed because `lib/guided-roster-setup-ui.test.ts` still expected the Unit 08 disabled import placeholder copy; updated the stale assertion to expect `RosterImportForm`.
+- `npm.cmd run test` — pass after test update (97 tests).
+- `npm.cmd run lint` — pass.
+- `npm.cmd run build` — pass.
+- Signed-out/public HTTP smoke against the already-running local app on `http://localhost:3000` — pass; `/` returns `200`, `/app/roster` responds with Clerk signed-out headers.
+
+### Remaining risks / follow-ups
+
+- Manual signed-in browser verification is still needed when the Browser plugin or an interactive browser session is available. The direct in-app browser execution hook was not exposed in this session.
+- Class/group import is intentionally deferred; Unit 09 imports display name, optional handle, and optional school/local ID only.
+- Unit 09 intentionally does not persist onboarding completion or redirect users based on database roster count; Unit 10 remains responsible for onboarding completion.
+- `/app/feed` still uses the existing localStorage-backed POC roster presence check until later capture/feed units replace local persistence.
+- Student profile/timeline routes still do not read database roster records, so roster rows remain read-only until later units.
 
 ---
 
@@ -361,6 +401,8 @@ Legacy:
 - Phase 2 unit 07 (Student Roster Database Model and Queries) implemented and verified — see **Unit 07 — Student Roster Database Model and Queries (Complete)** above.
 - `context/specs/08-manual-student-entry.md` created for Phase 2 unit 08.
 - Phase 2 unit 08 (Manual Student Entry) implemented and verified with automated checks — see **Unit 08 — Manual Student Entry (Implemented)** above.
+- `context/specs/09-roster-import.md` created for Phase 2 unit 09.
+- Phase 2 unit 09 (Roster Import) implemented and verified with automated checks — see **Unit 09 — Roster Import (Implemented)** above.
 
 ---
 
@@ -419,7 +461,7 @@ Verification after refinement: `npm run lint` pass, `npm run build` pass, `npm r
 
 ## Next Up
 
-1. Write `context/specs/09-roster-import.md` before implementing Phase 2, Unit 09.
+1. Write `context/specs/10-onboarding-completion.md` before implementing Phase 2, Unit 10.
 2. Optionally expand `README.md` with a short pointer to `AGENTS.md` and the context framework beyond the Unit 02 route updates already made.
 
 ---
@@ -427,7 +469,6 @@ Verification after refinement: `npm run lint` pass, `npm run build` pass, `npm r
 ## Open Questions
 
 - Should `README.md` get a fuller Phase 1 refresh beyond the Unit 02 route/path updates?
-- Exact roster import format is not fully specified yet.
 - Exact Prisma schema has an initial migrated foundation, but future workflow units may refine fields as validation/export needs become concrete.
 - Exact deployment setup is not decided yet.
 - Demo data and tests still use `Anthony` as an example name; allowed fictional names per `AGENTS.md` are Jeremy, Stacy, Jeff, and Mary. Rename when touching demo/test data next.
@@ -538,3 +579,5 @@ Verification after refinement: `npm run lint` pass, `npm run build` pass, `npm r
 - Unit 07 implementation completed on 2026-06-15. `/app/roster` now reads database-backed active roster students for the signed-in teacher workspace and shows a Unit 08 transition state instead of the old browser-local add/edit/delete form.
 - Unit 07 review follow-up removed roster-row navigation to `/app/students/[studentId]` because that route still reads browser-local roster data.
 - Unit 08 spec was created on 2026-06-15. It scopes Manual Student Entry as the teacher-facing database-backed add-student form on `/app/roster`: display name, auto-generated editable mention handle, optional school/local ID, possible narrow class/group handling or explicit deferral, inline errors, and saved roster refresh. It explicitly excludes roster import, onboarding completion, capture enforcement, evidence persistence, archive/delete, export, student timeline database wiring, AI, uploads, organizations, admin behavior, and new dependencies.
+- Unit 09 spec was created on 2026-06-15. It scopes Roster Import as a database-backed paste-list workflow on `/app/roster`: one student per line, optional handle, optional school/local ID, preview before save, row-level validation, duplicate detection within the import and current workspace roster including archived-row uniqueness constraints, atomic all-or-nothing confirmed save, and no file upload, external sync, class/group import, onboarding completion, capture enforcement, evidence persistence, AI, uploads, organizations, admin behavior, or new dependencies.
+- Unit 09 implementation completed on 2026-06-15. `/app/roster` now supports database-backed pasted roster import with preview-before-save, row-level validation, archived-row uniqueness conflict checks, and atomic confirmed save.

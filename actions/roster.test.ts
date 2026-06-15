@@ -17,4 +17,10 @@ describe("roster server actions", () => {
     expect(source).toContain("revalidatePath");
     expect(source).toContain("routes.roster");
   });
+
+  it("imports roster students through current workspace resolution", () => {
+    expect(source).toContain("importRosterStudentsForWorkspace");
+    expect(source).toContain("workspace.workspaceId");
+    expect(source).not.toMatch(/input\.workspaceId|formData\.get\("workspaceId"\)/);
+  });
 });

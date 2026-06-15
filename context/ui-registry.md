@@ -508,6 +508,36 @@ The manual entry form lives inside the guided roster setup card and replaces the
 
 ---
 
+### Roster Import Form
+
+File: `components/roster/roster-import-form.tsx`  
+Last updated: 2026-06-15
+
+| Property | Class |
+|---|---|
+| Form shell | `space-y-4` |
+| Eyebrow | `text-[10px] font-semibold uppercase tracking-wider text-muted-foreground` |
+| Title | `font-display text-lg font-semibold text-foreground` |
+| Helper copy | `text-xs leading-relaxed text-muted-foreground` |
+| Field group | `space-y-1.5` |
+| Label | `text-sm font-medium text-foreground` |
+| Textarea | `min-h-[132px] w-full rounded-md border border-border bg-card px-3 py-2 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/20 disabled:cursor-not-allowed disabled:opacity-50` |
+| Preview shell | `space-y-2` |
+| Preview row | `rounded-lg border border-border/70 bg-muted/25 px-3 py-2.5` |
+| Row label | `text-xs font-semibold uppercase tracking-wider text-muted-foreground` |
+| Row primary text | `text-sm font-medium text-foreground` |
+| Row metadata | `flex flex-wrap gap-1.5 text-xs text-muted-foreground` |
+| Row status pill | `rounded-full border border-border bg-card px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground` |
+| Row error text | `text-xs leading-relaxed text-destructive` |
+| Status message area | `min-h-5 text-sm` |
+| Action row | `flex flex-wrap gap-2` |
+| Actions | Existing `Button` with `variant="outline"`, default, and `variant="ghost"` using `size="sm"` |
+
+**Pattern notes:**  
+The roster import form replaces the Unit 08 disabled import placeholder. It supports pasted text only and keeps the workflow teacher-controlled: paste, preview, then confirm. Preview rows stack in a compact list instead of a wide table so the card remains usable on mobile. The form receives only handle and school/local ID conflict data from the server-rendered roster page; it does not receive or submit workspace IDs, and confirmed import still revalidates server-side before atomic save. Class/group import remains deferred.
+
+---
+
 ### Feed Roster Required State
 
 File: `components/dashboard/evidence-feed.tsx`  
@@ -546,8 +576,6 @@ Do not let this registry drift from the actual UI.
 
 These patterns should be added or refined when they are built or audited:
 
-- Manual student entry form
-- Roster import preview table
 - Student profile header
 - Student timeline evidence card
 - Individual student export button/panel

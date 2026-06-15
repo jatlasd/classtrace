@@ -35,8 +35,8 @@ describe("Unit 08 manual student entry UI", () => {
     expect(rosterPageSource).not.toContain("Manual entry connects next");
   });
 
-  it("keeps import and class/group work deferred", () => {
-    expect(rosterPageSource).toContain("Import a basic list later");
+  it("keeps class/group work deferred while import moves to Unit 09", () => {
+    expect(rosterPageSource).toContain("RosterImportForm");
     expect(formSource).toContain("Class/group setup stays deferred");
   });
 });

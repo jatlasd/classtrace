@@ -13,10 +13,11 @@ describe("Unit 07 roster database bridge", () => {
     expect(rosterPage).toContain("listActiveRosterStudentsForWorkspace");
   });
 
-  it("connects manual entry while keeping imports deferred", () => {
+  it("connects manual entry and roster import without returning to local storage", () => {
     expect(rosterPage).toContain("ManualStudentEntryForm");
+    expect(rosterPage).toContain("RosterImportForm");
     expect(rosterPage).not.toContain("Manual entry connects next");
-    expect(rosterPage).toContain("Import a basic list later");
+    expect(rosterPage).not.toContain("Import planned");
     expect(rosterPage).not.toMatch(/localStorage|addStudent|updateStudent|deleteStudent/);
   });
 

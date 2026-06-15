@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { ManualStudentEntryForm } from "@/components/roster/manual-student-entry-form";
+import { RosterImportForm } from "@/components/roster/roster-import-form";
 import { Button } from "@/components/ui/button";
 import { getCurrentWorkspace } from "@/lib/auth/get-current-workspace";
+import { listExistingRosterImportStudentsForWorkspace } from "@/lib/import/roster-import";
 import { routes } from "@/lib/routes";
 import {
   listActiveRosterStudentsForWorkspace,
@@ -45,7 +47,10 @@ function StudentRow({ student }: { student: RosterStudentDisplay }) {
 
 export default async function RosterPage() {
   const workspace = await getCurrentWorkspace();
-  const students = await listActiveRosterStudentsForWorkspace(workspace.workspaceId);
+  const [students, existingImportStudents] = await Promise.all([
+    listActiveRosterStudentsForWorkspace(workspace.workspaceId),
+    listExistingRosterImportStudentsForWorkspace(workspace.workspaceId),
+  ]);
   const rosterIsEmpty = students.length === 0;
 
   return (
@@ -75,19 +80,7 @@ export default async function RosterPage() {
         </section>
 
         <aside className="rounded-card border border-border bg-card p-4 shadow-paper">
-          <p className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-            Another setup path
-          </p>
-          <h2 className="font-display text-lg font-semibold text-foreground">
-            Import a basic list later
-          </h2>
-          <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-            Roster import will preview students before saving. It remains planned
-            for a later unit and will not sync with external roster systems.
-          </p>
-          <Button type="button" variant="outline" size="sm" disabled className="mt-4">
-            Import planned
-          </Button>
+          <RosterImportForm existingStudents={existingImportStudents} />
         </aside>
       </div>
 
