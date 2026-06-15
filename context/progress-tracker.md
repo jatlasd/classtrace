@@ -18,14 +18,53 @@ Update this file after every meaningful implementation change.
 - Unit 09 implemented and verified with automated checks — Roster Import (`context/specs/09-roster-import.md`)
 - Unit 10 implemented and verified with automated checks — Onboarding Completion (`context/specs/10-onboarding-completion.md`)
 - Unit 11 implemented and verified with automated checks — Production Evidence Feed UI Pass (`context/specs/11-production-evidence-feed-ui-pass.md`)
+- Unit 12 implemented and verified with automated checks — Deterministic Student Resolution (`context/specs/12-deterministic-student-resolution.md`)
 - Design system overhaul applied from `classtrace_asset_kit/` (warm paper palette, Fraunces + Inter + Caveat, landing copy/layout aligned to asset kit)
 
 ---
 
 ## Current Goal
 
-- Prepare the next focused unit spec before starting Phase 3, Unit 12 — Deterministic Student Resolution.
-- Do not start Unit 12 implementation until its spec exists and the human explicitly confirms.
+- Prepare the next focused unit spec before starting Phase 3, Unit 13 — Structured Draft Review UI.
+- Do not start Unit 13 implementation until its spec exists and the human explicitly confirms.
+
+---
+
+## Unit 12 — Deterministic Student Resolution (Implemented)
+
+Spec: `context/specs/12-deterministic-student-resolution.md`
+
+### What was completed
+
+- Added `lib/students/resolve-capture-students.ts` as a pure deterministic resolver for parsed `@mentions` against a client-safe active roster snapshot.
+- Added focused resolver tests for no-student, one-student, case-insensitive handle matching, unresolved-student, multi-student, and mixed resolved/unresolved states.
+- Updated `/app/feed` to load active database roster students for the current workspace and pass only client-safe student ID, display name, mention handle, and class/group display name into `EvidenceFeed`.
+- Updated `QuickCaptureCard` so `@student` suggestions come from the database-backed roster snapshot instead of the browser-local POC roster.
+- Added inline composer guidance for no student, unresolved student, multiple students, and exactly-one-student ready state.
+- Blocked new captures unless exactly one active roster student resolves.
+- Added defense-in-depth capture validation in `EvidenceFeed.handleDraft`.
+- Updated `EvidenceFeed` to apply the same resolver before local POC capture edits are persisted.
+- Bridged feed capture display to the database roster snapshot so valid captures no longer show as unresolved when the browser-local POC roster is empty.
+- Updated `EvidenceCaptureCard` so invalid edits keep the editor open instead of closing as if saved.
+- Updated stale static tests from earlier units whose assertions expected the old local POC roster source.
+- Updated `context/ui-registry.md` with the Unit 12 composer resolution guidance pattern.
+- Did not add evidence database persistence, structured review redesign, validated evidence save, database-backed feed data, archive/delete, export, AI, uploads, organizations, admin behavior, new dependencies, migrations, or server actions.
+
+### Verification
+
+- `npm.cmd run test -- lib/students/resolve-capture-students.test.ts` — first run failed because the resolver module did not exist; passed after implementation (6 tests).
+- `npm.cmd run test -- lib/deterministic-student-resolution-ui.test.ts` — failed before wiring for missing database roster snapshot, composer gate, and edit gate; passed after implementation (4 tests).
+- `npm.cmd run test -- lib/students/resolve-capture-students.test.ts lib/deterministic-student-resolution-ui.test.ts lib/onboarding-routing.test.ts lib/production-feed-ui-pass.test.ts` — passed after updating stale Unit 10 assertion (16 tests).
+- `npm.cmd run lint` — pass.
+- `npm.cmd run test` — initially failed on a stale Unit 06 assertion expecting `getAllStudents`; passed after updating the assertion (116 tests).
+- `npm.cmd run build` — pass.
+
+### Remaining risks / follow-ups
+
+- Manual signed-in browser verification is still needed when an interactive Clerk/browser session is available.
+- The feed still stores local POC captures in browser localStorage; Units 14 and 15 remain responsible for validated evidence persistence and database-backed evidence feed data.
+- Existing legacy/demo local POC captures may still render through older browser-local display helpers when no database roster snapshot is available in that surface, but Unit 12 feed display now uses the database roster snapshot for new captures and edits.
+- Unit 13 still needs to define and build the structured draft review UI on top of this one-student gate.
 
 ---
 
@@ -481,6 +520,8 @@ Legacy:
 - Phase 2 unit 10 (Onboarding Completion) implemented and verified with automated checks — see **Unit 10 — Onboarding Completion (Implemented)** above.
 - `context/specs/11-production-evidence-feed-ui-pass.md` created for Phase 3 unit 11.
 - Phase 3 unit 11 (Production Evidence Feed UI Pass) implemented and verified with automated checks — see **Unit 11 — Production Evidence Feed UI Pass (Implemented)** above.
+- `context/specs/12-deterministic-student-resolution.md` created for Phase 3 unit 12.
+- Phase 3 unit 12 (Deterministic Student Resolution) implemented and verified with automated checks — see **Unit 12 — Deterministic Student Resolution (Implemented)** above.
 
 ---
 
@@ -539,7 +580,7 @@ Verification after refinement: `npm run lint` pass, `npm run build` pass, `npm r
 
 ## Next Up
 
-1. Write `context/specs/12-deterministic-student-resolution.md` before implementing Phase 3, Unit 12.
+1. Write `context/specs/13-structured-draft-review-ui.md` before implementing Phase 3, Unit 13.
 2. Optionally expand `README.md` with a short pointer to `AGENTS.md` and the context framework beyond the Unit 02 route updates already made.
 
 ---
@@ -663,3 +704,5 @@ Verification after refinement: `npm run lint` pass, `npm run build` pass, `npm r
 - Unit 10 implementation completed on 2026-06-15. `/app` and `/app/feed` now gate by active database roster count, `/app/roster` shows a continue-to-feed action after roster setup has started, and the first-capture prompt remains deferred to Unit 11 to avoid broad feed rewrites.
 - Unit 11 spec was created on 2026-06-15 from the uploaded UI reference. It scopes Production Evidence Feed UI Pass as a visual overhaul of the authenticated shell, composer, recent capture list, and right rail while excluding student-resolution enforcement, evidence database persistence, AI, uploads, analytics, admin behavior, and new dependencies.
 - Unit 11 implementation completed on 2026-06-15. The authenticated app now uses a light top navigation shell, `/app/feed` uses the reference-style capture composer, recent capture rows, Patterns/Follow-ups rail, and secondary browser-local utility card, and the next planned unit is Unit 12 Deterministic Student Resolution.
+- Unit 12 spec was created on 2026-06-15. It scopes Deterministic Student Resolution as the capture-entry gate: `/app/feed` should pass the current workspace's active database roster into the client feed, composer suggestions should use that roster, and new/edit captures should be blocked unless exactly one active roster student resolves. It explicitly excludes evidence database persistence, structured review redesign, validated evidence save, database-backed feed data, archive/delete, export, AI, uploads, organizations, admin behavior, and new dependencies.
+- Unit 12 implementation completed on 2026-06-15. `/app/feed` now passes a client-safe active database roster snapshot into the client feed, the composer blocks no-student/unresolved/multi-student captures with inline guidance, and local POC capture edits are rejected unless exactly one active roster student resolves. The next planned step is writing the Unit 13 Structured Draft Review UI spec.

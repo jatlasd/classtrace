@@ -10,6 +10,10 @@ import {
   resolveStudentMentions,
   type StudentMentionRef,
 } from "@/lib/students";
+import {
+  resolveStudentNamesFromRoster,
+} from "@/lib/students/roster-display-bridge";
+import type { CaptureRosterStudent } from "@/lib/students/resolve-capture-students";
 
 export type InterpretationFields = {
   students: string[];
@@ -55,7 +59,13 @@ function buildSummaryLine(
   return parts.join(" · ");
 }
 
-function studentMentionsFromNames(names: string[]): StudentMentionRef[] {
+function studentMentionsFromNames(
+  names: string[],
+  roster?: CaptureRosterStudent[]
+): StudentMentionRef[] {
+  if (roster) {
+    return resolveStudentNamesFromRoster(names, roster);
+  }
   return resolveStudentMentions(names);
 }
 
@@ -107,9 +117,10 @@ export function joinFollowUpNotes(notes: string[]): string {
 
 export function resolveCaptureDisplay(
   draft: NoteDraft,
-  validation?: CaptureValidation
+  validation?: CaptureValidation,
+  roster?: CaptureRosterStudent[]
 ): ResolvedCaptureDisplay {
-  const base = draftToDisplay(draft);
+  const base = draftToDisplay(draft, roster);
 
   if (validation?.status !== "validated") {
     return {
@@ -119,7 +130,7 @@ export function resolveCaptureDisplay(
   }
 
   const { fields } = validation;
-  const studentMentions = studentMentionsFromNames(fields.students);
+  const studentMentions = studentMentionsFromNames(fields.students, roster);
   const hasUnresolved = studentMentions.some(
     (mention) => mention.status === "unresolved"
   );

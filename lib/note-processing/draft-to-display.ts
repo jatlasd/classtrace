@@ -3,6 +3,8 @@ import {
   resolveStudentMentions,
   type StudentMentionRef,
 } from "@/lib/students";
+import { resolveStudentMentionsFromRoster } from "@/lib/students/roster-display-bridge";
+import type { CaptureRosterStudent } from "@/lib/students/resolve-capture-students";
 import { isFieldApplicable } from "./field-applicability";
 import type { MatchResult, NoteDraft } from "./types";
 
@@ -87,9 +89,14 @@ function buildSummaryLine(display: Omit<DraftDisplay, "summaryLine">): string {
   return parts.join(" · ");
 }
 
-export function draftToDisplay(draft: NoteDraft): DraftDisplay {
+export function draftToDisplay(
+  draft: NoteDraft,
+  roster?: CaptureRosterStudent[]
+): DraftDisplay {
   const applicable = new Set(draft.applicableFields);
-  const studentMentions = resolveStudentMentions(draft.parsed.mentions);
+  const studentMentions = roster
+    ? resolveStudentMentionsFromRoster(draft.parsed.mentions, roster)
+    : resolveStudentMentions(draft.parsed.mentions);
   const hasUnresolved = studentMentions.some(
     (mention) => mention.status === "unresolved"
   );

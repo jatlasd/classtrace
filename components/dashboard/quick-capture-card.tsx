@@ -6,7 +6,12 @@ import type { MentionsInputStyle } from "react-mentions";
 import { Button } from "@/components/ui/button";
 import { buildNoteDraft } from "@/lib/note-processing";
 import type { NoteDraft } from "@/lib/note-processing/types";
-import { getAllStudents } from "@/lib/students";
+import { parseRawNote } from "@/lib/note-processing/parse-raw-note";
+import {
+  resolveCaptureStudents,
+  type CaptureRosterStudent,
+  type CaptureStudentResolution,
+} from "@/lib/students/resolve-capture-students";
 import {
   AtSign,
   Check,
@@ -74,26 +79,79 @@ const mentionHighlightStyle = {
 };
 
 type QuickCaptureCardProps = {
+  rosterStudents: CaptureRosterStudent[];
   onDraft: (draft: NoteDraft) => void;
 };
 
-export function QuickCaptureCard({ onDraft }: QuickCaptureCardProps) {
-  // markupValue is react-mentions' internal serialized form (e.g. @[Jeremy](Jeremy));
-  // plainText is what the teacher sees and what parseRawNote / buildNoteDraft expect (@Jeremy, #fractions).
+function resolutionMessage(
+  resolution: CaptureStudentResolution,
+  hasText: boolean
+): { tone: "ready" | "error"; text: string } | null {
+  if (!hasText) {
+    return null;
+  }
+
+  if (resolution.status === "resolved_one_student") {
+    return {
+      tone: "ready",
+      text: `Ready to capture for ${resolution.student.displayName}.`,
+    };
+  }
+
+  if (resolution.status === "no_student_mentioned") {
+    return {
+      tone: "error",
+      text: "Mention one student from your roster before capturing.",
+    };
+  }
+
+  if (resolution.status === "multiple_students") {
+    return {
+      tone: "error",
+      text: "Choose one student for this V1 capture.",
+    };
+  }
+
+  return {
+    tone: "error",
+    text: "This student is not on your roster yet.",
+  };
+}
+
+export function QuickCaptureCard({
+  rosterStudents,
+  onDraft,
+}: QuickCaptureCardProps) {
   const [markupValue, setMarkupValue] = useState("");
   const [plainText, setPlainText] = useState("");
   const [posted, setPosted] = useState(false);
 
   const studentSuggestions = useMemo(
     () =>
-      getAllStudents().map((student) => ({
-        id: student.handle,
+      rosterStudents.map((student) => ({
+        id: student.mentionHandle,
         display: student.displayName,
       })),
-    []
+    [rosterStudents]
   );
 
   const tagSuggestions = useMemo(() => [], []);
+  const trimmedPlainText = plainText.trim();
+  const parsedNote = useMemo(
+    () => parseRawNote(trimmedPlainText),
+    [trimmedPlainText]
+  );
+  const studentResolution = useMemo(
+    () => resolveCaptureStudents(parsedNote.mentions, rosterStudents),
+    [parsedNote.mentions, rosterStudents]
+  );
+  const guidance = resolutionMessage(
+    studentResolution,
+    trimmedPlainText.length > 0
+  );
+  const canCapture =
+    trimmedPlainText.length > 0 &&
+    studentResolution.status === "resolved_one_student";
 
   function handleChange(
     _event: { target: { value: string } },
@@ -105,8 +163,8 @@ export function QuickCaptureCard({ onDraft }: QuickCaptureCardProps) {
   }
 
   function handlePost() {
-    if (!plainText.trim()) return;
-    onDraft(buildNoteDraft(plainText.trim()));
+    if (!canCapture) return;
+    onDraft(buildNoteDraft(trimmedPlainText));
     setPosted(true);
     setMarkupValue("");
     setPlainText("");
@@ -164,6 +222,19 @@ export function QuickCaptureCard({ onDraft }: QuickCaptureCardProps) {
             />
           </MentionsInput>
         </div>
+        <div aria-live="polite" className="mt-4 min-h-5">
+          {guidance ? (
+            <p
+              className={`text-sm ${
+                guidance.tone === "error"
+                  ? "text-destructive"
+                  : "text-muted-foreground"
+              }`}
+            >
+              {guidance.text}
+            </p>
+          ) : null}
+        </div>
       </div>
 
       <div className="flex flex-col gap-3 border-t border-border px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-8">
@@ -181,7 +252,7 @@ export function QuickCaptureCard({ onDraft }: QuickCaptureCardProps) {
 
         <Button
           onClick={handlePost}
-          disabled={!plainText.trim()}
+          disabled={!canCapture}
           variant="outline"
           className="h-11 rounded-lg px-6 text-sm font-semibold text-primary hover:text-primary sm:self-auto"
         >

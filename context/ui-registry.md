@@ -62,7 +62,7 @@ This is the active authenticated app shell as of Unit 11. Keep nav links limited
 ### Unit 11 Quick Capture Composer
 
 File: `components/dashboard/quick-capture-card.tsx`  
-Last updated: 2026-06-15
+Last updated: 2026-06-15 (Unit 12 resolution gate)
 
 | Property | Class |
 |---|---|
@@ -73,10 +73,13 @@ Last updated: 2026-06-15
 | Footer | `flex flex-col gap-3 border-t border-border px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-8` |
 | Hint row | `flex flex-wrap items-center gap-2` |
 | Hint chip | `inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-border bg-muted/30 px-3 text-sm font-medium text-muted-foreground` |
+| Resolution message area | `mt-4 min-h-5` with `aria-live="polite"` |
+| Blocking message | `text-sm text-destructive` |
+| Ready message | `text-sm text-muted-foreground` |
 | Capture button | `h-11 rounded-lg px-6 text-sm font-semibold` with `variant="outline"` and `text-primary hover:text-primary` |
 
 **Pattern notes:**  
-The composer is larger and closer to the uploaded reference. It stays text-only: do not add photo, video, audio, file, attachment, or upload affordances. Mention/tag/review items in the footer are non-interactive hints until real behavior exists.
+The composer is larger and closer to the uploaded reference. Unit 12 made the `@student` suggestions database-roster-backed and added the V1 capture gate: empty notes, no-student notes, unresolved students, and multi-student notes cannot be captured. Resolution guidance appears inline above the footer; ready state uses muted text, blocking states use destructive text. It stays text-only: do not add photo, video, audio, file, attachment, or upload affordances. Mention/tag/review items in the footer are non-interactive hints until real behavior exists.
 
 ---
 

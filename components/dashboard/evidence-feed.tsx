@@ -22,9 +22,12 @@ import { buildNoteDraft } from "@/lib/note-processing";
 import type { NoteDraft } from "@/lib/note-processing/types";
 import {
   mentionDisplayLabel,
-  getAllStudents,
-  type Student,
 } from "@/lib/students";
+import {
+  resolveCaptureStudents,
+  type CaptureRosterStudent,
+  type CaptureStudentResolution,
+} from "@/lib/students/resolve-capture-students";
 import { routes } from "@/lib/routes";
 import { ArrowDownUp, X } from "lucide-react";
 import {
@@ -50,6 +53,10 @@ type FeedItem = {
 
 type InboxFilter = "all" | "needs_review" | "validated";
 
+type EvidenceFeedProps = {
+  rosterStudents: CaptureRosterStudent[];
+};
+
 const filterOptions: { value: InboxFilter; label: string }[] = [
   { value: "all", label: "All" },
   { value: "needs_review", label: "Needs review" },
@@ -60,17 +67,28 @@ function isValidated(item: FeedItem): boolean {
   return item.validation?.status === "validated";
 }
 
-function needsReview(item: FeedItem): boolean {
+function needsReview(
+  item: FeedItem,
+  rosterStudents: CaptureRosterStudent[]
+): boolean {
   if (item.validation?.status === "validated") return false;
-  return resolveCaptureDisplay(item.draft, item.validation).needsReview;
+  return resolveCaptureDisplay(item.draft, item.validation, rosterStudents)
+    .needsReview;
 }
 
 function stripMentionPrefix(mention: string): string {
   return mention.replace(/^@/, "");
 }
 
-function buildCaptureSearchHaystacks(item: FeedItem) {
-  const display = resolveCaptureDisplay(item.draft, item.validation);
+function buildCaptureSearchHaystacks(
+  item: FeedItem,
+  rosterStudents: CaptureRosterStudent[]
+) {
+  const display = resolveCaptureDisplay(
+    item.draft,
+    item.validation,
+    rosterStudents
+  );
   const rawNote = item.draft.parsed.rawNote;
 
   const studentParts: string[] = [];
@@ -125,14 +143,18 @@ function buildCaptureSearchHaystacks(item: FeedItem) {
   return { rawNote, studentHaystack, tagHaystack, generalHaystack };
 }
 
-function captureMatchesSearch(item: FeedItem, rawQuery: string): boolean {
+function captureMatchesSearch(
+  item: FeedItem,
+  rawQuery: string,
+  rosterStudents: CaptureRosterStudent[]
+): boolean {
   const trimmed = rawQuery.trim();
   if (!trimmed) {
     return true;
   }
 
   const { rawNote, studentHaystack, tagHaystack, generalHaystack } =
-    buildCaptureSearchHaystacks(item);
+    buildCaptureSearchHaystacks(item, rosterStudents);
 
   if (trimmed.startsWith("@")) {
     const needle = stripMentionPrefix(trimmed).toLowerCase();
@@ -335,20 +357,35 @@ function RosterRequiredState() {
   );
 }
 
-export function EvidenceFeed() {
+function studentResolutionErrorMessage(
+  resolution: CaptureStudentResolution
+): string {
+  if (resolution.status === "no_student_mentioned") {
+    return "Mention one student from your roster before saving this edit.";
+  }
+
+  if (resolution.status === "multiple_students") {
+    return "Choose one student for this V1 capture before saving this edit.";
+  }
+
+  if (resolution.status === "unresolved_student") {
+    return "This edit was not saved because a mentioned student is not on your roster yet.";
+  }
+
+  return "";
+}
+
+export function EvidenceFeed({ rosterStudents }: EvidenceFeedProps) {
   const [items, setItems] = useState<FeedItem[]>(() => seedFeedItems());
-  const [rosterStudents, setRosterStudents] = useState<Student[]>(() =>
-    getAllStudents()
-  );
   const [filter, setFilter] = useState<InboxFilter>("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [captureEditError, setCaptureEditError] = useState("");
   const [hydrated, setHydrated] = useState(false);
   const rosterSetupNeeded = hydrated && rosterStudents.length === 0;
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- hydrate captures from localStorage after mount
     setItems(loadInitialFeedItems());
-    setRosterStudents(getAllStudents());
     setHydrated(true);
   }, []);
 
@@ -366,32 +403,49 @@ export function EvidenceFeed() {
     if (filter === "validated") {
       result = items.filter(isValidated);
     } else if (filter === "needs_review") {
-      result = items.filter(needsReview);
+      result = items.filter((item) => needsReview(item, rosterStudents));
     }
 
     if (searchQuery.trim()) {
-      result = result.filter((item) => captureMatchesSearch(item, searchQuery));
+      result = result.filter((item) =>
+        captureMatchesSearch(item, searchQuery, rosterStudents)
+      );
     }
 
     return result;
-  }, [items, filter, searchQuery]);
+  }, [items, filter, searchQuery, rosterStudents]);
 
   function handleDraft(draft: NoteDraft) {
-    const newItem: FeedItem = {
-      id: crypto.randomUUID(),
-      draft,
-      timestamp: "Just now",
-      timestampMs: Date.now(),
-    };
+    const resolution = resolveCaptureStudents(
+      draft.parsed.mentions,
+      rosterStudents
+    );
 
+    if (resolution.status !== "resolved_one_student") {
+      handleInvalidCaptureEdit(resolution);
+      return;
+    }
+
+    setCaptureEditError("");
     setItems((current) => {
+      const newItem: FeedItem = {
+        id: crypto.randomUUID(),
+        draft,
+        timestamp: "Just now",
+        timestampMs: Date.now(),
+      };
       const next = hasStoredCaptureState() ? [newItem, ...current] : [newItem];
       persistFeedItems(next);
       return next;
     });
   }
 
+  function handleInvalidCaptureEdit(resolution: CaptureStudentResolution): void {
+    setCaptureEditError(studentResolutionErrorMessage(resolution));
+  }
+
   function handleValidate(id: string, fields: InterpretationFields) {
+    setCaptureEditError("");
     setItems((current) => {
       const next = current.map((item) =>
         item.id === id
@@ -410,12 +464,24 @@ export function EvidenceFeed() {
     });
   }
 
-  function handleEditCapture(id: string, rawNote: string) {
+  function handleEditCapture(id: string, rawNote: string): boolean {
     const trimmed = rawNote.trim();
     if (!trimmed) {
-      return;
+      return false;
     }
 
+    const nextDraft = buildNoteDraft(trimmed);
+    const resolution = resolveCaptureStudents(
+      nextDraft.parsed.mentions,
+      rosterStudents
+    );
+
+    if (resolution.status !== "resolved_one_student") {
+      handleInvalidCaptureEdit(resolution);
+      return false;
+    }
+
+    setCaptureEditError("");
     setItems((current) => {
       const next = current.map((item) => {
         if (item.id !== id) {
@@ -426,16 +492,18 @@ export function EvidenceFeed() {
 
         return {
           ...item,
-          draft: buildNoteDraft(trimmed),
+          draft: nextDraft,
           validation: rawChanged ? undefined : item.validation,
         };
       });
       persistFeedItems(next);
       return next;
     });
+    return true;
   }
 
   function handleDeleteCapture(id: string) {
+    setCaptureEditError("");
     setItems((current) => {
       const next = current.filter((item) => item.id !== id);
       persistFeedItems(next);
@@ -445,7 +513,11 @@ export function EvidenceFeed() {
 
   function handleExport() {
     const payload = items.map((item) => {
-      const display = resolveCaptureDisplay(item.draft, item.validation);
+      const display = resolveCaptureDisplay(
+        item.draft,
+        item.validation,
+        rosterStudents
+      );
       return {
         id: item.id,
         capturedAt: new Date(item.timestampMs).toISOString(),
@@ -477,6 +549,7 @@ export function EvidenceFeed() {
     setItems(seedFeedItems());
     setFilter("all");
     setSearchQuery("");
+    setCaptureEditError("");
   }
 
   function handleLoadDemo() {
@@ -491,9 +564,9 @@ export function EvidenceFeed() {
 
     const captures = loadWideDemoClassroom();
     setItems(captures.map(storedCaptureToFeedItem));
-    setRosterStudents(getAllStudents());
     setFilter("all");
     setSearchQuery("");
+    setCaptureEditError("");
   }
 
   return (
@@ -503,7 +576,10 @@ export function EvidenceFeed() {
         {rosterSetupNeeded ? (
           <RosterRequiredState />
         ) : (
-          <QuickCaptureCard onDraft={handleDraft} />
+          <QuickCaptureCard
+            rosterStudents={rosterStudents}
+            onDraft={handleDraft}
+          />
         )}
 
         <section className="space-y-4">
@@ -527,6 +603,12 @@ export function EvidenceFeed() {
           </div>
 
           <InboxFilterControl filter={filter} onFilterChange={setFilter} />
+
+          {captureEditError ? (
+            <p className="rounded-lg border border-border bg-muted/30 px-3 py-2 text-sm text-destructive">
+              {captureEditError}
+            </p>
+          ) : null}
 
           <div className="overflow-hidden rounded-card border border-border bg-card shadow-paper">
             {!hydrated ? (
@@ -557,6 +639,7 @@ export function EvidenceFeed() {
                   draft={item.draft}
                   timestamp={item.timestamp}
                   validation={item.validation}
+                  rosterStudents={rosterStudents}
                   onValidate={(fields) => handleValidate(item.id, fields)}
                   onEdit={(rawNote) => handleEditCapture(item.id, rawNote)}
                   onDelete={() => handleDeleteCapture(item.id)}
@@ -573,7 +656,10 @@ export function EvidenceFeed() {
         />
       </div>
 
-      <ClassTraceNoticedPanel items={summaryItems} />
+      <ClassTraceNoticedPanel
+        items={summaryItems}
+        rosterStudents={rosterStudents}
+      />
     </div>
   );
 }

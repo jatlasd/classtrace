@@ -4,6 +4,7 @@ import {
   type CaptureValidation,
 } from "@/lib/evidence/capture-validation";
 import type { NoteDraft } from "@/lib/note-processing/types";
+import type { CaptureRosterStudent } from "@/lib/students/resolve-capture-students";
 
 export type CaptureInsight = {
   text: string;
@@ -43,13 +44,16 @@ function topEntries(
     .map(([name, count]) => ({ name, count }));
 }
 
-export function summarizeCaptures(items: CaptureItem[]): CaptureSummary {
+export function summarizeCaptures(
+  items: CaptureItem[],
+  roster?: CaptureRosterStudent[]
+): CaptureSummary {
   if (items.length === 0) {
     return { insights: [], topStudents: [], topTags: [] };
   }
 
   const displays = items.map((item) =>
-    resolveCaptureDisplay(item.draft, item.validation)
+    resolveCaptureDisplay(item.draft, item.validation, roster)
   );
   const insights: CaptureInsight[] = [];
 

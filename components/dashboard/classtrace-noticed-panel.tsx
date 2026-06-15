@@ -7,6 +7,7 @@ import {
 import { summarizeCaptures } from "@/lib/evidence/summarize-captures";
 import { formatTagLabel } from "@/lib/format-tag";
 import type { NoteDraft } from "@/lib/note-processing/types";
+import type { CaptureRosterStudent } from "@/lib/students/resolve-capture-students";
 import {
   ArrowUpRight,
   BookOpen,
@@ -23,12 +24,20 @@ type FeedSummaryItem = {
 
 type ClassTraceNoticedPanelProps = {
   items: FeedSummaryItem[];
+  rosterStudents: CaptureRosterStudent[];
 };
 
-function getFollowUps(items: FeedSummaryItem[]): { title: string; detail: string }[] {
+function getFollowUps(
+  items: FeedSummaryItem[],
+  rosterStudents: CaptureRosterStudent[]
+): { title: string; detail: string }[] {
   return items
     .flatMap((item) => {
-      const display = resolveCaptureDisplay(item.draft, item.validation);
+      const display = resolveCaptureDisplay(
+        item.draft,
+        item.validation,
+        rosterStudents
+      );
       const student = display.studentMentions[0];
       const studentLabel =
         student?.status === "resolved" ? student.student.displayName : "student";
@@ -41,11 +50,16 @@ function getFollowUps(items: FeedSummaryItem[]): { title: string; detail: string
     .slice(0, 3);
 }
 
-export function ClassTraceNoticedPanel({ items }: ClassTraceNoticedPanelProps) {
-  const summary = summarizeCaptures(items);
-  const followUps = getFollowUps(items);
+export function ClassTraceNoticedPanel({
+  items,
+  rosterStudents,
+}: ClassTraceNoticedPanelProps) {
+  const summary = summarizeCaptures(items, rosterStudents);
+  const followUps = getFollowUps(items, rosterStudents);
   const needsReviewCount = items.filter(
-    (item) => resolveCaptureDisplay(item.draft, item.validation).needsReview
+    (item) =>
+      resolveCaptureDisplay(item.draft, item.validation, rosterStudents)
+        .needsReview
   ).length;
   const primaryPatterns = [
     summary.topStudents[0]

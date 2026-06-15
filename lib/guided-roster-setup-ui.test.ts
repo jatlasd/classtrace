@@ -31,7 +31,8 @@ describe("Unit 06 guided roster setup UI", () => {
     expect(evidenceFeed).toContain("Add one student before capturing evidence.");
     expect(evidenceFeed).toContain("Captures need one student from your roster.");
     expect(evidenceFeed).toContain("routes.roster");
-    expect(evidenceFeed).toContain("getAllStudents");
+    expect(evidenceFeed).toContain("rosterStudents.length === 0");
+    expect(evidenceFeed).not.toContain("getAllStudents");
     expect(evidenceFeed).toContain("items.length === 0 && rosterSetupNeeded");
     expect(evidenceFeed).toContain(
       "Your evidence feed will start here after roster setup."

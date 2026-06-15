@@ -28,10 +28,11 @@ describe("Unit 10 onboarding routing", () => {
 
   it("guards the feed behind active database roster setup", () => {
     expect(feedPage).toContain("getCurrentWorkspace");
-    expect(feedPage).toContain("hasActiveRosterStudentsForWorkspace");
+    expect(feedPage).toContain("listActiveRosterStudentsForWorkspace");
     expect(feedPage).toContain("workspace.workspaceId");
+    expect(feedPage).toContain("rosterStudents.length === 0");
     expect(feedPage).toContain("redirect(routes.roster)");
-    expect(feedPage).toContain("return <EvidenceFeed />");
+    expect(feedPage).toContain("return <EvidenceFeed rosterStudents={rosterStudents} />");
     expect(feedPage).not.toMatch(/localStorage|getAllStudents/);
   });
 

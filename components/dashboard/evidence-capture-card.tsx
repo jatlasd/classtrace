@@ -15,6 +15,7 @@ import {
 import { draftToDisplay } from "@/lib/note-processing/draft-to-display";
 import type { NoteDraft } from "@/lib/note-processing/types";
 import { routes } from "@/lib/routes";
+import type { CaptureRosterStudent } from "@/lib/students/resolve-capture-students";
 import {
   type Student,
   type StudentMentionRef,
@@ -33,8 +34,9 @@ type EvidenceCaptureCardProps = {
   draft: NoteDraft;
   timestamp?: string;
   validation?: CaptureValidation;
+  rosterStudents: CaptureRosterStudent[];
   onValidate: (fields: InterpretationFields) => void;
-  onEdit?: (rawNote: string) => void;
+  onEdit?: (rawNote: string) => boolean;
   onDelete?: () => void;
 };
 
@@ -176,6 +178,7 @@ export function EvidenceCaptureCard({
   draft,
   timestamp = "Just now",
   validation,
+  rosterStudents,
   onValidate,
   onEdit,
   onDelete,
@@ -183,8 +186,8 @@ export function EvidenceCaptureCard({
   const [reviewOpen, setReviewOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editText, setEditText] = useState("");
-  const display = resolveCaptureDisplay(draft, validation);
-  const parserDisplay = draftToDisplay(draft);
+  const display = resolveCaptureDisplay(draft, validation, rosterStudents);
+  const parserDisplay = draftToDisplay(draft, rosterStudents);
   const showReviewCta =
     display.needsReview && display.validationStatus !== "validated";
   const unresolvedMentions = display.studentMentions.filter(
@@ -210,8 +213,10 @@ export function EvidenceCaptureCard({
     if (!trimmed) {
       return;
     }
-    onEdit?.(trimmed);
-    setIsEditing(false);
+    const saved = onEdit?.(trimmed) ?? true;
+    if (saved) {
+      setIsEditing(false);
+    }
   }
 
   function handleCancelEdit() {
