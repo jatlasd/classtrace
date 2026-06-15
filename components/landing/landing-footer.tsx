@@ -20,10 +20,10 @@ export function LandingFooter() {
             Sign in
           </Link>
           <Link
-            href={routes.feed}
+            href={routes.signUp}
             className="text-sm text-muted-foreground transition-colors hover:text-foreground"
           >
-            Open app workspace →
+            Create account →
           </Link>
         </nav>
       </div>

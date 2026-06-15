@@ -1,5 +1,6 @@
 export const routes = {
   root: "/",
+  app: "/app",
   feed: "/app/feed",
   roster: "/app/roster",
   studentsPrefix: "/app/students",

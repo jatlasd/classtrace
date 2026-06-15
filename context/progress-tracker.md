@@ -9,14 +9,54 @@ Update this file after every meaningful implementation change.
 - Phase 1 in progress — production app foundation
 - Unit 02 complete and verified — Route Map and App Shell (`context/specs/02-route-map-and-app-shell.md`)
 - Unit 03 complete and verified — Public Landing Page UI (`context/specs/03-public-landing-page-ui.md`)
+- Unit 04 implemented with automated checks passing and signed-out runtime protection verified — Clerk Auth Foundation (`context/specs/04-clerk-auth-foundation.md`); signed-in browser access check remains manual
 - Design system overhaul applied from `classtrace_asset_kit/` (warm paper palette, Fraunces + Inter + Caveat, landing copy/layout aligned to asset kit)
 
 ---
 
 ## Current Goal
 
-- Prepare for Phase 1, unit 04 (Clerk Auth Foundation).
-- Do not start unit 04 until its spec exists in `context/specs/`.
+- Finish the signed-in browser access check for Phase 1, unit 04 when a Clerk test account/session is available.
+- Do not start unit 05 until the signed-in auth walkthrough is complete or the human explicitly accepts the remaining manual verification gap.
+
+---
+
+## Unit 04 — Clerk Auth Foundation (Implemented; Signed-In Verification Pending)
+
+Spec: `context/specs/04-clerk-auth-foundation.md`
+
+### What was completed
+
+- Installed `@clerk/nextjs`.
+- Added `ClerkProvider` inside the root layout body.
+- Replaced placeholder `/sign-in` and `/sign-up` pages with Clerk prebuilt components at catch-all auth routes.
+- Added `proxy.ts` for Next.js 16 using Clerk middleware.
+- Protected `/app` and nested `/app/*` routes while keeping `/`, `/sign-in`, and `/sign-up` public.
+- Added shared auth route constants and tests in `lib/auth-routes.ts` / `lib/auth-routes.test.ts`.
+- Added `.env.example` with Clerk development variable placeholders and updated `.gitignore` so the example can be tracked while real `.env*` files remain ignored.
+- Updated Clerk environment variable documentation in `context/code-standards.md`.
+- Repointed the landing footer's old direct workspace dev link to account creation because `/app/*` is now protected.
+- Updated `context/ui-registry.md` with the Clerk auth screen pattern and footer auth-link change.
+- No Prisma, Neon, organizations, roles/admins, database ownership models, AI, uploads, SIS integrations, or district features were added.
+
+### Verification
+
+- `npm run test -- lib/auth-routes.test.ts lib/routes.test.ts` — pass (5 focused tests)
+- `npm run lint` — pass
+- `npm run test` — pass (48 tests)
+- `npm run build` — pass; build output includes `/`, `/app/*`, `/sign-in/[[...sign-in]]`, `/sign-up/[[...sign-up]]`, and Proxy
+- Runtime route checks with local Clerk environment values — pass for signed-out/public behavior:
+  - `GET /`, `/sign-in`, and `/sign-up` return `200`
+  - signed-out `HEAD /app`, `/app/feed`, `/app/roster`, and `/app/settings` return `307` to `/sign-in` with return URLs
+
+### Verification pending
+
+- Signed-in browser access to `/app` and nested `/app/*` routes still needs a manual Clerk login session.
+- No signed-in runtime claim has been made yet.
+
+### Remaining risks / follow-ups
+
+- After signed-in browser verification passes, update this section to complete and move to unit 05 only with an approved spec.
 
 ---
 
@@ -140,6 +180,8 @@ Legacy:
 - Phase 1 unit 02 (Route Map and App Shell) implemented, reviewed, fixed, and verified — see **Unit 02 — Route Map and App Shell (Complete)** above.
 - `context/specs/03-public-landing-page-ui.md` created for Phase 1 unit 03.
 - Phase 1 unit 03 (Public Landing Page UI) implemented and verified — see **Unit 03 — Public Landing Page UI (Complete)** above.
+- `context/specs/04-clerk-auth-foundation.md` created for Phase 1 unit 04.
+- Phase 1 unit 04 (Clerk Auth Foundation) implemented with automated checks passing and signed-out route protection verified — see **Unit 04 — Clerk Auth Foundation (Implemented; Signed-In Verification Pending)** above.
 
 ---
 
@@ -192,15 +234,15 @@ Verification after refinement: `npm run lint` pass, `npm run build` pass, `npm r
 
 ## In Progress
 
-- None.
+- Signed-in browser verification for Unit 04.
 
 ---
 
 ## Next Up
 
-1. Write `context/specs/04-clerk-auth-foundation.md` (or equivalent) before coding unit 04.
-2. Build Phase 1, unit 04 (Clerk Auth Foundation) from `context/build-plan.md`.
-3. Remove or repoint the landing footer "Open app workspace" dev link when auth lands.
+1. Run the signed-in auth walkthrough after manual Clerk login: `/app`, `/app/feed`, `/app/roster`, `/app/settings`, and a sample `/app/students/[studentId]` route.
+2. Mark Unit 04 complete after signed-in access is verified or the human accepts the remaining manual verification gap.
+3. Write `context/specs/05-prisma-and-neon-database-foundation.md` only after Unit 04 verification is settled.
 4. Optionally expand `README.md` with a short pointer to `AGENTS.md` and the context framework beyond the Unit 02 route updates already made.
 
 ---
@@ -220,6 +262,11 @@ Verification after refinement: `npm run lint` pass, `npm run build` pass, `npm r
 - ClassTrace V1 is individual-teacher-first, not district-first.
 - V1 allows any verified email address.
 - V1 auth direction is Clerk.
+- Clerk is wired through `@clerk/nextjs` with `ClerkProvider` in the root app body.
+- Next.js 16 auth protection uses root `proxy.ts`, not `middleware.ts`.
+- `/app` and nested `/app/*` routes are protected by Clerk middleware.
+- `/`, `/sign-in`, and `/sign-up` remain public.
+- Clerk post-auth fallback redirects point to `/app`, which preserves the existing `/app` to `/app/feed` app entry redirect until roster onboarding is added later.
 - V1 database direction is Neon Postgres.
 - V1 ORM direction is Prisma.
 - V1 has one personal teacher workspace per user.
@@ -299,3 +346,4 @@ Verification after refinement: `npm run lint` pass, `npm run build` pass, `npm r
 - Each implementation unit should get its own spec file in `context/specs/` before coding.
 - Unit 02 kept existing localStorage-backed POC feature behavior intact while moving the feed, roster, and student timeline into the shared `/app` shell.
 - Unit 02 is done; next work is unit 03 (Public Landing Page UI) only after its spec is written — do not start implementation from the build plan alone.
+- The local review skill was intentionally renamed from `.agents/skills/review` to `.agents/skills/pleasereview` because `/review` conflicted with other review tooling; do not treat that skill-folder change as accidental auth-unit drift.

@@ -349,7 +349,7 @@ Rebuilt as a fully centered chalkboard band per the mockup: heading, a row of fo
 ### Landing Footer
 
 File: `components/landing/landing-footer.tsx`  
-Last updated: 2026-06-11 (full-mockup rebuild)
+Last updated: 2026-06-12 (Clerk auth foundation)
 
 | Property | Class |
 |---|---|
@@ -357,10 +357,30 @@ Last updated: 2026-06-11 (full-mockup rebuild)
 | Inner row | `mx-auto flex max-w-6xl flex-col gap-4 px-4 py-6 md:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8` |
 | Logo | `NotebookPen` line icon `size-6 text-navy` + `font-display text-lg font-semibold` wordmark |
 | Sign in link | `text-sm font-medium text-foreground/80 hover:text-foreground` |
-| Dev/utility link | `text-sm text-muted-foreground hover:text-foreground` ("Open app workspace →") |
+| Secondary auth link | `text-sm text-muted-foreground hover:text-foreground` ("Create account →") |
 
 **Pattern notes:**  
-Matches the mockup footer exactly: logo left, "Sign in" and "Open app workspace →" right. No copyright line per the mockup. Remove or repoint the workspace dev link when Clerk auth lands in unit 04.
+Matches the mockup footer structure: logo left, auth links right. The old direct workspace dev link was removed when Clerk auth landed because `/app/*` is protected. Footer links should point to public auth routes, not protected app routes.
+
+---
+
+### Clerk Auth Screens
+
+File: `app/sign-in/[[...sign-in]]/page.tsx`, `app/sign-up/[[...sign-up]]/page.tsx`  
+Last updated: 2026-06-12
+
+| Property | Class |
+|---|---|
+| Page shell | `flex min-h-screen items-center justify-center bg-background px-4 py-8` |
+| Auth component | Clerk prebuilt `SignIn` / `SignUp` |
+| Background | `bg-background` |
+| Border | Provided by Clerk prebuilt component |
+| Radius | Provided by Clerk prebuilt component |
+| Shadow | Provided by Clerk prebuilt component |
+| Spacing | `px-4 py-8` around centered auth component |
+
+**Pattern notes:**  
+Auth screens intentionally use Clerk prebuilt components inside a minimal ClassTrace page shell. Do not add organizations, role selectors, admin setup, district language, or custom account-management UI in V1 auth routes.
 
 ---
 
@@ -446,5 +466,4 @@ These patterns should be added or refined when they are built or audited:
 - Individual student export button/panel
 - Archive confirmation dialog
 - Permanent delete confirmation dialog
-- Clerk sign-in/sign-up screens
 - Settings page

@@ -479,8 +479,8 @@ Expected production variables:
 | `CLERK_SECRET_KEY` | Clerk server auth |
 | `NEXT_PUBLIC_CLERK_SIGN_IN_URL` | Clerk sign-in routing |
 | `NEXT_PUBLIC_CLERK_SIGN_UP_URL` | Clerk sign-up routing |
-| `NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL` | Post-login routing |
-| `NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL` | Post-signup routing |
+| `NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL` | Default post-login routing |
+| `NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL` | Default post-signup routing |
 
 Rules:
 
