@@ -26,7 +26,7 @@ import {
   type Student,
 } from "@/lib/students";
 import { routes } from "@/lib/routes";
-import { X } from "lucide-react";
+import { ArrowDownUp, X } from "lucide-react";
 import {
   hasExistingPocData,
   loadWideDemoClassroom,
@@ -209,14 +209,14 @@ function EvidenceSearchControl({
   onQueryChange: (query: string) => void;
 }) {
   return (
-    <div className="relative px-1 pb-1">
+    <div className="relative min-w-0 flex-1 sm:max-w-[280px]">
       <input
         type="search"
         value={query}
         onChange={(event) => onQueryChange(event.target.value)}
-        placeholder="Search student, tag, or note…"
+        placeholder="Search"
         aria-label="Search evidence inbox"
-        className="w-full rounded-lg border border-input bg-transparent py-2 pl-3 pr-9 text-sm outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 dark:bg-input/30"
+        className="h-10 w-full rounded-lg border border-border bg-card py-2 pl-3 pr-9 text-sm outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/20"
       />
       {query ? (
         <button
@@ -243,17 +243,17 @@ function InboxFilterControl({
     <div
       role="group"
       aria-label="Filter evidence inbox"
-      className="flex flex-wrap gap-1.5 px-1 pb-2"
+      className="flex flex-wrap gap-1.5"
     >
       {filterOptions.map((option) => (
         <button
           key={option.value}
           type="button"
           onClick={() => onFilterChange(option.value)}
-          className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
+          className={`rounded-lg border px-3 py-2 text-sm font-medium transition-colors ${
             filter === option.value
-              ? "border border-border bg-muted text-foreground"
-              : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
+              ? "border-border bg-muted text-foreground"
+              : "border-transparent text-muted-foreground hover:bg-muted/60 hover:text-foreground"
           }`}
         >
           {option.label}
@@ -294,8 +294,8 @@ function PocModeCard({
   onClear: () => void;
 }) {
   return (
-    <section className="rounded-card border border-border bg-card p-4 shadow-paper">
-      <h2 className="font-display text-sm font-semibold text-foreground">Usable POC mode</h2>
+    <section className="rounded-card border border-border bg-card/70 p-4">
+      <h2 className="text-sm font-semibold text-foreground">Browser-local utilities</h2>
       <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
         Captures and your roster save in this browser only. Refreshing the page
         keeps them here, but they are not shared across devices or browsers.
@@ -317,7 +317,7 @@ function PocModeCard({
 
 function RosterRequiredState() {
   return (
-    <section className="rounded-card border border-border bg-card p-4 shadow-paper">
+    <section className="rounded-card border border-border bg-card p-6 shadow-paper">
       <p className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
         Roster needed
       </p>
@@ -497,62 +497,80 @@ export function EvidenceFeed() {
   }
 
   return (
-    <div className="flex flex-col lg:flex-row">
-      <div className="mx-auto w-full max-w-[640px] flex-1 px-4 py-6 sm:px-6 lg:py-8">
+    <div className="mx-auto flex w-full max-w-[1560px] flex-col gap-6 px-4 py-6 sm:px-6 lg:flex-row lg:items-start lg:px-8">
+      <div className="min-w-0 flex-1 space-y-6">
         <EvidenceFeedHeader />
-        <div className="space-y-4">
-          {rosterSetupNeeded ? (
-            <RosterRequiredState />
-          ) : (
-            <QuickCaptureCard onDraft={handleDraft} />
-          )}
-          <PocModeCard
-            onLoadDemo={handleLoadDemo}
-            onExport={handleExport}
-            onClear={handleClear}
-          />
-          <RecentCapturesLabel />
-          <div className="flex flex-col gap-2">
-            <EvidenceSearchControl
-              query={searchQuery}
-              onQueryChange={setSearchQuery}
-            />
-            <InboxFilterControl filter={filter} onFilterChange={setFilter} />
-          </div>
-          {!hydrated ? (
-            <p className="px-1 py-8 text-center text-sm text-muted-foreground">
-              Loading your evidence inbox…
-            </p>
-          ) : items.length === 0 && rosterSetupNeeded ? (
-            <p className="px-1 py-8 text-center text-sm text-muted-foreground">
-              Your evidence inbox will start here after roster setup.
-            </p>
-          ) : items.length === 0 ? (
-            <p className="px-1 py-8 text-center text-sm text-muted-foreground">
-              Your evidence inbox is empty — capture what you noticed in class.
-            </p>
-          ) : visibleItems.length === 0 ? (
-            searchQuery.trim() ? (
-              <p className="px-1 py-8 text-center text-sm text-muted-foreground">
-                No captures match your search.
-              </p>
-            ) : (
-              <FilterEmptyMessage filter={filter} />
-            )
-          ) : (
-            visibleItems.map((item) => (
-              <EvidenceCaptureCard
-                key={item.id}
-                draft={item.draft}
-                timestamp={item.timestamp}
-                validation={item.validation}
-                onValidate={(fields) => handleValidate(item.id, fields)}
-                onEdit={(rawNote) => handleEditCapture(item.id, rawNote)}
-                onDelete={() => handleDeleteCapture(item.id)}
+        {rosterSetupNeeded ? (
+          <RosterRequiredState />
+        ) : (
+          <QuickCaptureCard onDraft={handleDraft} />
+        )}
+
+        <section className="space-y-4">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex flex-wrap items-center gap-5">
+              <RecentCapturesLabel />
+              <button
+                type="button"
+                className="inline-flex items-center gap-2 text-sm font-medium text-foreground"
+              >
+                <ArrowDownUp className="size-4 text-muted-foreground" />
+                Newest
+              </button>
+            </div>
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+              <EvidenceSearchControl
+                query={searchQuery}
+                onQueryChange={setSearchQuery}
               />
-            ))
-          )}
-        </div>
+            </div>
+          </div>
+
+          <InboxFilterControl filter={filter} onFilterChange={setFilter} />
+
+          <div className="overflow-hidden rounded-card border border-border bg-card shadow-paper">
+            {!hydrated ? (
+              <p className="px-6 py-10 text-center text-sm text-muted-foreground">
+                Loading your evidence feed...
+              </p>
+            ) : items.length === 0 && rosterSetupNeeded ? (
+              <p className="px-6 py-10 text-center text-sm text-muted-foreground">
+                Your evidence feed will start here after roster setup.
+              </p>
+            ) : items.length === 0 ? (
+              <p className="px-6 py-10 text-center text-sm text-muted-foreground">
+                Your evidence feed is empty. Capture one student-specific note
+                when something worth remembering happens.
+              </p>
+            ) : visibleItems.length === 0 ? (
+              searchQuery.trim() ? (
+                <p className="px-6 py-10 text-center text-sm text-muted-foreground">
+                  No captures match your search.
+                </p>
+              ) : (
+                <FilterEmptyMessage filter={filter} />
+              )
+            ) : (
+              visibleItems.map((item) => (
+                <EvidenceCaptureCard
+                  key={item.id}
+                  draft={item.draft}
+                  timestamp={item.timestamp}
+                  validation={item.validation}
+                  onValidate={(fields) => handleValidate(item.id, fields)}
+                  onEdit={(rawNote) => handleEditCapture(item.id, rawNote)}
+                  onDelete={() => handleDeleteCapture(item.id)}
+                />
+              ))
+            )}
+          </div>
+        </section>
+
+        <PocModeCard
+          onLoadDemo={handleLoadDemo}
+          onExport={handleExport}
+          onClear={handleClear}
+        />
       </div>
 
       <ClassTraceNoticedPanel items={summaryItems} />

@@ -34,7 +34,7 @@ describe("Unit 06 guided roster setup UI", () => {
     expect(evidenceFeed).toContain("getAllStudents");
     expect(evidenceFeed).toContain("items.length === 0 && rosterSetupNeeded");
     expect(evidenceFeed).toContain(
-      "Your evidence inbox will start here after roster setup."
+      "Your evidence feed will start here after roster setup."
     );
   });
 });

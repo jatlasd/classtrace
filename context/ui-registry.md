@@ -8,6 +8,8 @@ This file records actual UI patterns used in the app. `ui-context.md` defines th
 
 **2026-06-11 design system:** Tokens from `classtrace_asset_kit/design-tokens.json` via `app/globals.css`. Use `rounded-card`, `shadow-paper`, `shadow-floating`, `font-display`, `bg-validated`, `bg-navy`, `text-link`, `tape-tab`, and `bg-audience-*` (landing only). Registry entries below were refreshed for the warm-paper overhaul.
 
+**2026-06-15 app workspace overhaul:** Unit 11 moved the authenticated app from the dark sidebar/mobile-bottom-nav shell to a light top navigation shell and reference-style evidence workspace. New authenticated UI work should follow the Unit 11 patterns below unless a later unit explicitly changes direction.
+
 ---
 
 ## How to Use
@@ -32,6 +34,112 @@ Run `/imprint` after building UI components so new patterns are captured here.
 ---
 
 ## Components
+
+### App Top Navigation
+
+File: `components/dashboard/app-top-nav.tsx`  
+Last updated: 2026-06-15
+
+| Property | Class |
+|---|---|
+| Shell | `sticky top-0 z-40 border-b border-border bg-card/95 backdrop-blur` |
+| Inner row | `mx-auto flex min-h-16 max-w-[1560px] flex-col gap-2 px-4 py-3 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:gap-6 lg:px-8` |
+| Brand link | `flex items-center gap-3` |
+| Logo mark | `flex size-9 items-center justify-center rounded-lg text-primary` |
+| Wordmark | `font-display text-2xl font-semibold tracking-tight text-foreground` |
+| Nav list | `flex min-w-0 items-center gap-1 overflow-x-auto lg:justify-center` |
+| Nav item | `group relative inline-flex h-11 shrink-0 items-center gap-2 rounded-lg px-3 text-sm font-semibold transition-colors` |
+| Active nav item | `text-foreground` with icon `text-primary` and desktop underline `bg-primary` |
+| Inactive nav item | `text-muted-foreground hover:bg-muted/60 hover:text-foreground` |
+| Account avatar | `flex size-10 items-center justify-center rounded-full bg-secondary text-sm font-semibold text-foreground` |
+| Icon button | `flex size-9 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground` |
+
+**Pattern notes:**  
+This is the active authenticated app shell as of Unit 11. Keep nav links limited to real routes/workflows; do not add inert "Review", "Search", or notification-style actions before those features exist. The old App Sidebar and Mobile Bottom Navigation entries remain historical references, not the current shell direction.
+
+---
+
+### Unit 11 Quick Capture Composer
+
+File: `components/dashboard/quick-capture-card.tsx`  
+Last updated: 2026-06-15
+
+| Property | Class |
+|---|---|
+| Shell | `rounded-card border border-border bg-card shadow-paper ring-1 ring-transparent transition-shadow focus-within:ring-primary/20` |
+| Main padding | `px-5 pb-2 pt-5 sm:px-8 sm:pt-7` |
+| Label | `font-display mb-3 block text-2xl font-semibold tracking-tight text-foreground sm:text-3xl` |
+| Help text | `mb-6 text-sm leading-relaxed text-muted-foreground sm:text-base` |
+| Footer | `flex flex-col gap-3 border-t border-border px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-8` |
+| Hint row | `flex flex-wrap items-center gap-2` |
+| Hint chip | `inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-border bg-muted/30 px-3 text-sm font-medium text-muted-foreground` |
+| Capture button | `h-11 rounded-lg px-6 text-sm font-semibold` with `variant="outline"` and `text-primary hover:text-primary` |
+
+**Pattern notes:**  
+The composer is larger and closer to the uploaded reference. It stays text-only: do not add photo, video, audio, file, attachment, or upload affordances. Mention/tag/review items in the footer are non-interactive hints until real behavior exists.
+
+---
+
+### Unit 11 Evidence Feed Workspace
+
+File: `components/dashboard/evidence-feed.tsx`  
+Last updated: 2026-06-15
+
+| Property | Class |
+|---|---|
+| Page shell | `mx-auto flex w-full max-w-[1560px] flex-col gap-6 px-4 py-6 sm:px-6 lg:flex-row lg:items-start lg:px-8` |
+| Main column | `min-w-0 flex-1 space-y-6` |
+| Toolbar | `flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between` |
+| List container | `overflow-hidden rounded-card border border-border bg-card shadow-paper` |
+| Search input | `h-10 w-full rounded-lg border border-border bg-card py-2 pl-3 pr-9 text-sm outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/20` |
+| Filter buttons | `rounded-lg border px-3 py-2 text-sm font-medium transition-colors` |
+| Utility card | `rounded-card border border-border bg-card/70 p-4` |
+
+**Pattern notes:**  
+The feed workspace follows the reference image: composer first, recent captures toolbar, row-based capture list, right rail, and secondary browser-local POC utilities below the main workflow. It remains localStorage-backed POC behavior until later evidence database units.
+
+---
+
+### Unit 11 Evidence Capture Row
+
+File: `components/dashboard/evidence-capture-card.tsx`  
+Last updated: 2026-06-15
+
+| Property | Class |
+|---|---|
+| Row shell | `border-b border-border last:border-b-0` |
+| Row grid | `grid gap-4 px-4 py-5 md:grid-cols-[72px_88px_minmax(0,1fr)_220px] md:px-6` |
+| Icon cell | `flex size-11 items-center justify-center rounded-lg border` |
+| Timestamp text | `text-sm leading-relaxed text-muted-foreground` |
+| Note text | `text-[15px] leading-relaxed text-foreground` |
+| Status column | `space-y-3 md:border-l md:border-border md:pl-6` |
+| Status pill | `inline-flex items-center gap-2 rounded-lg border px-2.5 py-1 text-xs font-semibold` |
+| Chip group | `flex flex-wrap gap-1.5` |
+
+**Pattern notes:**  
+Evidence captures now render as rows inside the feed list container. Review, edit, delete, and interpretation review remain available, preserving teacher validation. Chips remain draft interpretation, not final truth.
+
+---
+
+### Patterns and Follow-ups Rail
+
+File: `components/dashboard/classtrace-noticed-panel.tsx`  
+Last updated: 2026-06-15
+
+| Property | Class |
+|---|---|
+| Shell | `w-full shrink-0 lg:w-[340px] xl:w-[360px]` |
+| Panel | `rounded-card border border-border bg-card p-5 shadow-paper lg:sticky lg:top-24` |
+| Section title | `text-lg font-semibold text-foreground` |
+| Pattern row | `flex gap-4` |
+| Pattern icon | `flex size-12 shrink-0 items-center justify-center rounded-lg border` |
+| Follow-up avatar | `flex size-10 shrink-0 items-center justify-center rounded-full bg-secondary text-sm font-semibold text-foreground` |
+| Secondary insight panel | `rounded-lg border border-border bg-muted/25 p-3` |
+
+**Pattern notes:**  
+The right rail uses deterministic/local capture summaries only. It may say "Patterns" and "Follow-ups", but it must not include clickable "View all" or "New follow-up" controls until those routes/actions exist, and it must not claim AI analysis, analytics, reminders, or persisted follow-up tasks.
+
+---
 
 ### App Sidebar
 

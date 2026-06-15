@@ -9,19 +9,15 @@ import type { NoteDraft } from "@/lib/note-processing/types";
 import { getAllStudents } from "@/lib/students";
 import {
   AtSign,
-  Camera,
   Check,
+  ClipboardCheck,
   Hash,
-  Link2,
-  Video,
 } from "lucide-react";
 
-const actions = [
-  { icon: Camera, label: "Photo" },
-  { icon: Video, label: "Video" },
-  { icon: Link2, label: "Link" },
-  { icon: AtSign, label: "Mention" },
-  { icon: Hash, label: "Tag" },
+const captureHints = [
+  { icon: AtSign, label: "Mention one student" },
+  { icon: Hash, label: "Add tags" },
+  { icon: ClipboardCheck, label: "Review before saving" },
 ];
 
 const quickCaptureMentionsStyle: MentionsInputStyle = {
@@ -31,18 +27,18 @@ const quickCaptureMentionsStyle: MentionsInputStyle = {
   },
   "&multiLine": {
     control: {
-      minHeight: 120,
+      minHeight: 88,
     },
     highlighter: {
       padding: 0,
-      minHeight: 120,
+      minHeight: 88,
       border: "1px solid transparent",
     },
     input: {
       padding: 0,
       outline: 0,
       border: 0,
-      minHeight: 120,
+      minHeight: 88,
       overflow: "auto",
     },
   },
@@ -128,20 +124,25 @@ export function QuickCaptureCard({ onDraft }: QuickCaptureCardProps) {
 
   return (
     <div className="rounded-card border border-border bg-card shadow-paper ring-1 ring-transparent transition-shadow focus-within:ring-primary/20">
-      <div className="p-4 pb-2">
+      <div className="px-5 pb-2 pt-5 sm:px-8 sm:pt-7">
         <label
           htmlFor="quick-capture"
-          className="font-display mb-2 block text-base font-semibold text-foreground"
+          className="font-display mb-3 block text-2xl font-semibold tracking-tight text-foreground sm:text-3xl"
         >
           What happened?
         </label>
+        <p className="mb-6 text-sm leading-relaxed text-muted-foreground sm:text-base">
+          Type a quick note. Use <span className="font-semibold text-link">@student</span>{" "}
+          to name one student and <span className="font-semibold text-validated-foreground">#tag</span>{" "}
+          to add context.
+        </p>
         <div className="quick-capture-mentions">
           <MentionsInput
             id="quick-capture"
             value={markupValue}
             onChange={handleChange}
             onKeyDown={handleKeyDown}
-            placeholder="@Jeremy still struggling on multiplying fractions review #fractions #review #checkin"
+            placeholder="@Mary used a new reading strategy during small group #reading #strategy"
             style={quickCaptureMentionsStyle}
             allowSuggestionsAboveCursor
           >
@@ -163,29 +164,26 @@ export function QuickCaptureCard({ onDraft }: QuickCaptureCardProps) {
             />
           </MentionsInput>
         </div>
-        <p className="mt-1 text-xs text-muted-foreground">
-          Use @student and #tag in your note
-        </p>
       </div>
 
-      <div className="flex items-center justify-between gap-3 border-t border-border px-4 py-3">
-        <div className="flex items-center gap-0.5">
-          {actions.map((action) => (
-            <button
-              key={action.label}
-              type="button"
-              title={action.label}
-              className="flex size-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+      <div className="flex flex-col gap-3 border-t border-border px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-8">
+        <div className="flex flex-wrap items-center gap-2">
+          {captureHints.map((hint) => (
+            <span
+              key={hint.label}
+              className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-border bg-muted/30 px-3 text-sm font-medium text-muted-foreground"
             >
-              <action.icon className="size-[18px]" strokeWidth={1.75} />
-            </button>
+              <hint.icon className="size-[18px]" strokeWidth={1.75} />
+              <span>{hint.label}</span>
+            </span>
           ))}
         </div>
 
         <Button
           onClick={handlePost}
           disabled={!plainText.trim()}
-          className="h-9 rounded-lg px-5 text-sm font-semibold"
+          variant="outline"
+          className="h-11 rounded-lg px-6 text-sm font-semibold text-primary hover:text-primary sm:self-auto"
         >
           {posted ? (
             <>
@@ -193,7 +191,7 @@ export function QuickCaptureCard({ onDraft }: QuickCaptureCardProps) {
               Captured
             </>
           ) : (
-            "Capture"
+            "Capture Note"
           )}
         </Button>
       </div>

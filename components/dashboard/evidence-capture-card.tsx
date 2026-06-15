@@ -19,6 +19,15 @@ import {
   type Student,
   type StudentMentionRef,
 } from "@/lib/students";
+import {
+  BarChart3,
+  CheckCircle2,
+  Circle,
+  MessageCircle,
+  MoreHorizontal,
+  Star,
+  User,
+} from "lucide-react";
 
 type EvidenceCaptureCardProps = {
   draft: NoteDraft;
@@ -96,6 +105,73 @@ function StudentMentionChip({ mentionRef }: { mentionRef: StudentMentionRef }) {
   return <UnresolvedStudentChip mention={mentionRef.mention} />;
 }
 
+function CaptureIcon({ evidenceType }: { evidenceType: string }) {
+  const normalizedType = evidenceType.toLowerCase();
+
+  if (normalizedType.includes("behavior")) {
+    return (
+      <span className="flex size-11 items-center justify-center rounded-lg border border-accent/40 bg-accent/15 text-primary">
+        <Star className="size-5" strokeWidth={1.75} />
+      </span>
+    );
+  }
+
+  if (normalizedType.includes("academic") || normalizedType.includes("skill")) {
+    return (
+      <span className="flex size-11 items-center justify-center rounded-lg border border-link/20 bg-secondary text-link">
+        <BarChart3 className="size-5" strokeWidth={1.75} />
+      </span>
+    );
+  }
+
+  if (normalizedType.includes("communication")) {
+    return (
+      <span className="flex size-11 items-center justify-center rounded-lg border border-primary/20 bg-primary/10 text-primary">
+        <MessageCircle className="size-5" strokeWidth={1.75} />
+      </span>
+    );
+  }
+
+  return (
+    <span className="flex size-11 items-center justify-center rounded-lg border border-validated/50 bg-validated/35 text-validated-foreground">
+      <CheckCircle2 className="size-5" strokeWidth={1.75} />
+    </span>
+  );
+}
+
+function StatusPill({
+  status,
+  needsReview,
+}: {
+  status: "pending" | "validated";
+  needsReview: boolean;
+}) {
+  if (status === "validated") {
+    return (
+      <span className="inline-flex items-center gap-2 rounded-lg border border-validated/60 bg-validated/35 px-2.5 py-1 text-xs font-semibold text-validated-foreground">
+        <Circle className="size-2 fill-current" />
+        Validated
+      </span>
+    );
+  }
+
+  if (!needsReview) {
+    return (
+      <span className="inline-flex items-center gap-2 rounded-lg border border-validated/50 bg-validated/25 px-2.5 py-1 text-xs font-semibold text-validated-foreground">
+        <Circle className="size-2 fill-current" />
+        Ready to review
+      </span>
+    );
+  }
+
+  return (
+    <span className="inline-flex items-center gap-2 rounded-lg border border-accent/40 bg-accent/20 px-2.5 py-1 text-xs font-semibold text-foreground">
+      <Circle className="size-2 fill-current text-primary" />
+      Needs review
+    </span>
+  );
+}
+
 export function EvidenceCaptureCard({
   draft,
   timestamp = "Just now",
@@ -153,49 +229,27 @@ export function EvidenceCaptureCard({
   }
 
   return (
-    <article className="rounded-card border border-border bg-card shadow-paper">
-      <div className="space-y-3 p-4">
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="text-xs text-muted-foreground">{timestamp}</span>
-          {!isEditing && showReviewCta && (
-            <span className="rounded-full border border-accent/50 bg-accent/30 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-foreground">
-              Needs review
-            </span>
-          )}
-          {!isEditing && display.validationStatus === "validated" && (
-            <span className="rounded-full border border-validated/60 bg-validated px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-validated-foreground">
-              Validated
-            </span>
-          )}
-          {showActions && !isEditing && (
-            <div className="ml-auto flex flex-wrap items-center gap-1">
-              {onEdit && (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="xs"
-                  onClick={handleStartEdit}
-                >
-                  Edit
-                </Button>
-              )}
-              {onDelete && (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="xs"
-                  className="text-destructive hover:text-destructive"
-                  onClick={handleDelete}
-                >
-                  Delete
-                </Button>
-              )}
-            </div>
-          )}
+    <article className="border-b border-border last:border-b-0">
+      <div className="grid gap-4 px-4 py-5 md:grid-cols-[72px_88px_minmax(0,1fr)_220px] md:px-6">
+        <div className="flex items-start gap-3 md:block">
+          <CaptureIcon evidenceType={display.evidenceType} />
+          <div className="md:hidden">
+            <p className="text-xs text-muted-foreground">{timestamp}</p>
+            <StatusPill
+              status={display.validationStatus}
+              needsReview={showReviewCta}
+            />
+          </div>
         </div>
 
-        {isEditing ? (
-          <div className="space-y-2">
+        <div className="hidden text-sm leading-relaxed text-muted-foreground md:block">
+          <p>{timestamp.split(" ")[0] ?? timestamp}</p>
+          {timestamp.includes(" ") && <p>{timestamp.split(" ").slice(1).join(" ")}</p>}
+        </div>
+
+        <div className="min-w-0 space-y-3">
+          {isEditing ? (
+            <div className="space-y-2">
             <Textarea
               value={editText}
               onChange={(event) => setEditText(event.target.value)}
@@ -220,17 +274,12 @@ export function EvidenceCaptureCard({
                 Cancel
               </Button>
             </div>
-          </div>
-        ) : (
-          <NoteContent text={draft.parsed.rawNote} />
-        )}
+            </div>
+          ) : (
+            <NoteContent text={draft.parsed.rawNote} />
+          )}
 
-        {!isEditing && (
-        <div className="rounded-lg border border-border/60 bg-muted/30 px-3 py-3">
-          <p className="mb-2.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-            ClassTrace read this as
-          </p>
-
+          {!isEditing && (
           <div className="flex flex-wrap gap-1.5">
             {display.studentMentions.map((mentionRef, index) => (
               <StudentMentionChip
@@ -259,6 +308,7 @@ export function EvidenceCaptureCard({
               </Chip>
             ))}
           </div>
+          )}
 
           {hasUnresolvedMentions && (
             <div className="mt-3 rounded-md border border-accent/40 bg-accent/15 px-3 py-2.5">
@@ -310,25 +360,77 @@ export function EvidenceCaptureCard({
             </ul>
           )}
         </div>
-        )}
 
-        {!isEditing && showReviewCta && !reviewOpen && (
-          <Button
-            variant="outline"
-            size="sm"
-            className="w-full sm:w-auto"
-            onClick={() => setReviewOpen(true)}
-          >
-            Review interpretation
-          </Button>
-        )}
+        <div className="space-y-3 md:border-l md:border-border md:pl-6">
+          <div className="flex items-start justify-between gap-3">
+            <div className="space-y-2">
+              <StatusPill
+                status={display.validationStatus}
+                needsReview={showReviewCta}
+              />
+              <p className="text-sm text-muted-foreground">Ms. Rivera</p>
+              {display.validationStatus === "validated" && validation?.status === "validated" && (
+                <p className="text-xs text-muted-foreground">
+                  Filed after review
+                </p>
+              )}
+            </div>
+
+            {showActions && !isEditing && (
+              <div className="flex items-center gap-1">
+                {onEdit && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="xs"
+                    onClick={handleStartEdit}
+                  >
+                    Edit
+                  </Button>
+                )}
+                {onDelete && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon-sm"
+                    className="text-muted-foreground hover:text-destructive"
+                    aria-label="Delete capture"
+                    onClick={handleDelete}
+                  >
+                    <MoreHorizontal className="size-4" />
+                  </Button>
+                )}
+              </div>
+            )}
+          </div>
+
+          {!isEditing && showReviewCta && !reviewOpen && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full justify-start"
+              onClick={() => setReviewOpen(true)}
+            >
+              Review interpretation
+            </Button>
+          )}
+
+          {!isEditing && !showReviewCta && (
+            <p className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
+              <User className="size-3.5" />
+              Teacher-controlled draft
+            </p>
+          )}
+        </div>
 
         {!isEditing && showReviewCta && reviewOpen && (
+          <div className="md:col-span-4">
           <InterpretationReviewPanel
             display={parserDisplay}
             onConfirm={handleConfirm}
             onDismiss={() => setReviewOpen(false)}
           />
+          </div>
         )}
       </div>
     </article>

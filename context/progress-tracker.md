@@ -6,6 +6,7 @@ Update this file after every meaningful implementation change.
 
 ## Current Phase
 
+- Phase 3 in progress — capture and validation
 - Phase 2 complete — roster onboarding
 - Unit 02 complete and verified — Route Map and App Shell (`context/specs/02-route-map-and-app-shell.md`)
 - Unit 03 complete and verified — Public Landing Page UI (`context/specs/03-public-landing-page-ui.md`)
@@ -16,14 +17,51 @@ Update this file after every meaningful implementation change.
 - Unit 08 implemented and verified with automated checks — Manual Student Entry (`context/specs/08-manual-student-entry.md`)
 - Unit 09 implemented and verified with automated checks — Roster Import (`context/specs/09-roster-import.md`)
 - Unit 10 implemented and verified with automated checks — Onboarding Completion (`context/specs/10-onboarding-completion.md`)
+- Unit 11 implemented and verified with automated checks — Production Evidence Feed UI Pass (`context/specs/11-production-evidence-feed-ui-pass.md`)
 - Design system overhaul applied from `classtrace_asset_kit/` (warm paper palette, Fraunces + Inter + Caveat, landing copy/layout aligned to asset kit)
 
 ---
 
 ## Current Goal
 
-- Prepare the next focused unit spec before starting Phase 3, Unit 11 — Production Evidence Feed UI Pass.
-- Do not start Unit 11 implementation until its spec exists and the human explicitly confirms.
+- Prepare the next focused unit spec before starting Phase 3, Unit 12 — Deterministic Student Resolution.
+- Do not start Unit 12 implementation until its spec exists and the human explicitly confirms.
+
+---
+
+## Unit 11 — Production Evidence Feed UI Pass (Implemented)
+
+Spec: `context/specs/11-production-evidence-feed-ui-pass.md`
+
+### What was completed
+
+- Created the Unit 11 spec from the uploaded UI reference and scoped it as a visual/feed-shell unit only.
+- Replaced the active authenticated app shell with a light top navigation component in `components/dashboard/app-top-nav.tsx`.
+- Updated `app/app/layout.tsx` to use the new top nav instead of the old dark sidebar and mobile bottom nav.
+- Enlarged the quick capture composer to match the reference direction: large "What happened?" prompt, @student/#tag guidance, and text-only action affordances.
+- Removed visible photo/video/audio/file-style controls from the composer.
+- Reworked the evidence feed into a wide workspace with composer, recent-captures toolbar, row-based capture list, right rail, and secondary browser-local utility card.
+- Reworked capture presentation into table-like rows while preserving edit, delete, review, validation, chips, unresolved mention warning, and interpretation review behavior.
+- Rebuilt the right rail as deterministic/local "Patterns" and "Follow-ups" sections using existing capture summaries and follow-up suggestions.
+- Added `lib/production-feed-ui-pass.test.ts` to guard the new shell/feed labels and prevent media/upload affordances or out-of-scope claims.
+- Updated `context/ui-context.md` to document the new light top-nav authenticated shell direction.
+- Updated `context/ui-registry.md` with the new top nav, composer, feed workspace, capture row, and right-rail patterns.
+- Did not add evidence database persistence, deterministic student resolution enforcement, parser changes, server actions, migrations, new dependencies, AI, uploads, analytics, admin behavior, or organization/district behavior.
+
+### Verification
+
+- `npm.cmd run test -- lib/production-feed-ui-pass.test.ts lib/guided-roster-setup-ui.test.ts` — pass (6 tests).
+- `npm.cmd run lint` — pass.
+- `npm.cmd run test` — pass (106 tests).
+- `npm.cmd run build` — pass.
+- Review follow-up verification after removing inert controls: `npm.cmd run test -- lib/production-feed-ui-pass.test.ts` — pass (3 tests); `npm.cmd run lint` — pass; `npm.cmd run test` — pass (106 tests); `npm.cmd run build` — pass.
+
+### Remaining risks / follow-ups
+
+- Manual signed-in browser verification is still needed. The in-app browser could not start in this Windows sandbox, and the background dev server smoke check did not connect.
+- `/app/feed` still uses localStorage-backed POC captures after the database roster gate; Unit 14/15 remain responsible for production evidence persistence and database-backed feed data.
+- Unit 12 still needs to enforce exactly one resolved roster student before capture can proceed.
+- Review follow-up: removed inert "Review", "Search", "View all", "New follow-up", and composer helper buttons. Composer helper items are now non-interactive hints, and no fake route/search/notification/follow-up behavior is exposed.
 
 ---
 
@@ -441,6 +479,8 @@ Legacy:
 - Phase 2 unit 09 (Roster Import) implemented and verified with automated checks — see **Unit 09 — Roster Import (Implemented)** above.
 - `context/specs/10-onboarding-completion.md` created for Phase 2 unit 10.
 - Phase 2 unit 10 (Onboarding Completion) implemented and verified with automated checks — see **Unit 10 — Onboarding Completion (Implemented)** above.
+- `context/specs/11-production-evidence-feed-ui-pass.md` created for Phase 3 unit 11.
+- Phase 3 unit 11 (Production Evidence Feed UI Pass) implemented and verified with automated checks — see **Unit 11 — Production Evidence Feed UI Pass (Implemented)** above.
 
 ---
 
@@ -499,7 +539,7 @@ Verification after refinement: `npm run lint` pass, `npm run build` pass, `npm r
 
 ## Next Up
 
-1. Write `context/specs/11-production-evidence-feed-ui-pass.md` before implementing Phase 3, Unit 11.
+1. Write `context/specs/12-deterministic-student-resolution.md` before implementing Phase 3, Unit 12.
 2. Optionally expand `README.md` with a short pointer to `AGENTS.md` and the context framework beyond the Unit 02 route updates already made.
 
 ---
@@ -621,3 +661,5 @@ Verification after refinement: `npm run lint` pass, `npm run build` pass, `npm r
 - Unit 09 implementation completed on 2026-06-15. `/app/roster` now supports database-backed pasted roster import with preview-before-save, row-level validation, archived-row uniqueness conflict checks, and atomic confirmed save.
 - Unit 10 spec was created on 2026-06-15. It scopes Onboarding Completion as a database-roster-aware route handoff: `/app` and `/app/feed` should redirect empty active rosters to `/app/roster`, route roster-ready workspaces to `/app/feed`, and add a clear continue-to-feed action on `/app/roster` without adding persistent onboarding state, capture enforcement, evidence persistence, student timeline database wiring, AI, uploads, organizations, admin behavior, or new dependencies.
 - Unit 10 implementation completed on 2026-06-15. `/app` and `/app/feed` now gate by active database roster count, `/app/roster` shows a continue-to-feed action after roster setup has started, and the first-capture prompt remains deferred to Unit 11 to avoid broad feed rewrites.
+- Unit 11 spec was created on 2026-06-15 from the uploaded UI reference. It scopes Production Evidence Feed UI Pass as a visual overhaul of the authenticated shell, composer, recent capture list, and right rail while excluding student-resolution enforcement, evidence database persistence, AI, uploads, analytics, admin behavior, and new dependencies.
+- Unit 11 implementation completed on 2026-06-15. The authenticated app now uses a light top navigation shell, `/app/feed` uses the reference-style capture composer, recent capture rows, Patterns/Follow-ups rail, and secondary browser-local utility card, and the next planned unit is Unit 12 Deterministic Student Resolution.

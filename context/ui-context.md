@@ -10,7 +10,7 @@ ClassTrace should feel like a calm teacher workspace for capturing student evide
 
 ## Visual Direction
 
-ClassTrace uses a warm paper workspace with a chalkboard-dark sidebar in the authenticated app. The public landing page leans into an editorial “teacher’s desk” direction with ruled lines, tape tabs, and handwritten annotations.
+ClassTrace uses a warm paper workspace with a light top navigation shell in the authenticated app. The public landing page leans into an editorial “teacher’s desk” direction with ruled lines, tape tabs, and handwritten annotations. Older chalkboard-dark sidebar patterns may remain in unused components, but new authenticated app work should follow the light top-nav direction unless a future unit explicitly changes it again.
 
 The visual style should feel:
 
@@ -297,48 +297,41 @@ Do not overuse report/chart icons. V1 is not an analytics dashboard.
 
 ## App Shell
 
-The authenticated app should keep the current shell concept:
+The authenticated app should use the light top navigation shell introduced in Unit 11:
 
-- Dark sidebar on desktop
-- Main content area on light background
-- Mobile navigation for smaller screens
-- Central workspace focused on evidence capture and review
+- Sticky light paper/card top bar.
+- Brand on the left.
+- Primary workflow links in the top row.
+- Teacher/account controls on the right.
+- Main content area on warm paper background.
+- Central workspace focused on evidence capture and review.
+- Responsive top nav that wraps/scrolls compactly on mobile.
 
-Desktop sidebar behavior:
-
-| Breakpoint | Behavior |
-|---|---|
-| Below `lg` | Sidebar hidden; mobile nav used |
-| `lg` | Compact icon sidebar around `72px` wide |
-| `xl` and above | Expanded sidebar around `220px` wide |
-
-Main layout should leave enough room for the evidence feed without feeling crowded.
+Main layout should leave enough room for the evidence feed and right rail without feeling crowded.
 
 ---
 
-## Sidebar Navigation
+## Top Navigation
 
-Sidebar visual pattern:
+Authenticated top navigation visual pattern:
 
-- Background: `bg-sidebar`
-- Border: `border-sidebar-border`
-- Text: `text-sidebar-foreground`
-- Muted text: `text-sidebar-foreground/60` or `/70`
-- Active item: `bg-sidebar-accent text-sidebar-accent-foreground`
-- Active icon/accent: `text-sidebar-primary`
-- Hover item: `hover:bg-sidebar-accent/50 hover:text-sidebar-foreground`
-- Item radius: `rounded-lg`
-- Item padding: `px-3 py-2.5`
-- Icon size: `size-[18px]`
+- Shell: `sticky top-0 z-40 border-b border-border bg-card/95 backdrop-blur`
+- Brand: `font-display text-2xl font-semibold tracking-tight text-foreground`
+- Nav item: `inline-flex h-11 items-center gap-2 rounded-lg px-3 text-sm font-semibold`
+- Active nav item: `text-foreground` with icon `text-primary` and a small `bg-primary` underline on desktop
+- Inactive nav item: `text-muted-foreground hover:bg-muted/60 hover:text-foreground`
+- Account avatar: `rounded-full bg-secondary text-foreground`
+- Icon size: `size-4`
 
 Primary navigation should remain simple.
 
 V1 navigation should focus on:
 
-- Evidence Feed
-- Roster
+- Capture / Evidence Feed
 - Students
 - Settings
+
+Do not add top-nav items for workflows that do not exist yet. Search, review queues, notifications, and follow-up task management should appear as active controls only when their behavior is implemented in a focused unit.
 
 Avoid adding dashboard/admin/report-heavy navigation in V1.
 
@@ -351,18 +344,19 @@ The evidence feed is the main workspace.
 Feed design rules:
 
 - Capture composer should be visually prominent near the top.
-- Evidence cards should appear in a clear chronological feed.
+- Evidence rows should appear in a clear chronological feed.
+- Desktop feed may use a right rail for deterministic patterns and follow-ups.
 - Filters/search may exist, but should not overpower capture.
 - Empty states should guide the teacher toward roster setup or first capture.
 - The feed must not look like a social media app.
 - The feed must not support general teacher journaling.
 
-Use cards with:
+Use the Unit 11 row pattern with:
 
-- `rounded-xl`
+- `rounded-card`
 - `border border-border`
 - `bg-card`
-- `shadow-sm`
+- `shadow-paper`
 - Clear timestamps/metadata
 - Muted secondary text
 - Calm validation prompts
