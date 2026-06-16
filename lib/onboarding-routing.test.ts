@@ -32,7 +32,8 @@ describe("Unit 10 onboarding routing", () => {
     expect(feedPage).toContain("workspace.workspaceId");
     expect(feedPage).toContain("rosterStudents.length === 0");
     expect(feedPage).toContain("redirect(routes.roster)");
-    expect(feedPage).toContain("return <EvidenceFeed rosterStudents={rosterStudents} />");
+    expect(feedPage).toContain("rosterStudents={rosterStudents}");
+    expect(feedPage).toContain("initialEvidenceRecords={evidenceRecords}");
     expect(feedPage).not.toMatch(/localStorage|getAllStudents/);
   });
 

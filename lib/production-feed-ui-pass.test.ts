@@ -51,8 +51,9 @@ describe("Unit 11 production evidence feed UI pass", () => {
 
   it("renders the reference-direction feed labels without expanding product scope", () => {
     expect(evidenceFeedHeader).toContain("Recent captures");
-    expect(evidenceFeed).toContain("Browser-local utilities");
-    expect(evidenceFeed).toContain("Loading your evidence feed");
+    expect(evidenceFeed).toContain("No validated evidence yet.");
+    expect(evidenceFeed).toContain("SavedEvidenceRow");
+    expect(evidenceFeed).not.toContain("Browser-local utilities");
     expect(noticedPanel).toContain("Patterns");
     expect(noticedPanel).toContain("Follow-ups");
     expect(noticedPanel).not.toContain("View all");

@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useMemo, useState } from "react";
 import {
   saveValidatedEvidence,
   type SaveValidatedEvidenceActionInput,
@@ -14,6 +15,7 @@ import {
   RecentCapturesLabel,
 } from "@/components/dashboard/evidence-feed-header";
 import { QuickCaptureCard } from "@/components/dashboard/quick-capture-card";
+import { SavedEvidenceRow } from "@/components/dashboard/saved-evidence-row";
 import { Button } from "@/components/ui/button";
 import type {
   CaptureValidation,
@@ -22,12 +24,11 @@ import type {
 import {
   resolveCaptureDisplay,
 } from "@/lib/evidence/capture-validation";
+import type { EvidenceFeedRecord } from "@/lib/evidence/evidence-feed-records";
 import { normalizeTag } from "@/lib/format-tag";
 import { buildNoteDraft } from "@/lib/note-processing";
 import type { NoteDraft } from "@/lib/note-processing/types";
-import {
-  mentionDisplayLabel,
-} from "@/lib/students";
+import { mentionDisplayLabel } from "@/lib/students";
 import {
   resolveCaptureStudents,
   type CaptureRosterStudent,
@@ -35,18 +36,6 @@ import {
 } from "@/lib/students/resolve-capture-students";
 import { routes } from "@/lib/routes";
 import { ArrowDownUp, X } from "lucide-react";
-import {
-  hasExistingPocData,
-  loadWideDemoClassroom,
-} from "@/lib/demo-data/load-wide-demo-classroom";
-import {
-  clearStoredCaptures,
-  formatStoredCaptureTimestamp,
-  hasStoredCaptureState,
-  readStoredCaptures,
-  writeStoredCaptures,
-  type StoredCapture,
-} from "@/lib/poc-storage";
 
 type FeedItem = {
   id: string;
@@ -60,6 +49,7 @@ type InboxFilter = "all" | "needs_review" | "validated";
 
 type EvidenceFeedProps = {
   rosterStudents: CaptureRosterStudent[];
+  initialEvidenceRecords: EvidenceFeedRecord[];
 };
 
 const filterOptions: { value: InboxFilter; label: string }[] = [
@@ -190,42 +180,54 @@ function captureMatchesSearch(
   return generalHaystack.includes(needle);
 }
 
-function seedFeedItems(): FeedItem[] {
-  return [];
-}
+function evidenceRecordMatchesSearch(
+  record: EvidenceFeedRecord,
+  rawQuery: string
+): boolean {
+  const trimmed = rawQuery.trim();
 
-function storedCaptureToFeedItem(capture: StoredCapture): FeedItem {
-  return {
-    id: capture.id,
-    draft: buildNoteDraft(capture.rawNote),
-    timestamp: formatStoredCaptureTimestamp(capture),
-    timestampMs: capture.timestampMs,
-    validation: capture.validation,
-  };
-}
-
-function feedItemsToStoredCaptures(items: FeedItem[]): StoredCapture[] {
-  return items.map((item) => ({
-    id: item.id,
-    rawNote: item.draft.parsed.rawNote,
-    timestampMs: item.timestampMs,
-    validation: item.validation,
-  }));
-}
-
-function persistFeedItems(items: FeedItem[]): void {
-  writeStoredCaptures(feedItemsToStoredCaptures(items));
-}
-
-function loadInitialFeedItems(): FeedItem[] {
-  if (hasStoredCaptureState()) {
-    return readStoredCaptures()
-      .slice()
-      .sort((a, b) => b.timestampMs - a.timestampMs)
-      .map(storedCaptureToFeedItem);
+  if (!trimmed) {
+    return true;
   }
 
-  return seedFeedItems();
+  const tagHaystack = record.tags
+    .map((tag) => normalizeTag(tag).toLowerCase())
+    .join(" ");
+  const studentHaystack = [
+    record.studentDisplayName,
+    record.studentMentionHandle,
+    record.rosterStudentId,
+  ]
+    .join(" ")
+    .toLowerCase();
+
+  if (trimmed.startsWith("@")) {
+    const needle = stripMentionPrefix(trimmed).toLowerCase();
+    return !needle || studentHaystack.includes(needle);
+  }
+
+  if (trimmed.startsWith("#")) {
+    const needle = normalizeTag(trimmed).toLowerCase();
+    return !needle || tagHaystack.includes(needle);
+  }
+
+  const generalHaystack = [
+    record.summary,
+    record.studentDisplayName,
+    record.studentMentionHandle,
+    record.classGroupName,
+    record.evidenceType,
+    record.topic,
+    record.performance,
+    record.behavior,
+    record.followUpNotes,
+    tagHaystack,
+  ]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
+
+  return generalHaystack.includes(trimmed.toLowerCase());
 }
 
 function EvidenceSearchControl({
@@ -311,37 +313,6 @@ function FilterEmptyMessage({ filter }: { filter: InboxFilter }) {
   return null;
 }
 
-function PocModeCard({
-  onLoadDemo,
-  onExport,
-  onClear,
-}: {
-  onLoadDemo: () => void;
-  onExport: () => void;
-  onClear: () => void;
-}) {
-  return (
-    <section className="rounded-card border border-border bg-card/70 p-4">
-      <h2 className="text-sm font-semibold text-foreground">Browser-local utilities</h2>
-      <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-        Captures and your roster save in this browser only. Refreshing the page
-        keeps them here, but they are not shared across devices or browsers.
-      </p>
-      <div className="mt-3 flex flex-wrap gap-2">
-        <Button type="button" variant="outline" size="sm" onClick={onLoadDemo}>
-          Load demo classroom
-        </Button>
-        <Button type="button" variant="outline" size="sm" onClick={onExport}>
-          Export JSON
-        </Button>
-        <Button type="button" variant="outline" size="sm" onClick={onClear}>
-          Clear captures
-        </Button>
-      </div>
-    </section>
-  );
-}
-
 function RosterRequiredState() {
   return (
     <section className="rounded-card border border-border bg-card p-6 shadow-paper">
@@ -380,35 +351,45 @@ function studentResolutionErrorMessage(
   return "";
 }
 
-export function EvidenceFeed({ rosterStudents }: EvidenceFeedProps) {
-  const [items, setItems] = useState<FeedItem[]>(() => seedFeedItems());
+export function EvidenceFeed({
+  rosterStudents,
+  initialEvidenceRecords,
+}: EvidenceFeedProps) {
+  const router = useRouter();
+  const [draftItems, setDraftItems] = useState<FeedItem[]>([]);
   const [filter, setFilter] = useState<InboxFilter>("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [captureEditError, setCaptureEditError] = useState("");
-  const [hydrated, setHydrated] = useState(false);
-  const rosterSetupNeeded = hydrated && rosterStudents.length === 0;
-
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- hydrate captures from localStorage after mount
-    setItems(loadInitialFeedItems());
-    setHydrated(true);
-  }, []);
+  const rosterSetupNeeded = rosterStudents.length === 0;
 
   const summaryItems = useMemo(
     () =>
-      items.map((item) => ({
+      draftItems.map((item) => ({
         draft: item.draft,
         validation: item.validation,
       })),
-    [items]
+    [draftItems]
   );
 
-  const visibleItems = useMemo(() => {
-    let result = items;
+  const savedEvidenceIds = useMemo(
+    () => new Set(initialEvidenceRecords.map((record) => record.id)),
+    [initialEvidenceRecords]
+  );
+
+  const visibleDraftItems = useMemo(() => {
+    let result = draftItems.filter(
+      (item) =>
+        !(
+          item.validation?.status === "validated" &&
+          item.validation.savedEvidenceId &&
+          savedEvidenceIds.has(item.validation.savedEvidenceId)
+        )
+    );
+
     if (filter === "validated") {
-      result = items.filter(isValidated);
+      result = result.filter(isValidated);
     } else if (filter === "needs_review") {
-      result = items.filter((item) => needsReview(item, rosterStudents));
+      result = result.filter((item) => needsReview(item, rosterStudents));
     }
 
     if (searchQuery.trim()) {
@@ -418,7 +399,26 @@ export function EvidenceFeed({ rosterStudents }: EvidenceFeedProps) {
     }
 
     return result;
-  }, [items, filter, searchQuery, rosterStudents]);
+  }, [draftItems, filter, searchQuery, rosterStudents, savedEvidenceIds]);
+
+  const visibleEvidenceRecords = useMemo(() => {
+    if (filter === "needs_review") {
+      return [];
+    }
+
+    if (searchQuery.trim()) {
+      return initialEvidenceRecords.filter((record) =>
+        evidenceRecordMatchesSearch(record, searchQuery)
+      );
+    }
+
+    return initialEvidenceRecords;
+  }, [filter, initialEvidenceRecords, searchQuery]);
+
+  const hasAnyFeedItems =
+    draftItems.length > 0 || initialEvidenceRecords.length > 0;
+  const hasVisibleFeedItems =
+    visibleDraftItems.length > 0 || visibleEvidenceRecords.length > 0;
 
   function handleDraft(draft: NoteDraft) {
     const resolution = resolveCaptureStudents(
@@ -432,16 +432,14 @@ export function EvidenceFeed({ rosterStudents }: EvidenceFeedProps) {
     }
 
     setCaptureEditError("");
-    setItems((current) => {
+    setDraftItems((current) => {
       const newItem: FeedItem = {
         id: crypto.randomUUID(),
         draft,
         timestamp: "Just now",
         timestampMs: Date.now(),
       };
-      const next = hasStoredCaptureState() ? [newItem, ...current] : [newItem];
-      persistFeedItems(next);
-      return next;
+      return [newItem, ...current];
     });
   }
 
@@ -461,8 +459,8 @@ export function EvidenceFeed({ rosterStudents }: EvidenceFeedProps) {
       return result;
     }
 
-    setItems((current) => {
-      const next = current.map((item) =>
+    setDraftItems((current) =>
+      current.map((item) =>
         item.id === id
           ? {
               ...item,
@@ -475,10 +473,9 @@ export function EvidenceFeed({ rosterStudents }: EvidenceFeedProps) {
               },
             }
           : item
-      );
-      persistFeedItems(next);
-      return next;
-    });
+      )
+    );
+    router.refresh();
     return result;
   }
 
@@ -500,8 +497,8 @@ export function EvidenceFeed({ rosterStudents }: EvidenceFeedProps) {
     }
 
     setCaptureEditError("");
-    setItems((current) => {
-      const next = current.map((item) => {
+    setDraftItems((current) =>
+      current.map((item) => {
         if (item.id !== id) {
           return item;
         }
@@ -513,78 +510,67 @@ export function EvidenceFeed({ rosterStudents }: EvidenceFeedProps) {
           draft: nextDraft,
           validation: rawChanged ? undefined : item.validation,
         };
-      });
-      persistFeedItems(next);
-      return next;
-    });
+      })
+    );
     return true;
   }
 
   function handleDeleteCapture(id: string) {
     setCaptureEditError("");
-    setItems((current) => {
-      const next = current.filter((item) => item.id !== id);
-      persistFeedItems(next);
-      return next;
-    });
+    setDraftItems((current) => current.filter((item) => item.id !== id));
   }
 
-  function handleExport() {
-    const payload = items.map((item) => {
-      const display = resolveCaptureDisplay(
-        item.draft,
-        item.validation,
-        rosterStudents
+  function renderFeedList() {
+    if (rosterSetupNeeded) {
+      return (
+        <p className="px-6 py-10 text-center text-sm text-muted-foreground">
+          Your evidence feed will start here after roster setup.
+        </p>
       );
-      return {
-        id: item.id,
-        capturedAt: new Date(item.timestampMs).toISOString(),
-        rawNote: item.draft.parsed.rawNote,
-        students: display.studentMentions.map(mentionDisplayLabel),
-        tags: display.tags,
-        evidenceType: display.evidenceType,
-        topic: display.topic,
-        performance: display.performance,
-        behavior: display.behavior,
-        followUps: display.followUps,
-        validationStatus: display.validationStatus,
-      };
-    });
-
-    const blob = new Blob([JSON.stringify(payload, null, 2)], {
-      type: "application/json",
-    });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = "classtrace-poc-export.json";
-    link.click();
-    URL.revokeObjectURL(url);
-  }
-
-  function handleClear() {
-    clearStoredCaptures();
-    setItems(seedFeedItems());
-    setFilter("all");
-    setSearchQuery("");
-    setCaptureEditError("");
-  }
-
-  function handleLoadDemo() {
-    if (
-      hasExistingPocData() &&
-      !window.confirm(
-        "Load demo classroom? This will replace the roster and captures stored in this browser."
-      )
-    ) {
-      return;
     }
 
-    const captures = loadWideDemoClassroom();
-    setItems(captures.map(storedCaptureToFeedItem));
-    setFilter("all");
-    setSearchQuery("");
-    setCaptureEditError("");
+    if (!hasAnyFeedItems) {
+      return (
+        <p className="px-6 py-10 text-center text-sm text-muted-foreground">
+          No validated evidence yet. Capture a student-specific note, review it,
+          and saved evidence will appear here.
+        </p>
+      );
+    }
+
+    if (!hasVisibleFeedItems) {
+      if (searchQuery.trim()) {
+        return (
+          <p className="px-6 py-10 text-center text-sm text-muted-foreground">
+            No evidence matches your search.
+          </p>
+        );
+      }
+
+      return <FilterEmptyMessage filter={filter} />;
+    }
+
+    return (
+      <>
+        {visibleDraftItems.map((item) => (
+          <EvidenceCaptureCard
+            key={item.id}
+            draft={item.draft}
+            timestamp={item.timestamp}
+            validation={item.validation}
+            rosterStudents={rosterStudents}
+            onValidate={(fields, saveInput) =>
+              handleValidate(item.id, fields, saveInput)
+            }
+            onEdit={(rawNote) => handleEditCapture(item.id, rawNote)}
+            onDelete={() => handleDeleteCapture(item.id)}
+          />
+        ))}
+        {visibleEvidenceRecords.map((record) => (
+          <SavedEvidenceRow key={record.id} record={record} />
+        ))}
+      </>
+    );
   }
 
   return (
@@ -629,56 +615,15 @@ export function EvidenceFeed({ rosterStudents }: EvidenceFeedProps) {
           ) : null}
 
           <div className="overflow-hidden rounded-card border border-border bg-card shadow-paper">
-            {!hydrated ? (
-              <p className="px-6 py-10 text-center text-sm text-muted-foreground">
-                Loading your evidence feed...
-              </p>
-            ) : items.length === 0 && rosterSetupNeeded ? (
-              <p className="px-6 py-10 text-center text-sm text-muted-foreground">
-                Your evidence feed will start here after roster setup.
-              </p>
-            ) : items.length === 0 ? (
-              <p className="px-6 py-10 text-center text-sm text-muted-foreground">
-                Your evidence feed is empty. Capture one student-specific note
-                when something worth remembering happens.
-              </p>
-            ) : visibleItems.length === 0 ? (
-              searchQuery.trim() ? (
-                <p className="px-6 py-10 text-center text-sm text-muted-foreground">
-                  No captures match your search.
-                </p>
-              ) : (
-                <FilterEmptyMessage filter={filter} />
-              )
-            ) : (
-              visibleItems.map((item) => (
-                <EvidenceCaptureCard
-                  key={item.id}
-                  draft={item.draft}
-                  timestamp={item.timestamp}
-                  validation={item.validation}
-                  rosterStudents={rosterStudents}
-                  onValidate={(fields, saveInput) =>
-                    handleValidate(item.id, fields, saveInput)
-                  }
-                  onEdit={(rawNote) => handleEditCapture(item.id, rawNote)}
-                  onDelete={() => handleDeleteCapture(item.id)}
-                />
-              ))
-            )}
+            {renderFeedList()}
           </div>
         </section>
-
-        <PocModeCard
-          onLoadDemo={handleLoadDemo}
-          onExport={handleExport}
-          onClear={handleClear}
-        />
       </div>
 
       <ClassTraceNoticedPanel
         items={summaryItems}
         rosterStudents={rosterStudents}
+        evidenceRecords={initialEvidenceRecords}
       />
     </div>
   );

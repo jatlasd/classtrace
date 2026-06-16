@@ -5,6 +5,7 @@ import {
   type CaptureValidation,
 } from "@/lib/evidence/capture-validation";
 import { summarizeCaptures } from "@/lib/evidence/summarize-captures";
+import type { EvidenceFeedRecord } from "@/lib/evidence/evidence-feed-records";
 import { formatTagLabel } from "@/lib/format-tag";
 import type { NoteDraft } from "@/lib/note-processing/types";
 import type { CaptureRosterStudent } from "@/lib/students/resolve-capture-students";
@@ -25,13 +26,20 @@ type FeedSummaryItem = {
 type ClassTraceNoticedPanelProps = {
   items: FeedSummaryItem[];
   rosterStudents: CaptureRosterStudent[];
+  evidenceRecords: EvidenceFeedRecord[];
+};
+
+type CountSummary = {
+  name: string;
+  count: number;
 };
 
 function getFollowUps(
   items: FeedSummaryItem[],
-  rosterStudents: CaptureRosterStudent[]
+  rosterStudents: CaptureRosterStudent[],
+  evidenceRecords: EvidenceFeedRecord[]
 ): { title: string; detail: string }[] {
-  return items
+  const draftFollowUps = items
     .flatMap((item) => {
       const display = resolveCaptureDisplay(
         item.draft,
@@ -46,26 +54,87 @@ function getFollowUps(
         title: followUp,
         detail: `Check in with ${studentLabel}`,
       }));
-    })
+    });
+
+  const savedFollowUps = evidenceRecords
+    .filter((record) => record.followUpNotes)
+    .map((record) => ({
+      title: record.followUpNotes ?? "",
+      detail: `Check in with ${record.studentDisplayName}`,
+    }));
+
+  return [...draftFollowUps, ...savedFollowUps]
     .slice(0, 3);
+}
+
+function incrementCount(counts: Map<string, number>, key: string): void {
+  const trimmed = key.trim();
+
+  if (!trimmed) {
+    return;
+  }
+
+  counts.set(trimmed, (counts.get(trimmed) ?? 0) + 1);
+}
+
+function sortCounts(counts: Map<string, number>): CountSummary[] {
+  return [...counts.entries()]
+    .map(([name, count]) => ({ name, count }))
+    .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
+}
+
+function recordCountLabel(count: number, hasSavedRecords: boolean): string {
+  if (hasSavedRecords) {
+    return count === 1 ? "1 recent evidence record" : `${count} recent evidence records`;
+  }
+
+  return count === 1 ? "1 recent capture" : `${count} recent captures`;
+}
+
+function noteCountLabel(count: number, hasSavedRecords: boolean): string {
+  if (hasSavedRecords) {
+    return count === 1 ? "1 recent evidence record" : `${count} recent evidence records`;
+  }
+
+  return count === 1 ? "1 recent note" : `${count} recent notes`;
 }
 
 export function ClassTraceNoticedPanel({
   items,
   rosterStudents,
+  evidenceRecords,
 }: ClassTraceNoticedPanelProps) {
   const summary = summarizeCaptures(items, rosterStudents);
-  const followUps = getFollowUps(items, rosterStudents);
+  const followUps = getFollowUps(items, rosterStudents, evidenceRecords);
   const needsReviewCount = items.filter(
     (item) =>
       resolveCaptureDisplay(item.draft, item.validation, rosterStudents)
         .needsReview
   ).length;
+  const studentCounts = new Map<string, number>();
+  const tagCounts = new Map<string, number>();
+
+  for (const student of summary.topStudents) {
+    studentCounts.set(student.name, student.count);
+  }
+  for (const tag of summary.topTags) {
+    tagCounts.set(tag.tag, tag.count);
+  }
+  for (const record of evidenceRecords) {
+    incrementCount(studentCounts, record.studentDisplayName);
+    for (const tag of record.tags) {
+      incrementCount(tagCounts, tag);
+    }
+  }
+
+  const topStudents = sortCounts(studentCounts);
+  const topTags = sortCounts(tagCounts);
+  const savedRecordCount = evidenceRecords.length;
   const primaryPatterns = [
-    summary.topStudents[0]
+    topStudents[0]
       ? {
-          title: `${summary.topStudents[0].name} is appearing often`,
-          detail: `${summary.topStudents[0].count} recent captures`,
+          title: `${topStudents[0].name} is appearing often`,
+          detail: recordCountLabel(topStudents[0].count, savedRecordCount > 0),
           icon: Users,
         }
       : {
@@ -73,10 +142,10 @@ export function ClassTraceNoticedPanel({
           detail: "Add a few student-specific notes",
           icon: Users,
         },
-    summary.topTags[0]
+    topTags[0]
       ? {
-          title: `${formatTagLabel(summary.topTags[0].tag)} is active`,
-          detail: `${summary.topTags[0].count} recent notes`,
+          title: `${formatTagLabel(topTags[0].name)} is active`,
+          detail: noteCountLabel(topTags[0].count, savedRecordCount > 0),
           icon: BookOpen,
         }
       : {

@@ -29,7 +29,7 @@ describe("Unit 12 deterministic student resolution wiring", () => {
     expect(feedPage).toContain("listActiveRosterStudentsForWorkspace");
     expect(feedPage).toContain("workspace.workspaceId");
     expect(feedPage).toContain("rosterStudents={rosterStudents}");
-    expect(feedPage).toContain("return <EvidenceFeed rosterStudents={rosterStudents} />");
+    expect(feedPage).toContain("initialEvidenceRecords={evidenceRecords}");
     expect(feedPage).not.toMatch(/getAllStudents|localStorage/);
   });
 

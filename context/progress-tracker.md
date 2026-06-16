@@ -6,7 +6,7 @@ Update this file after every meaningful implementation change.
 
 ## Current Phase
 
-- Phase 3 in progress — capture and validation
+- Current status: Phase 3 complete; Phase 4 is next.
 - Phase 2 complete — roster onboarding
 - Unit 02 complete and verified — Route Map and App Shell (`context/specs/02-route-map-and-app-shell.md`)
 - Unit 03 complete and verified — Public Landing Page UI (`context/specs/03-public-landing-page-ui.md`)
@@ -21,14 +21,53 @@ Update this file after every meaningful implementation change.
 - Unit 12 implemented and verified with automated checks — Deterministic Student Resolution (`context/specs/12-deterministic-student-resolution.md`)
 - Unit 13 implemented and verified with automated checks — Structured Draft Review UI (`context/specs/13-structured-draft-review-ui.md`)
 - Unit 14 implemented and verified with automated checks - Save Validated Evidence (`context/specs/14-save-validated-evidence.md`)
+- Unit 15 implemented and verified with automated checks - Evidence Feed from Database (`context/specs/15-evidence-feed-from-database.md`)
 - Design system overhaul applied from `classtrace_asset_kit/` (warm paper palette, Fraunces + Inter + Caveat, landing copy/layout aligned to asset kit)
 
 ---
 
 ## Current Goal
 
-- Prepare the Phase 3, Unit 15 spec before replacing the browser-local feed with database-backed evidence reads.
-- Unit 15 should keep the existing capture-first workspace and read validated `EvidenceRecord` rows without reintroducing raw draft note persistence.
+- Prepare the Phase 4, Unit 16 spec before adapting/building the student timeline UI.
+- Unit 16 should stay UI-focused unless the human explicitly scopes database-backed student timeline wiring into a later unit.
+
+---
+
+## Unit 15 - Evidence Feed from Database (Implemented)
+
+Spec: `context/specs/15-evidence-feed-from-database.md`
+
+### What was completed
+
+- Added `lib/evidence/evidence-feed-records.ts` as a server-only helper for reading workspace-scoped, non-archived `EvidenceRecord` rows.
+- The evidence feed helper returns a client-safe display model with only saved structured evidence fields, roster student display data, optional class group name, and serialized timestamps.
+- Updated `/app/feed` to load active roster students and saved evidence records server-side after resolving the current workspace.
+- Kept the existing active roster gate before rendering the feed.
+- Updated `EvidenceFeed` so database evidence records are the durable feed source.
+- Kept new raw draft captures as current-session React state only while the teacher reviews and saves them.
+- Preserved the Unit 14 validated evidence Server Action path for teacher-approved saves.
+- Added `router.refresh()` after successful save so the database-backed feed can receive the new saved row from the server.
+- Removed the browser-local POC utility card from `/app/feed`, including raw-note JSON export controls.
+- Added `components/dashboard/saved-evidence-row.tsx` for validated database evidence rows using the Unit 11 row pattern.
+- Updated stale static tests that expected the old local POC feed shape.
+- Added focused tests for the evidence feed read helper, route/client wiring, no raw draft feed model, and no out-of-scope claims.
+- Updated `context/ui-registry.md` with the Saved Evidence Row pattern.
+- Did not add student timeline database wiring, archive/delete/export behavior, Prisma schema changes, migrations, AI, uploads, organizations, admin behavior, analytics, billing, new dependencies, or broad app redesign.
+
+### Verification
+
+- `npm.cmd run test -- lib/evidence/evidence-feed-records.test.ts lib/evidence-feed-from-database-ui.test.ts lib/deterministic-student-resolution-ui.test.ts lib/onboarding-routing.test.ts lib/production-feed-ui-pass.test.ts lib/guided-roster-setup-ui.test.ts` - first run found the helper included `classGroupName: undefined` for records without a class group; fixed the serializer to omit empty optional fields.
+- `npm.cmd run test -- lib/evidence/evidence-feed-records.test.ts lib/evidence-feed-from-database-ui.test.ts lib/deterministic-student-resolution-ui.test.ts lib/onboarding-routing.test.ts lib/production-feed-ui-pass.test.ts lib/guided-roster-setup-ui.test.ts` - pass (19 focused tests).
+- `npm.cmd run lint` - pass.
+- `npm.cmd run test` - pass (150 tests).
+- `npm.cmd run build` - pass.
+
+### Remaining risks / follow-ups
+
+- Manual signed-in browser verification is still needed when an interactive Clerk/browser session is available.
+- The in-app Browser plugin could not start in this Windows sandbox (`CreateProcessAsUserW failed: 5`), so no browser UI walkthrough is claimed.
+- Student timeline pages are still not database-backed; Unit 16/17 remain responsible for student timeline UI and data wiring.
+- Archive/delete/export behavior remains deferred to later units.
 
 ---
 
@@ -656,8 +695,9 @@ Verification after refinement: `npm run lint` pass, `npm run build` pass, `npm r
 
 ## Next Up
 
-1. Implement `context/specs/14-save-validated-evidence.md` only after explicit human confirmation.
-2. Optionally expand `README.md` with a short pointer to `AGENTS.md` and the context framework beyond the Unit 02 route updates already made.
+1. Create `context/specs/16-student-timeline-ui.md` before starting Phase 4 student timeline UI work.
+2. Optionally clean up stale progress-tracker design-decision notes that still reference the old dark sidebar / Plus Jakarta Sans direction.
+3. Optionally expand `README.md` with a short pointer to `AGENTS.md` and the context framework beyond the Unit 02 route updates already made.
 
 ---
 
@@ -785,3 +825,5 @@ Verification after refinement: `npm run lint` pass, `npm run build` pass, `npm r
 - Unit 13 spec was created on 2026-06-16. It scopes Structured Draft Review UI as a local POC validation-flow refinement: clearer deterministic draft interpretation, teacher-editable review fields, one-student validation guard, and no evidence database save or persistence-layer changes.
 - Unit 13 implementation completed on 2026-06-16. The review panel now uses draft interpretation language, validates only one resolved roster student, keeps student assignment anchored/read-only in the review panel, and stores validation in the existing local POC feed state only. The next planned step is implementing Unit 14 only after explicit human confirmation.
 - Unit 14 spec was created on 2026-06-16. It scopes Save Validated Evidence as a database-backed Server Action and server-only helper for teacher-validated structured evidence, while keeping database-backed feed reads, student timelines, archive/delete, export, AI, uploads, admin behavior, and new dependencies out of scope.
+- Unit 15 spec was created on 2026-06-16. It scopes Evidence Feed from Database as the workspace-scoped database read path for validated `EvidenceRecord` rows on `/app/feed`, while preserving the composer/review/save bridge and keeping student timelines, archive/delete, export, AI, uploads, admin behavior, schema changes, migrations, and new dependencies out of scope.
+- Unit 15 implementation completed on 2026-06-16. `/app/feed` now receives workspace-scoped database `EvidenceRecord` rows as its durable feed source, keeps draft captures in current-session state only, removes browser-local raw-note export utilities from the feed, and preserves the Unit 14 teacher-validation save path.

@@ -124,6 +124,32 @@ Evidence captures now render as rows inside the feed list container. Review, edi
 
 ---
 
+### Saved Evidence Row
+
+File: `components/dashboard/saved-evidence-row.tsx`
+Last updated: 2026-06-16 (Unit 15 database-backed feed reads)
+
+| Property | Class |
+|---|---|
+| Row shell | `border-b border-border last:border-b-0` |
+| Row grid | `grid gap-4 px-4 py-5 md:grid-cols-[72px_88px_minmax(0,1fr)_220px] md:px-6` |
+| Icon cell | `flex size-11 items-center justify-center rounded-lg border border-validated/50 bg-validated/35 text-validated-foreground` |
+| Date text | `text-sm leading-relaxed text-muted-foreground` |
+| Student text | `text-sm font-medium text-foreground` |
+| Summary text | `text-[15px] leading-relaxed text-foreground` |
+| Status column | `space-y-3 md:border-l md:border-border md:pl-6` |
+| Status pill | `inline-flex items-center gap-2 rounded-lg border border-validated/60 bg-validated/35 px-2.5 py-1 text-xs font-semibold text-validated-foreground` |
+| Chip group | `flex flex-wrap gap-1.5` |
+| Default chip | `inline-flex items-center rounded-full border border-border bg-card px-2.5 py-0.5 text-xs font-medium text-foreground` |
+| Tag chip | `inline-flex items-center rounded-full border border-border bg-muted/60 px-2.5 py-0.5 text-xs font-medium text-link` |
+| Evidence chip | `inline-flex items-center rounded-full border border-primary/25 bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary` |
+| Follow-up text | `mt-3 border-t border-border/50 pt-2.5 text-xs leading-relaxed text-muted-foreground` |
+
+**Pattern notes:**
+Saved evidence rows are database-backed validated records, not raw draft captures. They intentionally reuse the Unit 11 row grid and chip vocabulary but use validated-state icon/status styling and `EvidenceRecord.summary` as the primary text. Do not add edit, delete, export, archive, student-profile navigation, or raw-note fields to this row until those units are explicitly scoped.
+
+---
+
 ### Structured Draft Review Panel
 
 File: `components/dashboard/interpretation-review-panel.tsx`  
