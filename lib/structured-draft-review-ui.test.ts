@@ -27,7 +27,7 @@ describe("Unit 13 structured draft review UI", () => {
     expect(reviewPanel).toContain(
       "Adjust anything that looks off before this becomes validated evidence."
     );
-    expect(reviewPanel).toContain("Validate draft");
+    expect(reviewPanel).toContain("Save validated evidence");
     expect(reviewPanel).toContain("Dismiss for now");
     expect(evidenceCaptureCard).toContain("Review before saving");
   });
@@ -44,12 +44,13 @@ describe("Unit 13 structured draft review UI", () => {
     expect(reviewPanel).not.toContain('aria-label="Students"');
   });
 
-  it("keeps validation local and avoids evidence persistence scope", () => {
+  it("keeps validation teacher-controlled at the save boundary", () => {
     const combined = `${reviewPanel}\n${evidenceCaptureCard}\n${evidenceFeed}`;
-    expect(combined).toContain("Validated captures stay in this browser");
+    expect(combined).toContain("Save validated evidence");
     expect(combined).toContain("validation:");
-    expect(combined).not.toMatch(/saveValidatedEvidence|createValidatedEvidence/);
-    expect(combined).not.toMatch(/from "@\/actions|from "@\/lib\/db|from "@\/lib\/auth/);
+    expect(combined).toContain("savedEvidenceId");
+    expect(combined).not.toMatch(/createValidatedEvidence/);
+    expect(combined).not.toMatch(/from "@\/lib\/db|from "@\/lib\/auth/);
   });
 
   it("does not expand product scope in review copy", () => {

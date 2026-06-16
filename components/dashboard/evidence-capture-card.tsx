@@ -35,10 +35,28 @@ type EvidenceCaptureCardProps = {
   timestamp?: string;
   validation?: CaptureValidation;
   rosterStudents: CaptureRosterStudent[];
-  onValidate: (fields: InterpretationFields) => void;
+  onValidate: (
+    fields: InterpretationFields,
+    saveInput: ValidatedEvidenceSaveInput
+  ) => Promise<ValidatedEvidenceSaveResult>;
   onEdit?: (rawNote: string) => boolean;
   onDelete?: () => void;
 };
+
+type ValidatedEvidenceSaveInput = {
+  rosterStudentId: string;
+  summary: string;
+  evidenceType: string;
+  topic?: string;
+  performance?: string;
+  behavior?: string[];
+  tags: string[];
+  followUpNotes?: string[];
+};
+
+type ValidatedEvidenceSaveResult =
+  | { success: true; evidenceId: string }
+  | { success: false; error: string };
 
 const chipStyles = {
   default: "border-border bg-card text-foreground",
@@ -194,12 +212,20 @@ export function EvidenceCaptureCard({
     (ref) => ref.status === "unresolved"
   );
   const hasUnresolvedMentions = unresolvedMentions.length > 0;
+  const showReviewPanel =
+    !isEditing &&
+    reviewOpen &&
+    (showReviewCta || display.validationStatus === "validated");
   const showActions = Boolean(onEdit || onDelete);
   const canSaveEdit = editText.trim().length > 0;
 
-  function handleConfirm(fields: InterpretationFields) {
-    onValidate(fields);
-    setReviewOpen(false);
+  async function handleConfirm(
+    fields: InterpretationFields,
+    saveInput: ValidatedEvidenceSaveInput
+  ): Promise<ValidatedEvidenceSaveResult> {
+    const result = await onValidate(fields, saveInput);
+
+    return result;
   }
 
   function handleStartEdit() {
@@ -376,7 +402,9 @@ export function EvidenceCaptureCard({
               <p className="text-sm text-muted-foreground">Ms. Rivera</p>
               {display.validationStatus === "validated" && validation?.status === "validated" && (
                 <p className="text-xs text-muted-foreground">
-                  Filed after review
+                  {validation.savedEvidenceId
+                    ? "Saved to evidence records"
+                    : "Filed after review"}
                 </p>
               )}
             </div>
@@ -428,7 +456,7 @@ export function EvidenceCaptureCard({
           )}
         </div>
 
-        {!isEditing && showReviewCta && reviewOpen && (
+        {showReviewPanel && (
           <div className="md:col-span-4">
           <InterpretationReviewPanel
             display={parserDisplay}

@@ -23,8 +23,9 @@ describe("Unit 06 guided roster setup UI", () => {
     expect(rosterPage).not.toMatch(/\b(SIS|district)\b/i);
   });
 
-  it("keeps the evidence feed out of database and server mutation scope", () => {
-    expect(evidenceFeed).not.toMatch(/@\/lib\/db|@\/actions|@\/app\/api/);
+  it("keeps the evidence feed out of direct database and API scope", () => {
+    expect(evidenceFeed).not.toMatch(/@\/lib\/db|@\/app\/api/);
+    expect(evidenceFeed).toContain("@/actions/evidence");
   });
 
   it("shows feed guidance when roster setup is still needed", () => {

@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { formatTagLabel } from "@/lib/format-tag";
 import {
+  buildValidatedEvidenceSummary,
   displayToInterpretationFields,
   joinFollowUpNotes,
   joinOptionalList,
@@ -18,9 +19,27 @@ import type { DraftDisplay } from "@/lib/note-processing/draft-to-display";
 
 type InterpretationReviewPanelProps = {
   display: DraftDisplay;
-  onConfirm: (fields: InterpretationFields) => void;
+  onConfirm: (
+    fields: InterpretationFields,
+    saveInput: ValidatedEvidenceSaveInput
+  ) => Promise<ValidatedEvidenceSaveResult>;
   onDismiss: () => void;
 };
+
+type ValidatedEvidenceSaveInput = {
+  rosterStudentId: string;
+  summary: string;
+  evidenceType: string;
+  topic?: string;
+  performance?: string;
+  behavior?: string[];
+  tags: string[];
+  followUpNotes?: string[];
+};
+
+type ValidatedEvidenceSaveResult =
+  | { success: true; evidenceId: string }
+  | { success: false; error: string };
 
 type FormState = {
   evidenceType: string;
@@ -120,6 +139,8 @@ function InterpretationReviewPanelContent({
   const [isEditing, setIsEditing] = useState(false);
   const [form, setForm] = useState<FormState>(() => displayToFormState(display));
   const [validationError, setValidationError] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
+  const [savedEvidenceId, setSavedEvidenceId] = useState("");
   const studentValidation = validateSingleStudentForInterpretation(display);
 
   function updateField<K extends keyof FormState>(key: K, value: FormState[K]) {
@@ -142,7 +163,11 @@ function InterpretationReviewPanelContent({
     return "This student is not on your roster yet.";
   }
 
-  function handleConfirm() {
+  async function handleConfirm() {
+    if (isSaving || savedEvidenceId) {
+      return;
+    }
+
     if (studentValidation.status !== "valid_one_student") {
       setValidationError(studentValidationMessage());
       return;
@@ -153,8 +178,42 @@ function InterpretationReviewPanelContent({
       return;
     }
 
+    const fields = formStateToFields(form, studentValidation.studentName);
+    const summary = buildValidatedEvidenceSummary(fields);
+
+    if (!summary) {
+      setValidationError("Add a summary before saving evidence.");
+      return;
+    }
+
     setValidationError("");
-    onConfirm(formStateToFields(form, studentValidation.studentName));
+    setIsSaving(true);
+
+    let result: ValidatedEvidenceSaveResult;
+
+    try {
+      result = await onConfirm(fields, {
+        rosterStudentId: studentValidation.studentId,
+        summary,
+        evidenceType: fields.evidenceType,
+        topic: fields.topic,
+        performance: fields.performance,
+        behavior: fields.behavior,
+        tags: fields.tags,
+        followUpNotes: fields.followUpNotes,
+      });
+    } catch {
+      result = { success: false, error: "Failed to save evidence." };
+    } finally {
+      setIsSaving(false);
+    }
+
+    if (result.success) {
+      setSavedEvidenceId(result.evidenceId);
+      return;
+    }
+
+    setValidationError(result.error);
   }
 
   return (
@@ -287,21 +346,36 @@ function InterpretationReviewPanelContent({
       <div aria-live="polite" className="mt-3 min-h-5">
         {validationError ? (
           <p className="text-sm text-destructive">{validationError}</p>
+        ) : savedEvidenceId ? (
+          <p className="text-sm text-validated-foreground">
+            Validated evidence saved.
+          </p>
+        ) : isSaving ? (
+          <p className="text-sm text-muted-foreground">Saving evidence...</p>
         ) : (
           <p className="text-xs leading-relaxed text-muted-foreground">
-            Validated captures stay in this browser for now.
+            Save validated evidence to your evidence records after review.
           </p>
         )}
       </div>
 
       <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-border/50 pt-3">
-        <Button size="sm" onClick={handleConfirm}>
-          Validate draft
+        <Button
+          size="sm"
+          disabled={isSaving || Boolean(savedEvidenceId)}
+          onClick={handleConfirm}
+        >
+          {savedEvidenceId
+            ? "Evidence saved"
+            : isSaving
+              ? "Saving evidence..."
+              : "Save validated evidence"}
         </Button>
         {!isEditing && (
           <Button
             size="sm"
             variant="outline"
+            disabled={isSaving || Boolean(savedEvidenceId)}
             onClick={() => setIsEditing(true)}
           >
             Edit

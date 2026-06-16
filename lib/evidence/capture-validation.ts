@@ -27,14 +27,20 @@ export type InterpretationFields = {
 
 export type CaptureValidation =
   | { status: "pending" }
-  | { status: "validated"; fields: InterpretationFields; validatedAt?: number };
+  | {
+      status: "validated";
+      fields: InterpretationFields;
+      validatedAt?: number;
+      savedEvidenceId?: string;
+      savedAt?: number;
+    };
 
 export type ResolvedCaptureDisplay = DraftDisplay & {
   validationStatus: "pending" | "validated";
 };
 
 export type InterpretationStudentValidation =
-  | { status: "valid_one_student"; studentName: string }
+  | { status: "valid_one_student"; studentId: string; studentName: string }
   | { status: "no_student" }
   | { status: "unresolved_student"; studentNames: string[] }
   | { status: "multiple_students"; studentNames: string[] };
@@ -106,18 +112,51 @@ export function validateSingleStudentForInterpretation(
     return { status: "unresolved_student", studentNames: unresolved };
   }
 
-  const resolvedNames = display.studentMentions.map((ref) =>
-    ref.status === "resolved" ? ref.student.displayName : ref.mention
+  const resolvedMentions = display.studentMentions.filter(
+    (ref) => ref.status === "resolved"
   );
+  const resolvedNames = resolvedMentions.map((ref) => ref.student.displayName);
 
   if (resolvedNames.length !== 1) {
     return { status: "multiple_students", studentNames: resolvedNames };
   }
 
+  const student = resolvedMentions[0].student;
+
   return {
     status: "valid_one_student",
-    studentName: resolvedNames[0],
+    studentId: student.id,
+    studentName: student.displayName,
   };
+}
+
+export function buildValidatedEvidenceSummary(
+  fields: InterpretationFields
+): string {
+  const parts: string[] = [];
+  const student = fields.students[0]?.trim();
+
+  if (student) {
+    parts.push(student);
+  }
+
+  if (fields.topic?.trim()) {
+    parts.push(fields.topic.trim());
+  }
+
+  if (fields.performance?.trim()) {
+    parts.push(fields.performance.trim());
+  }
+
+  if (fields.behavior && fields.behavior.length > 0) {
+    parts.push(fields.behavior.join(", "));
+  }
+
+  if (fields.evidenceType.trim()) {
+    parts.push(fields.evidenceType.trim());
+  }
+
+  return parts.join(" · ");
 }
 
 export function parseCommaSeparated(value: string): string[] {

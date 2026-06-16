@@ -253,7 +253,8 @@ Example pattern:
 
 import { revalidatePath } from "next/cache";
 import { getCurrentWorkspace } from "@/lib/auth/get-current-workspace";
-import { createValidatedEvidence } from "@/lib/evidence/create-validated-evidence";
+import { saveValidatedEvidenceForWorkspace } from "@/lib/evidence/save-validated-evidence";
+import { routes } from "@/lib/routes";
 
 type ActionResult =
   | { success: true; evidenceId: string }
@@ -263,15 +264,17 @@ export async function saveValidatedEvidence(input: SaveEvidenceInput): Promise<A
   try {
     const workspace = await getCurrentWorkspace();
 
-    const evidence = await createValidatedEvidence({
-      workspaceId: workspace.id,
+    const result = await saveValidatedEvidenceForWorkspace({
+      workspaceId: workspace.workspaceId,
       input,
     });
 
-    revalidatePath("/app/feed");
-    revalidatePath(`/app/students/${input.studentId}`);
+    if (result.success) {
+      revalidatePath(routes.feed);
+      revalidatePath(routes.student(input.rosterStudentId));
+    }
 
-    return { success: true, evidenceId: evidence.id };
+    return result;
   } catch (error) {
     console.error("[actions/evidence/saveValidatedEvidence]", error);
     return { success: false, error: "Failed to save evidence." };

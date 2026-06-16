@@ -2,6 +2,11 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import {
+  saveValidatedEvidence,
+  type SaveValidatedEvidenceActionInput,
+  type SaveValidatedEvidenceActionResult,
+} from "@/actions/evidence";
 import { ClassTraceNoticedPanel } from "@/components/dashboard/classtrace-noticed-panel";
 import { EvidenceCaptureCard } from "@/components/dashboard/evidence-capture-card";
 import {
@@ -444,8 +449,18 @@ export function EvidenceFeed({ rosterStudents }: EvidenceFeedProps) {
     setCaptureEditError(studentResolutionErrorMessage(resolution));
   }
 
-  function handleValidate(id: string, fields: InterpretationFields) {
+  async function handleValidate(
+    id: string,
+    fields: InterpretationFields,
+    saveInput: SaveValidatedEvidenceActionInput
+  ): Promise<SaveValidatedEvidenceActionResult> {
     setCaptureEditError("");
+    const result = await saveValidatedEvidence(saveInput);
+
+    if (!result.success) {
+      return result;
+    }
+
     setItems((current) => {
       const next = current.map((item) =>
         item.id === id
@@ -455,6 +470,8 @@ export function EvidenceFeed({ rosterStudents }: EvidenceFeedProps) {
                 status: "validated" as const,
                 fields,
                 validatedAt: Date.now(),
+                savedEvidenceId: result.evidenceId,
+                savedAt: Date.now(),
               },
             }
           : item
@@ -462,6 +479,7 @@ export function EvidenceFeed({ rosterStudents }: EvidenceFeedProps) {
       persistFeedItems(next);
       return next;
     });
+    return result;
   }
 
   function handleEditCapture(id: string, rawNote: string): boolean {
@@ -640,7 +658,9 @@ export function EvidenceFeed({ rosterStudents }: EvidenceFeedProps) {
                   timestamp={item.timestamp}
                   validation={item.validation}
                   rosterStudents={rosterStudents}
-                  onValidate={(fields) => handleValidate(item.id, fields)}
+                  onValidate={(fields, saveInput) =>
+                    handleValidate(item.id, fields, saveInput)
+                  }
                   onEdit={(rawNote) => handleEditCapture(item.id, rawNote)}
                   onDelete={() => handleDeleteCapture(item.id)}
                 />

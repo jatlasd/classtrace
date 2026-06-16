@@ -108,6 +108,7 @@ describe("validateSingleStudentForInterpretation", () => {
 
     expect(validateSingleStudentForInterpretation(display)).toEqual({
       status: "valid_one_student",
+      studentId: "mary",
       studentName: "Mary",
     });
   });

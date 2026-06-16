@@ -106,7 +106,7 @@ The feed workspace follows the reference image: composer first, recent captures 
 ### Unit 11 Evidence Capture Row
 
 File: `components/dashboard/evidence-capture-card.tsx`  
-Last updated: 2026-06-16 (Unit 13 review entry copy)
+Last updated: 2026-06-16 (Unit 14 saved-evidence state)
 
 | Property | Class |
 |---|---|
@@ -120,14 +120,14 @@ Last updated: 2026-06-16 (Unit 13 review entry copy)
 | Chip group | `flex flex-wrap gap-1.5` |
 
 **Pattern notes:**  
-Evidence captures now render as rows inside the feed list container. Review, edit, delete, and structured draft review remain available, preserving teacher validation. Chips remain draft interpretation, not final truth. Unit 13 changed the review action language to "Review before saving" so the next step feels like teacher validation rather than system interpretation.
+Evidence captures now render as rows inside the feed list container. Review, edit, delete, and structured draft review remain available, preserving teacher validation. Chips remain draft interpretation, not final truth. Unit 13 changed the review action language to "Review before saving" so the next step feels like teacher validation rather than system interpretation. Unit 14 adds a quiet validated-row detail, "Saved to evidence records", only after the server save succeeds.
 
 ---
 
 ### Structured Draft Review Panel
 
 File: `components/dashboard/interpretation-review-panel.tsx`  
-Last updated: 2026-06-16
+Last updated: 2026-06-16 (Unit 14 save states)
 
 | Property | Class |
 |---|---|
@@ -143,11 +143,13 @@ Last updated: 2026-06-16
 | Follow-up textarea | `min-h-[60px] resize-none text-sm` |
 | Status message area | `mt-3 min-h-5` with `aria-live="polite"` |
 | Error text | `text-sm text-destructive` |
+| Saving text | `text-sm text-muted-foreground` |
+| Saved text | `text-sm text-validated-foreground` |
 | Boundary helper | `text-xs leading-relaxed text-muted-foreground` |
 | Action row | `mt-4 flex flex-wrap items-center gap-2 border-t border-border/50 pt-3` |
 
 **Pattern notes:**  
-The review panel is the local POC trust moment between a captured draft and validated evidence. It uses explicit draft-language copy ("ClassTrace read this as", "Review before saving") and keeps the student anchored to exactly one resolved roster student. Optional interpretation fields can be edited, but validation remains browser-local until the evidence save unit.
+The review panel is the trust moment between a captured draft and validated evidence. It uses explicit draft-language copy ("ClassTrace read this as", "Review before saving") and keeps the student anchored to exactly one resolved roster student. Optional interpretation fields can be edited before save. Unit 14 changed the primary action to "Save validated evidence", added pending copy ("Saving evidence..."), success copy ("Validated evidence saved."), and locks editing after a successful database-backed save. Failure messages stay inline in the existing status area, and the permanent save payload is structured fields only, not the raw draft note.
 
 ---
 
