@@ -33,6 +33,12 @@ export type ResolvedCaptureDisplay = DraftDisplay & {
   validationStatus: "pending" | "validated";
 };
 
+export type InterpretationStudentValidation =
+  | { status: "valid_one_student"; studentName: string }
+  | { status: "no_student" }
+  | { status: "unresolved_student"; studentNames: string[] }
+  | { status: "multiple_students"; studentNames: string[] };
+
 function buildSummaryLine(
   display: Omit<DraftDisplay, "summaryLine">
 ): string {
@@ -82,6 +88,35 @@ export function displayToInterpretationFields(
     behavior: display.behavior ? [...display.behavior] : undefined,
     tags: [...display.tags],
     followUpNotes: [...display.followUps],
+  };
+}
+
+export function validateSingleStudentForInterpretation(
+  display: DraftDisplay
+): InterpretationStudentValidation {
+  if (display.studentMentions.length === 0) {
+    return { status: "no_student" };
+  }
+
+  const unresolved = display.studentMentions
+    .filter((ref) => ref.status === "unresolved")
+    .map((ref) => ref.mention);
+
+  if (unresolved.length > 0) {
+    return { status: "unresolved_student", studentNames: unresolved };
+  }
+
+  const resolvedNames = display.studentMentions.map((ref) =>
+    ref.status === "resolved" ? ref.student.displayName : ref.mention
+  );
+
+  if (resolvedNames.length !== 1) {
+    return { status: "multiple_students", studentNames: resolvedNames };
+  }
+
+  return {
+    status: "valid_one_student",
+    studentName: resolvedNames[0],
   };
 }
 

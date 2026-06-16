@@ -5,6 +5,7 @@ import {
   parseStudentNames,
   parseTags,
   resolveCaptureDisplay,
+  validateSingleStudentForInterpretation,
 } from "./capture-validation";
 
 describe("resolveCaptureDisplay", () => {
@@ -96,5 +97,50 @@ describe("field parsers", () => {
 
   it("normalizes tags without hash prefix", () => {
     expect(parseTags("fractions, #review")).toEqual(["fractions", "review"]);
+  });
+});
+
+describe("validateSingleStudentForInterpretation", () => {
+  it("allows exactly one resolved student", () => {
+    const display = resolveCaptureDisplay(
+      buildNoteDraft("@Mary worked through the reading passage #reading")
+    );
+
+    expect(validateSingleStudentForInterpretation(display)).toEqual({
+      status: "valid_one_student",
+      studentName: "Mary",
+    });
+  });
+
+  it("blocks review validation with no student", () => {
+    const display = resolveCaptureDisplay(
+      buildNoteDraft("Worked through the reading passage #reading")
+    );
+
+    expect(validateSingleStudentForInterpretation(display)).toEqual({
+      status: "no_student",
+    });
+  });
+
+  it("blocks review validation with unresolved students", () => {
+    const display = resolveCaptureDisplay(
+      buildNoteDraft("@Unknown worked through the reading passage #reading")
+    );
+
+    expect(validateSingleStudentForInterpretation(display)).toEqual({
+      status: "unresolved_student",
+      studentNames: ["Unknown"],
+    });
+  });
+
+  it("blocks review validation with multiple students", () => {
+    const display = resolveCaptureDisplay(
+      buildNoteDraft("@Mary and @Jeremy worked through the passage #reading")
+    );
+
+    expect(validateSingleStudentForInterpretation(display)).toEqual({
+      status: "multiple_students",
+      studentNames: ["Mary", "Jeremy"],
+    });
   });
 });

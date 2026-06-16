@@ -344,7 +344,7 @@ export function EvidenceCaptureCard({
                     className="text-xs font-medium text-link underline-offset-2 hover:underline"
                     onClick={() => setReviewOpen(true)}
                   >
-                    Review interpretation
+                    Review before saving
                   </button>
                 )}
               </div>
@@ -416,7 +416,7 @@ export function EvidenceCaptureCard({
               className="w-full justify-start"
               onClick={() => setReviewOpen(true)}
             >
-              Review interpretation
+              Review before saving
             </Button>
           )}
 

@@ -10,8 +10,8 @@ import {
   joinOptionalList,
   NOTE_TYPE_OPTIONS,
   parseFollowUpNotes,
-  parseStudentNames,
   parseTags,
+  validateSingleStudentForInterpretation,
   type InterpretationFields,
 } from "@/lib/evidence/capture-validation";
 import type { DraftDisplay } from "@/lib/note-processing/draft-to-display";
@@ -23,7 +23,6 @@ type InterpretationReviewPanelProps = {
 };
 
 type FormState = {
-  students: string;
   evidenceType: string;
   topic: string;
   performance: string;
@@ -35,7 +34,6 @@ type FormState = {
 function displayToFormState(display: DraftDisplay): FormState {
   const fields = displayToInterpretationFields(display);
   return {
-    students: fields.students.join(", "),
     evidenceType: fields.evidenceType,
     topic: fields.topic ?? "",
     performance: fields.performance ?? "",
@@ -45,10 +43,21 @@ function displayToFormState(display: DraftDisplay): FormState {
   };
 }
 
-function formStateToFields(form: FormState): InterpretationFields {
-  const behavior = parseStudentNames(form.behavior);
+function parseOptionalList(value: string): string[] {
+  return value
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+function formStateToFields(
+  form: FormState,
+  studentName: string
+): InterpretationFields {
+  const behavior = parseOptionalList(form.behavior);
+
   return {
-    students: parseStudentNames(form.students),
+    students: [studentName],
     evidenceType: form.evidenceType,
     topic: form.topic.trim() || undefined,
     performance: form.performance.trim() || undefined,
@@ -110,40 +119,71 @@ function InterpretationReviewPanelContent({
 }: InterpretationReviewPanelProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [form, setForm] = useState<FormState>(() => displayToFormState(display));
+  const [validationError, setValidationError] = useState("");
+  const studentValidation = validateSingleStudentForInterpretation(display);
 
   function updateField<K extends keyof FormState>(key: K, value: FormState[K]) {
     setForm((current) => ({ ...current, [key]: value }));
   }
 
+  function studentValidationMessage(): string {
+    if (studentValidation.status === "valid_one_student") {
+      return "";
+    }
+
+    if (studentValidation.status === "no_student") {
+      return "Choose one roster student before validating this draft.";
+    }
+
+    if (studentValidation.status === "multiple_students") {
+      return "Choose one student for this V1 evidence record.";
+    }
+
+    return "This student is not on your roster yet.";
+  }
+
   function handleConfirm() {
-    onConfirm(formStateToFields(form));
+    if (studentValidation.status !== "valid_one_student") {
+      setValidationError(studentValidationMessage());
+      return;
+    }
+
+    if (!form.evidenceType.trim()) {
+      setValidationError("Choose an evidence type before validating this draft.");
+      return;
+    }
+
+    setValidationError("");
+    onConfirm(formStateToFields(form, studentValidation.studentName));
   }
 
   return (
-    <div className="mt-3 rounded-card border border-border bg-muted/30 px-3 py-3 shadow-paper">
-      <div className="mb-3">
-        <p className="font-display text-sm font-semibold text-foreground">
+    <div className="mt-3 rounded-card border border-border bg-card px-4 py-4 shadow-paper">
+      <div className="mb-4 space-y-1">
+        <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+          ClassTrace read this as
+        </p>
+        <p className="font-display text-lg font-semibold text-foreground">
           Review before saving
         </p>
-        <p className="mt-0.5 text-xs text-muted-foreground">
-          Adjust anything that looks off, then confirm.
+        <p className="text-sm leading-relaxed text-muted-foreground">
+          Adjust anything that looks off before this becomes validated evidence.
         </p>
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2">
         <FieldRow
-          label="Students"
-          value={form.students}
-          isEditing={isEditing}
+          label="Student"
+          value={
+            studentValidation.status === "valid_one_student"
+              ? studentValidation.studentName
+              : studentValidation.status === "no_student"
+                ? ""
+                : studentValidation.studentNames.join(", ")
+          }
+          isEditing={false}
         >
-          <input
-            id="review-students"
-            aria-label="Students"
-            type="text"
-            value={form.students}
-            onChange={(e) => updateField("students", e.target.value)}
-            className={fieldInputClass}
-          />
+          <span />
         </FieldRow>
 
         <FieldRow
@@ -244,9 +284,19 @@ function InterpretationReviewPanelContent({
         </div>
       </div>
 
+      <div aria-live="polite" className="mt-3 min-h-5">
+        {validationError ? (
+          <p className="text-sm text-destructive">{validationError}</p>
+        ) : (
+          <p className="text-xs leading-relaxed text-muted-foreground">
+            Validated captures stay in this browser for now.
+          </p>
+        )}
+      </div>
+
       <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-border/50 pt-3">
         <Button size="sm" onClick={handleConfirm}>
-          Confirm interpretation
+          Validate draft
         </Button>
         {!isEditing && (
           <Button

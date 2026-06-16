@@ -106,7 +106,7 @@ The feed workspace follows the reference image: composer first, recent captures 
 ### Unit 11 Evidence Capture Row
 
 File: `components/dashboard/evidence-capture-card.tsx`  
-Last updated: 2026-06-15
+Last updated: 2026-06-16 (Unit 13 review entry copy)
 
 | Property | Class |
 |---|---|
@@ -120,7 +120,34 @@ Last updated: 2026-06-15
 | Chip group | `flex flex-wrap gap-1.5` |
 
 **Pattern notes:**  
-Evidence captures now render as rows inside the feed list container. Review, edit, delete, and interpretation review remain available, preserving teacher validation. Chips remain draft interpretation, not final truth.
+Evidence captures now render as rows inside the feed list container. Review, edit, delete, and structured draft review remain available, preserving teacher validation. Chips remain draft interpretation, not final truth. Unit 13 changed the review action language to "Review before saving" so the next step feels like teacher validation rather than system interpretation.
+
+---
+
+### Structured Draft Review Panel
+
+File: `components/dashboard/interpretation-review-panel.tsx`  
+Last updated: 2026-06-16
+
+| Property | Class |
+|---|---|
+| Shell | `mt-3 rounded-card border border-border bg-card px-4 py-4 shadow-paper` |
+| Header stack | `mb-4 space-y-1` |
+| Eyebrow | `text-[10px] font-semibold uppercase tracking-wider text-muted-foreground` |
+| Title | `font-display text-lg font-semibold text-foreground` |
+| Helper copy | `text-sm leading-relaxed text-muted-foreground` |
+| Field grid | `grid gap-3 sm:grid-cols-2` |
+| Field label | `text-[10px] font-semibold uppercase tracking-wider text-muted-foreground` |
+| Read-only value | `text-sm leading-snug text-foreground` |
+| Input/select | `h-8 w-full rounded-md border border-border bg-background px-2.5 text-sm text-foreground outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/30` |
+| Follow-up textarea | `min-h-[60px] resize-none text-sm` |
+| Status message area | `mt-3 min-h-5` with `aria-live="polite"` |
+| Error text | `text-sm text-destructive` |
+| Boundary helper | `text-xs leading-relaxed text-muted-foreground` |
+| Action row | `mt-4 flex flex-wrap items-center gap-2 border-t border-border/50 pt-3` |
+
+**Pattern notes:**  
+The review panel is the local POC trust moment between a captured draft and validated evidence. It uses explicit draft-language copy ("ClassTrace read this as", "Review before saving") and keeps the student anchored to exactly one resolved roster student. Optional interpretation fields can be edited, but validation remains browser-local until the evidence save unit.
 
 ---
 

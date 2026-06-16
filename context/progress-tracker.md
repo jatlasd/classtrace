@@ -19,14 +19,48 @@ Update this file after every meaningful implementation change.
 - Unit 10 implemented and verified with automated checks — Onboarding Completion (`context/specs/10-onboarding-completion.md`)
 - Unit 11 implemented and verified with automated checks — Production Evidence Feed UI Pass (`context/specs/11-production-evidence-feed-ui-pass.md`)
 - Unit 12 implemented and verified with automated checks — Deterministic Student Resolution (`context/specs/12-deterministic-student-resolution.md`)
+- Unit 13 implemented and verified with automated checks — Structured Draft Review UI (`context/specs/13-structured-draft-review-ui.md`)
 - Design system overhaul applied from `classtrace_asset_kit/` (warm paper palette, Fraunces + Inter + Caveat, landing copy/layout aligned to asset kit)
 
 ---
 
 ## Current Goal
 
-- Prepare the next focused unit spec before starting Phase 3, Unit 13 — Structured Draft Review UI.
-- Do not start Unit 13 implementation until its spec exists and the human explicitly confirms.
+- Prepare the next focused unit spec before starting Phase 3, Unit 14 — Save Validated Evidence.
+- Do not start Unit 14 implementation until its spec exists and the human explicitly confirms.
+
+---
+
+## Unit 13 — Structured Draft Review UI (Implemented)
+
+Spec: `context/specs/13-structured-draft-review-ui.md`
+
+### What was completed
+
+- Added `validateSingleStudentForInterpretation` in `lib/evidence/capture-validation.ts` to distinguish valid one-student review state from no-student, unresolved-student, and multi-student states.
+- Updated `InterpretationReviewPanel` so the review surface uses explicit draft language: "ClassTrace read this as", "Review before saving", and "Validate draft".
+- Anchored the student review field as read-only from the resolved roster student instead of allowing comma-separated student editing inside the validation panel.
+- Added inline `aria-live` validation guidance for invalid review states and missing evidence type.
+- Preserved editable local POC fields for evidence type, topic/skill, performance, behavior/work habit, tags, and follow-up notes.
+- Kept validated state local/browser-backed through the existing feed validation flow; no evidence server action or database save was added.
+- Updated capture row review entry copy from "Review interpretation" to "Review before saving".
+- Added focused tests for review copy, one-student validation guard behavior, field parsing, and persistence-boundary scope.
+- Updated `context/ui-registry.md` with the Structured Draft Review Panel pattern.
+- Did not add validated evidence database persistence, database-backed evidence feed data, Prisma migrations, server actions, archive/delete, export, AI, uploads, organizations, admin behavior, analytics, billing, or new dependencies.
+
+### Verification
+
+- `npm.cmd run test -- lib/evidence/capture-validation.test.ts lib/structured-draft-review-ui.test.ts` — pass (14 tests).
+- `npm.cmd run lint` — pass.
+- `npm.cmd run test` — pass (128 tests).
+- `npm.cmd run build` — pass.
+
+### Remaining risks / follow-ups
+
+- Manual signed-in browser verification is still needed when an interactive Clerk/browser session is available.
+- The in-app Browser plugin could not start in this Windows sandbox (`CreateProcessAsUserW failed: 5`), so no browser UI walkthrough is claimed.
+- The dev server starts successfully in foreground, but background startup attempts did not leave port 3000 reachable in this shell session; no local HTTP/browser smoke is claimed.
+- Unit 14 still needs a focused spec before implementing validated evidence database save.
 
 ---
 
@@ -64,7 +98,7 @@ Spec: `context/specs/12-deterministic-student-resolution.md`
 - Manual signed-in browser verification is still needed when an interactive Clerk/browser session is available.
 - The feed still stores local POC captures in browser localStorage; Units 14 and 15 remain responsible for validated evidence persistence and database-backed evidence feed data.
 - Existing legacy/demo local POC captures may still render through older browser-local display helpers when no database roster snapshot is available in that surface, but Unit 12 feed display now uses the database roster snapshot for new captures and edits.
-- Unit 13 still needs to define and build the structured draft review UI on top of this one-student gate.
+- Unit 13 has built the structured draft review UI on top of this one-student gate; Unit 14 remains responsible for validated evidence persistence.
 
 ---
 
@@ -522,6 +556,8 @@ Legacy:
 - Phase 3 unit 11 (Production Evidence Feed UI Pass) implemented and verified with automated checks — see **Unit 11 — Production Evidence Feed UI Pass (Implemented)** above.
 - `context/specs/12-deterministic-student-resolution.md` created for Phase 3 unit 12.
 - Phase 3 unit 12 (Deterministic Student Resolution) implemented and verified with automated checks — see **Unit 12 — Deterministic Student Resolution (Implemented)** above.
+- `context/specs/13-structured-draft-review-ui.md` created for Phase 3 unit 13.
+- Phase 3 unit 13 (Structured Draft Review UI) implemented and verified with automated checks — see **Unit 13 — Structured Draft Review UI (Implemented)** above.
 
 ---
 
@@ -580,7 +616,7 @@ Verification after refinement: `npm run lint` pass, `npm run build` pass, `npm r
 
 ## Next Up
 
-1. Write `context/specs/13-structured-draft-review-ui.md` before implementing Phase 3, Unit 13.
+1. Write `context/specs/14-save-validated-evidence.md` before implementing Phase 3, Unit 14.
 2. Optionally expand `README.md` with a short pointer to `AGENTS.md` and the context framework beyond the Unit 02 route updates already made.
 
 ---
@@ -705,4 +741,6 @@ Verification after refinement: `npm run lint` pass, `npm run build` pass, `npm r
 - Unit 11 spec was created on 2026-06-15 from the uploaded UI reference. It scopes Production Evidence Feed UI Pass as a visual overhaul of the authenticated shell, composer, recent capture list, and right rail while excluding student-resolution enforcement, evidence database persistence, AI, uploads, analytics, admin behavior, and new dependencies.
 - Unit 11 implementation completed on 2026-06-15. The authenticated app now uses a light top navigation shell, `/app/feed` uses the reference-style capture composer, recent capture rows, Patterns/Follow-ups rail, and secondary browser-local utility card, and the next planned unit is Unit 12 Deterministic Student Resolution.
 - Unit 12 spec was created on 2026-06-15. It scopes Deterministic Student Resolution as the capture-entry gate: `/app/feed` should pass the current workspace's active database roster into the client feed, composer suggestions should use that roster, and new/edit captures should be blocked unless exactly one active roster student resolves. It explicitly excludes evidence database persistence, structured review redesign, validated evidence save, database-backed feed data, archive/delete, export, AI, uploads, organizations, admin behavior, and new dependencies.
-- Unit 12 implementation completed on 2026-06-15. `/app/feed` now passes a client-safe active database roster snapshot into the client feed, the composer blocks no-student/unresolved/multi-student captures with inline guidance, and local POC capture edits are rejected unless exactly one active roster student resolves. The next planned step is writing the Unit 13 Structured Draft Review UI spec.
+- Unit 12 implementation completed on 2026-06-15. `/app/feed` now passes a client-safe active database roster snapshot into the client feed, the composer blocks no-student/unresolved/multi-student captures with inline guidance, and local POC capture edits are rejected unless exactly one active roster student resolves.
+- Unit 13 spec was created on 2026-06-16. It scopes Structured Draft Review UI as a local POC validation-flow refinement: clearer deterministic draft interpretation, teacher-editable review fields, one-student validation guard, and no evidence database save or persistence-layer changes.
+- Unit 13 implementation completed on 2026-06-16. The review panel now uses draft interpretation language, validates only one resolved roster student, keeps student assignment anchored/read-only in the review panel, and stores validation in the existing local POC feed state only. The next planned step is writing the Unit 14 Save Validated Evidence spec.
