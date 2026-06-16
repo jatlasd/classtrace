@@ -33,6 +33,29 @@ Update this file after every meaningful implementation change.
 
 ---
 
+## UX Follow-up - App Top Navigation (Implemented)
+
+### What was completed
+
+- Removed the primary top-nav internal overflow behavior that could show a small scrollbar in the authenticated app shell.
+- Added real Clerk-backed sign-out actions to the top navigation on desktop and mobile.
+- Replaced the desktop account chevron with the settings icon so the teacher name no longer implies an unopened dropdown menu.
+- Updated `context/ui-registry.md` and the production feed UI guard for the corrected top-nav pattern.
+
+### Verification
+
+- `npm.cmd run test -- lib/production-feed-ui-pass.test.ts` - pass (3 focused tests).
+- `npm.cmd run lint` - pass.
+- `npm.cmd run test` - pass (151 tests).
+- `npm.cmd run build` - pass.
+- `git -c safe.directory=C:/Projects/classtrace diff --check` - pass.
+
+### Remaining risks / follow-ups
+
+- Manual signed-in browser verification is still needed when an interactive Clerk/browser session is available.
+
+---
+
 ## Unit 15 - Evidence Feed from Database (Implemented)
 
 Spec: `context/specs/15-evidence-feed-from-database.md`

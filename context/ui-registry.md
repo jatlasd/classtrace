@@ -38,7 +38,7 @@ Run `/imprint` after building UI components so new patterns are captured here.
 ### App Top Navigation
 
 File: `components/dashboard/app-top-nav.tsx`  
-Last updated: 2026-06-15
+Last updated: 2026-06-16
 
 | Property | Class |
 |---|---|
@@ -47,15 +47,16 @@ Last updated: 2026-06-15
 | Brand link | `flex items-center gap-3` |
 | Logo mark | `flex size-9 items-center justify-center rounded-lg text-primary` |
 | Wordmark | `font-display text-2xl font-semibold tracking-tight text-foreground` |
-| Nav list | `flex min-w-0 items-center gap-1 overflow-x-auto lg:justify-center` |
+| Nav list | `flex min-w-0 flex-wrap items-center justify-center gap-1 overflow-visible` |
 | Nav item | `group relative inline-flex h-11 shrink-0 items-center gap-2 rounded-lg px-3 text-sm font-semibold transition-colors` |
 | Active nav item | `text-foreground` with icon `text-primary` and desktop underline `bg-primary` |
 | Inactive nav item | `text-muted-foreground hover:bg-muted/60 hover:text-foreground` |
 | Account avatar | `flex size-10 items-center justify-center rounded-full bg-secondary text-sm font-semibold text-foreground` |
 | Icon button | `flex size-9 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground` |
+| Sign-out button | `inline-flex h-9 items-center gap-2 rounded-lg px-3 text-sm font-semibold text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground` |
 
 **Pattern notes:**  
-This is the active authenticated app shell as of Unit 11. Keep nav links limited to real routes/workflows; do not add inert "Review", "Search", or notification-style actions before those features exist. The old App Sidebar and Mobile Bottom Navigation entries remain historical references, not the current shell direction.
+This is the active authenticated app shell as of Unit 11. Keep nav links limited to real routes/workflows; do not add inert "Review", "Search", or notification-style actions before those features exist. Account controls should expose a real Clerk sign-out action instead of implying an unopened account menu. The old App Sidebar and Mobile Bottom Navigation entries remain historical references, not the current shell direction.
 
 ---
 

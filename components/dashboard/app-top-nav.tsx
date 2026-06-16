@@ -1,12 +1,13 @@
 "use client";
 
+import { SignOutButton } from "@clerk/nextjs";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { isStudentProfilePath, routes } from "@/lib/routes";
 import { teacher } from "@/lib/mock-data";
 import {
   Bell,
-  ChevronDown,
+  LogOut,
   PenLine,
   Settings,
   Users,
@@ -61,6 +62,15 @@ export function AppTopNav() {
             >
               <Settings className="size-4" />
             </Link>
+            <SignOutButton redirectUrl={routes.root}>
+              <button
+                type="button"
+                aria-label="Sign out"
+                className="flex size-9 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+              >
+                <LogOut className="size-4" strokeWidth={1.75} />
+              </button>
+            </SignOutButton>
             <div className="flex size-9 items-center justify-center rounded-full bg-secondary text-xs font-semibold text-foreground">
               {getInitials(teacher.name)}
             </div>
@@ -69,7 +79,7 @@ export function AppTopNav() {
 
         <nav
           aria-label="Primary"
-          className="flex min-w-0 items-center gap-1 overflow-x-auto lg:justify-center"
+          className="flex min-w-0 flex-wrap items-center justify-center gap-1 overflow-visible"
         >
           {navItems.map((item) => {
             const active = isActive(item.match);
@@ -113,8 +123,17 @@ export function AppTopNav() {
             className="inline-flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm font-semibold text-foreground transition-colors hover:bg-muted"
           >
             <span>{teacher.name}</span>
-            <ChevronDown className="size-4 text-muted-foreground" />
+            <Settings className="size-4 text-muted-foreground" />
           </Link>
+          <SignOutButton redirectUrl={routes.root}>
+            <button
+              type="button"
+              className="inline-flex h-9 items-center gap-2 rounded-lg px-3 text-sm font-semibold text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground"
+            >
+              <LogOut className="size-4" strokeWidth={1.75} />
+              <span>Sign out</span>
+            </button>
+          </SignOutButton>
         </div>
       </div>
     </header>
