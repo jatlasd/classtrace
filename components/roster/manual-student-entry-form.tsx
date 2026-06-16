@@ -9,11 +9,15 @@ import { deriveMentionHandle } from "@/lib/students/derive-mention-handle";
 const inputClassName =
   "h-10 w-full rounded-md border border-border bg-card px-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/20 disabled:cursor-not-allowed disabled:opacity-50";
 
+type ManualStudentEntryFormProps = {
+  isFirstStudent: boolean;
+};
+
 function normalizeHandleInput(value: string): string {
   return value.trim().replace(/^@+/, "").trim().toLowerCase();
 }
 
-export function ManualStudentEntryForm() {
+export function ManualStudentEntryForm({ isFirstStudent }: ManualStudentEntryFormProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [displayName, setDisplayName] = useState("");
@@ -79,11 +83,8 @@ export function ManualStudentEntryForm() {
   return (
     <form className="space-y-4" onSubmit={handleSubmit}>
       <div>
-        <p className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-          Recommended first step
-        </p>
         <h2 className="font-display text-lg font-semibold text-foreground">
-          Add a student
+          {isFirstStudent ? "Add your first student" : "Add another student"}
         </h2>
         <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
           Use a name and handle your capture notes will recognize.

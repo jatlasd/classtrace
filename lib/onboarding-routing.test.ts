@@ -38,11 +38,10 @@ describe("Unit 10 onboarding routing", () => {
   });
 
   it("keeps roster setup accessible with a feed continuation action", () => {
-    expect(rosterPage).toContain("Roster setup started.");
-    expect(rosterPage).toContain(
-      "You can keep adding students here or continue to the evidence feed."
-    );
+    expect(rosterPage).toContain("Students in your roster");
+    expect(rosterPage).toContain("ready");
     expect(rosterPage).toContain("Continue to evidence feed");
+    expect(rosterPage).not.toContain("Roster setup started.");
     expect(rosterPage).not.toContain("Back to evidence feed");
     expect(rosterPage).toContain("ManualStudentEntryForm");
     expect(rosterPage).toContain("RosterImportForm");

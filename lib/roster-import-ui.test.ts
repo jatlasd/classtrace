@@ -16,7 +16,7 @@ describe("Unit 09 roster import UI", () => {
   it("replaces the import placeholder with a paste-list import form", () => {
     expect(rosterPageSource).toContain("RosterImportForm");
     expect(rosterPageSource).not.toContain("Import planned");
-    expect(importFormSource).toContain("Paste a roster list");
+    expect(importFormSource).toContain("Paste several students");
     expect(importFormSource).toContain("Preview students before saving");
   });
 

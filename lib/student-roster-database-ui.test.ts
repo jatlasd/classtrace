@@ -25,9 +25,11 @@ describe("Unit 07 roster database bridge", () => {
     expect(rosterPage).not.toContain("routes.student");
   });
 
-  it("shows a feed continuation action after roster setup has started", () => {
-    expect(rosterPage).toContain("Roster setup started.");
+  it("shows a quieter feed continuation action after roster setup has started", () => {
+    expect(rosterPage).toContain("students.length === 1");
+    expect(rosterPage).toContain("ready");
     expect(rosterPage).toContain("Continue to evidence feed");
     expect(rosterPage).toContain("routes.feed");
+    expect(rosterPage).not.toContain("Roster setup started.");
   });
 });

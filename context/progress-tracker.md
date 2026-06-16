@@ -33,6 +33,35 @@ Update this file after every meaningful implementation change.
 
 ---
 
+## Roster UX Detour - Active Roster Layout (Implemented)
+
+### What was completed
+
+- Updated `/app/roster` so an active roster no longer shows the "recommended first step" eyebrow or a large "Roster setup started" card.
+- Moved the continue-to-feed action into a quiet page-header utility with an active-student count.
+- Widened the roster page from a narrow setup column to a broader `1120px` workspace.
+- Changed manual entry and paste import into equal-width, flatter work panels with no `shadow-paper`.
+- Renamed the manual form title to switch between "Add your first student" and "Add another student" based on roster state.
+- Clarified the paste import title/copy and stopped treating it as a squeezed secondary setup path.
+- Changed the student list from individual shadowed cards to one flat bordered list with divided rows.
+- Updated static UI guards and `context/ui-registry.md` for the adjusted roster patterns.
+- Did not change roster database helpers, server actions, import parsing, onboarding routing, capture behavior, evidence persistence, archive/delete, export, AI, uploads, organizations, admin behavior, schema, migrations, or dependencies.
+
+### Verification
+
+- `npm.cmd run test -- lib/student-roster-database-ui.test.ts lib/roster-import-ui.test.ts lib/manual-student-entry.test.ts lib/guided-roster-setup-ui.test.ts` - pass (15 focused tests).
+- `npm.cmd run lint` - pass.
+- `npm.cmd run test` - first full run found a stale Unit 10 static assertion expecting the removed "Roster setup started." card; updated the assertion to guard the quieter active-roster header/action.
+- `npm.cmd run test -- lib/onboarding-routing.test.ts` - pass (3 focused tests).
+- `npm.cmd run test` - pass (151 tests).
+- `npm.cmd run build` - pass.
+
+### Remaining risks / follow-ups
+
+- Manual signed-in browser verification is still needed. The in-app Browser plugin could not start in this Windows sandbox (`CreateProcessAsUserW failed: 5`), so no browser UI walkthrough is claimed.
+
+---
+
 ## UX Follow-up - App Top Navigation (Implemented)
 
 ### What was completed

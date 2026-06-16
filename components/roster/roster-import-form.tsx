@@ -111,14 +111,11 @@ export function RosterImportForm({ existingStudents }: RosterImportFormProps) {
   return (
     <form className="space-y-4" onSubmit={handleSubmit}>
       <div>
-        <p className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-          Another setup path
-        </p>
         <h2 className="font-display text-lg font-semibold text-foreground">
-          Paste a roster list
+          Paste several students
         </h2>
         <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-          One student per line. Use name, optional handle, optional school/local ID.
+          One student per line. Add an optional handle or school/local ID after a comma.
         </p>
       </div>
 
