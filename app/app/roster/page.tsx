@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { RosterStudentRowActions } from "@/components/roster/roster-student-row-actions";
 import { ManualStudentEntryForm } from "@/components/roster/manual-student-entry-form";
 import { RosterImportForm } from "@/components/roster/roster-import-form";
 import { Button } from "@/components/ui/button";
@@ -47,6 +48,10 @@ function StudentRow({ student }: { student: RosterStudentDisplay }) {
         <p className="text-xs text-muted-foreground">
           {student.classGroupName || "No group yet"}
         </p>
+        <RosterStudentRowActions
+          studentId={student.id}
+          studentDisplayName={student.displayName}
+        />
       </div>
     </li>
   );

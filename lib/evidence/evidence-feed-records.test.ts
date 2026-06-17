@@ -73,6 +73,9 @@ describe("listEvidenceFeedRecordsForWorkspace", () => {
         where: {
           workspaceId: "workspace_1",
           archivedAt: null,
+          rosterStudent: {
+            archivedAt: null,
+          },
         },
         orderBy: [{ evidenceDate: "desc" }, { createdAt: "desc" }],
         select: {
@@ -150,5 +153,21 @@ describe("listEvidenceFeedRecordsForWorkspace", () => {
     expect(JSON.stringify(records[0])).not.toMatch(
       /rawNote|draftText|originalCapture|sourceText|clerkUserId|workspaceId/i
     );
+  });
+
+  it("excludes evidence attached to archived roster students from default feed reads", async () => {
+    const { database, calls } = buildDatabase();
+
+    await listEvidenceFeedRecordsForWorkspace("workspace_1", database);
+
+    expect(calls[0]).toMatchObject({
+      where: {
+        workspaceId: "workspace_1",
+        archivedAt: null,
+        rosterStudent: {
+          archivedAt: null,
+        },
+      },
+    });
   });
 });

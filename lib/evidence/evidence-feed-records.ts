@@ -6,6 +6,9 @@ type EvidenceFeedFindManyArgs = {
   where: {
     workspaceId: string;
     archivedAt: null;
+    rosterStudent: {
+      archivedAt: null;
+    };
   };
   orderBy: [{ evidenceDate: "desc" }, { createdAt: "desc" }];
   select: {
@@ -147,6 +150,9 @@ export async function listEvidenceFeedRecordsForWorkspace(
     where: {
       workspaceId,
       archivedAt: null,
+      rosterStudent: {
+        archivedAt: null,
+      },
     },
     orderBy: [{ evidenceDate: "desc" }, { createdAt: "desc" }],
     select: {

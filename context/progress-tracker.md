@@ -6,7 +6,7 @@ Update this file after every meaningful implementation change.
 
 ## Current Phase
 
-- Current status: Phase 4 Unit 19 implemented and verified with automated checks.
+- Current status: Phase 4 Unit 20 implemented and verified with automated checks.
 - Phase 2 complete — roster onboarding
 - Unit 02 complete and verified — Route Map and App Shell (`context/specs/02-route-map-and-app-shell.md`)
 - Unit 03 complete and verified — Public Landing Page UI (`context/specs/03-public-landing-page-ui.md`)
@@ -26,6 +26,7 @@ Update this file after every meaningful implementation change.
 - Unit 17 implemented and verified with automated checks - Student Timeline from Database (`context/specs/17-student-timeline-from-database.md`)
 - Unit 18 implemented and verified with automated checks - Archive Evidence (`context/specs/18-archive-evidence.md`)
 - Unit 19 implemented and verified with automated checks - Permanent Delete Evidence (`context/specs/19-permanent-delete-evidence.md`)
+- Unit 20 implemented and verified with automated checks - Archive/Delete Student (`context/specs/20-archive-delete-student.md`)
 - Design system overhaul applied from `classtrace_asset_kit/` (warm paper palette, Fraunces + Inter + Caveat, landing copy/layout aligned to asset kit)
 
 ---
@@ -33,7 +34,39 @@ Update this file after every meaningful implementation change.
 ## Current Goal
 
 - Unit 19 permanent delete evidence is implemented and verified.
-- Next unit/spec has not been created yet.
+- Unit 20 archive/delete student is implemented and verified.
+- Next planned unit is Unit 21 individual student export.
+
+---
+
+## Unit 20 - Archive/Delete Student (Implemented)
+
+Spec: `context/specs/20-archive-delete-student.md`
+
+### What was completed
+
+- Added `lib/students/archive-roster-student.ts` as a server-only helper that archives exactly one active roster student by trusted `workspaceId`, `studentId`, and `archivedAt: null`.
+- Added `lib/students/delete-roster-student.ts` as a server-only helper that permanently deletes exactly one roster student by trusted `workspaceId` and `studentId`, counting connected evidence before deletion and relying on the existing `RosterStudent` to `EvidenceRecord` cascade.
+- Added `archiveRosterStudent` and `deleteRosterStudent` to `actions/roster.ts`, resolving the current workspace server-side and revalidating `routes.roster`, `routes.feed`, and `routes.student(result.studentId)` after success.
+- Added `components/roster/roster-student-row-actions.tsx` as a focused Client Component for row-level archive/delete confirmation state.
+- Updated `/app/roster` active roster rows to include the row actions while preserving the ledger-like roster list and timeline link.
+- Updated `listEvidenceFeedRecordsForWorkspace` so the default global feed excludes evidence attached to archived roster students as well as archived evidence records.
+- Added focused tests for archive/delete helpers, roster action wiring, destructive UI guardrails, and archived-student evidence exclusion from the default feed.
+- Updated `context/ui-registry.md` with the Unit 20 roster row management pattern.
+- Kept restore/archive-management views, roster edit, bulk actions, export, schema changes, migrations, API routes, AI, uploads, organizations, admin behavior, analytics, billing, new dependencies, and app-shell redesign out of scope.
+
+### Verification
+
+- `npm.cmd run test -- lib/students/archive-roster-student.test.ts lib/students/delete-roster-student.test.ts actions/roster.test.ts lib/archive-delete-student-ui.test.ts lib/evidence/evidence-feed-records.test.ts lib/evidence/student-timeline-records.test.ts` - pass (24 focused tests).
+- `npm.cmd run lint` - pass.
+- `npm.cmd run test` - pass (202 tests). Existing evidence archive/delete failure-path tests intentionally log contextual server errors while verifying safe generic error results.
+- `npm.cmd run build` - pass.
+
+### Remaining risks / follow-ups
+
+- Manual signed-in browser verification is still needed when browser tooling is available.
+- There is still no restore/archive-management view for archived students by design.
+- Individual student export remains the next planned unit.
 
 ---
 
@@ -934,8 +967,8 @@ Verification after refinement: `npm run lint` pass, `npm run build` pass, `npm r
 
 ## Next Up
 
-1. Implement Unit 19 (Permanent Delete Evidence) only after explicit human confirmation.
-2. Optionally run manual signed-in browser verification for Unit 18 when browser tooling is available.
+1. Create and implement Unit 21 (Individual Student Export) only after explicit human confirmation.
+2. Optionally run manual signed-in browser verification for recent evidence-management units when browser tooling is available.
 3. Optionally clean up stale progress-tracker design-decision notes that still reference the old dark sidebar / Plus Jakarta Sans direction.
 4. Optionally expand `README.md` with a short pointer to `AGENTS.md` and the context framework beyond the Unit 02 route updates already made.
 
@@ -1074,3 +1107,5 @@ Verification after refinement: `npm run lint` pass, `npm run build` pass, `npm r
 - Unit 18 spec was created on 2026-06-17. It scopes Archive Evidence as a workspace-scoped `archivedAt` update for validated evidence records, with default feed/timeline views continuing to exclude archived rows. It explicitly excludes permanent delete, restore/archive-management views, export, schema changes, migrations, API routes, AI, uploads, organizations, admin behavior, analytics, billing, new dependencies, and app-shell redesign.
 - Unit 18 implementation completed on 2026-06-17. Saved evidence rows in the global feed now expose a calm archive affordance backed by a workspace-scoped Server Action and server-only helper. Archive sets `archivedAt`, revalidates the feed and affected student timeline, and does not add permanent delete, restore/archive views, export, schema changes, migrations, API routes, AI, uploads, organizations, admin behavior, analytics, billing, or new dependencies.
 - Unit 19 spec was created on 2026-06-17. It scopes Permanent Delete Evidence as a workspace-scoped one-record delete after explicit destructive confirmation, with feed and affected student timeline revalidation. It explicitly excludes student delete, restore/deleted-record management, bulk delete, export, schema changes, migrations, API routes, AI, uploads, organizations, admin behavior, analytics, billing, new dependencies, and app-shell redesign.
+- Unit 20 spec was created on 2026-06-17. It scopes Archive/Delete Student as workspace-scoped roster-student cleanup: archive sets `RosterStudent.archivedAt` and hides the student from active roster/capture/timeline/default evidence views, while permanent delete removes one owned roster student and connected evidence after explicit destructive confirmation. It explicitly excludes restore/archive-management views, roster edit, bulk actions, export, schema changes, migrations, API routes, AI, uploads, organizations, admin behavior, analytics, billing, new dependencies, and app-shell redesign.
+- Unit 20 implementation completed on 2026-06-17. `/app/roster` active roster rows now expose calm archive and destructive permanent delete affordances backed by workspace-scoped Server Actions and server-only helpers. Archive sets `RosterStudent.archivedAt`; permanent delete removes one owned roster student and connected evidence through the existing cascade. Default feed reads now exclude evidence attached to archived roster students. Automated focused tests, lint, full tests, and build passed.

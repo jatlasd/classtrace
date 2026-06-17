@@ -660,7 +660,7 @@ Guided roster setup lives inside the authenticated app shell, not a full-screen 
 ### Database Roster List
 
 File: `app/app/roster/page.tsx`  
-Last updated: 2026-06-17
+Last updated: 2026-06-17 (Unit 20 archive/delete student)
 
 | Property | Class |
 |---|---|
@@ -673,9 +673,43 @@ Last updated: 2026-06-17
 | Student name | `font-medium leading-snug text-foreground` |
 | Handle text | `text-sm text-muted-foreground sm:text-foreground` |
 | Class/group text | `text-xs text-muted-foreground` |
+| Management action area | `space-y-2 border-t border-border/50 pt-3 sm:col-span-3` |
+| Archive trigger | Existing `Button` with `variant="ghost"`, `size="sm"`, `-ml-2 text-muted-foreground`, and `Archive` icon `size-3.5` |
+| Archive confirmation copy | `text-xs leading-relaxed text-muted-foreground` |
+| Archive confirm action | Existing `Button` with `variant="outline"` and `size="sm"` |
+| Archive error text | `text-xs leading-relaxed text-destructive` with `role="status"` |
+| Delete trigger | Existing `Button` with `variant="ghost"`, `size="sm"`, `-ml-2 text-destructive hover:text-destructive`, and `Trash2` icon `size-3.5` |
+| Delete confirmation copy | `text-xs font-medium leading-relaxed text-destructive` |
+| Delete confirm action | Existing `Button` with `variant="destructive"` and `size="sm"` |
+| Delete cancel action | Existing `Button` with `variant="ghost"` and `size="sm"` |
+| Delete error text | `text-xs leading-relaxed text-destructive` with `role="status"` |
 
 **Pattern notes:**  
-The roster list is database-backed. After Unit 17, each active student's identity area links to that student's database-backed timeline using `routes.student(student.id)` and an accessible "Open [student] timeline" label. Use a ledger-like bordered list with column headers, divided rows, square initials, and no shadows; avoid returning to separate rounded student cards. Edit, delete, archive, and inline management actions remain deferred to later units.
+The roster list is database-backed. After Unit 17, each active student's identity area links to that student's database-backed timeline using `routes.student(student.id)` and an accessible "Open [student] timeline" label. Use a ledger-like bordered list with column headers, divided rows, square initials, and no shadows; avoid returning to separate rounded student cards. Unit 20 adds secondary row management actions below the row metadata: archive is the calm first cleanup action and permanent delete is visually destructive with explicit warning copy ("Deleting this student will also permanently delete all evidence records attached to them. This cannot be undone."). Do not add restore, archived-student management, roster edit, export, bulk actions, shared student identity, or admin/district behavior to this row until explicitly scoped.
+
+---
+
+### Roster Student Row Actions
+
+File: `components/roster/roster-student-row-actions.tsx`
+Last updated: 2026-06-17
+
+| Property | Class |
+|---|---|
+| Action shell | `space-y-2 border-t border-border/50 pt-3 sm:col-span-3` |
+| Archive trigger | Existing `Button` with `variant="ghost"`, `size="sm"`, and `-ml-2 text-muted-foreground` |
+| Archive icon | `Archive` icon `size-3.5` |
+| Archive confirmation copy | `text-xs leading-relaxed text-muted-foreground` |
+| Archive confirm action | Existing `Button` with `variant="outline"` and `size="sm"` |
+| Delete trigger | Existing `Button` with `variant="ghost"`, `size="sm"`, and `-ml-2 text-destructive hover:text-destructive` |
+| Delete icon | `Trash2` icon `size-3.5` |
+| Delete confirmation shell | `space-y-2 border-t border-border/50 pt-3` |
+| Delete confirmation copy | `text-xs font-medium leading-relaxed text-destructive` |
+| Delete confirm action | Existing `Button` with `variant="destructive"` and `size="sm"` |
+| Error text | `text-xs leading-relaxed text-destructive` with `role="status"` |
+
+**Pattern notes:**
+This Client Component owns only row-level confirmation state for archive/delete. It sends only `studentId` to workspace-resolving Server Actions; no workspace, teacher, Clerk, or evidence IDs cross the client boundary. Keep archive visually safer than delete, keep delete confirmation inline and explicit, and avoid expanding this component into roster edit, restore, export, bulk management, or admin-style controls.
 
 ---
 
