@@ -360,6 +360,9 @@ export function EvidenceFeed({
   const [filter, setFilter] = useState<InboxFilter>("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [captureEditError, setCaptureEditError] = useState("");
+  const [hiddenSavedEvidenceIds, setHiddenSavedEvidenceIds] = useState<
+    Set<string>
+  >(() => new Set());
   const rosterSetupNeeded = rosterStudents.length === 0;
 
   const summaryItems = useMemo(
@@ -382,7 +385,8 @@ export function EvidenceFeed({
         !(
           item.validation?.status === "validated" &&
           item.validation.savedEvidenceId &&
-          savedEvidenceIds.has(item.validation.savedEvidenceId)
+          (savedEvidenceIds.has(item.validation.savedEvidenceId) ||
+            hiddenSavedEvidenceIds.has(item.validation.savedEvidenceId))
         )
     );
 
@@ -399,7 +403,14 @@ export function EvidenceFeed({
     }
 
     return result;
-  }, [draftItems, filter, searchQuery, rosterStudents, savedEvidenceIds]);
+  }, [
+    draftItems,
+    filter,
+    searchQuery,
+    rosterStudents,
+    savedEvidenceIds,
+    hiddenSavedEvidenceIds,
+  ]);
 
   const visibleEvidenceRecords = useMemo(() => {
     if (filter === "needs_review") {
@@ -520,6 +531,14 @@ export function EvidenceFeed({
     setDraftItems((current) => current.filter((item) => item.id !== id));
   }
 
+  function handleSavedEvidenceHidden(evidenceId: string): void {
+    setHiddenSavedEvidenceIds((current) => {
+      const next = new Set(current);
+      next.add(evidenceId);
+      return next;
+    });
+  }
+
   function renderFeedList() {
     if (rosterSetupNeeded) {
       return (
@@ -567,7 +586,12 @@ export function EvidenceFeed({
           />
         ))}
         {visibleEvidenceRecords.map((record) => (
-          <SavedEvidenceRow key={record.id} record={record} />
+          <SavedEvidenceRow
+            key={record.id}
+            record={record}
+            onArchived={handleSavedEvidenceHidden}
+            onDeleted={handleSavedEvidenceHidden}
+          />
         ))}
       </>
     );

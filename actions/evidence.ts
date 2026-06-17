@@ -8,6 +8,11 @@ import {
   type ArchiveEvidenceResult,
 } from "@/lib/evidence/archive-evidence";
 import {
+  deleteEvidenceForWorkspace,
+  type DeleteEvidenceInput,
+  type DeleteEvidenceResult,
+} from "@/lib/evidence/delete-evidence";
+import {
   saveValidatedEvidenceForWorkspace,
   type SaveValidatedEvidenceInput,
   type SaveValidatedEvidenceResult,
@@ -18,6 +23,8 @@ export type SaveValidatedEvidenceActionInput = SaveValidatedEvidenceInput;
 export type SaveValidatedEvidenceActionResult = SaveValidatedEvidenceResult;
 export type ArchiveEvidenceActionInput = ArchiveEvidenceInput;
 export type ArchiveEvidenceActionResult = ArchiveEvidenceResult;
+export type DeleteEvidenceActionInput = DeleteEvidenceInput;
+export type DeleteEvidenceActionResult = DeleteEvidenceResult;
 
 export async function saveValidatedEvidence(
   input: SaveValidatedEvidenceActionInput
@@ -60,5 +67,27 @@ export async function archiveEvidence(
   } catch (error) {
     console.error("[actions/evidence/archiveEvidence]", error);
     return { success: false, error: "Failed to archive evidence." };
+  }
+}
+
+export async function deleteEvidence(
+  input: DeleteEvidenceActionInput
+): Promise<DeleteEvidenceActionResult> {
+  try {
+    const workspace = await getCurrentWorkspace();
+    const result = await deleteEvidenceForWorkspace({
+      workspaceId: workspace.workspaceId,
+      input,
+    });
+
+    if (result.success) {
+      revalidatePath(routes.feed);
+      revalidatePath(routes.student(result.rosterStudentId));
+    }
+
+    return result;
+  } catch (error) {
+    console.error("[actions/evidence/deleteEvidence]", error);
+    return { success: false, error: "Failed to delete evidence." };
   }
 }

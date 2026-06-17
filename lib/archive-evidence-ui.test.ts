@@ -24,7 +24,6 @@ describe("Unit 18 archive evidence UI", () => {
     expect(savedEvidenceRow).toContain("Hide this from default evidence views?");
     expect(savedEvidenceRow).toContain("variant=\"ghost\"");
     expect(savedEvidenceRow).toContain("variant=\"outline\"");
-    expect(savedEvidenceRow).not.toContain("variant=\"destructive\"");
   });
 
   it("archives by evidence id only and never accepts client ownership ids", () => {
@@ -40,10 +39,10 @@ describe("Unit 18 archive evidence UI", () => {
     expect(evidenceFeed).not.toMatch(/archived evidence|restore evidence/i);
   });
 
-  it("does not add delete, restore, export, or raw draft behavior", () => {
+  it("does not add restore, export, bulk archive, or raw draft behavior", () => {
     const combined = `${savedEvidenceRow}\n${evidenceFeed}`;
     expect(combined).not.toMatch(
-      /Delete evidence|Permanent delete|Restore evidence|Export evidence|Bulk archive/i
+      /Restore evidence|Export evidence|Bulk archive|Delete student/i
     );
     expect(savedEvidenceRow).not.toMatch(
       /rawNote|draftText|originalCapture|sourceText/i

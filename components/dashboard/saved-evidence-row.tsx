@@ -2,14 +2,16 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import { archiveEvidence } from "@/actions/evidence";
+import { archiveEvidence, deleteEvidence } from "@/actions/evidence";
 import { Button } from "@/components/ui/button";
 import { formatTagLabel } from "@/lib/format-tag";
 import type { EvidenceFeedRecord } from "@/lib/evidence/evidence-feed-records";
-import { Archive, CheckCircle2, Circle } from "lucide-react";
+import { Archive, CheckCircle2, Circle, Trash2 } from "lucide-react";
 
 type SavedEvidenceRowProps = {
   record: EvidenceFeedRecord;
+  onArchived?: (evidenceId: string) => void;
+  onDeleted?: (evidenceId: string) => void;
 };
 
 function formatEvidenceDate(value: string): string {
@@ -48,10 +50,16 @@ function Chip({
   );
 }
 
-export function SavedEvidenceRow({ record }: SavedEvidenceRowProps) {
+export function SavedEvidenceRow({
+  record,
+  onArchived,
+  onDeleted,
+}: SavedEvidenceRowProps) {
   const router = useRouter();
   const [isConfirmingArchive, setIsConfirmingArchive] = useState(false);
+  const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
   const [archiveError, setArchiveError] = useState("");
+  const [deleteError, setDeleteError] = useState("");
   const [isPending, startTransition] = useTransition();
 
   function handleArchive(): void {
@@ -65,6 +73,23 @@ export function SavedEvidenceRow({ record }: SavedEvidenceRowProps) {
         return;
       }
 
+      onArchived?.(record.id);
+      router.refresh();
+    });
+  }
+
+  function handleDelete(): void {
+    setDeleteError("");
+    startTransition(async () => {
+      const result = await deleteEvidence({ evidenceId: record.id });
+
+      if (!result.success) {
+        setDeleteError(result.error);
+        setIsConfirmingDelete(false);
+        return;
+      }
+
+      onDeleted?.(record.id);
       router.refresh();
     });
   }
@@ -172,7 +197,12 @@ export function SavedEvidenceRow({ record }: SavedEvidenceRowProps) {
                 variant="ghost"
                 size="sm"
                 className="-ml-2 text-muted-foreground"
-                onClick={() => setIsConfirmingArchive(true)}
+                onClick={() => {
+                  setIsConfirmingArchive(true);
+                  setIsConfirmingDelete(false);
+                  setArchiveError("");
+                  setDeleteError("");
+                }}
                 aria-label={`Archive evidence for ${record.studentDisplayName}`}
               >
                 <Archive className="size-3.5" />
@@ -182,6 +212,59 @@ export function SavedEvidenceRow({ record }: SavedEvidenceRowProps) {
             {archiveError ? (
               <p className="text-xs leading-relaxed text-destructive" role="status">
                 {archiveError}
+              </p>
+            ) : null}
+            {isConfirmingDelete ? (
+              <div className="space-y-2 border-t border-border/50 pt-3">
+                <p className="text-xs font-medium leading-relaxed text-destructive">
+                  Permanently delete this evidence record? This cannot be undone.
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    size="sm"
+                    onClick={handleDelete}
+                    disabled={isPending}
+                    aria-label={`Permanently delete evidence for ${record.studentDisplayName}`}
+                  >
+                    {isPending ? "Deleting..." : "Delete evidence"}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      setIsConfirmingDelete(false);
+                      setDeleteError("");
+                    }}
+                    disabled={isPending}
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="-ml-2 text-destructive hover:text-destructive"
+                onClick={() => {
+                  setIsConfirmingDelete(true);
+                  setIsConfirmingArchive(false);
+                  setArchiveError("");
+                  setDeleteError("");
+                }}
+                aria-label={`Delete evidence for ${record.studentDisplayName}`}
+              >
+                <Trash2 className="size-3.5" />
+                Delete evidence
+              </Button>
+            )}
+            {deleteError ? (
+              <p className="text-xs leading-relaxed text-destructive" role="status">
+                {deleteError}
               </p>
             ) : null}
           </div>

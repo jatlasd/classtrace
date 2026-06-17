@@ -6,7 +6,7 @@ Update this file after every meaningful implementation change.
 
 ## Current Phase
 
-- Current status: Phase 4 Unit 18 implemented and verified with automated checks.
+- Current status: Phase 4 Unit 19 implemented and verified with automated checks.
 - Phase 2 complete — roster onboarding
 - Unit 02 complete and verified — Route Map and App Shell (`context/specs/02-route-map-and-app-shell.md`)
 - Unit 03 complete and verified — Public Landing Page UI (`context/specs/03-public-landing-page-ui.md`)
@@ -25,14 +25,48 @@ Update this file after every meaningful implementation change.
 - Unit 16 implemented and verified with automated checks - Student Timeline UI (`context/specs/16-student-timeline-ui.md`)
 - Unit 17 implemented and verified with automated checks - Student Timeline from Database (`context/specs/17-student-timeline-from-database.md`)
 - Unit 18 implemented and verified with automated checks - Archive Evidence (`context/specs/18-archive-evidence.md`)
+- Unit 19 implemented and verified with automated checks - Permanent Delete Evidence (`context/specs/19-permanent-delete-evidence.md`)
 - Design system overhaul applied from `classtrace_asset_kit/` (warm paper palette, Fraunces + Inter + Caveat, landing copy/layout aligned to asset kit)
 
 ---
 
 ## Current Goal
 
-- Prepare for Phase 4, Unit 19 only after explicit human confirmation.
-- Unit 19 should own permanent delete behavior for evidence records.
+- Unit 19 permanent delete evidence is implemented and verified.
+- Next unit/spec has not been created yet.
+
+---
+
+## Unit 19 - Permanent Delete Evidence (Implemented)
+
+Spec: `context/specs/19-permanent-delete-evidence.md`
+
+### What was completed
+
+- Created the Phase 4 Unit 19 spec for permanent delete behavior on validated evidence records.
+- Added `lib/evidence/delete-evidence.ts` as a server-only helper that permanently deletes exactly one evidence record by trusted `workspaceId` and `evidenceId`.
+- The delete helper first verifies the record inside the current workspace, returns the attached `rosterStudentId`, then uses a scoped `deleteMany` write with `id` and `workspaceId`.
+- Added `deleteEvidence` to `actions/evidence.ts`, resolving the current workspace server-side and revalidating `routes.feed` plus `routes.student(result.rosterStudentId)` after successful delete.
+- Updated `components/dashboard/saved-evidence-row.tsx` with a destructive "Delete evidence" affordance, inline irreversible-warning confirmation, pending state, safe error display, and client-side refresh after success.
+- Added parent feed handling so same-session validated drafts stay hidden after their saved database evidence is archived or permanently deleted.
+- Kept the Unit 18 archive affordance available as the safer cleanup action.
+- Added focused tests for the delete helper, evidence action wiring, destructive UI guardrails, same-session draft hiding, and stale Unit 18 archive guardrails.
+- Updated `context/ui-registry.md` with the Unit 19 saved evidence row delete pattern.
+- Kept student delete, restore/deleted-record management, bulk delete, export, schema changes, migrations, API routes, AI, uploads, organizations, admin behavior, analytics, billing, new dependencies, and app-shell redesign out of scope.
+
+### Verification
+
+- `npm.cmd run test -- lib/evidence/delete-evidence.test.ts actions/evidence.test.ts lib/delete-evidence-ui.test.ts lib/archive-evidence-ui.test.ts lib/evidence/archive-evidence.test.ts` - pass (27 focused tests).
+- `npm.cmd run test -- lib/delete-evidence-ui.test.ts lib/archive-evidence-ui.test.ts actions/evidence.test.ts lib/evidence/delete-evidence.test.ts lib/evidence/archive-evidence.test.ts` - pass (28 focused tests after review fix).
+- `npm.cmd run lint` - pass.
+- `npm.cmd run test` - pass (185 tests).
+- `npm.cmd run build` - pass.
+- `git -c safe.directory=C:/Projects/classtrace diff --check` - pass with line-ending warnings only.
+
+### Remaining risks / follow-ups
+
+- Manual signed-in browser verification is still needed when browser tooling is available.
+- Student timeline delete affordance is intentionally deferred; Unit 19 deletes from the global feed and revalidates affected timelines.
 
 ---
 
@@ -1039,3 +1073,4 @@ Verification after refinement: `npm run lint` pass, `npm run build` pass, `npm r
 - Unit 17 implementation completed on 2026-06-17. `/app/students/[studentId]` now loads one active workspace roster student and that student's non-archived validated evidence records from the database, and `/app/roster` now links active roster rows to student timelines. Automated lint/test/build verification passed; manual browser verification remains blocked by the in-app Browser sandbox startup failure.
 - Unit 18 spec was created on 2026-06-17. It scopes Archive Evidence as a workspace-scoped `archivedAt` update for validated evidence records, with default feed/timeline views continuing to exclude archived rows. It explicitly excludes permanent delete, restore/archive-management views, export, schema changes, migrations, API routes, AI, uploads, organizations, admin behavior, analytics, billing, new dependencies, and app-shell redesign.
 - Unit 18 implementation completed on 2026-06-17. Saved evidence rows in the global feed now expose a calm archive affordance backed by a workspace-scoped Server Action and server-only helper. Archive sets `archivedAt`, revalidates the feed and affected student timeline, and does not add permanent delete, restore/archive views, export, schema changes, migrations, API routes, AI, uploads, organizations, admin behavior, analytics, billing, or new dependencies.
+- Unit 19 spec was created on 2026-06-17. It scopes Permanent Delete Evidence as a workspace-scoped one-record delete after explicit destructive confirmation, with feed and affected student timeline revalidation. It explicitly excludes student delete, restore/deleted-record management, bulk delete, export, schema changes, migrations, API routes, AI, uploads, organizations, admin behavior, analytics, billing, new dependencies, and app-shell redesign.

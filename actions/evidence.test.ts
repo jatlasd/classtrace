@@ -37,6 +37,25 @@ describe("evidence server actions", () => {
     expect(source).toContain("[actions/evidence/archiveEvidence]");
   });
 
+  it("deletes evidence through current workspace resolution", () => {
+    expect(source).toContain("deleteEvidenceForWorkspace");
+    expect(source).toContain("DeleteEvidenceActionInput");
+    expect(source).toContain("workspace.workspaceId");
+    const deleteAction = source.match(
+      /export async function deleteEvidence[\s\S]*?\n\}/
+    );
+    expect(deleteAction?.[0]).toBeDefined();
+    expect(deleteAction?.[0]).not.toMatch(
+      /input\.workspaceId|input\.teacherProfileId|input\.clerkUserId|input\.rosterStudentId/
+    );
+  });
+
+  it("revalidates feed and affected student route after delete succeeds", () => {
+    expect(source).toContain("routes.feed");
+    expect(source).toContain("routes.student(result.rosterStudentId)");
+    expect(source).toContain("[actions/evidence/deleteEvidence]");
+  });
+
   it("keeps raw draft text out of the action contract", () => {
     expect(source).not.toMatch(/rawNote|draftText|originalCapture|sourceText/i);
   });

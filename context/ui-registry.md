@@ -145,7 +145,7 @@ Evidence captures now render as rows inside the feed list container. Review, edi
 ### Saved Evidence Row
 
 File: `components/dashboard/saved-evidence-row.tsx`
-Last updated: 2026-06-17 (Unit 18 archive evidence)
+Last updated: 2026-06-17 (Unit 19 permanent delete evidence)
 
 | Property | Class |
 |---|---|
@@ -167,9 +167,15 @@ Last updated: 2026-06-17 (Unit 18 archive evidence)
 | Archive confirmation copy | `text-xs leading-relaxed text-muted-foreground` |
 | Archive confirm action | Existing `Button` with `variant="outline"` and `size="sm"` |
 | Archive error text | `text-xs leading-relaxed text-destructive` with `role="status"` |
+| Delete trigger | Existing `Button` with `variant="ghost"`, `size="sm"`, `-ml-2 text-destructive hover:text-destructive`, and `Trash2` icon `size-3.5` |
+| Delete confirmation shell | `space-y-2 border-t border-border/50 pt-3` |
+| Delete confirmation copy | `text-xs font-medium leading-relaxed text-destructive` |
+| Delete confirm action | Existing `Button` with `variant="destructive"` and `size="sm"` |
+| Delete cancel action | Existing `Button` with `variant="ghost"` and `size="sm"` |
+| Delete error text | `text-xs leading-relaxed text-destructive` with `role="status"` |
 
 **Pattern notes:**
-Saved evidence rows are database-backed validated records, not raw draft captures. They intentionally reuse the Unit 11 row grid and chip vocabulary but use validated-state icon/status styling and `EvidenceRecord.summary` as the primary text. Unit 18 adds a calm, non-destructive archive affordance with inline confirmation copy ("Hide this from default evidence views?") and a workspace-scoped Server Action. Do not add edit, permanent delete, restore, export, student-profile navigation, or raw-note fields to this row until those units are explicitly scoped.
+Saved evidence rows are database-backed validated records, not raw draft captures. They intentionally reuse the Unit 11 row grid and chip vocabulary but use validated-state icon/status styling and `EvidenceRecord.summary` as the primary text. Unit 18 added a calm, non-destructive archive affordance with inline confirmation copy ("Hide this from default evidence views?") and a workspace-scoped Server Action. Unit 19 adds a destructive permanent delete affordance with inline warning copy ("Permanently delete this evidence record? This cannot be undone.") and a workspace-scoped Server Action. Keep archive visible as the safer cleanup action. Do not add edit, restore/deleted-record management, export, student-profile navigation, bulk actions, student delete, or raw-note fields to this row until those units are explicitly scoped.
 
 ---
 
