@@ -52,7 +52,8 @@ describe("Unit 17 student timeline from database UI bridge", () => {
     expect(rosterPage).toContain("Open ${student.displayName} timeline");
     expect(rosterPage).toContain("Open timeline");
     expect(rosterPage).not.toMatch(/\b(Archive|Delete|Export)\b/);
-    expect(timelineComponent).not.toMatch(/\b(Archive|Delete|Export)\b/);
+    expect(timelineComponent).toContain("StudentEvidenceExportAction");
+    expect(timelineComponent).not.toMatch(/\b(Archive|Delete)\b/);
   });
 
   it("does not introduce out-of-scope claims or raw draft storage", () => {

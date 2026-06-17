@@ -56,6 +56,20 @@ describe("evidence server actions", () => {
     expect(source).toContain("[actions/evidence/deleteEvidence]");
   });
 
+  it("exports one student's evidence through current workspace resolution", () => {
+    expect(source).toContain("exportStudentEvidenceForWorkspace");
+    expect(source).toContain("ExportStudentEvidenceActionInput");
+    expect(source).toContain("workspace.workspaceId");
+    const exportAction = source.match(
+      /export async function exportStudentEvidence[\s\S]*?\n\}/
+    );
+    expect(exportAction?.[0]).toBeDefined();
+    expect(exportAction?.[0]).not.toMatch(
+      /input\.workspaceId|input\.teacherProfileId|input\.clerkUserId|input\.evidenceId|input\.rosterStudentId/
+    );
+    expect(exportAction?.[0]).not.toContain("revalidatePath");
+  });
+
   it("keeps raw draft text out of the action contract", () => {
     expect(source).not.toMatch(/rawNote|draftText|originalCapture|sourceText/i);
   });

@@ -11,6 +11,10 @@ const timelinePage = readFileSync(
   join(projectRoot, "components", "students", "student-timeline-page.tsx"),
   "utf8"
 );
+const exportAction = readFileSync(
+  join(projectRoot, "components", "students", "student-evidence-export-action.tsx"),
+  "utf8"
+);
 const rosterPage = readFileSync(
   join(projectRoot, "app", "app", "roster", "page.tsx"),
   "utf8"
@@ -43,9 +47,11 @@ describe("Unit 16 student timeline UI", () => {
     expect(prismaSchema).not.toMatch(/rawNote|draftText|originalCapture|sourceText/);
   });
 
-  it("keeps Unit 16 out of later timeline management scope", () => {
+  it("keeps the timeline out of unrelated management scope", () => {
     expect(rosterPage).toContain("routes.student(student.id)");
-    expect(timelinePage).not.toMatch(/\b(Archive|Delete|Export)\b/);
+    expect(timelinePage).toContain("StudentEvidenceExportAction");
+    expect(exportAction).toContain("Export evidence");
+    expect(timelinePage).not.toMatch(/\b(Archive|Delete)\b/);
     expect(studentPage).not.toMatch(/listEvidenceFeedRecordsForWorkspace/);
     expect(studentPage).not.toMatch(/evidenceRecord\.findMany|@\/lib\/db/);
 

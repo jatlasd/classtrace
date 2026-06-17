@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { ReactElement, ReactNode } from "react";
 import { BookOpenText, Circle, Clock3 } from "lucide-react";
+import { StudentEvidenceExportAction } from "@/components/students/student-evidence-export-action";
 import { Button } from "@/components/ui/button";
 import { formatTagLabel } from "@/lib/format-tag";
 import { routes } from "@/lib/routes";
@@ -149,6 +150,13 @@ function StudentProfileHeader({
             {evidenceCount} {evidenceCount === 1 ? "record" : "records"} ready
             for this timeline.
           </p>
+          <div className="mt-3">
+            <StudentEvidenceExportAction
+              studentId={student.id}
+              studentName={student.displayName}
+              evidenceCount={evidenceCount}
+            />
+          </div>
         </div>
       </div>
     </header>

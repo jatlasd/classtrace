@@ -6,7 +6,7 @@ Update this file after every meaningful implementation change.
 
 ## Current Phase
 
-- Current status: Phase 4 Unit 20 implemented and verified with automated checks.
+- Current status: Phase 4 Unit 21 implemented and verified with automated checks.
 - Phase 2 complete — roster onboarding
 - Unit 02 complete and verified — Route Map and App Shell (`context/specs/02-route-map-and-app-shell.md`)
 - Unit 03 complete and verified — Public Landing Page UI (`context/specs/03-public-landing-page-ui.md`)
@@ -27,6 +27,7 @@ Update this file after every meaningful implementation change.
 - Unit 18 implemented and verified with automated checks - Archive Evidence (`context/specs/18-archive-evidence.md`)
 - Unit 19 implemented and verified with automated checks - Permanent Delete Evidence (`context/specs/19-permanent-delete-evidence.md`)
 - Unit 20 implemented and verified with automated checks - Archive/Delete Student (`context/specs/20-archive-delete-student.md`)
+- Unit 21 implemented and verified with automated checks - Individual Student Export (`context/specs/21-individual-student-export.md`)
 - Design system overhaul applied from `classtrace_asset_kit/` (warm paper palette, Fraunces + Inter + Caveat, landing copy/layout aligned to asset kit)
 
 ---
@@ -35,7 +36,40 @@ Update this file after every meaningful implementation change.
 
 - Unit 19 permanent delete evidence is implemented and verified.
 - Unit 20 archive/delete student is implemented and verified.
-- Next planned unit is Unit 21 individual student export.
+- Unit 21 individual student export is implemented and verified.
+- Next planned unit is Unit 22 settings page.
+
+---
+
+## Unit 21 - Individual Student Export (Implemented)
+
+Spec: `context/specs/21-individual-student-export.md`
+
+### What was completed
+
+- Added `lib/evidence/export-student-evidence.ts` as a server-only helper for workspace-scoped CSV export of one active roster student's non-archived validated evidence.
+- The helper verifies the selected student by trusted `workspaceId`, `studentId`, and `archivedAt: null`, then reads evidence by both `workspaceId` and `rosterStudentId`.
+- Added deterministic CSV generation with stable columns, student-specific filename, tag joining, optional-field handling, escaping for commas, quotes, and line breaks, and spreadsheet-formula prefix neutralization.
+- Added `exportStudentEvidence` to `actions/evidence.ts`, resolving the current workspace server-side and returning a typed read-only export payload without route revalidation.
+- Added `components/students/student-evidence-export-action.tsx` as a small Client Component that sends only `studentId`, downloads the returned CSV payload, and shows pending/success/error/empty states.
+- Added the export action to the student timeline evidence count panel without adding export controls to the global feed, roster rows, or individual timeline items.
+- Added focused tests for export helper scoping, CSV output, Server Action wiring, UI boundaries, and stale static guardrails.
+- Updated `context/ui-registry.md` with the student export action pattern.
+- Kept full-account export, all-student export, format selection, PDFs/DOCX/XLSX/report templates, raw draft notes, schema changes, migrations, API routes, AI, uploads, organizations, admin behavior, analytics, billing, new dependencies, and app-shell redesign out of scope.
+
+### Verification
+
+- `npm.cmd run test -- lib/evidence/export-student-evidence.test.ts actions/evidence.test.ts lib/individual-student-export-ui.test.ts lib/student-timeline-ui.test.ts lib/student-timeline-from-database-ui.test.ts` - pass (25 focused tests).
+- `npm.cmd run lint` - pass.
+- `npm.cmd run test` - pass (213 tests). Existing archive/delete failure-path tests intentionally log contextual server errors while verifying safe generic error results.
+- `npm.cmd run build` - pass.
+- Review follow-up: CSV formula injection guard added after `/pleasereview`; `npm.cmd run test -- lib/evidence/export-student-evidence.test.ts` - pass (7 focused tests), `npm.cmd run lint` - pass, `npm.cmd run test` - pass (214 tests), and `npm.cmd run build` - pass.
+
+### Remaining risks / follow-ups
+
+- Manual signed-in browser verification is still needed when browser tooling and development auth/database values are available.
+- CSV is the only Unit 21 export format by design.
+- Settings page remains the next planned unit.
 
 ---
 
@@ -967,7 +1001,7 @@ Verification after refinement: `npm run lint` pass, `npm run build` pass, `npm r
 
 ## Next Up
 
-1. Create and implement Unit 21 (Individual Student Export) only after explicit human confirmation.
+1. Create and implement Unit 22 (Settings Page) only after explicit human confirmation.
 2. Optionally run manual signed-in browser verification for recent evidence-management units when browser tooling is available.
 3. Optionally clean up stale progress-tracker design-decision notes that still reference the old dark sidebar / Plus Jakarta Sans direction.
 4. Optionally expand `README.md` with a short pointer to `AGENTS.md` and the context framework beyond the Unit 02 route updates already made.
@@ -1109,3 +1143,5 @@ Verification after refinement: `npm run lint` pass, `npm run build` pass, `npm r
 - Unit 19 spec was created on 2026-06-17. It scopes Permanent Delete Evidence as a workspace-scoped one-record delete after explicit destructive confirmation, with feed and affected student timeline revalidation. It explicitly excludes student delete, restore/deleted-record management, bulk delete, export, schema changes, migrations, API routes, AI, uploads, organizations, admin behavior, analytics, billing, new dependencies, and app-shell redesign.
 - Unit 20 spec was created on 2026-06-17. It scopes Archive/Delete Student as workspace-scoped roster-student cleanup: archive sets `RosterStudent.archivedAt` and hides the student from active roster/capture/timeline/default evidence views, while permanent delete removes one owned roster student and connected evidence after explicit destructive confirmation. It explicitly excludes restore/archive-management views, roster edit, bulk actions, export, schema changes, migrations, API routes, AI, uploads, organizations, admin behavior, analytics, billing, new dependencies, and app-shell redesign.
 - Unit 20 implementation completed on 2026-06-17. `/app/roster` active roster rows now expose calm archive and destructive permanent delete affordances backed by workspace-scoped Server Actions and server-only helpers. Archive sets `RosterStudent.archivedAt`; permanent delete removes one owned roster student and connected evidence through the existing cascade. Default feed reads now exclude evidence attached to archived roster students. Automated focused tests, lint, full tests, and build passed.
+- Unit 21 spec was created on 2026-06-17. It scopes Individual Student Export as a workspace-scoped CSV export for one active roster student's non-archived validated evidence from the student timeline. It explicitly excludes full-account export, all-student export, export format selection, PDFs/DOCX/XLSX/report templates, raw draft notes, schema changes, migrations, API routes unless explicitly approved, AI, uploads, organizations, admin behavior, analytics, billing, new dependencies, and app-shell redesign.
+- Unit 21 implementation completed on 2026-06-17. `/app/students/[studentId]` now exposes a restrained "Export evidence" action for active students with validated evidence. The export path resolves the current workspace server-side, verifies the selected active student, reads only that student's non-archived validated evidence, and returns a generated CSV payload. Automated focused tests, lint, full tests, and build passed.

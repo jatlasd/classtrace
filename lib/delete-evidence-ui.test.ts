@@ -47,10 +47,10 @@ describe("Unit 19 delete evidence UI", () => {
   });
 
   it("does not add restore, bulk delete, student delete, export, or raw draft behavior", () => {
-    const combined = `${savedEvidenceRow}\n${evidenceAction}`;
-    expect(combined).not.toMatch(
+    expect(savedEvidenceRow).not.toMatch(
       /Restore evidence|Bulk delete|Delete student|Export evidence|trash view|undo queue/i
     );
+    const combined = `${savedEvidenceRow}\n${evidenceAction}`;
     expect(combined).not.toMatch(
       /rawNote|draftText|originalCapture|sourceText/i
     );

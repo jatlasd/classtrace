@@ -13,6 +13,11 @@ import {
   type DeleteEvidenceResult,
 } from "@/lib/evidence/delete-evidence";
 import {
+  exportStudentEvidenceForWorkspace,
+  type ExportStudentEvidenceInput,
+  type ExportStudentEvidenceResult,
+} from "@/lib/evidence/export-student-evidence";
+import {
   saveValidatedEvidenceForWorkspace,
   type SaveValidatedEvidenceInput,
   type SaveValidatedEvidenceResult,
@@ -25,6 +30,8 @@ export type ArchiveEvidenceActionInput = ArchiveEvidenceInput;
 export type ArchiveEvidenceActionResult = ArchiveEvidenceResult;
 export type DeleteEvidenceActionInput = DeleteEvidenceInput;
 export type DeleteEvidenceActionResult = DeleteEvidenceResult;
+export type ExportStudentEvidenceActionInput = ExportStudentEvidenceInput;
+export type ExportStudentEvidenceActionResult = ExportStudentEvidenceResult;
 
 export async function saveValidatedEvidence(
   input: SaveValidatedEvidenceActionInput
@@ -89,5 +96,21 @@ export async function deleteEvidence(
   } catch (error) {
     console.error("[actions/evidence/deleteEvidence]", error);
     return { success: false, error: "Failed to delete evidence." };
+  }
+}
+
+export async function exportStudentEvidence(
+  input: ExportStudentEvidenceActionInput
+): Promise<ExportStudentEvidenceActionResult> {
+  try {
+    const workspace = await getCurrentWorkspace();
+
+    return await exportStudentEvidenceForWorkspace({
+      workspaceId: workspace.workspaceId,
+      input,
+    });
+  } catch (error) {
+    console.error("[actions/evidence/exportStudentEvidence]", error);
+    return { success: false, error: "Failed to export evidence." };
   }
 }

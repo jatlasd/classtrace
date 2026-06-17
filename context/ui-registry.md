@@ -808,7 +808,7 @@ When the local roster is empty, the feed shows this setup prompt in the composer
 ### Student Profile Header
 
 File: `components/students/student-timeline-page.tsx`
-Last updated: 2026-06-17
+Last updated: 2026-06-17 (Unit 21 export action)
 
 | Property | Class |
 |---|---|
@@ -822,9 +822,29 @@ Last updated: 2026-06-17
 | Page title | `font-display text-2xl font-semibold tracking-tight text-foreground` |
 | Metadata row | `mt-2 flex flex-wrap gap-2 text-sm text-muted-foreground` |
 | Evidence count panel | `border-l-4 border-validated bg-card/60 px-4 py-3` |
+| Export action area | `mt-3` containing `StudentEvidenceExportAction` |
 
 **Pattern notes:**
-The student profile header is a quiet roster-owned identity surface, not a data warehouse profile. It shows display name, mention handle, optional class/group, optional school/local ID, and a validated-evidence count derived from the passed display model. Keep actions limited to real navigation such as roster/feed. Do not add export, archive, delete, grades, compliance labels, IEP language, parent communication, district/admin context, or shared-student identity claims here.
+The student profile header is a quiet roster-owned identity surface, not a data warehouse profile. It shows display name, mention handle, optional class/group, optional school/local ID, and a validated-evidence count derived from the passed display model. Unit 21 adds one restrained "Export evidence" action inside the evidence count panel for workspace-scoped CSV export of this active student's validated evidence. Keep actions limited to real navigation such as roster/feed and this one-student export. Do not add archive, delete, grades, compliance labels, IEP language, parent communication, district/admin context, shared-student identity claims, all-student export, or report-generation language here.
+
+---
+
+### Student Evidence Export Action
+
+File: `components/students/student-evidence-export-action.tsx`
+Last updated: 2026-06-17
+
+| Property | Class |
+|---|---|
+| Shell | `space-y-2` |
+| Action | Existing `Button` with `variant="outline"` and `size="sm"` |
+| Icon | `Download` icon `size-3.5` |
+| Status text | `min-h-4 text-xs leading-relaxed` |
+| Normal status | `text-muted-foreground` |
+| Error status | `text-destructive` |
+
+**Pattern notes:**
+This small Client Component owns only the browser download interaction for a Server Action-generated CSV. It sends only `studentId`; no workspace, teacher, Clerk, evidence, or roster-student ownership IDs cross the client boundary. Keep it secondary and compact inside the student header evidence count panel. The zero-record state disables export with "No validated evidence to export yet." Do not expand this component into format selection, PDF/DOCX/XLSX generation, report templates, all-student export, raw-note export, or compliance-oriented copy.
 
 ---
 
@@ -875,7 +895,6 @@ Do not let this registry drift from the actual UI.
 
 These patterns should be added or refined when they are built or audited:
 
-- Individual student export button/panel
 - Archive confirmation dialog
 - Permanent delete confirmation dialog
 - Settings page
