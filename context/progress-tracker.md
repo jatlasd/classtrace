@@ -6,7 +6,7 @@ Update this file after every meaningful implementation change.
 
 ## Current Phase
 
-- Current status: Phase 3 complete; Phase 4 is next.
+- Current status: Phase 4 Unit 16 implemented and verified with automated checks; Unit 17 spec is next.
 - Phase 2 complete — roster onboarding
 - Unit 02 complete and verified — Route Map and App Shell (`context/specs/02-route-map-and-app-shell.md`)
 - Unit 03 complete and verified — Public Landing Page UI (`context/specs/03-public-landing-page-ui.md`)
@@ -22,14 +22,47 @@ Update this file after every meaningful implementation change.
 - Unit 13 implemented and verified with automated checks — Structured Draft Review UI (`context/specs/13-structured-draft-review-ui.md`)
 - Unit 14 implemented and verified with automated checks - Save Validated Evidence (`context/specs/14-save-validated-evidence.md`)
 - Unit 15 implemented and verified with automated checks - Evidence Feed from Database (`context/specs/15-evidence-feed-from-database.md`)
+- Unit 16 implemented and verified with automated checks - Student Timeline UI (`context/specs/16-student-timeline-ui.md`)
 - Design system overhaul applied from `classtrace_asset_kit/` (warm paper palette, Fraunces + Inter + Caveat, landing copy/layout aligned to asset kit)
 
 ---
 
 ## Current Goal
 
-- Prepare the Phase 4, Unit 16 spec before adapting/building the student timeline UI.
-- Unit 16 should stay UI-focused unless the human explicitly scopes database-backed student timeline wiring into a later unit.
+- Prepare the Phase 4, Unit 17 spec before wiring database-backed student timeline reads.
+- Unit 17 should own workspace-scoped student/evidence timeline data and cross-user access protection.
+
+---
+
+## Unit 16 - Student Timeline UI (Implemented)
+
+Spec: `context/specs/16-student-timeline-ui.md`
+
+### What was completed
+
+- Replaced the old Client Component POC student page with a server-rendered route that resolves the current workspace and selected active roster student.
+- Added `components/students/student-timeline-page.tsx` as a database-ready presentational timeline surface.
+- Added a calm student profile header with display name, mention handle, optional class/group, optional school/local ID, and a validated evidence count.
+- Added a one-student timeline layout with structured validated-evidence item support and a student-specific empty state.
+- Kept the route evidence array empty in Unit 16 so database-backed evidence reads remain deferred to Unit 17.
+- Removed local POC timeline dependencies from the route: no local roster lookup, local capture lookup, raw note parsing, or `draftToDisplay` path.
+- Kept roster rows read-only/non-navigational because database-backed timeline evidence is still a later unit.
+- Added focused static tests for the student timeline UI boundary and forbidden scope drift.
+- Updated `context/ui-registry.md` with Student Profile Header and Student Timeline Evidence Item patterns.
+- Did not add database-backed timeline evidence reads, archive/delete/export behavior, schema changes, migrations, API routes, Server Actions, AI, uploads, organizations, admin behavior, analytics, billing, new dependencies, or app-shell redesign.
+
+### Verification
+
+- `npm.cmd run test -- lib/student-timeline-ui.test.ts` - pass (3 focused tests).
+- `npm.cmd run lint` - pass.
+- `npm.cmd run test` - pass (154 tests).
+- `npm.cmd run build` - pass.
+
+### Remaining risks / follow-ups
+
+- Manual signed-in browser verification is still needed. `npm.cmd run dev -- --port 3000` did not leave a reachable local server in this shell session; no browser UI walkthrough is claimed.
+- Student timelines currently show the production-aligned header and empty timeline shell, but no saved evidence rows yet. Unit 17 must wire workspace-scoped `EvidenceRecord` reads for the selected student.
+- Roster rows remain read-only until Unit 17 makes timeline navigation fully useful.
 
 ---
 
@@ -773,9 +806,10 @@ Verification after refinement: `npm run lint` pass, `npm run build` pass, `npm r
 
 ## Next Up
 
-1. Create `context/specs/16-student-timeline-ui.md` before starting Phase 4 student timeline UI work.
-2. Optionally clean up stale progress-tracker design-decision notes that still reference the old dark sidebar / Plus Jakarta Sans direction.
-3. Optionally expand `README.md` with a short pointer to `AGENTS.md` and the context framework beyond the Unit 02 route updates already made.
+1. Create `context/specs/17-student-timeline-from-database.md` before wiring student timeline data.
+2. Implement Unit 17 only after explicit human confirmation.
+3. Optionally clean up stale progress-tracker design-decision notes that still reference the old dark sidebar / Plus Jakarta Sans direction.
+4. Optionally expand `README.md` with a short pointer to `AGENTS.md` and the context framework beyond the Unit 02 route updates already made.
 
 ---
 
@@ -905,3 +939,5 @@ Verification after refinement: `npm run lint` pass, `npm run build` pass, `npm r
 - Unit 14 spec was created on 2026-06-16. It scopes Save Validated Evidence as a database-backed Server Action and server-only helper for teacher-validated structured evidence, while keeping database-backed feed reads, student timelines, archive/delete, export, AI, uploads, admin behavior, and new dependencies out of scope.
 - Unit 15 spec was created on 2026-06-16. It scopes Evidence Feed from Database as the workspace-scoped database read path for validated `EvidenceRecord` rows on `/app/feed`, while preserving the composer/review/save bridge and keeping student timelines, archive/delete, export, AI, uploads, admin behavior, schema changes, migrations, and new dependencies out of scope.
 - Unit 15 implementation completed on 2026-06-16. `/app/feed` now receives workspace-scoped database `EvidenceRecord` rows as its durable feed source, keeps draft captures in current-session state only, removes browser-local raw-note export utilities from the feed, and preserves the Unit 14 teacher-validation save path.
+- Unit 16 spec was created on 2026-06-17. It scopes Student Timeline UI as a production-aligned student profile/timeline surface only: student header, roster metadata, validated-evidence timeline layout, empty state, UI registry updates after implementation, and no database-backed timeline reads, archive/delete/export implementation, schema changes, AI, uploads, admin behavior, or new dependencies.
+- Unit 16 implementation completed on 2026-06-17. `/app/students/[studentId]` now renders a production-aligned server-side student timeline UI for an active workspace roster student, with the evidence list intentionally empty until Unit 17 wires database-backed timeline reads.

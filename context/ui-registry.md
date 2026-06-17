@@ -742,6 +742,56 @@ When the local roster is empty, the feed shows this setup prompt in the composer
 
 ---
 
+### Student Profile Header
+
+File: `components/students/student-timeline-page.tsx`
+Last updated: 2026-06-17
+
+| Property | Class |
+|---|---|
+| Header shell | `mb-6 border-b border-border pb-6` |
+| Action row | `mb-4 flex flex-wrap items-center justify-between gap-3` |
+| Back action | Existing `Button` with `variant="ghost"`, `size="sm"`, and `-ml-2` |
+| Capture action | Existing `Button` with `variant="outline"` and `size="sm"` |
+| Header grid | `grid gap-5 lg:grid-cols-[minmax(0,1fr)_260px] lg:items-end` |
+| Initials mark | `flex size-14 shrink-0 items-center justify-center rounded-md border border-border bg-muted/50 text-sm font-bold text-foreground` |
+| Eyebrow | `text-xs font-semibold uppercase tracking-wider text-muted-foreground` |
+| Page title | `font-display text-2xl font-semibold tracking-tight text-foreground` |
+| Metadata row | `mt-2 flex flex-wrap gap-2 text-sm text-muted-foreground` |
+| Evidence count panel | `border-l-4 border-validated bg-card/60 px-4 py-3` |
+
+**Pattern notes:**
+The student profile header is a quiet roster-owned identity surface, not a data warehouse profile. It shows display name, mention handle, optional class/group, optional school/local ID, and a validated-evidence count derived from the passed display model. Keep actions limited to real navigation such as roster/feed. Do not add export, archive, delete, grades, compliance labels, IEP language, parent communication, district/admin context, or shared-student identity claims here.
+
+---
+
+### Student Timeline Evidence Item
+
+File: `components/students/student-timeline-page.tsx`
+Last updated: 2026-06-17
+
+| Property | Class |
+|---|---|
+| Page shell | `mx-auto w-full max-w-[1180px] px-4 py-7 sm:px-6 lg:px-8` |
+| Timeline layout | `grid gap-4 lg:grid-cols-[220px_minmax(0,1fr)]` |
+| Timeline intro panel | `border border-border bg-card/60 p-4` |
+| Timeline list | `space-y-4 border-l border-border` |
+| Timeline item shell | `relative pl-8` |
+| Timeline dot | `absolute left-0 top-5 flex size-4 items-center justify-center rounded-full border border-validated/60 bg-validated` |
+| Evidence card | `border border-border bg-card p-4 shadow-paper` |
+| Date text | `text-sm font-medium text-foreground` |
+| Summary text | `text-[15px] leading-relaxed text-foreground` |
+| Validated pill | `inline-flex w-fit items-center gap-2 rounded-lg border border-validated/60 bg-validated/35 px-2.5 py-1 text-xs font-semibold text-validated-foreground` |
+| Default chip | `inline-flex items-center rounded-full border border-border bg-card px-2.5 py-0.5 text-xs font-medium text-foreground` |
+| Tag chip | `inline-flex items-center rounded-full border border-border bg-muted/60 px-2.5 py-0.5 text-xs font-medium text-link` |
+| Evidence chip | `inline-flex items-center rounded-full border border-primary/25 bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary` |
+| Empty state | `border border-border bg-card/60 p-5 text-sm leading-relaxed text-muted-foreground` |
+
+**Pattern notes:**
+The student timeline item adapts the Unit 15 saved-evidence vocabulary for a one-student vertical timeline. It renders structured validated evidence fields only: date, summary, evidence type, optional topic/performance/behavior, tags, and follow-up notes. The Unit 16 route currently passes an empty evidence array so Unit 17 can wire real workspace-scoped `EvidenceRecord` reads without redesigning the surface. Do not show raw draft notes, local POC capture parsing, export, archive, delete, reporting controls, analytics, AI language, uploads, or admin/district concepts in this pattern.
+
+---
+
 ## Registry Update Rules
 
 After building or changing a UI component:
@@ -762,8 +812,6 @@ Do not let this registry drift from the actual UI.
 
 These patterns should be added or refined when they are built or audited:
 
-- Student profile header
-- Student timeline evidence card
 - Individual student export button/panel
 - Archive confirmation dialog
 - Permanent delete confirmation dialog
