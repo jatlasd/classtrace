@@ -640,13 +640,14 @@ Last updated: 2026-06-17
 | Column header | `mb-2 grid gap-2 border-b border-border pb-2 sm:grid-cols-[minmax(0,1fr)_180px_150px]` |
 | Student row | `border-b border-border last:border-b-0` |
 | Student content row | `grid gap-3 px-4 py-3.5 sm:grid-cols-[minmax(0,1fr)_180px_150px] sm:items-center sm:px-5` |
+| Student identity link | `-m-1 flex min-w-0 items-center gap-3 rounded-md p-1 outline-none transition-colors hover:bg-muted/50 focus-visible:ring-3 focus-visible:ring-ring/20` |
 | Avatar | `flex size-9 shrink-0 items-center justify-center rounded-md border border-border bg-muted/50 text-[11px] font-bold text-foreground` |
 | Student name | `font-medium leading-snug text-foreground` |
 | Handle text | `text-sm text-muted-foreground sm:text-foreground` |
 | Class/group text | `text-xs text-muted-foreground` |
 
 **Pattern notes:**  
-The roster list is read-only and database-backed. Rows are intentionally non-navigational until student timelines are database-backed because the current student profile route still reads the old local POC roster. Use a ledger-like bordered list with column headers, divided rows, square initials, and no shadows; avoid returning to separate rounded student cards. Edit, delete, archive, and timeline navigation remain deferred to later units.
+The roster list is database-backed. After Unit 17, each active student's identity area links to that student's database-backed timeline using `routes.student(student.id)` and an accessible "Open [student] timeline" label. Use a ledger-like bordered list with column headers, divided rows, square initials, and no shadows; avoid returning to separate rounded student cards. Edit, delete, archive, and inline management actions remain deferred to later units.
 
 ---
 

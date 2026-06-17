@@ -26,7 +26,9 @@ describe("Unit 09 roster import UI", () => {
     expect(importFormSource).not.toMatch(/prisma|lib\/db/);
   });
 
-  it("keeps roster rows read-only until database timelines are built", () => {
-    expect(rosterPageSource).not.toContain("routes.student");
+  it("keeps roster rows connected to database-backed student timelines", () => {
+    expect(rosterPageSource).toContain("routes.student(student.id)");
+    expect(rosterPageSource).toContain("Open ${student.displayName} timeline");
+    expect(rosterPageSource).not.toMatch(/\b(Archive|Delete|Export)\b/);
   });
 });

@@ -28,15 +28,19 @@ function StudentRow({ student }: { student: RosterStudentDisplay }) {
   return (
     <li className="border-b border-border last:border-b-0">
       <div className="grid gap-3 px-4 py-3.5 sm:grid-cols-[minmax(0,1fr)_180px_150px] sm:items-center sm:px-5">
-        <div className="flex min-w-0 items-center gap-3">
+        <Link
+          href={routes.student(student.id)}
+          aria-label={`Open ${student.displayName} timeline`}
+          className="-m-1 flex min-w-0 items-center gap-3 rounded-md p-1 outline-none transition-colors hover:bg-muted/50 focus-visible:ring-3 focus-visible:ring-ring/20"
+        >
           <div className="flex size-9 shrink-0 items-center justify-center rounded-md border border-border bg-muted/50 text-[11px] font-bold text-foreground">
             {studentInitials(student.displayName)}
           </div>
           <div className="min-w-0">
             <p className="font-medium leading-snug text-foreground">{student.displayName}</p>
-            <p className="mt-0.5 text-xs text-muted-foreground">Roster student</p>
+            <p className="mt-0.5 text-xs text-muted-foreground">Open timeline</p>
           </div>
-        </div>
+        </Link>
         <p className="text-sm text-muted-foreground sm:text-foreground">
           @{student.mentionHandle}
         </p>

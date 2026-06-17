@@ -24,8 +24,8 @@ describe("Unit 16 student timeline UI", () => {
   it("renders a production-aligned student timeline from a safe display model", () => {
     expect(studentPage).toContain("StudentTimelinePage");
     expect(studentPage).toContain("getCurrentWorkspace");
-    expect(studentPage).toContain("getRosterStudentForWorkspace");
-    expect(studentPage).toContain("evidenceRecords={[]}");
+    expect(studentPage).toContain("getStudentTimelineRecordsForWorkspace");
+    expect(studentPage).toContain("evidenceRecords={timeline.evidenceRecords}");
     expect(timelinePage).toContain("StudentTimelineStudent");
     expect(timelinePage).toContain("StudentTimelineEvidenceRecord");
     expect(timelinePage).toContain("Student timeline");
@@ -44,7 +44,7 @@ describe("Unit 16 student timeline UI", () => {
   });
 
   it("keeps Unit 16 out of later timeline management scope", () => {
-    expect(rosterPage).not.toContain("routes.student");
+    expect(rosterPage).toContain("routes.student(student.id)");
     expect(timelinePage).not.toMatch(/\b(Archive|Delete|Export)\b/);
     expect(studentPage).not.toMatch(/listEvidenceFeedRecordsForWorkspace/);
     expect(studentPage).not.toMatch(/evidenceRecord\.findMany|@\/lib\/db/);

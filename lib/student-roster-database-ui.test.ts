@@ -21,8 +21,10 @@ describe("Unit 07 roster database bridge", () => {
     expect(rosterPage).not.toMatch(/localStorage|addStudent|updateStudent|deleteStudent/);
   });
 
-  it("does not link database roster rows to the localStorage student profile route", () => {
-    expect(rosterPage).not.toContain("routes.student");
+  it("links active database roster rows to database-backed student timelines", () => {
+    expect(rosterPage).toContain("routes.student(student.id)");
+    expect(rosterPage).toContain("Open ${student.displayName} timeline");
+    expect(rosterPage).toContain("Open timeline");
   });
 
   it("shows a quieter feed continuation action after roster setup has started", () => {

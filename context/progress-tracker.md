@@ -6,7 +6,7 @@ Update this file after every meaningful implementation change.
 
 ## Current Phase
 
-- Current status: Phase 4 Unit 16 implemented and verified with automated checks; Unit 17 spec is next.
+- Current status: Phase 4 Unit 17 implemented and verified with automated checks.
 - Phase 2 complete — roster onboarding
 - Unit 02 complete and verified — Route Map and App Shell (`context/specs/02-route-map-and-app-shell.md`)
 - Unit 03 complete and verified — Public Landing Page UI (`context/specs/03-public-landing-page-ui.md`)
@@ -29,8 +29,45 @@ Update this file after every meaningful implementation change.
 
 ## Current Goal
 
-- Prepare the Phase 4, Unit 17 spec before wiring database-backed student timeline reads.
-- Unit 17 should own workspace-scoped student/evidence timeline data and cross-user access protection.
+- Prepare for Phase 4, Unit 18 only after explicit human confirmation.
+- Unit 18 should own safe archive behavior for evidence records.
+
+---
+
+## Unit 17 - Student Timeline from Database (Implemented)
+
+Spec: `context/specs/17-student-timeline-from-database.md`
+
+### What was completed
+
+- Created the Phase 4 Unit 17 spec for database-backed student timeline reads.
+- Added `lib/evidence/student-timeline-records.ts` as a server-only helper for reading one active workspace roster student plus that student's non-archived validated evidence records.
+- The helper verifies the selected student by `workspaceId` and `studentId` before reading evidence, then queries evidence by both `workspaceId` and `rosterStudentId`.
+- The helper returns client-safe student and timeline evidence display models with structured validated fields only; raw draft note text and ownership IDs are not exposed.
+- Updated `/app/students/[studentId]` to pass real database timeline records into `StudentTimelinePage` instead of `evidenceRecords={[]}`.
+- Preserved the existing safe not-found state for missing, archived, or unowned roster students.
+- Updated `/app/roster` so each active roster student's identity area links to that student's database-backed timeline with an accessible "Open [student] timeline" label.
+- Updated stale Unit 16 and roster static tests that previously guarded against the now-intentional timeline database read and roster row navigation.
+- Added focused tests for the server-only timeline helper and Unit 17 route/UI bridge.
+- Updated `context/ui-registry.md` with the roster row timeline navigation pattern.
+- Kept archive/delete/export, schema changes, migrations, API routes, Server Actions, AI, uploads, organizations, admin behavior, analytics, billing, new dependencies, and app-shell redesign out of scope.
+
+### Verification
+
+- `npm.cmd run test -- lib/evidence/student-timeline-records.test.ts` - pass (3 focused tests).
+- `npm.cmd run test -- lib/evidence/student-timeline-records.test.ts lib/student-timeline-from-database-ui.test.ts lib/student-timeline-ui.test.ts lib/student-roster-database-ui.test.ts` - pass (14 focused tests).
+- `npm.cmd run lint` - pass.
+- `npm.cmd run test` - first full run found stale Unit 09/10 static assertions that still expected roster rows to remain non-navigational; updated those assertions to guard the new database-backed timeline links.
+- `npm.cmd run test -- lib/onboarding-routing.test.ts lib/roster-import-ui.test.ts` - pass (6 focused tests).
+- `npm.cmd run test` - pass (161 tests).
+- `npm.cmd run build` - pass.
+- `npm.cmd run lint` - pass after final test updates.
+- `git -c safe.directory=C:/Projects/classtrace diff --check` - pass with line-ending warnings only.
+
+### Remaining risks / follow-ups
+
+- Manual signed-in browser verification is still needed. Port 3000 was already serving the app and `/app/roster` returned `200`, but the in-app Browser plugin could not start in this Windows sandbox (`CreateProcessAsUserW failed: 5`), so no browser UI walkthrough is claimed.
+- Archive evidence remains the next planned unit.
 
 ---
 
@@ -806,8 +843,8 @@ Verification after refinement: `npm run lint` pass, `npm run build` pass, `npm r
 
 ## Next Up
 
-1. Create `context/specs/17-student-timeline-from-database.md` before wiring student timeline data.
-2. Implement Unit 17 only after explicit human confirmation.
+1. Implement Unit 18 (Archive Evidence) only after explicit human confirmation.
+2. Optionally run manual signed-in browser verification for Unit 17 when browser tooling is available.
 3. Optionally clean up stale progress-tracker design-decision notes that still reference the old dark sidebar / Plus Jakarta Sans direction.
 4. Optionally expand `README.md` with a short pointer to `AGENTS.md` and the context framework beyond the Unit 02 route updates already made.
 
@@ -941,3 +978,5 @@ Verification after refinement: `npm run lint` pass, `npm run build` pass, `npm r
 - Unit 15 implementation completed on 2026-06-16. `/app/feed` now receives workspace-scoped database `EvidenceRecord` rows as its durable feed source, keeps draft captures in current-session state only, removes browser-local raw-note export utilities from the feed, and preserves the Unit 14 teacher-validation save path.
 - Unit 16 spec was created on 2026-06-17. It scopes Student Timeline UI as a production-aligned student profile/timeline surface only: student header, roster metadata, validated-evidence timeline layout, empty state, UI registry updates after implementation, and no database-backed timeline reads, archive/delete/export implementation, schema changes, AI, uploads, admin behavior, or new dependencies.
 - Unit 16 implementation completed on 2026-06-17. `/app/students/[studentId]` now renders a production-aligned server-side student timeline UI for an active workspace roster student, with the evidence list intentionally empty until Unit 17 wires database-backed timeline reads.
+- Unit 17 spec was created on 2026-06-17. It scopes Student Timeline from Database as the workspace-scoped read path for one active roster student and that student's non-archived validated `EvidenceRecord` rows, plus clear roster-to-student timeline navigation. It explicitly excludes archive/delete/export behavior, schema changes, migrations, API routes, Server Actions, AI, uploads, organizations, admin behavior, analytics, billing, new dependencies, and app-shell redesign.
+- Unit 17 implementation completed on 2026-06-17. `/app/students/[studentId]` now loads one active workspace roster student and that student's non-archived validated evidence records from the database, and `/app/roster` now links active roster rows to student timelines. Automated lint/test/build verification passed; manual browser verification remains blocked by the in-app Browser sandbox startup failure.

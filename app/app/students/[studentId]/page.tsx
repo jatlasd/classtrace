@@ -3,8 +3,8 @@ import type { ReactElement } from "react";
 import { StudentTimelinePage } from "@/components/students/student-timeline-page";
 import { Button } from "@/components/ui/button";
 import { getCurrentWorkspace } from "@/lib/auth/get-current-workspace";
+import { getStudentTimelineRecordsForWorkspace } from "@/lib/evidence/student-timeline-records";
 import { routes } from "@/lib/routes";
-import { getRosterStudentForWorkspace } from "@/lib/students/roster-students";
 
 type StudentProfilePageProps = {
   params: Promise<{ studentId: string }>;
@@ -15,12 +15,12 @@ export default async function StudentProfilePage({
 }: StudentProfilePageProps): Promise<ReactElement> {
   const { studentId } = await params;
   const workspace = await getCurrentWorkspace();
-  const student = await getRosterStudentForWorkspace(
+  const timeline = await getStudentTimelineRecordsForWorkspace(
     workspace.workspaceId,
     studentId
   );
 
-  if (!student) {
+  if (!timeline) {
     return (
       <div className="mx-auto w-full max-w-[860px] px-4 py-7 sm:px-6 lg:px-8">
         <section className="border border-border bg-card/60 p-5">
@@ -43,14 +43,8 @@ export default async function StudentProfilePage({
 
   return (
     <StudentTimelinePage
-      student={{
-        id: student.id,
-        displayName: student.displayName,
-        mentionHandle: student.mentionHandle,
-        classGroupName: student.classGroupName ?? undefined,
-        schoolLocalId: student.schoolLocalId ?? undefined,
-      }}
-      evidenceRecords={[]}
+      student={timeline.student}
+      evidenceRecords={timeline.evidenceRecords}
     />
   );
 }
