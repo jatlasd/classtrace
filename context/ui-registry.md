@@ -128,7 +128,7 @@ Evidence captures now render as rows inside the feed list container. Review, edi
 ### Saved Evidence Row
 
 File: `components/dashboard/saved-evidence-row.tsx`
-Last updated: 2026-06-16 (Unit 15 database-backed feed reads)
+Last updated: 2026-06-17 (Unit 18 archive evidence)
 
 | Property | Class |
 |---|---|
@@ -145,9 +145,14 @@ Last updated: 2026-06-16 (Unit 15 database-backed feed reads)
 | Tag chip | `inline-flex items-center rounded-full border border-border bg-muted/60 px-2.5 py-0.5 text-xs font-medium text-link` |
 | Evidence chip | `inline-flex items-center rounded-full border border-primary/25 bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary` |
 | Follow-up text | `mt-3 border-t border-border/50 pt-2.5 text-xs leading-relaxed text-muted-foreground` |
+| Archive action area | `space-y-2 border-t border-border/50 pt-3` |
+| Archive trigger | Existing `Button` with `variant="ghost"`, `size="sm"`, `-ml-2 text-muted-foreground`, and `Archive` icon `size-3.5` |
+| Archive confirmation copy | `text-xs leading-relaxed text-muted-foreground` |
+| Archive confirm action | Existing `Button` with `variant="outline"` and `size="sm"` |
+| Archive error text | `text-xs leading-relaxed text-destructive` with `role="status"` |
 
 **Pattern notes:**
-Saved evidence rows are database-backed validated records, not raw draft captures. They intentionally reuse the Unit 11 row grid and chip vocabulary but use validated-state icon/status styling and `EvidenceRecord.summary` as the primary text. Do not add edit, delete, export, archive, student-profile navigation, or raw-note fields to this row until those units are explicitly scoped.
+Saved evidence rows are database-backed validated records, not raw draft captures. They intentionally reuse the Unit 11 row grid and chip vocabulary but use validated-state icon/status styling and `EvidenceRecord.summary` as the primary text. Unit 18 adds a calm, non-destructive archive affordance with inline confirmation copy ("Hide this from default evidence views?") and a workspace-scoped Server Action. Do not add edit, permanent delete, restore, export, student-profile navigation, or raw-note fields to this row until those units are explicitly scoped.
 
 ---
 

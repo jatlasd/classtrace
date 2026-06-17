@@ -6,7 +6,7 @@ Update this file after every meaningful implementation change.
 
 ## Current Phase
 
-- Current status: Phase 4 Unit 17 implemented and verified with automated checks.
+- Current status: Phase 4 Unit 18 implemented and verified with automated checks.
 - Phase 2 complete — roster onboarding
 - Unit 02 complete and verified — Route Map and App Shell (`context/specs/02-route-map-and-app-shell.md`)
 - Unit 03 complete and verified — Public Landing Page UI (`context/specs/03-public-landing-page-ui.md`)
@@ -23,14 +23,49 @@ Update this file after every meaningful implementation change.
 - Unit 14 implemented and verified with automated checks - Save Validated Evidence (`context/specs/14-save-validated-evidence.md`)
 - Unit 15 implemented and verified with automated checks - Evidence Feed from Database (`context/specs/15-evidence-feed-from-database.md`)
 - Unit 16 implemented and verified with automated checks - Student Timeline UI (`context/specs/16-student-timeline-ui.md`)
+- Unit 17 implemented and verified with automated checks - Student Timeline from Database (`context/specs/17-student-timeline-from-database.md`)
+- Unit 18 implemented and verified with automated checks - Archive Evidence (`context/specs/18-archive-evidence.md`)
 - Design system overhaul applied from `classtrace_asset_kit/` (warm paper palette, Fraunces + Inter + Caveat, landing copy/layout aligned to asset kit)
 
 ---
 
 ## Current Goal
 
-- Prepare for Phase 4, Unit 18 only after explicit human confirmation.
-- Unit 18 should own safe archive behavior for evidence records.
+- Prepare for Phase 4, Unit 19 only after explicit human confirmation.
+- Unit 19 should own permanent delete behavior for evidence records.
+
+---
+
+## Unit 18 - Archive Evidence (Implemented)
+
+Spec: `context/specs/18-archive-evidence.md`
+
+### What was completed
+
+- Created the Phase 4 Unit 18 spec for safe archive behavior on validated evidence records.
+- Added `lib/evidence/archive-evidence.ts` as a server-only helper that archives one active validated evidence record by trusted `workspaceId`, `evidenceId`, and `archivedAt: null`.
+- The archive helper uses a scoped `updateMany` write with `id`, `workspaceId`, and `archivedAt: null`, sets `archivedAt` to a server-side timestamp, and returns the attached `rosterStudentId` for route revalidation.
+- Added `archiveEvidence` to `actions/evidence.ts`, resolving the current workspace server-side and revalidating `routes.feed` plus `routes.student(result.rosterStudentId)` after successful archive.
+- Updated `components/dashboard/saved-evidence-row.tsx` with a calm non-destructive "Archive evidence" affordance, inline confirmation copy, pending state, safe error display, and client-side refresh after success.
+- Kept existing default feed and student timeline read helpers filtering `archivedAt: null`.
+- Added focused tests for the archive helper, evidence action wiring, archive UI guardrails, and existing archived-record read filters.
+- Updated `context/ui-registry.md` with the Unit 18 saved evidence row archive pattern.
+- Kept permanent delete, restore/archive-management views, student timeline archive controls, export, schema changes, migrations, API routes, AI, uploads, organizations, admin behavior, analytics, billing, new dependencies, and app-shell redesign out of scope.
+
+### Verification
+
+- `npm.cmd run test -- lib/evidence/archive-evidence.test.ts actions/evidence.test.ts lib/archive-evidence-ui.test.ts lib/evidence/evidence-feed-records.test.ts lib/evidence/student-timeline-records.test.ts` - pass (20 focused tests).
+- `npm.cmd run lint` - pass.
+- `npm.cmd run test` - pass (173 tests).
+- `npm.cmd run build` - first run compiled and completed TypeScript but hit the 120s command timeout while generating static pages.
+- `npm.cmd run build` rerun with a longer timeout - pass.
+
+### Remaining risks / follow-ups
+
+- Manual signed-in browser verification is still needed when browser tooling is available.
+- The archive helper failure-path test intentionally logs a contextual server error while verifying the safe generic error result.
+- Student timeline archive affordance is intentionally deferred; Unit 18 archives from the global feed only.
+- Permanent delete remains the next planned unit.
 
 ---
 
@@ -843,8 +878,8 @@ Verification after refinement: `npm run lint` pass, `npm run build` pass, `npm r
 
 ## Next Up
 
-1. Implement Unit 18 (Archive Evidence) only after explicit human confirmation.
-2. Optionally run manual signed-in browser verification for Unit 17 when browser tooling is available.
+1. Implement Unit 19 (Permanent Delete Evidence) only after explicit human confirmation.
+2. Optionally run manual signed-in browser verification for Unit 18 when browser tooling is available.
 3. Optionally clean up stale progress-tracker design-decision notes that still reference the old dark sidebar / Plus Jakarta Sans direction.
 4. Optionally expand `README.md` with a short pointer to `AGENTS.md` and the context framework beyond the Unit 02 route updates already made.
 
@@ -980,3 +1015,5 @@ Verification after refinement: `npm run lint` pass, `npm run build` pass, `npm r
 - Unit 16 implementation completed on 2026-06-17. `/app/students/[studentId]` now renders a production-aligned server-side student timeline UI for an active workspace roster student, with the evidence list intentionally empty until Unit 17 wires database-backed timeline reads.
 - Unit 17 spec was created on 2026-06-17. It scopes Student Timeline from Database as the workspace-scoped read path for one active roster student and that student's non-archived validated `EvidenceRecord` rows, plus clear roster-to-student timeline navigation. It explicitly excludes archive/delete/export behavior, schema changes, migrations, API routes, Server Actions, AI, uploads, organizations, admin behavior, analytics, billing, new dependencies, and app-shell redesign.
 - Unit 17 implementation completed on 2026-06-17. `/app/students/[studentId]` now loads one active workspace roster student and that student's non-archived validated evidence records from the database, and `/app/roster` now links active roster rows to student timelines. Automated lint/test/build verification passed; manual browser verification remains blocked by the in-app Browser sandbox startup failure.
+- Unit 18 spec was created on 2026-06-17. It scopes Archive Evidence as a workspace-scoped `archivedAt` update for validated evidence records, with default feed/timeline views continuing to exclude archived rows. It explicitly excludes permanent delete, restore/archive-management views, export, schema changes, migrations, API routes, AI, uploads, organizations, admin behavior, analytics, billing, new dependencies, and app-shell redesign.
+- Unit 18 implementation completed on 2026-06-17. Saved evidence rows in the global feed now expose a calm archive affordance backed by a workspace-scoped Server Action and server-only helper. Archive sets `archivedAt`, revalidates the feed and affected student timeline, and does not add permanent delete, restore/archive views, export, schema changes, migrations, API routes, AI, uploads, organizations, admin behavior, analytics, billing, or new dependencies.

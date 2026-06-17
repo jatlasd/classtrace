@@ -1,6 +1,12 @@
+"use client";
+
+import { useRouter } from "next/navigation";
+import { useState, useTransition } from "react";
+import { archiveEvidence } from "@/actions/evidence";
+import { Button } from "@/components/ui/button";
 import { formatTagLabel } from "@/lib/format-tag";
 import type { EvidenceFeedRecord } from "@/lib/evidence/evidence-feed-records";
-import { CheckCircle2, Circle } from "lucide-react";
+import { Archive, CheckCircle2, Circle } from "lucide-react";
 
 type SavedEvidenceRowProps = {
   record: EvidenceFeedRecord;
@@ -43,6 +49,26 @@ function Chip({
 }
 
 export function SavedEvidenceRow({ record }: SavedEvidenceRowProps) {
+  const router = useRouter();
+  const [isConfirmingArchive, setIsConfirmingArchive] = useState(false);
+  const [archiveError, setArchiveError] = useState("");
+  const [isPending, startTransition] = useTransition();
+
+  function handleArchive(): void {
+    setArchiveError("");
+    startTransition(async () => {
+      const result = await archiveEvidence({ evidenceId: record.id });
+
+      if (!result.success) {
+        setArchiveError(result.error);
+        setIsConfirmingArchive(false);
+        return;
+      }
+
+      router.refresh();
+    });
+  }
+
   return (
     <article className="border-b border-border last:border-b-0">
       <div className="grid gap-4 px-4 py-5 md:grid-cols-[72px_88px_minmax(0,1fr)_220px] md:px-6">
@@ -109,6 +135,56 @@ export function SavedEvidenceRow({ record }: SavedEvidenceRowProps) {
           <p className="text-xs leading-relaxed text-muted-foreground">
             Saved evidence record
           </p>
+          <div className="space-y-2 border-t border-border/50 pt-3">
+            {isConfirmingArchive ? (
+              <div className="space-y-2">
+                <p className="text-xs leading-relaxed text-muted-foreground">
+                  Hide this from default evidence views?
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={handleArchive}
+                    disabled={isPending}
+                    aria-label={`Confirm archive evidence for ${record.studentDisplayName}`}
+                  >
+                    {isPending ? "Archiving..." : "Archive"}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      setIsConfirmingArchive(false);
+                      setArchiveError("");
+                    }}
+                    disabled={isPending}
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="-ml-2 text-muted-foreground"
+                onClick={() => setIsConfirmingArchive(true)}
+                aria-label={`Archive evidence for ${record.studentDisplayName}`}
+              >
+                <Archive className="size-3.5" />
+                Archive evidence
+              </Button>
+            )}
+            {archiveError ? (
+              <p className="text-xs leading-relaxed text-destructive" role="status">
+                {archiveError}
+              </p>
+            ) : null}
+          </div>
         </div>
       </div>
     </article>
