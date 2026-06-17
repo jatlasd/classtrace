@@ -8,7 +8,7 @@ export function LandingHero() {
     <section className="relative overflow-hidden pb-8">
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-0 opacity-40 ruled-lines"
+        className="pointer-events-none absolute inset-0 opacity-40 "
       />
       <div
         aria-hidden="true"

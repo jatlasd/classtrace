@@ -69,6 +69,28 @@ Spec: `context/specs/18-archive-evidence.md`
 
 ---
 
+## Landing Texture Follow-up (Implemented)
+
+### What was completed
+
+- Added a landing-only `landing-paper-texture` utility in `app/globals.css`.
+- Applied the utility to the public landing root in `app/page.tsx`.
+- The overlay uses the requested `#5e593a` base color and transparenttextures beige paper pattern as a fixed, pointer-safe pseudo-element.
+- Updated `context/ui-registry.md` with the landing paper texture pattern and noted that the external texture URL should be replaced with a locally hosted asset before production hardening.
+- Did not change authenticated app backgrounds, capture/evidence behavior, routes, auth, database, schema, migrations, dependencies, AI, uploads, admin behavior, or evidence logic.
+
+### Verification
+
+- `npm.cmd run lint` - pass.
+- `npm.cmd run build` - pass.
+
+### Remaining risks / follow-ups
+
+- The texture image is loaded from an external prototype URL. Re-host locally before production hardening.
+- Manual browser visual verification is still needed.
+
+---
+
 ## Unit 17 - Student Timeline from Database (Implemented)
 
 Spec: `context/specs/17-student-timeline-from-database.md`

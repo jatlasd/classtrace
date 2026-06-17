@@ -35,6 +35,23 @@ Run `/imprint` after building UI components so new patterns are captured here.
 
 ## Components
 
+### Landing Page Paper Texture
+
+File: `app/page.tsx`, `app/globals.css`
+Last updated: 2026-06-17
+
+| Property | Class / Rule |
+|---|---|
+| Landing root | `landing-paper-texture relative flex min-h-screen flex-col bg-background` |
+| Overlay positioning | `.landing-paper-texture::before` with `position: fixed`, `inset: 0`, `pointer-events: none`, `z-index: 60` |
+| Overlay blend | `opacity: 0.16`, `mix-blend-mode: multiply` |
+| Texture source | `background-color: #5e593a` and `background-image: url("https://www.transparenttextures.com/patterns/beige-paper.png")` |
+
+**Pattern notes:**
+The landing page uses a page-wide fixed pseudo-element overlay to give all public landing sections a textured paper feel without applying the treatment to the authenticated app shell. The external transparenttextures URL is a prototype asset per the requested treatment; replace it with a locally hosted texture before production hardening.
+
+---
+
 ### App Top Navigation
 
 File: `components/dashboard/app-top-nav.tsx`  

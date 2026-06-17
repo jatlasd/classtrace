@@ -174,15 +174,23 @@
 @layer utilities {
   .paper-grain {
     position: relative;
+    background:
+    radial-gradient(circle at 20% 10%, rgba(255, 255, 255, 0.75), transparent 32rem),
+    radial-gradient(circle at 85% 20%, rgba(213, 180, 120, 0.14), transparent 36rem),
+    radial-gradient(circle at 50% 100%, rgba(120, 80, 40, 0.08), transparent 42rem),
+    #f4ecdc;
   }
   .paper-grain::before {
     content: "";
-    pointer-events: none;
     position: absolute;
     inset: 0;
-    opacity: 0.35;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
-  }
+    pointer-events: none;
+    opacity: 0.34;
+    mix-blend-mode: multiply;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180' viewBox='0 0 180 180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.72' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)' opacity='0.34'/%3E%3C/svg%3E");
+    background-size: 180px 180px;
+    }
+
   .ruled-lines {
     background-image: repeating-linear-gradient(
       to bottom,
@@ -212,6 +220,21 @@
   .tape-tab {
     background-color: color-mix(in srgb, var(--tape) 75%, transparent);
     border: 1px solid color-mix(in srgb, var(--tape) 40%, transparent);
+  }
+  .landing-paper-texture {
+    position: relative;
+    isolation: isolate;
+  }
+  .landing-paper-texture::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 60;
+    pointer-events: none;
+    opacity: 0.26;
+    mix-blend-mode: multiply;
+    background-color: #5e593a;
+    background-image: url("https://www.transparenttextures.com/patterns/clean-gray-paper.png");
   }
   .hand-underline-blue {
     text-decoration: underline;
