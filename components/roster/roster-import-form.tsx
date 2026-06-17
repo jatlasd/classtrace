@@ -11,7 +11,7 @@ import {
 } from "@/lib/import/parse-roster-import";
 
 const textareaClassName =
-  "min-h-[132px] w-full rounded-md border border-border bg-card px-3 py-2 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/20 disabled:cursor-not-allowed disabled:opacity-50";
+  "min-h-[132px] w-full rounded-md border border-border bg-background/50 px-3 py-2 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/20 disabled:cursor-not-allowed disabled:opacity-50";
 
 type RosterImportFormProps = {
   existingStudents: ExistingRosterImportStudent[];
@@ -21,13 +21,13 @@ function PreviewRow({ row }: { row: RosterImportPreview["rows"][number] }) {
   const isValid = row.errors.length === 0;
 
   return (
-    <li className="rounded-lg border border-border/70 bg-muted/25 px-3 py-2.5">
-      <div className="flex flex-wrap items-start justify-between gap-2">
+    <li className="border border-border bg-background/40 px-3 py-2.5">
+      <div className="grid gap-2 sm:grid-cols-[64px_minmax(0,1fr)_64px] sm:items-start">
+        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          Row {row.rowNumber}
+        </p>
         <div className="min-w-0">
-          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            Row {row.rowNumber}
-          </p>
-          <p className="mt-1 text-sm font-medium text-foreground">
+          <p className="text-sm font-medium text-foreground">
             {row.displayName || "Missing student name"}
           </p>
           <div className="mt-1 flex flex-wrap gap-1.5 text-xs text-muted-foreground">
@@ -35,7 +35,7 @@ function PreviewRow({ row }: { row: RosterImportPreview["rows"][number] }) {
             {row.schoolLocalId ? <span>ID: {row.schoolLocalId}</span> : null}
           </div>
         </div>
-        <span className="rounded-full border border-border bg-card px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+        <span className="justify-self-start rounded-md border border-border bg-card px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground sm:justify-self-end">
           {isValid ? "Ready" : "Fix"}
         </span>
       </div>
@@ -110,7 +110,7 @@ export function RosterImportForm({ existingStudents }: RosterImportFormProps) {
 
   return (
     <form className="space-y-4" onSubmit={handleSubmit}>
-      <div>
+      <div className="border-b border-border pb-3">
         <h2 className="font-display text-lg font-semibold text-foreground">
           Paste several students
         </h2>

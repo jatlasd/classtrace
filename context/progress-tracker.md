@@ -33,6 +33,32 @@ Update this file after every meaningful implementation change.
 
 ---
 
+## Roster Visual Detour - Ledger Layout (Implemented)
+
+### What was completed
+
+- Reworked `/app/roster` away from rounded, card-heavy setup panels into a flatter split work area with hard borders and no shadows.
+- Changed the active roster continuation into a restrained readiness note with a single primary left rule.
+- Reworked the student list into a ledger-like bordered list with column headers, divided rows, square initials, handle column, and group column.
+- Tightened the manual entry and paste import forms with divider headers and `bg-background/50` inputs so they read as parts of one work surface instead of nested SaaS cards.
+- Changed import preview rows from rounded mini-cards to compact bordered records.
+- Updated `context/ui-registry.md` for the new roster page, roster list, continue action, manual entry form, and import form patterns.
+- Did not change roster database helpers, server actions, import parsing, onboarding routing, capture behavior, evidence persistence, archive/delete, export, AI, uploads, organizations, admin behavior, schema, migrations, dependencies, or route structure.
+
+### Verification
+
+- `npm.cmd run test -- lib/student-roster-database-ui.test.ts lib/roster-import-ui.test.ts lib/manual-student-entry.test.ts lib/guided-roster-setup-ui.test.ts lib/onboarding-routing.test.ts` - pass (18 focused tests).
+- `npm.cmd run lint` - pass.
+- `npm.cmd run test` - pass (151 tests).
+- `npm.cmd run build` - pass.
+- `git -c safe.directory=C:/Projects/classtrace diff --check` - pass with line-ending warnings only.
+
+### Remaining risks / follow-ups
+
+- Manual signed-in browser verification is still needed. The in-app Browser plugin could not start in this Windows sandbox (`CreateProcessAsUserW failed: 5`), and this repo does not have a bundled Playwright dependency for a fallback visual screenshot.
+
+---
+
 ## Roster UX Detour - Active Roster Layout (Implemented)
 
 ### What was completed

@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { deriveMentionHandle } from "@/lib/students/derive-mention-handle";
 
 const inputClassName =
-  "h-10 w-full rounded-md border border-border bg-card px-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/20 disabled:cursor-not-allowed disabled:opacity-50";
+  "h-10 w-full rounded-md border border-border bg-background/50 px-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/20 disabled:cursor-not-allowed disabled:opacity-50";
 
 type ManualStudentEntryFormProps = {
   isFirstStudent: boolean;
@@ -82,7 +82,7 @@ export function ManualStudentEntryForm({ isFirstStudent }: ManualStudentEntryFor
 
   return (
     <form className="space-y-4" onSubmit={handleSubmit}>
-      <div>
+      <div className="border-b border-border pb-3">
         <h2 className="font-display text-lg font-semibold text-foreground">
           {isFirstStudent ? "Add your first student" : "Add another student"}
         </h2>
@@ -112,7 +112,7 @@ export function ManualStudentEntryForm({ isFirstStudent }: ManualStudentEntryFor
           <label htmlFor="student-mention-handle" className="text-sm font-medium text-foreground">
             Mention handle
           </label>
-          <div className="flex h-10 rounded-md border border-border bg-card focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/20">
+          <div className="flex h-10 rounded-md border border-border bg-background/50 focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/20">
             <span className="flex items-center border-r border-border px-3 text-sm text-muted-foreground">
               @
             </span>

@@ -608,77 +608,80 @@ Roster and student screens should support capture and evidence review. They shou
 ### Guided Roster Setup Cards
 
 File: `app/app/roster/page.tsx`  
-Last updated: 2026-06-16
+Last updated: 2026-06-17
 
 | Property | Class |
 |---|---|
-| Page shell | `mx-auto w-full max-w-[1120px] px-4 py-8 sm:px-6 lg:px-8` |
-| Header | `mb-7 flex flex-col gap-4 border-b border-border pb-6 lg:flex-row lg:items-end lg:justify-between` |
+| Page shell | `mx-auto w-full max-w-[1180px] px-4 py-7 sm:px-6 lg:px-8` |
+| Header | `mb-6 grid gap-5 border-b border-border pb-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-end` |
 | Eyebrow | `text-xs font-semibold uppercase tracking-wider text-muted-foreground` |
 | Page title | `font-display text-2xl font-semibold tracking-tight text-foreground` |
 | Helper copy | `text-sm leading-relaxed text-muted-foreground` |
-| Card grid | `grid gap-4 lg:grid-cols-2` |
-| Setup panel | `rounded-card border border-border bg-card/70 p-5` |
+| Work area | `grid border border-border bg-card/55 lg:grid-cols-2` |
+| Work panel | `border-b border-border p-4 sm:p-5 lg:border-b-0 lg:border-r` |
 | Card title | `font-display text-lg font-semibold text-foreground` |
 | Card helper | `text-xs leading-relaxed text-muted-foreground` |
-| Empty roster card | `rounded-card border border-border bg-card/70 p-6 text-sm leading-relaxed text-muted-foreground` |
+| Empty roster card | `border border-border bg-card/60 p-5 text-sm leading-relaxed text-muted-foreground` |
 | Continue action | Existing `Button` with `variant="outline"` and `size="sm"` |
 
 **Pattern notes:**  
-Guided roster setup lives inside the authenticated app shell, not a full-screen wizard. The empty state can still frame the first student as the setup step, but after at least one roster student exists the page should shift into ordinary roster management language. Do not keep "recommended first step" or "setup started" card language visible after setup has begun. Roster work panels are flatter than feed cards (`bg-card/70`, no shadow) so this page feels like a quiet workspace rather than an AI/SaaS onboarding funnel. Copy should explain that roster setup comes before evidence capture and avoid district, SIS, or admin language.
+Guided roster setup lives inside the authenticated app shell, not a full-screen wizard. The empty state can still frame the first student as the setup step, but after at least one roster student exists the page should shift into ordinary roster management language. Do not keep "recommended first step" or "setup started" card language visible after setup has begun. The roster page now uses a restrained split work area with hard borders, no shadows, and no rounded-card shell so it feels like a practical record surface rather than a generic SaaS onboarding board. Copy should explain that roster setup comes before evidence capture and avoid district, SIS, or admin language.
 
 ---
 
 ### Database Roster List
 
 File: `app/app/roster/page.tsx`  
-Last updated: 2026-06-16
+Last updated: 2026-06-17
 
 | Property | Class |
 |---|---|
-| List shell | `overflow-hidden rounded-card border border-border bg-card/70` |
-| Student row | `border-b border-border px-4 py-4 last:border-b-0 sm:px-5` |
-| Student content row | `flex min-w-0 items-center gap-4` |
-| Avatar | `flex size-10 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-bold text-foreground` |
-| Student name | `font-medium text-foreground` |
-| Handle text | `text-sm text-muted-foreground` |
-| Class/group text | `mt-0.5 text-xs text-muted-foreground` |
+| List shell | `border border-border bg-card/60` |
+| Column header | `mb-2 grid gap-2 border-b border-border pb-2 sm:grid-cols-[minmax(0,1fr)_180px_150px]` |
+| Student row | `border-b border-border last:border-b-0` |
+| Student content row | `grid gap-3 px-4 py-3.5 sm:grid-cols-[minmax(0,1fr)_180px_150px] sm:items-center sm:px-5` |
+| Avatar | `flex size-9 shrink-0 items-center justify-center rounded-md border border-border bg-muted/50 text-[11px] font-bold text-foreground` |
+| Student name | `font-medium leading-snug text-foreground` |
+| Handle text | `text-sm text-muted-foreground sm:text-foreground` |
+| Class/group text | `text-xs text-muted-foreground` |
 
 **Pattern notes:**  
-The roster list is read-only and database-backed. Rows are intentionally non-navigational until student timelines are database-backed because the current student profile route still reads the old local POC roster. Use one flat bordered list container with divided rows instead of separate shadowed cards; this keeps roster management calmer and less SaaS-like. Edit, delete, archive, and timeline navigation remain deferred to later units.
+The roster list is read-only and database-backed. Rows are intentionally non-navigational until student timelines are database-backed because the current student profile route still reads the old local POC roster. Use a ledger-like bordered list with column headers, divided rows, square initials, and no shadows; avoid returning to separate rounded student cards. Edit, delete, archive, and timeline navigation remain deferred to later units.
 
 ---
 
 ### Roster Continue Action
 
 File: `app/app/roster/page.tsx`  
-Last updated: 2026-06-16
+Last updated: 2026-06-17
 
 | Property | Class |
 |---|---|
-| Shell | `flex flex-wrap items-center gap-3` |
-| Count text | `text-sm text-muted-foreground` |
+| Shell | `border-l-4 border-primary bg-card/60 px-4 py-3` |
+| Eyebrow | `text-xs font-semibold uppercase tracking-wider text-muted-foreground` |
+| Count text | `text-sm text-foreground` |
 | Action | Existing `Button` with `variant="outline"` and `size="sm"` |
 
 **Pattern notes:**  
-The roster continue action appears only after the teacher has at least one active database roster student. It should feel like a quiet utility action in the page header, not a completion badge, wizard, or alert card. Keep the copy plain: show the active student count and offer a low-emphasis path back to the evidence feed. This pattern does not hide the roster page or remove manual entry/import controls.
+The roster continue action appears only after the teacher has at least one active database roster student. It should feel like a quiet readiness note in the page header, not a completion badge, wizard, or alert card. The primary-colored left rule is the only accent. Keep the copy plain: show the active student count and offer a low-emphasis path back to the evidence feed. This pattern does not hide the roster page or remove manual entry/import controls.
 
 ---
 
 ### Manual Student Entry Form
 
 File: `components/roster/manual-student-entry-form.tsx`  
-Last updated: 2026-06-16
+Last updated: 2026-06-17
 
 | Property | Class |
 |---|---|
 | Form shell | `space-y-4` |
+| Header | `border-b border-border pb-3` |
 | Title | `font-display text-lg font-semibold text-foreground` |
 | Helper copy | `text-xs leading-relaxed text-muted-foreground` |
 | Field group | `space-y-1.5` |
 | Label | `text-sm font-medium text-foreground` |
-| Standard input | `h-10 w-full rounded-md border border-border bg-card px-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/20 disabled:cursor-not-allowed disabled:opacity-50` |
-| Handle input shell | `flex h-10 rounded-md border border-border bg-card focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/20` |
+| Standard input | `h-10 w-full rounded-md border border-border bg-background/50 px-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/20 disabled:cursor-not-allowed disabled:opacity-50` |
+| Handle input shell | `flex h-10 rounded-md border border-border bg-background/50 focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/20` |
 | Handle prefix | `flex items-center border-r border-border px-3 text-sm text-muted-foreground` |
 | Handle input | `min-w-0 flex-1 bg-transparent px-3 text-sm text-foreground outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50` |
 | Status message area | `min-h-5 text-sm` |
@@ -687,36 +690,37 @@ Last updated: 2026-06-16
 | Submit button | Existing `Button` with `size="lg"` and `h-9 rounded-lg px-5 text-sm font-semibold` |
 
 **Pattern notes:**  
-The manual entry form lives inside the roster work panel. It keeps the form short: student name, editable mention handle, and optional school/local ID. The title changes from "Add your first student" to "Add another student" once the roster has at least one active student; do not show a "recommended first step" eyebrow after setup has begun. Class/group creation stays deferred because a free-text class/group field would introduce class-group management behavior outside Unit 08. The handle field uses a muted `@` prefix while submitting the normalized handle value to the existing workspace-scoped server action.
+The manual entry form lives inside the roster work panel. It keeps the form short: student name, editable mention handle, and optional school/local ID. The title changes from "Add your first student" to "Add another student" once the roster has at least one active student; do not show a "recommended first step" eyebrow after setup has begun. Class/group creation stays deferred because a free-text class/group field would introduce class-group management behavior outside Unit 08. Form headers use a simple divider, and inputs sit on `bg-background/50` so the split work area reads as one surface instead of nested cards.
 
 ---
 
 ### Roster Import Form
 
 File: `components/roster/roster-import-form.tsx`  
-Last updated: 2026-06-16
+Last updated: 2026-06-17
 
 | Property | Class |
 |---|---|
 | Form shell | `space-y-4` |
+| Header | `border-b border-border pb-3` |
 | Title | `font-display text-lg font-semibold text-foreground` |
 | Helper copy | `text-xs leading-relaxed text-muted-foreground` |
 | Field group | `space-y-1.5` |
 | Label | `text-sm font-medium text-foreground` |
-| Textarea | `min-h-[132px] w-full rounded-md border border-border bg-card px-3 py-2 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/20 disabled:cursor-not-allowed disabled:opacity-50` |
+| Textarea | `min-h-[132px] w-full rounded-md border border-border bg-background/50 px-3 py-2 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/20 disabled:cursor-not-allowed disabled:opacity-50` |
 | Preview shell | `space-y-2` |
-| Preview row | `rounded-lg border border-border/70 bg-muted/25 px-3 py-2.5` |
+| Preview row | `border border-border bg-background/40 px-3 py-2.5` |
 | Row label | `text-xs font-semibold uppercase tracking-wider text-muted-foreground` |
 | Row primary text | `text-sm font-medium text-foreground` |
 | Row metadata | `flex flex-wrap gap-1.5 text-xs text-muted-foreground` |
-| Row status pill | `rounded-full border border-border bg-card px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground` |
+| Row status pill | `rounded-md border border-border bg-card px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground` |
 | Row error text | `text-xs leading-relaxed text-destructive` |
 | Status message area | `min-h-5 text-sm` |
 | Action row | `flex flex-wrap gap-2` |
 | Actions | Existing `Button` with `variant="outline"`, default, and `variant="ghost"` using `size="sm"` |
 
 **Pattern notes:**  
-The roster import form supports pasted text only and keeps the workflow teacher-controlled: paste, preview, then confirm. It should sit in an equal-width roster work panel, not a squeezed right rail. Preview rows stack in a compact list instead of a wide table so the panel remains usable on mobile. The form receives only handle and school/local ID conflict data from the server-rendered roster page; it does not receive or submit workspace IDs, and confirmed import still revalidates server-side before atomic save. Class/group import remains deferred.
+The roster import form supports pasted text only and keeps the workflow teacher-controlled: paste, preview, then confirm. It should sit in the split roster work area, not a squeezed right rail. Preview rows are compact, squared-off records instead of rounded mini-cards. The form receives only handle and school/local ID conflict data from the server-rendered roster page; it does not receive or submit workspace IDs, and confirmed import still revalidates server-side before atomic save. Class/group import remains deferred.
 
 ---
 

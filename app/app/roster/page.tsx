@@ -26,20 +26,23 @@ function studentInitials(displayName: string): string {
 
 function StudentRow({ student }: { student: RosterStudentDisplay }) {
   return (
-    <li className="border-b border-border px-4 py-4 last:border-b-0 sm:px-5">
-      <div className="flex min-w-0 items-center gap-4">
-        <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-bold text-foreground">
-          {studentInitials(student.displayName)}
+    <li className="border-b border-border last:border-b-0">
+      <div className="grid gap-3 px-4 py-3.5 sm:grid-cols-[minmax(0,1fr)_180px_150px] sm:items-center sm:px-5">
+        <div className="flex min-w-0 items-center gap-3">
+          <div className="flex size-9 shrink-0 items-center justify-center rounded-md border border-border bg-muted/50 text-[11px] font-bold text-foreground">
+            {studentInitials(student.displayName)}
+          </div>
+          <div className="min-w-0">
+            <p className="font-medium leading-snug text-foreground">{student.displayName}</p>
+            <p className="mt-0.5 text-xs text-muted-foreground">Roster student</p>
+          </div>
         </div>
-        <div className="min-w-0 flex-1">
-          <p className="font-medium text-foreground">{student.displayName}</p>
-          <p className="text-sm text-muted-foreground">@{student.mentionHandle}</p>
-          {student.classGroupName && (
-            <p className="mt-0.5 text-xs text-muted-foreground">
-              {student.classGroupName}
-            </p>
-          )}
-        </div>
+        <p className="text-sm text-muted-foreground sm:text-foreground">
+          @{student.mentionHandle}
+        </p>
+        <p className="text-xs text-muted-foreground">
+          {student.classGroupName || "No group yet"}
+        </p>
       </div>
     </li>
   );
@@ -54,9 +57,9 @@ export default async function RosterPage() {
   const rosterIsEmpty = students.length === 0;
 
   return (
-    <div className="mx-auto w-full max-w-[1120px] px-4 py-8 sm:px-6 lg:px-8">
-      <header className="mb-7 flex flex-col gap-4 border-b border-border pb-6 lg:flex-row lg:items-end lg:justify-between">
-        <div className="max-w-2xl">
+    <div className="mx-auto w-full max-w-[1180px] px-4 py-7 sm:px-6 lg:px-8">
+      <header className="mb-6 grid gap-5 border-b border-border pb-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-end">
+        <div className="max-w-3xl">
           <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
             Roster
           </p>
@@ -74,42 +77,46 @@ export default async function RosterPage() {
           </div>
         </div>
         {!rosterIsEmpty && (
-          <div className="flex flex-wrap items-center gap-3">
-            <p className="text-sm text-muted-foreground">
+          <div className="border-l-4 border-primary bg-card/60 px-4 py-3">
+            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Capture readiness
+            </p>
+            <p className="mt-1 text-sm text-foreground">
               {students.length} {students.length === 1 ? "student" : "students"} ready
               for capture.
             </p>
-            <Button asChild size="sm" variant="outline">
+            <Button asChild size="sm" variant="outline" className="mt-3">
               <Link href={routes.feed}>Continue to evidence feed</Link>
             </Button>
           </div>
         )}
       </header>
 
-      <div className="mb-8 grid gap-4 lg:grid-cols-2">
-        <section className="rounded-card border border-border bg-card/70 p-5">
+      <div className="mb-8 grid border border-border bg-card/55 lg:grid-cols-2">
+        <section className="border-b border-border p-4 sm:p-5 lg:border-b-0 lg:border-r">
           <ManualStudentEntryForm isFirstStudent={rosterIsEmpty} />
         </section>
 
-        <aside className="rounded-card border border-border bg-card/70 p-5">
+        <aside className="p-4 sm:p-5">
           <RosterImportForm existingStudents={existingImportStudents} />
         </aside>
       </div>
 
       <section>
-        <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+        <div className="mb-2 grid gap-2 border-b border-border pb-2 sm:grid-cols-[minmax(0,1fr)_180px_150px]">
           <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
             Your students
           </h2>
-          {!rosterIsEmpty && (
-            <p className="text-xs text-muted-foreground">
-              Add more students above whenever your roster changes.
-            </p>
-          )}
+          <p className="hidden text-xs font-semibold uppercase tracking-wider text-muted-foreground sm:block">
+            Handle
+          </p>
+          <p className="hidden text-xs font-semibold uppercase tracking-wider text-muted-foreground sm:block">
+            Group
+          </p>
         </div>
 
         {students.length === 0 ? (
-          <div className="rounded-card border border-border bg-card/70 p-6 text-sm leading-relaxed text-muted-foreground">
+          <div className="border border-border bg-card/60 p-5 text-sm leading-relaxed text-muted-foreground">
             <p className="font-medium text-foreground">No students on your roster yet.</p>
             <p className="mt-1">
               Add one student above before opening the evidence feed for your first
@@ -117,7 +124,7 @@ export default async function RosterPage() {
             </p>
           </div>
         ) : (
-          <ul className="overflow-hidden rounded-card border border-border bg-card/70">
+          <ul className="border border-border bg-card/60">
             {students.map((student) => (
               <StudentRow key={student.id} student={student} />
             ))}
