@@ -6,7 +6,7 @@ Update this file after every meaningful implementation change.
 
 ## Current Phase
 
-- Current status: Phase 4 Unit 21 implemented and verified with automated checks.
+- Current status: Phase 5 Unit 22 implemented and verified with automated checks.
 - Phase 2 complete — roster onboarding
 - Unit 02 complete and verified — Route Map and App Shell (`context/specs/02-route-map-and-app-shell.md`)
 - Unit 03 complete and verified — Public Landing Page UI (`context/specs/03-public-landing-page-ui.md`)
@@ -28,6 +28,7 @@ Update this file after every meaningful implementation change.
 - Unit 19 implemented and verified with automated checks - Permanent Delete Evidence (`context/specs/19-permanent-delete-evidence.md`)
 - Unit 20 implemented and verified with automated checks - Archive/Delete Student (`context/specs/20-archive-delete-student.md`)
 - Unit 21 implemented and verified with automated checks - Individual Student Export (`context/specs/21-individual-student-export.md`)
+- Unit 22 implemented and verified with automated checks - Settings Page (`context/specs/22-settings-page.md`)
 - Design system overhaul applied from `classtrace_asset_kit/` (warm paper palette, Fraunces + Inter + Caveat, landing copy/layout aligned to asset kit)
 
 ---
@@ -37,7 +38,38 @@ Update this file after every meaningful implementation change.
 - Unit 19 permanent delete evidence is implemented and verified.
 - Unit 20 archive/delete student is implemented and verified.
 - Unit 21 individual student export is implemented and verified.
-- Next planned unit is Unit 22 settings page.
+- Unit 22 settings page is implemented and verified.
+- Next planned unit is Unit 23 privacy and safety copy pass.
+
+---
+
+## Unit 22 - Settings Page (Implemented)
+
+Spec: `context/specs/22-settings-page.md`
+
+### What was completed
+
+- Created the Phase 5 Unit 22 spec for replacing the `/app/settings` placeholder with a basic read-only settings page.
+- Scoped the unit to safe account information, app-owned teacher profile/workspace basics, and a clear sign-out action.
+- Captured likely files, UI requirements, logic/data boundaries, test requirements, acceptance criteria, verification commands, and implementation stop conditions.
+- Added `lib/settings/settings-page-data.ts` as a server-only settings display helper that resolves the current workspace, reads safe app-owned teacher/workspace display fields, reads safe Clerk account display fields, and returns no internal IDs.
+- Replaced the `/app/settings` placeholder with a read-only account/workspace settings page using existing ClassTrace tokens and bordered ledger-like sections.
+- Added `components/settings/settings-sign-out-action.tsx` as a small Clerk `SignOutButton` Client Component that redirects to the public root.
+- Added focused tests for the settings data helper and UI guardrails.
+- Updated `context/ui-registry.md` with the Settings Page pattern.
+- Kept editable settings, organizations, workspace switching, district/admin settings, billing, notifications, exports, account deletion, privacy/legal pages, AI, uploads, SIS integrations, schema changes, migrations, API routes, Server Actions, new dependencies, and app-shell redesign out of scope.
+
+### Verification
+
+- `npm.cmd run test -- lib/settings/settings-page-data.test.ts lib/settings-page-ui.test.ts` - pass (7 focused tests).
+- `npm.cmd run lint` - pass.
+- `npm.cmd run test` - pass (221 tests). Existing archive/delete failure-path tests intentionally log contextual server errors while verifying safe generic error results.
+- `npm.cmd run build` - pass.
+
+### Remaining risks / follow-ups
+
+- Manual signed-in browser verification is still needed when browser tooling and development auth/database values are available.
+- The top nav still uses the existing mock teacher label/avatar. Replacing it with real account display data would require app-shell data plumbing and remains a follow-up.
 
 ---
 
@@ -1001,7 +1033,7 @@ Verification after refinement: `npm run lint` pass, `npm run build` pass, `npm r
 
 ## Next Up
 
-1. Create and implement Unit 22 (Settings Page) only after explicit human confirmation.
+1. Create and implement Unit 23 (Privacy and Safety Copy Pass) only after explicit human confirmation.
 2. Optionally run manual signed-in browser verification for recent evidence-management units when browser tooling is available.
 3. Optionally clean up stale progress-tracker design-decision notes that still reference the old dark sidebar / Plus Jakarta Sans direction.
 4. Optionally expand `README.md` with a short pointer to `AGENTS.md` and the context framework beyond the Unit 02 route updates already made.
@@ -1145,3 +1177,5 @@ Verification after refinement: `npm run lint` pass, `npm run build` pass, `npm r
 - Unit 20 implementation completed on 2026-06-17. `/app/roster` active roster rows now expose calm archive and destructive permanent delete affordances backed by workspace-scoped Server Actions and server-only helpers. Archive sets `RosterStudent.archivedAt`; permanent delete removes one owned roster student and connected evidence through the existing cascade. Default feed reads now exclude evidence attached to archived roster students. Automated focused tests, lint, full tests, and build passed.
 - Unit 21 spec was created on 2026-06-17. It scopes Individual Student Export as a workspace-scoped CSV export for one active roster student's non-archived validated evidence from the student timeline. It explicitly excludes full-account export, all-student export, export format selection, PDFs/DOCX/XLSX/report templates, raw draft notes, schema changes, migrations, API routes unless explicitly approved, AI, uploads, organizations, admin behavior, analytics, billing, new dependencies, and app-shell redesign.
 - Unit 21 implementation completed on 2026-06-17. `/app/students/[studentId]` now exposes a restrained "Export evidence" action for active students with validated evidence. The export path resolves the current workspace server-side, verifies the selected active student, reads only that student's non-archived validated evidence, and returns a generated CSV payload. Automated focused tests, lint, full tests, and build passed.
+- Unit 22 spec was created on 2026-06-18. It scopes Settings Page as a read-only authenticated account/workspace settings surface with sign out. It explicitly excludes editable settings, organizations, workspace switching, district/admin settings, billing, notifications, export controls, account deletion, privacy/legal pages, AI, uploads, SIS integrations, schema changes, migrations, API routes, Server Actions unless explicitly expanded, new dependencies, and app-shell redesign.
+- Unit 22 implementation added a server-only settings data helper, a read-only `/app/settings` account/workspace surface, and a small Clerk sign-out Client Component. Automated focused tests, lint, full tests, and build passed.

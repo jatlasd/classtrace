@@ -875,6 +875,34 @@ The student timeline item adapts the Unit 15 saved-evidence vocabulary for a one
 
 ---
 
+### Settings Page
+
+File: `app/app/settings/page.tsx`, `components/settings/settings-sign-out-action.tsx`
+Last updated: 2026-06-18
+
+| Property | Class |
+|---|---|
+| Page shell | `mx-auto w-full max-w-[920px] px-4 py-7 sm:px-6 lg:px-8` |
+| Header | `mb-6 border-b border-border pb-6` |
+| Eyebrow | `text-xs font-semibold uppercase tracking-wider text-muted-foreground` |
+| Page title | `font-display mt-2 text-2xl font-semibold tracking-tight text-foreground` |
+| Helper copy | `mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground` |
+| Section shell | `border border-border bg-card/60 p-4 sm:p-5` |
+| Section icon | `flex size-10 shrink-0 items-center justify-center rounded-md border border-border bg-muted/50 text-primary` |
+| Section title | `font-display text-lg font-semibold text-foreground` |
+| Section helper | `mt-1 text-xs leading-relaxed text-muted-foreground` |
+| Detail row | `grid gap-1 border-t border-border/60 py-3 sm:grid-cols-[180px_minmax(0,1fr)] sm:gap-4` |
+| Detail label | `text-xs font-semibold uppercase tracking-wider text-muted-foreground` |
+| Detail value | `min-w-0 text-sm font-medium text-foreground` |
+| Sign-out section | `border-l-4 border-primary bg-card/60 px-4 py-4 sm:px-5` |
+| Sign-out action | Existing `Button` with `variant="outline"`, `size="lg"`, and `h-9 rounded-lg px-5 text-sm font-semibold` |
+| Sign-out icon | `LogOut` icon `size-4` with `strokeWidth={1.75}` |
+
+**Pattern notes:**
+The settings page is a read-only authenticated account/workspace surface. It shows safe Clerk account display fields, app-owned teacher profile/workspace display fields, and one clear sign-out action. Keep it constrained and quiet, with bordered ledger-like sections rather than dashboard cards. Do not add edit forms, account deletion, workspace switching, organization or district settings, billing, notifications, exports, integrations, AI settings, upload settings, compliance claims, roster/evidence management, or fake controls.
+
+---
+
 ## Registry Update Rules
 
 After building or changing a UI component:
@@ -897,4 +925,3 @@ These patterns should be added or refined when they are built or audited:
 
 - Archive confirmation dialog
 - Permanent delete confirmation dialog
-- Settings page
