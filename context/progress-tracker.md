@@ -6,7 +6,7 @@ Update this file after every meaningful implementation change.
 
 ## Current Phase
 
-- Current status: Phase 5 Unit 22 implemented and verified with automated checks.
+- Current status: Phase 5 Unit 23 implemented and verified with automated checks.
 - Phase 2 complete — roster onboarding
 - Unit 02 complete and verified — Route Map and App Shell (`context/specs/02-route-map-and-app-shell.md`)
 - Unit 03 complete and verified — Public Landing Page UI (`context/specs/03-public-landing-page-ui.md`)
@@ -29,6 +29,7 @@ Update this file after every meaningful implementation change.
 - Unit 20 implemented and verified with automated checks - Archive/Delete Student (`context/specs/20-archive-delete-student.md`)
 - Unit 21 implemented and verified with automated checks - Individual Student Export (`context/specs/21-individual-student-export.md`)
 - Unit 22 implemented and verified with automated checks - Settings Page (`context/specs/22-settings-page.md`)
+- Unit 23 implemented and verified with automated checks - Privacy and Safety Copy Pass (`context/specs/23-privacy-and-safety-copy-pass.md`)
 - Design system overhaul applied from `classtrace_asset_kit/` (warm paper palette, Fraunces + Inter + Caveat, landing copy/layout aligned to asset kit)
 
 ---
@@ -39,7 +40,44 @@ Update this file after every meaningful implementation change.
 - Unit 20 archive/delete student is implemented and verified.
 - Unit 21 individual student export is implemented and verified.
 - Unit 22 settings page is implemented and verified.
-- Next planned unit is Unit 23 privacy and safety copy pass.
+- Unit 23 privacy and safety copy pass is implemented and verified.
+- Next planned step is Unit 24 test coverage pass only after explicit human confirmation.
+
+---
+
+## Unit 23 - Privacy and Safety Copy Pass (Implemented)
+
+Spec: `context/specs/23-privacy-and-safety-copy-pass.md`
+
+### What was completed
+
+- Created the Phase 5 Unit 23 spec for a privacy and safety copy pass.
+- Scoped the unit to teacher-facing copy review, sensitive example/demo language cleanup, raw draft persistence/logging audit, AI/analytics/telemetry/external-service audit, and focused static guardrail tests.
+- Captured likely files, copy requirements, logic/data boundaries, out-of-scope items, test requirements, acceptance criteria, verification commands, and implementation stop conditions.
+- Kept legal/compliance certification, privacy/terms pages, consent flows, account deletion, retention workflows, exports, editable settings, organizations, district/admin behavior, SIS sync, gradebook, IEP-writing, parent communication, AI, analytics, telemetry, uploads, schema changes, migrations, API routes, Server Actions, new dependencies, and app-shell redesign out of scope.
+- Added `lib/privacy-safety-copy.test.ts` with static guardrails for teacher-facing compliance/security overclaims, AI marketing claims, direct forbidden service dependencies/imports, approved demo names, raw-draft-free durable save/export paths, raw-draft logging, and teacher-validation copy.
+- Mechanically updated the wide demo classroom fixture to use only the approved fictional names: Jeremy, Stacy, Jeff, and Mary.
+- Updated demo/roster tests that still referenced older example names.
+- Updated README POC examples to use approved fictional names, the four-student demo count, and deterministic parsing language.
+
+### Verification
+
+- `npm.cmd run test -- lib/privacy-safety-copy.test.ts lib/demo-data/load-wide-demo-classroom.test.ts lib/students.test.ts` - pass (25 focused tests).
+- `npm.cmd run lint` - pass.
+- `npm.cmd run test` - pass (46 files / 228 tests). Existing archive/delete failure-path tests intentionally log contextual server errors while verifying safe generic error results.
+- `npm.cmd run build` - pass.
+
+### Remaining risks / follow-ups
+
+- Manual signed-in browser review is still useful when browser tooling and development auth/database values are available.
+- Unit 24 remains the next planned test coverage pass.
+
+### Review follow-up fix
+
+- Fixed stale POC roster hydration cleanup that treated the now-approved demo IDs (`jeremy`, `stacy`, `jeff`, `mary`) as legacy rows and cleared the loaded demo roster on later hydration.
+- Removed the obsolete legacy demo roster stripping path from `lib/students.ts`.
+- Added regression coverage so the approved demo roster still resolves after `loadWideDemoClassroom()` followed by a simulated in-memory roster reset/hydration.
+- Verification after fix: `npm.cmd run test -- lib/demo-data/load-wide-demo-classroom.test.ts lib/students.test.ts lib/privacy-safety-copy.test.ts` - pass (26 focused tests), `npm.cmd run lint` - pass, `npm.cmd run test` - pass (46 files / 229 tests), and `npm.cmd run build` - pass.
 
 ---
 
@@ -923,7 +961,7 @@ Legacy:
 - Root layout metadata title is generic `ClassTrace` rather than route-specific.
 - Mobile nav label `Evidence Feed` may feel tight on very small screens — worth a quick browser resize check.
 - Manual browser walkthrough from the unit spec was not recorded in the tracker; run if desired before demo.
-- Demo data and README examples still reference `Anthony`; allowed fictional names per `AGENTS.md` are Jeremy, Stacy, Jeff, and Mary — rename when touching demo/test data next.
+- Unit 23 later cleaned app-facing demo/test names to the allowed fictional set: Jeremy, Stacy, Jeff, and Mary.
 
 ### Next unit (`context/build-plan.md`)
 
@@ -1033,7 +1071,7 @@ Verification after refinement: `npm run lint` pass, `npm run build` pass, `npm r
 
 ## Next Up
 
-1. Create and implement Unit 23 (Privacy and Safety Copy Pass) only after explicit human confirmation.
+1. Implement Unit 24 (Test Coverage Pass) only after explicit human confirmation.
 2. Optionally run manual signed-in browser verification for recent evidence-management units when browser tooling is available.
 3. Optionally clean up stale progress-tracker design-decision notes that still reference the old dark sidebar / Plus Jakarta Sans direction.
 4. Optionally expand `README.md` with a short pointer to `AGENTS.md` and the context framework beyond the Unit 02 route updates already made.
@@ -1045,7 +1083,6 @@ Verification after refinement: `npm run lint` pass, `npm run build` pass, `npm r
 - Should `README.md` get a fuller Phase 1 refresh beyond the Unit 02 route/path updates?
 - Exact Prisma schema has an initial migrated foundation, but future workflow units may refine fields as validation/export needs become concrete.
 - Exact deployment setup is not decided yet.
-- Demo data and tests still use `Anthony` as an example name; allowed fictional names per `AGENTS.md` are Jeremy, Stacy, Jeff, and Mary. Rename when touching demo/test data next.
 
 ---
 

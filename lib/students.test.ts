@@ -80,8 +80,8 @@ describe("student roster", () => {
 
   it("adds a student to the teacher roster", () => {
     const result = addStudent({
-      displayName: "Alex Rivera",
-      handle: "AlexR",
+      displayName: "Jeff",
+      handle: "Jeff",
       grade: "4th Grade",
       group: "Period 1",
     });
@@ -90,19 +90,19 @@ describe("student roster", () => {
     if (!result.ok) return;
 
     expect(result.student).toMatchObject({
-      id: "alexr",
-      displayName: "Alex Rivera",
-      handle: "AlexR",
+      id: "jeff",
+      displayName: "Jeff",
+      handle: "Jeff",
       grade: "4th Grade",
       group: "Period 1",
-      initials: "AR",
+      initials: "JE",
     });
 
     expect(getAllStudents()).toHaveLength(1);
-    expect(getStudentById("alexr")?.displayName).toBe("Alex Rivera");
+    expect(getStudentById("jeff")?.displayName).toBe("Jeff");
   });
 
-  it("strips legacy demo students from stored roster on hydrate", () => {
+  it("hydrates approved fictional students from stored roster", () => {
     const store: Record<string, string> = {
       "classtrace.poc.roster.v1": JSON.stringify([
         {
@@ -113,10 +113,10 @@ describe("student roster", () => {
           colorClass: "bg-sky-500",
         },
         {
-          id: "anthony",
-          displayName: "Anthony",
-          handle: "Anthony",
-          initials: "AN",
+          id: "stacy",
+          displayName: "Stacy",
+          handle: "Stacy",
+          initials: "ST",
           colorClass: "bg-teal-500",
         },
       ]),
@@ -134,44 +134,48 @@ describe("student roster", () => {
     });
 
     resetTeacherRosterForTests();
-    expect(getAllStudents().map((student) => student.id)).toEqual(["anthony"]);
+    expect(getAllStudents().map((student) => student.id)).toEqual([
+      "jeremy",
+      "stacy",
+    ]);
+    expect(store["classtrace.poc.roster.v1"]).toBeDefined();
 
     vi.unstubAllGlobals();
   });
 
   it("resolves mentions for newly added students", () => {
     addStudent({
-      displayName: "Alex Rivera",
-      handle: "AlexR",
+      displayName: "Jeff",
+      handle: "Jeff",
     });
 
-    expect(resolveStudentMention("@AlexR")?.id).toBe("alexr");
-    expect(resolveStudentMention("alexr")?.displayName).toBe("Alex Rivera");
-    expect(resolveStudentMention("Alex Rivera")?.id).toBe("alexr");
+    expect(resolveStudentMention("@Jeff")?.id).toBe("jeff");
+    expect(resolveStudentMention("jeff")?.displayName).toBe("Jeff");
+    expect(resolveStudentMention("Jeff")?.id).toBe("jeff");
   });
 
   it("accepts handles with a leading @", () => {
     const result = addStudent({
-      displayName: "Alex Rivera",
-      handle: "@AlexR",
+      displayName: "Jeff",
+      handle: "@Jeff",
     });
 
     expect(result.ok).toBe(true);
     if (!result.ok) return;
 
-    expect(result.student.handle).toBe("AlexR");
-    expect(resolveStudentMention("@AlexR")?.id).toBe("alexr");
+    expect(result.student.handle).toBe("Jeff");
+    expect(resolveStudentMention("@Jeff")?.id).toBe("jeff");
   });
 
   it("rejects duplicate handles", () => {
     addStudent({
-      displayName: "Alex Rivera",
-      handle: "AlexR",
+      displayName: "Jeff",
+      handle: "Jeff",
     });
 
     const duplicate = addStudent({
-      displayName: "Alex R",
-      handle: "AlexR",
+      displayName: "Jeremy",
+      handle: "Jeff",
     });
 
     expect(duplicate).toEqual({
@@ -183,15 +187,15 @@ describe("student roster", () => {
 
   it("updates a student on the roster", () => {
     addStudent({
-      displayName: "Anthony Smith",
-      handle: "Anthony",
+      displayName: "Jeremy",
+      handle: "Jeremy",
       grade: "5th Grade",
       group: "Period 2",
     });
 
-    const result = updateStudent("anthony", {
-      displayName: "Anthony S.",
-      handle: "@Tony",
+    const result = updateStudent("jeremy", {
+      displayName: "Stacy",
+      handle: "@Stacy",
       grade: "6th Grade",
       group: "Period 3",
     });
@@ -199,24 +203,24 @@ describe("student roster", () => {
     expect(result.ok).toBe(true);
     if (!result.ok) return;
 
-    expect(getStudentById("anthony")).toMatchObject({
-      id: "anthony",
-      displayName: "Anthony S.",
-      handle: "Tony",
+    expect(getStudentById("jeremy")).toMatchObject({
+      id: "jeremy",
+      displayName: "Stacy",
+      handle: "Stacy",
       grade: "6th Grade",
       group: "Period 3",
-      initials: "AS",
+      initials: "ST",
     });
-    expect(resolveStudentMention("@Tony")?.id).toBe("anthony");
+    expect(resolveStudentMention("@Stacy")?.id).toBe("jeremy");
   });
 
   it("rejects duplicate handles when updating", () => {
-    addStudent({ displayName: "Anthony", handle: "Anthony" });
+    addStudent({ displayName: "Jeff", handle: "Jeff" });
     addStudent({ displayName: "Mary", handle: "Mary" });
 
     const result = updateStudent("mary", {
       displayName: "Mary",
-      handle: "Anthony",
+      handle: "Jeff",
     });
 
     expect(result).toEqual({
@@ -226,12 +230,12 @@ describe("student roster", () => {
   });
 
   it("deletes a student from the roster", () => {
-    addStudent({ displayName: "Anthony", handle: "Anthony" });
+    addStudent({ displayName: "Jeff", handle: "Jeff" });
     addStudent({ displayName: "Mary", handle: "Mary" });
 
-    expect(deleteStudent("anthony")).toEqual({ ok: true });
+    expect(deleteStudent("jeff")).toEqual({ ok: true });
     expect(getAllStudents()).toHaveLength(1);
-    expect(getStudentById("anthony")).toBeUndefined();
+    expect(getStudentById("jeff")).toBeUndefined();
     expect(getStudentById("mary")?.displayName).toBe("Mary");
   });
 });

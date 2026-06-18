@@ -39,12 +39,6 @@ export type DeleteStudentResult =
 
 const DEFAULT_ROSTER: Student[] = [];
 
-const LEGACY_DEMO_ROSTER_IDS = new Set(["jeremy", "stacy", "jeff", "mary"]);
-
-function stripLegacyDemoRoster(students: Student[]): Student[] {
-  return students.filter((student) => !LEGACY_DEMO_ROSTER_IDS.has(student.id));
-}
-
 const COLOR_PALETTE = [
   "bg-sky-500",
   "bg-rose-400",
@@ -67,15 +61,7 @@ function ensureRosterHydrated(): void {
   rosterHydrated = true;
   const stored = readStoredRoster();
   if (stored) {
-    const cleaned = stripLegacyDemoRoster(stored);
-    if (cleaned.length !== stored.length) {
-      if (cleaned.length === 0) {
-        clearStoredRoster();
-      } else {
-        writeStoredRoster(cleaned);
-      }
-    }
-    teacherRoster = cleaned.length > 0 ? cleaned : [...DEFAULT_ROSTER];
+    teacherRoster = stored;
   }
 }
 

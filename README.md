@@ -25,10 +25,10 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 This branch supports a personal, browser-only proof of concept. No database, auth, or backend is required.
 
 1. Run `npm run dev` and open the app at `/app/feed`.
-2. On the evidence feed, click **Load demo classroom** to populate 5 fake students and a broad evidence history — or go to **My roster** at `/app/roster` and add your own students (for example, display name `Anthony`, handle `Anthony` or `@Anthony`).
-3. On the evidence feed, capture a note such as `@Anthony was distractible during multiplying fractions review #behavior #fractions`.
+2. On the evidence feed, click **Load demo classroom** to populate 4 fake students and a broad evidence history — or go to **My roster** at `/app/roster` and add your own students (for example, display name `Jeremy`, handle `Jeremy` or `@Jeremy`).
+3. On the evidence feed, capture a note such as `@Jeremy was distractible during multiplying fractions review #behavior #fractions`.
 4. Refresh the browser — your capture stays in the evidence inbox.
-5. Open the student profile (for example `/app/students/anthony`) — the capture appears on that student's timeline.
+5. Open the student profile (for example `/app/students/jeremy`) — the capture appears on that student's timeline.
 6. Validate interpreted fields on a capture — refresh again and validation persists.
 7. Use **Export JSON** on the feed to download `classtrace-poc-export.json`.
 
@@ -36,7 +36,7 @@ This branch supports a personal, browser-only proof of concept. No database, aut
 
 - Data lives in this browser only (`localStorage`); it does not sync across devices or browsers.
 - Not FERPA-ready or production-safe — for personal POC use only.
-- No authentication, no database, no real AI processing yet.
+- No authentication or database in POC mode; V1 uses deterministic parsing only, not generative AI.
 - Clearing site data or using **Clear captures** removes stored evidence from this browser.
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.

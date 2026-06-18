@@ -33,15 +33,14 @@ describe("wide demo classroom", () => {
     resetTeacherRosterForTests();
   });
 
-  it("provides a roster of five students", () => {
+  it("provides a roster of approved fictional students", () => {
     const { roster } = getWideDemoClassroomData();
-    expect(roster).toHaveLength(5);
+    expect(roster).toHaveLength(4);
     expect(roster.map((student) => student.id)).toEqual([
-      "maya",
-      "jalen",
-      "brielle",
-      "mateo",
-      "noah",
+      "mary",
+      "jeff",
+      "stacy",
+      "jeremy",
     ]);
   });
 
@@ -61,7 +60,7 @@ describe("wide demo classroom", () => {
     store["classtrace.poc.captures.v1"] = JSON.stringify([
       {
         id: "old-capture",
-        rawNote: "@Anthony was on task",
+        rawNote: "@Jeremy was on task",
         timestampMs: 1,
       },
     ]);
@@ -78,17 +77,27 @@ describe("wide demo classroom", () => {
     stubLocalStorage();
     loadWideDemoClassroom();
 
-    expect(resolveStudentMention("@Maya")?.id).toBe("maya");
-    expect(resolveStudentMention("jalen")?.displayName).toBe("Jalen");
+    expect(resolveStudentMention("@Mary")?.id).toBe("mary");
+    expect(resolveStudentMention("jeff")?.displayName).toBe("Jeff");
+  });
+
+  it("keeps the approved demo roster available after hydration", () => {
+    stubLocalStorage();
+    loadWideDemoClassroom();
+
+    resetTeacherRosterForTests();
+
+    expect(resolveStudentMention("@Mary")?.id).toBe("mary");
+    expect(resolveStudentMention("@Jeremy")?.displayName).toBe("Jeremy");
   });
 
   it("finds captures for a demo student after loading", () => {
     stubLocalStorage();
     loadWideDemoClassroom();
 
-    const captures = getCapturesForStudent("maya");
+    const captures = getCapturesForStudent("mary");
     expect(captures.length).toBeGreaterThan(0);
-    expect(captures.every((capture) => capture.note.includes("@Maya"))).toBe(
+    expect(captures.every((capture) => capture.note.includes("@Mary"))).toBe(
       true
     );
   });
