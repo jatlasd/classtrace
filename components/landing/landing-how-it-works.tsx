@@ -132,7 +132,7 @@ export function LandingHowItWorks() {
         <h2 className="font-display text-center text-2xl font-semibold tracking-tight text-foreground lg:text-3xl">
           From hallway scribble to organized evidence
         </h2>
-        <ol className="mt-12 grid items-start gap-x-10 gap-y-12 sm:grid-cols-2 lg:grid-cols-4 lg:gap-x-12">
+        <ol className="mt-12 grid items-stretch gap-x-10 gap-y-12 sm:grid-cols-2 lg:grid-cols-4 lg:gap-x-12">
           {steps.map((step, index) => (
             <li key={step.number} className="relative">
               {index < steps.length - 1 && (

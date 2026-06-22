@@ -1069,6 +1069,14 @@ Verification after refinement: `npm run lint` pass, `npm run build` pass, `npm r
 
 ---
 
+## Landing How-It-Works Card Height Follow-up (Implemented)
+
+- Adjusted `components/landing/landing-how-it-works.tsx` so the how-it-works grid stretches its step cards to equal height within each row.
+- Updated `context/ui-registry.md` to document the stretched step grid pattern.
+- This was a scoped landing-page visual refinement only; no product behavior, data flow, auth, database, capture, parser, evidence, or route behavior changed.
+
+---
+
 ## Next Up
 
 1. Implement Unit 24 (Test Coverage Pass) only after explicit human confirmation.

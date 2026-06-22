@@ -502,11 +502,12 @@ Rebuilt to match `classtrace_asset_kit/classtrace-full-mockup.png`. The hero sec
 ### Landing Section
 
 File: `components/landing/landing-how-it-works.tsx`, `landing-timeline.tsx`, `landing-audience.tsx`, `landing-closing-cta.tsx`  
-Last updated: 2026-06-11 (full-mockup rebuild)
+Last updated: 2026-06-18 (how-it-works equal card height refinement)
 
 | Property | Class |
 |---|---|
 | Flow band shell | `border-y border-border/70 bg-secondary/60` with centered `font-display text-2xl/3xl` heading |
+| Step grid | `grid items-stretch gap-x-10 gap-y-12 sm:grid-cols-2 lg:grid-cols-4` so step cards equalize within each grid row |
 | Step card | `flex h-full flex-col rounded-card border border-border bg-card p-5 shadow-paper` |
 | Circled step numeral | `font-hand flex size-9 items-center justify-center rounded-full border-2 text-xl` colored per step (`border-primary text-primary`, validated, link) |
 | Step arrow connector | `font-hand absolute -right-9 top-24 text-xl text-muted-foreground` rendering `-->` (desktop only, `aria-hidden`) |
@@ -518,7 +519,7 @@ Last updated: 2026-06-11 (full-mockup rebuild)
 | Closing CTA layout | Three-column paper strip: left handwritten `font-hand text-[1.65rem] text-link` note + oversized arrow, centered headline with `hand-underline-rust` on "need it later", centered rust CTA button, `font-hand text-7xl text-primary` star, and visible right-edge punched holes (`size-4 rounded-full border border-border/90 bg-card shadow-inner`) over `ruled-lines` |
 
 **Pattern notes:**  
-Rebuilt to match the full mockup: the flow is a muted centered band with circled hand-drawn numbers and `-->` arrows between cards; previews sit at the bottom of each card. The timeline card is notebook paper with a red margin line. The audience section is centered taped labels, and the closing CTA uses handwritten asides on both flanks.
+Rebuilt to match the full mockup: the flow is a muted centered band with circled hand-drawn numbers and `-->` arrows between cards; previews sit at the bottom of each card and the step grid stretches card shells to matching heights. The timeline card is notebook paper with a red margin line. The audience section is centered taped labels, and the closing CTA uses handwritten asides on both flanks.
 
 ---
 
