@@ -52,9 +52,23 @@ describe("resolveCaptureStudents", () => {
   });
 
   it("blocks mixed resolved and unresolved mentions as unresolved", () => {
-    expect(resolveCaptureStudents(["Mary", "Unknown"], roster)).toEqual({
+    expect(resolveCaptureStudents(["Mary", "NotRostered"], roster)).toEqual({
       status: "unresolved_student",
-      unresolvedMentions: ["Unknown"],
+      unresolvedMentions: ["NotRostered"],
+    });
+  });
+
+  it("deduplicates repeated mentions of the same resolved student", () => {
+    expect(resolveCaptureStudents(["Mary", "@mary", "MARY"], roster)).toEqual({
+      status: "resolved_one_student",
+      student: roster[0],
+    });
+  });
+
+  it("only resolves students present in the active roster snapshot", () => {
+    expect(resolveCaptureStudents(["Stacy"], roster)).toEqual({
+      status: "unresolved_student",
+      unresolvedMentions: ["Stacy"],
     });
   });
 });

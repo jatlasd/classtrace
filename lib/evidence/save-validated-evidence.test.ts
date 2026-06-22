@@ -291,6 +291,10 @@ describe("saveValidatedEvidenceForWorkspace", () => {
       rosterStudentId: "student_mary",
       summary: "Mary - reading",
       evidenceType: "Academic check-in",
+      rawNote: "@Mary raw draft should not persist",
+      draftText: "browser draft should not persist",
+      originalCapture: "original capture should not persist",
+      sourceText: "source text should not persist",
       topic: 123,
       performance: null,
       behavior: ["used a strategy", 42, " "],
@@ -319,6 +323,9 @@ describe("saveValidatedEvidenceForWorkspace", () => {
           followUpNotes: undefined,
         }),
       })
+    );
+    expect(JSON.stringify(calls.create[0])).not.toMatch(
+      /rawNote|draftText|originalCapture|sourceText|browser draft|raw draft/i
     );
   });
 });

@@ -206,4 +206,22 @@ describe("archiveEvidenceForWorkspace", () => {
       error: "Failed to archive evidence.",
     });
   });
+
+  it("returns a safe generic error when the database lookup fails", async () => {
+    const { database } = buildDatabase({ throwOnFind: true });
+
+    const result = await archiveEvidenceForWorkspace(
+      {
+        workspaceId: "workspace_1",
+        input: { evidenceId: "evidence_1" },
+        now,
+      },
+      database
+    );
+
+    expect(result).toEqual({
+      success: false,
+      error: "Failed to archive evidence.",
+    });
+  });
 });

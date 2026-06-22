@@ -200,6 +200,8 @@ describe("getStudentTimelineRecordsForWorkspace", () => {
     expect(result?.student).not.toHaveProperty("schoolLocalId");
     expect(result?.evidenceRecords[0]).not.toHaveProperty("workspaceId");
     expect(result?.evidenceRecords[0]).not.toHaveProperty("rosterStudentId");
+    expect(result?.evidenceRecords[0]).not.toHaveProperty("validatedByUserId");
+    expect(result?.evidenceRecords[0]).not.toHaveProperty("deletedAt");
     expect(result?.evidenceRecords[0]).not.toHaveProperty("rawNote");
     expect(result?.evidenceRecords[0]).not.toHaveProperty("draftText");
     expect(result?.evidenceRecords[0]).not.toHaveProperty("originalCapture");
@@ -211,5 +213,24 @@ describe("getStudentTimelineRecordsForWorkspace", () => {
     expect(JSON.stringify(result)).not.toMatch(
       /rawNote|draftText|originalCapture|sourceText|clerkUserId|workspaceId/i
     );
+  });
+
+  it("queries only the verified selected student's active evidence records", async () => {
+    const { database, evidenceCalls } = buildDatabase();
+
+    await getStudentTimelineRecordsForWorkspace(
+      "workspace_1",
+      "student_mary",
+      database
+    );
+
+    expect(evidenceCalls).toHaveLength(1);
+    expect(evidenceCalls[0]).toMatchObject({
+      where: {
+        workspaceId: "workspace_1",
+        rosterStudentId: "student_mary",
+        archivedAt: null,
+      },
+    });
   });
 });

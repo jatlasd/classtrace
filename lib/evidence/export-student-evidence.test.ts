@@ -193,6 +193,49 @@ describe("exportStudentEvidenceForWorkspace", () => {
     expect(result.content.split("\r\n")).toHaveLength(1);
   });
 
+  it("exports only non-archived evidence for the verified active student", async () => {
+    const { database, evidenceCalls } = buildDatabase();
+
+    await exportStudentEvidenceForWorkspace(
+      {
+        workspaceId: "workspace_1",
+        input: { studentId: "student_mary" },
+      },
+      database
+    );
+
+    expect(evidenceCalls).toHaveLength(1);
+    expect(evidenceCalls[0]).toMatchObject({
+      where: {
+        workspaceId: "workspace_1",
+        rosterStudentId: "student_mary",
+        archivedAt: null,
+      },
+    });
+  });
+
+  it("does not include internal ids or raw draft fields in CSV output", async () => {
+    const { database } = buildDatabase();
+
+    const result = await exportStudentEvidenceForWorkspace(
+      {
+        workspaceId: "workspace_1",
+        input: { studentId: "student_mary" },
+      },
+      database
+    );
+
+    expect(result.success).toBe(true);
+
+    if (!result.success) {
+      return;
+    }
+
+    expect(result.content).not.toMatch(
+      /evidence_1|student_mary|workspace_1|clerkUserId|teacherProfileId|rawNote|draftText|originalCapture|sourceText/i
+    );
+  });
+
   it("does not query evidence when the student is missing, archived, or unowned", async () => {
     const { database, evidenceCalls } = buildDatabase({ student: null });
 
@@ -208,6 +251,25 @@ describe("exportStudentEvidenceForWorkspace", () => {
       success: false,
       error: "This student is not available to export.",
     });
+    expect(evidenceCalls).toEqual([]);
+  });
+
+  it("rejects blank student ids before querying", async () => {
+    const { database, studentCalls, evidenceCalls } = buildDatabase();
+
+    const result = await exportStudentEvidenceForWorkspace(
+      {
+        workspaceId: "workspace_1",
+        input: { studentId: " " },
+      },
+      database
+    );
+
+    expect(result).toEqual({
+      success: false,
+      error: "Choose a student before exporting evidence.",
+    });
+    expect(studentCalls).toEqual([]);
     expect(evidenceCalls).toEqual([]);
   });
 

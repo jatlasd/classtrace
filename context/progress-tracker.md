@@ -6,7 +6,7 @@ Update this file after every meaningful implementation change.
 
 ## Current Phase
 
-- Current status: Phase 5 Unit 23 implemented and verified with automated checks.
+- Current status: Phase 5 Unit 24 implemented and verified with automated checks.
 - Phase 2 complete — roster onboarding
 - Unit 02 complete and verified — Route Map and App Shell (`context/specs/02-route-map-and-app-shell.md`)
 - Unit 03 complete and verified — Public Landing Page UI (`context/specs/03-public-landing-page-ui.md`)
@@ -30,6 +30,7 @@ Update this file after every meaningful implementation change.
 - Unit 21 implemented and verified with automated checks - Individual Student Export (`context/specs/21-individual-student-export.md`)
 - Unit 22 implemented and verified with automated checks - Settings Page (`context/specs/22-settings-page.md`)
 - Unit 23 implemented and verified with automated checks - Privacy and Safety Copy Pass (`context/specs/23-privacy-and-safety-copy-pass.md`)
+- Unit 24 implemented and verified with automated checks - Test Coverage Pass (`context/specs/24-test-coverage-pass.md`)
 - Design system overhaul applied from `classtrace_asset_kit/` (warm paper palette, Fraunces + Inter + Caveat, landing copy/layout aligned to asset kit)
 
 ---
@@ -41,7 +42,43 @@ Update this file after every meaningful implementation change.
 - Unit 21 individual student export is implemented and verified.
 - Unit 22 settings page is implemented and verified.
 - Unit 23 privacy and safety copy pass is implemented and verified.
-- Next planned step is Unit 24 test coverage pass only after explicit human confirmation.
+- Unit 24 test coverage pass is implemented and verified.
+- Next planned step is Unit 25 final V1 review only after explicit human confirmation.
+
+---
+
+## Unit 24 - Test Coverage Pass (Implemented)
+
+Spec: `context/specs/24-test-coverage-pass.md`
+
+### What was completed
+
+- Created the Phase 5 Unit 24 spec for a focused test coverage pass.
+- Scoped the unit to strengthening tests around core V1 product invariants: mention/tag/clean-text parsing, student resolution, zero/unresolved/multi-student capture blocking, validated evidence save shape, raw draft non-persistence, ownership boundaries, archive/delete behavior, and individual-student export scoping.
+- Captured likely existing test files, likely touched domains, out-of-scope items, acceptance criteria, risks, and verification commands.
+- Kept product behavior changes, UI redesign, routes, API routes, Server Actions, Prisma schema changes, migrations, new dependencies, AI, analytics, uploads, sync, district/admin behavior, gradebook, IEP-writing, parent communication, full-account export, and all-student export out of scope.
+- Added `lib/note-processing/parse-raw-note.test.ts` with direct coverage for mention extraction, tag extraction, clean text, repeated mentions/tags, punctuation, hyphenated tags, and original raw-note preservation.
+- Strengthened `lib/students/resolve-capture-students.test.ts` for repeated mention deduping and active-roster snapshot scoping.
+- Strengthened `lib/evidence/save-validated-evidence.test.ts` so malformed runtime payloads containing raw draft-like fields still cannot write raw draft text into durable evidence create data.
+- Strengthened feed and timeline read tests to guard optional structured field cleanup and client-safe models without raw draft or internal ownership fields.
+- Strengthened individual student export tests for blank student ID rejection, one active student/non-archived evidence query scoping, raw draft exclusion, and internal ID exclusion from CSV content.
+- Strengthened evidence archive/delete helper tests for safe generic errors when the initial database lookup fails.
+- No runtime implementation files changed.
+
+### Verification
+
+- Initial non-escalated focused test run was blocked because `prisma generate` attempted to reach Prisma engine binaries through sandbox-blocked network access.
+- `npm.cmd run test -- lib/note-processing/parse-raw-note.test.ts lib/students/resolve-capture-students.test.ts lib/evidence/save-validated-evidence.test.ts lib/evidence/evidence-feed-records.test.ts lib/evidence/student-timeline-records.test.ts lib/evidence/export-student-evidence.test.ts lib/evidence/delete-evidence.test.ts lib/evidence/archive-evidence.test.ts` - pass after approved network-enabled rerun (8 files / 49 tests).
+- Initial non-escalated full test run was blocked by the same `prisma generate` network restriction.
+- `npm.cmd run test` - pass after approved network-enabled rerun (47 files / 241 tests). Existing archive/delete failure-path tests intentionally log contextual server errors while verifying safe generic error results.
+- `npm.cmd run lint` - pass.
+- Initial non-escalated build was blocked by the same `prisma generate` network restriction.
+- `npm.cmd run build` - pass after approved network-enabled rerun.
+
+### Remaining risks / follow-ups
+
+- Manual browser verification was not run because Unit 24 was tests-only and did not change UI/runtime behavior.
+- Unit 25 final V1 review remains the next planned unit.
 
 ---
 

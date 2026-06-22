@@ -145,6 +145,8 @@ describe("listEvidenceFeedRecordsForWorkspace", () => {
     expect(records[0]).not.toHaveProperty("workspaceId");
     expect(records[0]).not.toHaveProperty("teacherProfileId");
     expect(records[0]).not.toHaveProperty("clerkUserId");
+    expect(records[0]).not.toHaveProperty("validatedByUserId");
+    expect(records[0]).not.toHaveProperty("deletedAt");
     expect(records[0]).not.toHaveProperty("rawNote");
     expect(records[0]).not.toHaveProperty("draftText");
     expect(records[0]).not.toHaveProperty("originalCapture");
@@ -153,6 +155,29 @@ describe("listEvidenceFeedRecordsForWorkspace", () => {
     expect(JSON.stringify(records[0])).not.toMatch(
       /rawNote|draftText|originalCapture|sourceText|clerkUserId|workspaceId/i
     );
+  });
+
+  it("omits blank optional structured fields from feed records", async () => {
+    const { database } = buildDatabase([
+      {
+        ...buildRecord({ id: "evidence_with_blank_fields", classGroup: { name: " " } }),
+        topic: " ",
+        performance: "",
+        behavior: null,
+        followUpNotes: "   ",
+      },
+    ]);
+
+    const records = await listEvidenceFeedRecordsForWorkspace(
+      "workspace_1",
+      database
+    );
+
+    expect(records[0]).not.toHaveProperty("classGroupName");
+    expect(records[0]).not.toHaveProperty("topic");
+    expect(records[0]).not.toHaveProperty("performance");
+    expect(records[0]).not.toHaveProperty("behavior");
+    expect(records[0]).not.toHaveProperty("followUpNotes");
   });
 
   it("excludes evidence attached to archived roster students from default feed reads", async () => {
