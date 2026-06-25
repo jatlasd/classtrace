@@ -223,6 +223,12 @@ describe("Unit 23 privacy and safety copy guardrails", () => {
     expect(consoleLinesWithRawDraft).toEqual([]);
   });
 
+  it("keeps stale POC capture types text-only", () => {
+    const mockData = readFileSync(join(projectRoot, "lib", "mock-data.ts"), "utf8");
+
+    expect(mockData).not.toMatch(/attachment|photo|audio|upload|file/i);
+  });
+
   it("preserves cautious landing boundaries and teacher-validation language", () => {
     const landingBoundary = readFileSync(
       join(projectRoot, "components", "landing", "landing-not-dashboard.tsx"),

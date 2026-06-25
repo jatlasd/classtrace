@@ -752,6 +752,8 @@ Strengthen tests around core product rules.
 
 Run a final review before calling V1 complete.
 
+Status: completed on 2026-06-25. Unit 25 review findings were resolved in Unit 26, and the scoped V1 build path is complete.
+
 **Review checklist:**
 
 - Product scope matches `project-overview.md`.

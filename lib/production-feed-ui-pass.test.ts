@@ -36,9 +36,14 @@ describe("Unit 11 production evidence feed UI pass", () => {
     expect(appTopNav).toContain("Capture");
     expect(appTopNav).toContain("Students");
     expect(appTopNav).toContain("SignOutButton");
+    expect(appTopNav).toContain("useUser");
     expect(appTopNav).toContain("Sign out");
     expect(appTopNav).toContain("overflow-visible");
     expect(appTopNav).not.toContain("overflow-x-auto");
+    expect(appTopNav).not.toContain("@/lib/mock-data");
+    expect(appTopNav).not.toContain("Teacher");
+    expect(appTopNav).not.toContain("Notifications");
+    expect(appTopNav).not.toContain("Bell");
     expect(appTopNav).not.toContain("Review\", href: routes.feed");
     expect(appTopNav).not.toContain("Search\", href: routes.feed");
   });

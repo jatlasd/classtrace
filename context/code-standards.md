@@ -585,6 +585,9 @@ Currently approved dependencies:
 | `react-dom` | React DOM rendering |
 | `tailwindcss` | Styling |
 | `@tailwindcss/postcss` | Tailwind/PostCSS integration |
+| `@clerk/nextjs` | Authentication |
+| `@prisma/adapter-pg` | Prisma 7 Postgres adapter |
+| `@prisma/client` | Prisma database client |
 | `radix-ui` | Accessible UI primitives |
 | `shadcn` | Component system/tooling |
 | `lucide-react` | Icons |
@@ -593,6 +596,10 @@ Currently approved dependencies:
 | `clsx` | Conditional class names |
 | `tailwind-merge` | Tailwind class merging |
 | `tw-animate-css` | Animation utilities |
+| `dotenv` | Prisma config environment loading |
+| `pg` | Postgres driver used by Prisma adapter |
+| `prisma` | Prisma CLI and migrations |
+| `tsx` | TypeScript execution for tooling/scripts |
 | `vitest` | Unit tests |
 | `typescript` | Type checking |
 | `eslint` | Linting |
@@ -602,9 +609,6 @@ Approved future V1 dependencies when their unit begins:
 
 | Package | Role |
 |---|---|
-| `@clerk/nextjs` | Authentication |
-| `prisma` | Prisma CLI and migrations |
-| `@prisma/client` | Prisma database client |
 | `zod` | Input validation if chosen for forms/actions/API |
 
 Do not add these without explicit approval:

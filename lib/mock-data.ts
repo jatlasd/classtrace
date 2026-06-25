@@ -13,7 +13,6 @@ export type Capture = {
   timestamp: string;
   summary: string;
   followUp?: boolean;
-  attachment?: "notebook" | "photo";
   primaryStudent: string;
 };
 

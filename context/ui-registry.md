@@ -55,7 +55,7 @@ The landing page uses a page-wide fixed pseudo-element overlay to give all publi
 ### App Top Navigation
 
 File: `components/dashboard/app-top-nav.tsx`  
-Last updated: 2026-06-16
+Last updated: 2026-06-25
 
 | Property | Class |
 |---|---|
@@ -73,7 +73,7 @@ Last updated: 2026-06-16
 | Sign-out button | `inline-flex h-9 items-center gap-2 rounded-lg px-3 text-sm font-semibold text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground` |
 
 **Pattern notes:**  
-This is the active authenticated app shell as of Unit 11. Keep nav links limited to real routes/workflows; do not add inert "Review", "Search", or notification-style actions before those features exist. Account controls should expose a real Clerk sign-out action instead of implying an unopened account menu. The old App Sidebar and Mobile Bottom Navigation entries remain historical references, not the current shell direction.
+This is the active authenticated app shell as of Unit 11. Keep nav links limited to real routes/workflows; do not add inert "Review", "Search", or notification-style actions before those features exist. Account controls use the signed-in Clerk user for visible account name/initials and expose a real Clerk sign-out action instead of implying an unopened account menu. The old App Sidebar and Mobile Bottom Navigation entries remain historical references, not the current shell direction.
 
 ---
 

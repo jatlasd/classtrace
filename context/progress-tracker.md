@@ -6,7 +6,7 @@ Update this file after every meaningful implementation change.
 
 ## Current Phase
 
-- Current status: Phase 5 Unit 24 implemented and verified with automated checks.
+- Current status: ClassTrace V1 build path is complete as of 2026-06-25 after Unit 26 final-review follow-up fixes.
 - Phase 2 complete — roster onboarding
 - Unit 02 complete and verified — Route Map and App Shell (`context/specs/02-route-map-and-app-shell.md`)
 - Unit 03 complete and verified — Public Landing Page UI (`context/specs/03-public-landing-page-ui.md`)
@@ -31,19 +31,127 @@ Update this file after every meaningful implementation change.
 - Unit 22 implemented and verified with automated checks - Settings Page (`context/specs/22-settings-page.md`)
 - Unit 23 implemented and verified with automated checks - Privacy and Safety Copy Pass (`context/specs/23-privacy-and-safety-copy-pass.md`)
 - Unit 24 implemented and verified with automated checks - Test Coverage Pass (`context/specs/24-test-coverage-pass.md`)
+- Unit 25 review completed with automated checks and Chrome manual review - Final V1 Review (`context/specs/25-final-v1-review.md`)
+- Unit 26 implemented and verified with automated checks and Chrome manual review - Final Review Follow-Up Fixes (`context/specs/26-final-review-follow-up-fixes.md`)
 - Design system overhaul applied from `classtrace_asset_kit/` (warm paper palette, Fraunces + Inter + Caveat, landing copy/layout aligned to asset kit)
 
 ---
 
 ## Current Goal
 
-- Unit 19 permanent delete evidence is implemented and verified.
-- Unit 20 archive/delete student is implemented and verified.
-- Unit 21 individual student export is implemented and verified.
-- Unit 22 settings page is implemented and verified.
-- Unit 23 privacy and safety copy pass is implemented and verified.
-- Unit 24 test coverage pass is implemented and verified.
-- Next planned step is Unit 25 final V1 review only after explicit human confirmation.
+- ClassTrace V1 is complete for the scoped teacher-first evidence capture build path.
+- No implementation unit is currently in progress.
+- Current task: prepare the completed V1 work for push.
+
+---
+
+## V1 Completion Marker
+
+- V1 build path completed on 2026-06-25.
+- Final V1 Review completed in Unit 25.
+- Unit 25 findings were resolved in Unit 26.
+- Latest verification before completion: focused tests passed, full `npm.cmd run test` passed (47 files / 243 tests), `npm.cmd run lint` passed, `npm.cmd run build` passed, and Chrome manual review confirmed the Unit 26 user-visible fixes.
+- This marks the scoped V1 implementation complete; deployment setup and any release/compliance decisions remain separate human-owned decisions.
+
+---
+
+## Unit 25 - Final V1 Review (Completed)
+
+Spec: `context/specs/25-final-v1-review.md`
+
+### Findings
+
+1. **P2 - Authenticated top nav still shows mock account identity.**
+   - `components/dashboard/app-top-nav.tsx` imports `teacher` from `lib/mock-data.ts` and renders `MR` / `Ms. Rivera` in both mobile and desktop account areas.
+   - Chrome manual review confirmed `/app/feed`, `/app/roster`, `/app/settings`, and a student timeline show the placeholder identity while the settings page shows the real signed-in account (`Jatlas`, `jatlasdev2@gmail.com`) from Clerk.
+   - This is a V1 polish/account trust issue and matches the known Unit 22 follow-up.
+
+2. **P2 - Signed-in auth routes render blank instead of redirecting away.**
+   - Chrome manual review of `/sign-in` and `/sign-up` while signed in showed empty visible page text with titles "Sign in — ClassTrace" and "Sign up — ClassTrace".
+   - The page files render only Clerk `SignIn` / `SignUp` components (`app/sign-in/[[...sign-in]]/page.tsx`, `app/sign-up/[[...sign-up]]/page.tsx`) and do not add an app-level signed-in redirect.
+   - This does not expose protected data, but it creates a dead-end auth experience for signed-in users.
+
+3. **P2 - Authenticated top nav exposes an inert Notifications button.**
+   - `components/dashboard/app-top-nav.tsx` renders a `Bell` button with `aria-label="Notifications"` but no implemented notification workflow.
+   - `context/ui-context.md` says notification-style actions should appear only when behavior is implemented, and `context/ui-registry.md` says not to add inert notification-style actions before those features exist.
+
+4. **P3 - Dependency documentation is stale for the Prisma 7 implementation.**
+   - `package.json` uses `@prisma/adapter-pg`, `pg`, `dotenv`, and `tsx`.
+   - `context/code-standards.md` approved dependency tables list `prisma` and `@prisma/client` but do not list those actual supporting packages, even though `lib/db/prisma.ts` imports `@prisma/adapter-pg` and `prisma.config.ts` imports `dotenv/config`.
+
+5. **P3 - Progress tracker design decisions still contain historical UI decisions that conflict with current UI context.**
+   - `context/progress-tracker.md` still says to preserve the dark sidebar and use Plus Jakarta Sans as the main UI font.
+   - Current `context/ui-context.md` and `context/ui-registry.md` define the active authenticated direction as light top navigation with Fraunces, Inter, and Caveat.
+
+6. **P3 - A stale POC capture type still includes a photo attachment variant.**
+   - `lib/mock-data.ts` defines `attachment?: "notebook" | "photo"` on the POC `Capture` type.
+   - No live UI upload/photo behavior was found, and tests/build passed, but the stale type conflicts with the V1 text-only/file-free boundary and should be removed in a cleanup unit.
+
+### What passed review
+
+- Core protected data reads and mutations resolve the current workspace server-side.
+- Evidence schema and database-backed read/write helpers do not add raw draft note fields.
+- Saved evidence, feed reads, timeline reads, archive/delete, and individual student export are workspace/student scoped in source and tests.
+- Public landing copy did not show compliance or AI overclaims in Chrome review.
+- Authenticated feed, roster, settings, and student timeline rendered without visible compliance/AI overclaims in Chrome review.
+- Capture composer manually blocked no-student/unresolved capture and enabled capture for one resolved active roster student.
+- Multi-student capture was not manually tested because the active browser workspace had only one roster student; automated coverage covers the multi-student gate.
+
+### Verification
+
+- Initial `npm.cmd run test` failed because sandboxed network access blocked Prisma engine binary lookup (`ECONNREFUSED 127.0.0.1:9`).
+- `npm.cmd run test` passed after approved network-enabled rerun (47 files / 241 tests). Existing archive/delete failure-path tests intentionally logged contextual server errors while verifying safe generic error results.
+- `npm.cmd run lint` passed.
+- Initial `npm.cmd run build` failed because sandboxed network access blocked Prisma engine binary lookup (`ECONNREFUSED 127.0.0.1:9`).
+- `npm.cmd run build` passed after approved network-enabled rerun.
+- Chrome manual review used the existing `localhost:3000` tab.
+
+### Manual review notes
+
+- `/` rendered the public landing page with teacher-first copy and no detected AI/compliance overclaim.
+- `/app/feed` rendered signed-in feed content and showed the placeholder top-nav identity.
+- `/app/roster` rendered roster setup/management, active student row, archive/delete actions, and placeholder top-nav identity.
+- `/app/settings` rendered real Clerk/account details and app workspace details, while the top nav still showed placeholder identity.
+- `/app/students/[studentId]` rendered one active student's validated timeline and export action, while the top nav still showed placeholder identity.
+- `/sign-in` and `/sign-up` rendered blank visible content while signed in.
+- Console warnings observed: Clerk development-key warnings and one Postgres SSL mode warning from the local development database connection. These were not treated as blocking source findings, but deployment environment settings should use the intended production Clerk keys and explicit database SSL mode.
+
+### Recommended next action
+
+- Create a focused Unit 26 fix/review-follow-up spec or otherwise explicitly approve a narrow fix unit for the P2 issues before making a V1 release decision.
+
+---
+
+## Unit 26 - Final Review Follow-Up Fixes (Implemented)
+
+Spec: `context/specs/26-final-review-follow-up-fixes.md`
+
+### What changed
+
+- Updated `components/dashboard/app-top-nav.tsx` so the authenticated top nav uses the signed-in Clerk user for account name and initials instead of `lib/mock-data.ts`.
+- Removed the inert Notifications button from the authenticated top nav.
+- Updated `/sign-in` and `/sign-up` pages to redirect already-signed-in users to `/app`, preserving the existing roster/feed handoff.
+- Removed the stale `photo` attachment variant from the POC `Capture` type in `lib/mock-data.ts`.
+- Strengthened focused guardrail tests for top-nav account behavior, auth-route redirects, and text-only POC capture types.
+- Updated `context/ui-registry.md` to document that top-nav account controls use Clerk user data.
+- Updated `context/code-standards.md` so approved dependencies match the current Prisma 7 / Clerk implementation.
+- Updated the stale progress-tracker design decisions to the current light top-nav / Fraunces + Inter + Caveat direction.
+
+### Verification
+
+- Initial focused `npm.cmd run test -- lib/production-feed-ui-pass.test.ts lib/auth-routes.test.ts lib/privacy-safety-copy.test.ts` failed because sandboxed network access blocked Prisma engine binary lookup (`ECONNREFUSED 127.0.0.1:9`).
+- Focused test command passed after approved network-enabled rerun (3 files / 15 tests).
+- Initial full `npm.cmd run test` failed for the same sandboxed Prisma engine lookup.
+- Full `npm.cmd run test` passed after approved network-enabled rerun (47 files / 243 tests). Existing archive/delete failure-path tests intentionally logged contextual server errors while verifying safe generic error results.
+- `npm.cmd run lint` passed.
+- Initial `npm.cmd run build` failed for the same sandboxed Prisma engine lookup.
+- `npm.cmd run build` passed after approved network-enabled rerun.
+- Chrome manual review on the existing `localhost:3000` tab confirmed `/app/feed` no longer shows `Ms. Rivera`, `MR`, or Notifications. The immediate account loading state is neutral (`Account`, `A`), and after Clerk finished loading the top nav showed the real signed-in account display (`Jatlas`, `J`).
+- Chrome manual review confirmed signed-in visits to `/sign-in` and `/sign-up` redirect back into the authenticated app flow, ending at `/app/feed` for the current workspace.
+
+### Remaining risks / follow-ups
+
+- No remaining Unit 25 source findings are open after this fix pass.
 
 ---
 
@@ -1116,10 +1224,9 @@ Verification after refinement: `npm run lint` pass, `npm run build` pass, `npm r
 
 ## Next Up
 
-1. Implement Unit 24 (Test Coverage Pass) only after explicit human confirmation.
-2. Optionally run manual signed-in browser verification for recent evidence-management units when browser tooling is available.
-3. Optionally clean up stale progress-tracker design-decision notes that still reference the old dark sidebar / Plus Jakarta Sans direction.
-4. Optionally expand `README.md` with a short pointer to `AGENTS.md` and the context framework beyond the Unit 02 route updates already made.
+1. Commit and push the completed V1 changes.
+2. Human release/deployment decision.
+3. Optionally expand `README.md` with a short pointer to `AGENTS.md` and the context framework beyond the Unit 02 route updates already made.
 
 ---
 
@@ -1204,10 +1311,9 @@ Verification after refinement: `npm run lint` pass, `npm run build` pass, `npm r
 ## Design Decisions
 
 - Keep the current calm teacher-workspace design.
-- Preserve the dark sidebar and light main workspace pattern.
+- Use the light top navigation shell for the active authenticated app workspace.
 - Use existing semantic color tokens from `app/globals.css`.
-- Use Plus Jakarta Sans as the main UI font.
-- Use Caveat only as a rare handwritten accent.
+- Use Fraunces for display headings, Inter for app/body UI, and Caveat only for landing/editorial accents.
 - Use lucide-react icons.
 - Use Tailwind and shadcn/Radix-style components.
 - Do not switch to MUI, Chakra, Bootstrap, Ant Design, or a heavy admin template.
