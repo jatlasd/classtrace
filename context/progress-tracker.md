@@ -7,6 +7,7 @@ Update this file after every meaningful implementation change.
 ## Current Phase
 
 - Current status: ClassTrace V1 build path is complete as of 2026-06-25 after Unit 26 final-review follow-up fixes.
+- Post-V1 documentation reset completed: README, AGENTS, workflow, architecture/product framing, build-plan status, and active roadmap now treat completed V1 specs as historical records instead of the active queue.
 - Phase 2 complete — roster onboarding
 - Unit 02 complete and verified — Route Map and App Shell (`context/specs/02-route-map-and-app-shell.md`)
 - Unit 03 complete and verified — Public Landing Page UI (`context/specs/03-public-landing-page-ui.md`)
@@ -41,7 +42,7 @@ Update this file after every meaningful implementation change.
 
 - ClassTrace V1 is complete for the scoped teacher-first evidence capture build path.
 - No implementation unit is currently in progress.
-- Current task: prepare the completed V1 work for push.
+- Current task: review and commit the post-V1 documentation reset.
 
 ---
 
@@ -1224,15 +1225,15 @@ Verification after refinement: `npm run lint` pass, `npm run build` pass, `npm r
 
 ## Next Up
 
-1. Commit and push the completed V1 changes.
-2. Human release/deployment decision.
-3. Optionally expand `README.md` with a short pointer to `AGENTS.md` and the context framework beyond the Unit 02 route updates already made.
+1. Review the post-V1 documentation reset.
+2. Commit and push the completed V1 plus documentation changes.
+3. Human release/deployment decision.
+4. Choose the first active post-V1 lane from `context/post-v1-roadmap.md`.
 
 ---
 
 ## Open Questions
 
-- Should `README.md` get a fuller Phase 1 refresh beyond the Unit 02 route/path updates?
 - Exact Prisma schema has an initial migrated foundation, but future workflow units may refine fields as validation/export needs become concrete.
 - Exact deployment setup is not decided yet.
 

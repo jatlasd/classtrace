@@ -2,9 +2,9 @@
 
 ## Architecture Summary
 
-ClassTrace is a Next.js application that is currently a browser-only proof of concept and will evolve into a production V1 public app for individual teachers.
+ClassTrace is a Next.js application for individual teachers capturing student evidence. The scoped V1 build path is complete and uses authenticated, database-backed, teacher-owned data.
 
-The production V1 architecture is:
+The V1 architecture is:
 
 - Next.js application
 - Clerk authentication
@@ -22,23 +22,26 @@ The architecture must protect the core product rule: ClassTrace is a student evi
 
 ## Current State
 
-The current repo is a working local proof of concept.
+The current repo contains the completed scoped V1 app.
 
-Current POC characteristics:
+Current characteristics:
 
-- Browser-only
-- Uses `localStorage`
-- No authentication
-- No database
-- No backend ownership model
-- No real AI processing
-- Raw notes can currently persist in localStorage
-- Demo data can be loaded locally
-- JSON export exists for the POC feed
+- Public landing page
+- Clerk authentication
+- Protected `/app` workspace
+- One personal teacher workspace per user
+- Prisma 7 database access backed by Neon Postgres
+- Workspace-scoped roster students
+- Workspace-scoped validated evidence records
+- Deterministic note parsing and student resolution
+- Teacher validation before durable evidence save
+- Student timelines and individual student CSV export
+- Archive and permanent delete behavior
+- No generative AI
+- No file uploads
+- No durable raw draft note storage
 
-This is acceptable for the current POC only.
-
-Production V1 must replace local-only persistence with authenticated, database-backed, teacher-owned data.
+Post-V1 changes must preserve teacher-owned data boundaries and the student evidence model unless the human explicitly changes the product direction.
 
 ---
 
@@ -387,9 +390,9 @@ Framework-level caching and database query optimization are acceptable, but must
 
 ## Local Storage
 
-`localStorage` is acceptable only for the current POC or non-sensitive temporary UI state.
+`localStorage` is acceptable only for non-sensitive temporary UI state.
 
-Production V1 must not use localStorage as the durable source of truth for:
+V1 must not use localStorage as the durable source of truth for:
 
 - Rosters
 - Student records
@@ -398,7 +401,7 @@ Production V1 must not use localStorage as the durable source of truth for:
 - Validated evidence
 - Exports
 
-Potential acceptable localStorage uses in production:
+Potential acceptable localStorage uses:
 
 - Dismissed UI hints
 - Non-sensitive layout preferences
@@ -628,7 +631,7 @@ The codebase must never violate these rules.
 
 ### Data Invariants
 
-1. Production V1 must not use localStorage as the durable source of truth.
+1. V1 must not use localStorage as the durable source of truth.
 2. Permanent V1 evidence must store validated structured evidence only.
 3. Permanent V1 evidence must not store raw draft notes.
 4. Every roster student must belong to exactly one teacher workspace.
@@ -672,21 +675,21 @@ The codebase must never violate these rules.
 4. Do not add organization accounts or district admin dashboards in V1.
 5. Do not add parent communication features in V1.
 6. Do not add full-account or all-student export in V1.
-7. Do not add new external services unless they are part of an approved build unit.
+7. Do not add new external services unless they are part of an approved focused task/spec.
 
 ---
 
 ## Refactor Rules
 
-The current POC may be refactored as the production architecture is introduced.
+The completed V1 app may be refactored only when a focused post-V1 task needs it.
 
 Allowed:
 
-- Restructuring folders to support production boundaries
-- Replacing localStorage persistence with database-backed persistence
+- Small restructuring that clarifies existing production boundaries
+- Removing obsolete POC-only code when verified unused
 - Splitting large components into feature-specific components
 - Moving logic from UI components into `lib/` modules
-- Tightening current POC behavior to match V1 rules
+- Tightening legacy behavior to match V1 rules
 
 Not allowed without explicit human approval:
 
@@ -705,7 +708,7 @@ Major restructuring must be explained before implementation. The agent must stat
 
 ## Verification Expectations
 
-Every build unit must pass verification before it is considered done.
+Every meaningful change unit must pass verification before it is considered done.
 
 Expected checks:
 

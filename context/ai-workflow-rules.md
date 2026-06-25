@@ -16,17 +16,19 @@ Before making any code change, read these files in order:
 4. `context/ui-registry.md`
 5. `context/code-standards.md`
 6. `context/ai-workflow-rules.md`
-7. `context/build-plan.md`
+7. `context/post-v1-roadmap.md`
 8. `context/progress-tracker.md`
-9. The current unit spec in `context/specs/`, if one exists
+9. The current focused spec in `context/specs/`, if the current task explicitly uses one
 10. `AGENTS.md`
+
+`context/build-plan.md` and the completed numbered specs in `context/specs/` are historical V1 build records. Read them only when implementation history matters or the user asks about a completed unit.
 
 Do not start implementation until you understand:
 
 - What ClassTrace is
 - What V1 includes
 - What V1 excludes
-- What the current build unit is
+- What the current post-V1 task is
 - What files/folders own which responsibilities
 - What verification is required before the unit is complete
 
@@ -36,7 +38,7 @@ If the context files conflict, stop and ask for clarification before implementin
 
 ## Overall Approach
 
-Build ClassTrace using spec-driven, incremental development.
+Maintain ClassTrace using scoped, incremental development.
 
 Do not open-endedly “improve the app.”
 
@@ -46,17 +48,17 @@ Do not redesign the system during implementation.
 
 Do not combine unrelated work into one pass.
 
-Implement one clear unit at a time, verify it, update progress, then stop.
+Implement one clear change unit at a time, verify it, update progress, then stop.
 
 The correct workflow is:
 
 1. Read the context files.
-2. Read the current unit spec.
-3. Restate the goal of the unit.
+2. Read the current focused spec if one exists for the task.
+3. Restate the goal of the change.
 4. Identify the files likely to change.
-5. Implement only the unit.
+5. Implement only the scoped change.
 6. Run verification.
-7. Fix issues inside the unit scope.
+7. Fix issues inside the task scope.
 8. Update `context/progress-tracker.md`.
 9. Report what changed, what was verified, and what remains.
 
@@ -64,23 +66,17 @@ The correct workflow is:
 
 ## Current Project Phase
 
-The current branch is for setting up the JSM context framework.
+The scoped V1 build path is complete.
 
-Do not use this branch to implement production auth, database, roster changes, evidence persistence, or UI behavior unless explicitly instructed.
+The current phase is post-V1 stewardship:
 
-The goal of this phase is to create the project context system:
+- Prepare release/deployment decisions.
+- Fix bugs in small units.
+- Improve reliability and tests.
+- Polish V1 UX without expanding scope accidentally.
+- Plan beyond-V1 work before implementation.
 
-- `context/project-overview.md`
-- `context/architecture.md`
-- `context/code-standards.md`
-- `context/ai-workflow-rules.md`
-- `context/ui-context.md`
-- `context/ui-registry.md`
-- `context/build-plan.md`
-- `context/progress-tracker.md`
-- Future unit specs in `context/specs/`
-
-Phase 0 is complete on branch `implement-arch`. Implementation work begins only after that branch is merged and the user explicitly returns to code mode.
+Use `context/post-v1-roadmap.md` for current lanes and `context/progress-tracker.md` for immediate status.
 
 ---
 
@@ -88,16 +84,16 @@ Phase 0 is complete on branch `implement-arch`. Implementation work begins only 
 
 Scope is mandatory.
 
-When working on a unit:
+When working on a change unit:
 
-- Build only what the unit spec asks for.
+- Build only what the focused task/spec asks for.
 - Do not add extra features.
 - Do not add “nice to have” improvements.
-- Do not add dependencies unless the spec allows them.
+- Do not add dependencies unless the task/spec allows them.
 - Do not refactor unrelated files.
 - Do not rename files unless needed for the unit.
 - Do not change product behavior outside the unit.
-- Do not update architecture decisions unless the unit explicitly requires it.
+- Do not update architecture decisions unless the task explicitly requires it.
 - Do not silently change the design system.
 - Do not make speculative future-proofing changes.
 
@@ -107,18 +103,18 @@ If you notice something that should be improved but is outside the unit, write i
 
 ## One Unit at a Time
 
-Complete one build unit fully before starting another.
+Complete one change unit fully before starting another.
 
-A unit is complete only when:
+A change unit is complete only when:
 
 - The specified behavior is implemented
 - Relevant tests pass
 - Build/check commands pass when applicable
-- The implementation matches the spec
+- The implementation matches the scoped task/spec
 - Documentation/progress files are updated if needed
 - The agent reports verification honestly
 
-Do not begin the next unit in the same response unless the user explicitly asks.
+Do not begin another unrelated unit in the same response unless the user explicitly asks.
 
 ---
 
@@ -148,7 +144,7 @@ Examples of good units:
 
 - Add Clerk auth routes and protected app shell.
 - Add Prisma schema for teacher workspace and roster students.
-- Move roster read/write from localStorage to database.
+- Add an archived-evidence restore view.
 - Add guided empty state before roster setup.
 - Enforce exactly one resolved student in the capture composer.
 - Add individual student evidence export.
@@ -179,7 +175,7 @@ If a requirement is ambiguous, first check:
 
 If the answer is still unclear, stop and ask the user one specific question.
 
-Ask only the question needed to unblock the current unit.
+Ask only the question needed to unblock the current task.
 
 Do not ask a long list of questions.
 
@@ -189,7 +185,7 @@ Do not continue by making assumptions unless the user explicitly authorizes a be
 
 ## Handling Missing Requirements
 
-If a unit spec is missing required details, do not invent them.
+If a focused spec is missing required details, do not invent them.
 
 Stop and ask if the missing detail affects:
 
@@ -211,7 +207,7 @@ For small implementation details that do not affect product or architecture, mak
 
 ## Refactoring Rules
 
-Refactoring is allowed only when it supports the current unit.
+Refactoring is allowed only when it supports the current focused task.
 
 Allowed without asking:
 
@@ -232,7 +228,7 @@ Ask before doing:
 - Replacing existing UI patterns
 - Changing the app’s visual language
 - Changing the chosen stack
-- Removing existing working POC behavior before the replacement is ready
+- Removing existing working V1 behavior before the replacement is ready
 
 When asking about a major refactor, explain:
 
@@ -263,11 +259,11 @@ Do not modify these without explicit instruction:
 - Environment variable files
 - `AGENTS.md`
 - Existing context files outside the current documentation task
-- Public README unless the unit specifically includes documentation updates
+- Public README unless the task specifically includes documentation updates
 
 Exceptions:
 
-- A unit spec explicitly requires the change.
+- A focused spec explicitly requires the change.
 - A dependency must be added for the approved unit.
 - A config must change for the approved unit to work.
 - The user explicitly approves the modification.
@@ -322,7 +318,7 @@ Do not mark a unit complete until verification has passed or the user explicitly
 
 Future implementation units should use specs in `context/specs/`.
 
-A unit spec should include:
+A focused spec should include:
 
 - Goal
 - Design
@@ -465,7 +461,7 @@ Before adding a dependency, check:
 3. Can the existing shadcn/Radix-style components do this?
 4. Can existing utilities do this clearly?
 5. Is this dependency explicitly allowed in `code-standards.md`?
-6. Is this dependency required by the current unit spec?
+6. Is this dependency required by the current focused task/spec?
 
 If adding a dependency:
 
@@ -499,7 +495,7 @@ Rules:
 
 Before marking any unit complete, verify:
 
-- [ ] The implementation matches the unit spec.
+- [ ] The implementation matches the focused task/spec.
 - [ ] No unrelated features were added.
 - [ ] No out-of-scope V1 behavior was introduced.
 - [ ] TypeScript has no errors.

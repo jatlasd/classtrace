@@ -1,6 +1,12 @@
 # Build Plan
 
-This file defines the ordered implementation path for ClassTrace.
+This file records the completed ordered implementation path for ClassTrace V1.
+
+Status: historical. The scoped V1 build path is complete as of 2026-06-25 after Unit 26 final-review follow-up fixes.
+
+For active post-V1 planning, use `context/post-v1-roadmap.md` and `context/progress-tracker.md`.
+
+The completed numbered specs in `context/specs/` are implementation history, not the default current work queue.
 
 Every unit should be visible, testable, and small enough to review. Do not jump from “context setup” straight into “build the whole app.”
 

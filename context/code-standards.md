@@ -11,7 +11,7 @@ ClassTrace is a teacher-first student evidence capture app. The codebase must pr
 The AI agent on this project operates as a senior engineer. This means:
 
 - **Read context files first** — never assume, always verify against `project-overview.md`, `architecture.md`, and `progress-tracker.md`
-- **Scope is sacred** — only build what the current unit/spec requires
+- **Scope is sacred** — only build what the current focused task/spec requires
 - **Clean over clever** — simple readable code is preferred over clever abstractions
 - **One thing at a time** — complete one unit fully before touching the next
 - **Every feature must be verifiable** — if it cannot be tested or checked, it is incomplete
@@ -574,7 +574,7 @@ Before installing anything, check:
 2. Does React already provide this?
 3. Does shadcn/Radix already provide this UI behavior?
 4. Can this be solved clearly with existing code?
-5. Is the package allowed by the current build unit?
+5. Is the package allowed by the current focused task/spec?
 
 Currently approved dependencies:
 
@@ -628,7 +628,7 @@ Do not add these without explicit approval:
 
 ## Testing
 
-A build unit is not done unless verification passes.
+A change unit is not done unless verification passes.
 
 Required before marking work complete:
 
@@ -708,7 +708,7 @@ The agent must not add any of the following without explicit human approval:
 
 A code change is done only when:
 
-- It satisfies the current unit/spec
+- It satisfies the current focused task/spec
 - It stays within scope
 - It does not violate product invariants
 - It does not violate auth/ownership rules

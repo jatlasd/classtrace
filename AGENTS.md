@@ -28,15 +28,17 @@ The human remains the architect. The AI agent is the implementation engine.
 
 Before implementing or making architectural decisions, read these files in this exact order:
 
-1. `context/project-overview.md` — product definition, V1 scope, user flow, in-scope and out-of-scope features
+1. `context/project-overview.md` — product definition, V1 status, user flow, in-scope and out-of-scope features
 2. `context/architecture.md` — stack, system boundaries, storage model, auth/access model, and invariants
 3. `context/ui-context.md` — visual language, tokens, typography, layout patterns, component conventions, and icon rules
 4. `context/ui-registry.md` — actual component patterns already used in the app
 5. `context/code-standards.md` — TypeScript, Next.js, file organization, server actions, database, dependency, and testing rules
 6. `context/ai-workflow-rules.md` — agent workflow, scoping rules, ambiguity handling, verification, and stop conditions
-7. `context/build-plan.md` — ordered implementation phases and build units
-8. `context/progress-tracker.md` — current phase, completed work, open questions, and next steps
-9. Current unit spec in `context/specs/`, if one exists
+7. `context/post-v1-roadmap.md` — active post-V1 priorities, lanes, and planning rules
+8. `context/progress-tracker.md` — current status, completed work, open questions, and next steps
+9. Current focused spec in `context/specs/`, if the current task explicitly uses one
+
+`context/build-plan.md` and the completed numbered specs in `context/specs/` are historical V1 build records. Read them only when you need implementation history or when the user asks about a completed unit.
 
 If these files conflict with each other, stop and ask for clarification before coding.
 
@@ -103,7 +105,7 @@ The strongest early users are special education teachers, case managers, interve
 - V1 is text-only; do not add file, photo, audio, PDF, or attachment handling.
 - Student records are isolated per teacher in V1.
 - Do not add district/admin dashboards, shared student identities, SIS sync, gradebook features, IEP writing, or parent communication tools in V1.
-- Do not add dependencies, auth, database, external services, analytics, or background jobs unless the current unit/spec explicitly requires them.
+- Do not add dependencies, analytics, background jobs, queues, AI SDKs, file services, billing, organization features, or new external services unless the current focused task/spec explicitly requires them.
 - Update `context/progress-tracker.md` after every meaningful implementation change.
 - If a change affects product scope, architecture, code standards, workflow, or UI rules, update the relevant context file before continuing.
 - If the same issue remains after one focused correction attempt, stop and ask for human direction.
@@ -112,21 +114,16 @@ The strongest early users are special education teachers, case managers, interve
 
 ## Current Project Phase
 
-This repo began as a browser-only proof of concept.
+ClassTrace has moved beyond the pre-build architecture setup and completed the scoped V1 build path.
 
-Phase 0 (context and agent foundation) is complete. The JSM-style project foundation exists:
+The active project posture is post-V1 stewardship:
 
-- `context/project-overview.md`
-- `context/architecture.md`
-- `context/code-standards.md`
-- `context/ai-workflow-rules.md`
-- `context/ui-context.md`
-- `context/ui-registry.md`
-- `context/build-plan.md`
-- `context/progress-tracker.md`
-- Future unit specs in `context/specs/`
-
-Do not begin production implementation work until the user explicitly returns to code mode.
+- Keep the teacher-first evidence model stable.
+- Prepare release/deployment decisions carefully.
+- Fix bugs and polish V1 in small, reviewable units.
+- Plan any beyond-V1 expansion before implementing it.
+- Treat `context/post-v1-roadmap.md` as the active roadmap.
+- Treat `context/build-plan.md` and completed numbered specs as historical records, not the current queue.
 
 ---
 
@@ -135,7 +132,7 @@ Do not begin production implementation work until the user explicitly returns to
 Use the correct mode for the task:
 
 - Planning mode — clarify product, architecture, build order, or specs before coding.
-- Implementation mode — implement one approved unit/spec only.
+- Implementation mode — implement one approved focused task/spec only.
 - Review mode — inspect code against context files, invariants, and verification requirements.
 - Recovery mode — stop broad changes, identify what broke, and propose the smallest safe fix.
 
@@ -153,8 +150,9 @@ Default rules:
 - Touch only the files needed for the current task.
 - Do not perform broad refactors while implementing a feature.
 - Do not redesign the app while fixing a bug.
-- Do not introduce new dependencies unless the current unit/spec requires them.
-- Do not add auth, database, Prisma, Clerk, Neon, server actions, API routes, analytics, background jobs, queues, AI SDKs, or external services unless explicitly required by the current unit/spec.
+- Do not introduce new dependencies unless the current focused task/spec requires them.
+- Do not add analytics, background jobs, queues, AI SDKs, file services, billing, organization features, or new external services unless explicitly approved.
+- Do not change existing auth, database, Prisma, Clerk, Neon, server action, or API-route behavior unless the task specifically requires it.
 - Do not change product language, information architecture, or workflow assumptions without making that change explicit.
 
 One layer per task:
@@ -172,7 +170,7 @@ If the requested change crosses layers, explain why before coding and keep the i
 
 ## Refactor Rules
 
-Refactoring is allowed only when it supports the current unit.
+Refactoring is allowed only when it supports the current focused task.
 
 Allowed without asking:
 
@@ -193,7 +191,7 @@ Ask before doing:
 - Replacing existing UI patterns
 - Changing the app’s visual language
 - Changing the chosen stack
-- Removing existing working POC behavior before the replacement is ready
+- Removing existing working V1 behavior before the replacement is ready
 
 Do not surprise the user with a large rewrite.
 
@@ -203,7 +201,7 @@ Do not surprise the user with a large rewrite.
 
 The note-processing layer is central to ClassTrace.
 
-Use the existing deterministic pipeline unless a unit/spec explicitly changes it.
+Use the existing deterministic pipeline unless a focused task/spec explicitly changes it.
 
 General flow:
 

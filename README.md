@@ -1,57 +1,96 @@
-ClassTrace is a teacher-first student evidence capture app. The repo is currently a browser-only proof of concept moving toward production V1.
+# ClassTrace
 
-**For AI agents and contributors:** start with [`AGENTS.md`](AGENTS.md), then read the context files it lists in order.
+ClassTrace is a teacher-first student evidence capture app.
+
+The scoped V1 build path is complete. The app now uses a protected Next.js workspace with Clerk auth, Prisma/Neon persistence, roster setup, deterministic student-specific capture, teacher validation, database-backed evidence records, student timelines, archive/delete behavior, and individual student CSV export.
+
+ClassTrace is not a gradebook, SIS, IEP writer, parent communication tool, admin dashboard, or AI documentation generator. V1 stays focused on:
+
+```txt
+roster setup -> student-specific capture -> structured draft -> teacher validation -> saved evidence -> student timeline
+```
+
+## For AI Agents
+
+Start with [`AGENTS.md`](AGENTS.md). The old numbered build specs in `context/specs/` are now historical V1 implementation records, not the default active work queue.
+
+For current direction, read:
+
+- `context/project-overview.md`
+- `context/architecture.md`
+- `context/post-v1-roadmap.md`
+- `context/progress-tracker.md`
 
 ## Getting Started
 
-First, run the development server:
+Install dependencies:
+
+```bash
+npm install
+```
+
+Create `.env.local` from `.env.example` and provide Clerk plus database values:
+
+```env
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_replace_me
+CLERK_SECRET_KEY=sk_test_replace_me
+NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
+NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
+NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL=/app
+NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL=/app
+
+DATABASE_URL=postgresql://USER:PASSWORD@HOST:PORT/DATABASE?sslmode=require
+DIRECT_URL=postgresql://USER:PASSWORD@HOST:PORT/DATABASE?sslmode=require
+```
+
+Prepare Prisma:
+
+```bash
+npm run db:generate
+npm run db:migrate
+```
+
+Run the development server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Useful Commands
 
-## POC mode
+```bash
+npm run lint
+npm run test
+npm run build
+npm run db:studio
+```
 
-This branch supports a personal, browser-only proof of concept. No database, auth, or backend is required.
+## Current App Surface
 
-1. Run `npm run dev` and open the app at `/app/feed`.
-2. On the evidence feed, click **Load demo classroom** to populate 4 fake students and a broad evidence history — or go to **My roster** at `/app/roster` and add your own students (for example, display name `Jeremy`, handle `Jeremy` or `@Jeremy`).
-3. On the evidence feed, capture a note such as `@Jeremy was distractible during multiplying fractions review #behavior #fractions`.
-4. Refresh the browser — your capture stays in the evidence inbox.
-5. Open the student profile (for example `/app/students/jeremy`) — the capture appears on that student's timeline.
-6. Validate interpreted fields on a capture — refresh again and validation persists.
-7. Use **Export JSON** on the feed to download `classtrace-poc-export.json`.
+- `/` public landing page
+- `/sign-in` and `/sign-up` Clerk auth routes
+- `/app` authenticated workspace entry
+- `/app/feed` global evidence feed and capture composer
+- `/app/roster` guided roster setup and management
+- `/app/students/[studentId]` student timeline and one-student export
+- `/app/settings` read-only account/workspace settings and sign out
 
-**Limitations**
+## V1 Guardrails
 
-- Data lives in this browser only (`localStorage`); it does not sync across devices or browsers.
-- Not FERPA-ready or production-safe — for personal POC use only.
-- No authentication or database in POC mode; V1 uses deterministic parsing only, not generative AI.
-- Clearing site data or using **Clear captures** removes stored evidence from this browser.
+- Saved evidence must belong to exactly one resolved roster student.
+- Captures with zero or multiple resolved students cannot be saved.
+- Teacher validation is required before evidence becomes permanent.
+- Permanent evidence stores teacher-approved structured fields, not raw draft notes.
+- V1 uses deterministic parsing only.
+- V1 is text-only: no files, photos, audio, PDFs, or attachments.
+- Student records are isolated per teacher workspace.
+- No district/admin features, SIS sync, gradebook features, IEP writing, parent communication, AI, analytics, or billing are included in V1.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Project Documentation
 
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- [`AGENTS.md`](AGENTS.md) is the operating guide for AI coding agents.
+- [`context/post-v1-roadmap.md`](context/post-v1-roadmap.md) is the active post-V1 direction document.
+- [`context/progress-tracker.md`](context/progress-tracker.md) records current status and recent verification.
+- [`context/build-plan.md`](context/build-plan.md) and `context/specs/` preserve the completed V1 build history.

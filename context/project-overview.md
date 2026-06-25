@@ -4,7 +4,9 @@
 
 ClassTrace is a teacher-first student evidence capture app. Teachers set up a roster, capture student-specific observations quickly, review the system's structured interpretation, and save validated evidence to student timelines.
 
-The current repo is a browser-only proof of concept. It already supports a global evidence feed, roster management, quick captures, deterministic interpretation, validation, localStorage persistence, demo data, student timelines, and JSON export. The production V1 will keep the core product direction but move from a local POC to a real public app with authentication, database-backed storage, and stricter student-evidence rules.
+The scoped V1 build path is complete. The current app supports a public landing page, Clerk authentication, one personal teacher workspace, guided roster setup, manual and paste-list roster entry, deterministic student-specific capture, structured draft review, teacher-validated database-backed evidence, a global evidence feed, student timelines, archive/delete behavior, individual student CSV export, and basic settings.
+
+Post-V1 work should preserve the core product direction while preparing release/deployment decisions, strengthening reliability, and planning any beyond-V1 expansion deliberately.
 
 ClassTrace is not a teacher notebook. It is not for general notes, classwide reflections, lesson planning, parent messaging, gradebook behavior, IEP writing, or district/admin surveillance. The purpose of every capture is student evidence.
 
@@ -151,24 +153,9 @@ The default authenticated destination after onboarding is the global evidence fe
 
 ## Data Architecture
 
-### Current POC Data
+### V1 Data
 
-The current proof of concept stores data in browser localStorage.
-
-Current POC behavior includes:
-
-- Local roster data
-- Local capture data
-- Raw note persistence
-- Validation persistence
-- Demo classroom loading
-- JSON export
-
-This is acceptable for the current POC only. It is not production-safe.
-
-### Production V1 Data
-
-Production V1 should use:
+V1 uses:
 
 - Clerk for authentication
 - Neon Postgres for the database
@@ -305,6 +292,8 @@ If three teachers have the same real student, ClassTrace V1 treats those as thre
 - Teacher can export validated evidence for one student.
 - UI remains calm, fast, and teacher-native.
 - V1 does not include out-of-scope district, admin, gradebook, IEP, parent communication, AI, or file-upload features.
+
+These criteria were satisfied for the scoped V1 build path as of 2026-06-25. Deployment, release readiness, compliance/legal review, billing, analytics, and beyond-V1 product expansion remain separate human-owned decisions.
 
 ---
 
