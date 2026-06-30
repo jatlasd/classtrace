@@ -8,6 +8,7 @@ Update this file after every meaningful implementation change.
 
 - Current status: ClassTrace V1 build path is complete as of 2026-06-25 after Unit 26 final-review follow-up fixes.
 - Post-V1 documentation reset completed: README, AGENTS, workflow, architecture/product framing, build-plan status, and active roadmap now treat completed V1 specs as historical records instead of the active queue.
+- Phase 6 Unit 27 documentation reset completed: context docs now distinguish completed V1 from the active pre-beta contract.
 - Phase 2 complete — roster onboarding
 - Unit 02 complete and verified — Route Map and App Shell (`context/specs/02-route-map-and-app-shell.md`)
 - Unit 03 complete and verified — Public Landing Page UI (`context/specs/03-public-landing-page-ui.md`)
@@ -41,8 +42,8 @@ Update this file after every meaningful implementation change.
 ## Current Goal
 
 - ClassTrace V1 is complete for the scoped teacher-first evidence capture build path.
-- No implementation unit is currently in progress.
-- Current task: review and commit the post-V1 documentation reset.
+- Current active build path: `context/post-v1-pre-beta-build-plan.md`, starting with Phase 6.
+- Current task: Unit 27 Pre-Beta Product and Architecture Contract Reset completed and verified.
 
 ---
 
@@ -53,6 +54,31 @@ Update this file after every meaningful implementation change.
 - Unit 25 findings were resolved in Unit 26.
 - Latest verification before completion: focused tests passed, full `npm.cmd run test` passed (47 files / 243 tests), `npm.cmd run lint` passed, `npm.cmd run build` passed, and Chrome manual review confirmed the Unit 26 user-visible fixes.
 - This marks the scoped V1 implementation complete; deployment setup and any release/compliance decisions remain separate human-owned decisions.
+
+---
+
+## Unit 27 - Pre-Beta Product and Architecture Contract Reset (Implemented)
+
+Spec: `context/specs/27-pre-beta-product-and-architecture-contract-reset.md`
+
+### What changed
+
+- Added the active pre-beta build plan to the standard read order in `AGENTS.md` and `context/ai-workflow-rules.md`.
+- Updated product, architecture, code-standard, and roadmap language to distinguish completed V1 from the active pre-beta contract.
+- Documented that active pre-beta students must belong to exactly one active class while global capture remains student-specific and not class-scoped.
+- Documented the durable teacher-approved Evidence note rule for new beta saves.
+- Replaced misleading V1-only raw-note language with the pre-beta rule: original capture text remains temporary and must not become a hidden durable raw-capture record.
+- Documented the legacy-data posture: do not invent class assignments for existing students and do not fabricate Evidence note text for historical structured-only records.
+
+### Verification
+
+- Documentation scan passed for obsolete active-contract phrases around raw draft persistence, optional class organization, V1-only structured evidence storage, and pre-beta read-order omissions.
+- `git diff --check` passed with line-ending warnings only.
+
+### Remaining risks / follow-ups
+
+- Unit 28 must implement actual class-domain enforcement and migration/assignment behavior before class-first roster UI work begins.
+- Unit 31 must implement the actual Evidence note data/save boundary before UI surfaces rely on durable notes.
 
 ---
 
@@ -1225,10 +1251,9 @@ Verification after refinement: `npm run lint` pass, `npm run build` pass, `npm r
 
 ## Next Up
 
-1. Review the post-V1 documentation reset.
-2. Commit and push the completed V1 plus documentation changes.
-3. Human release/deployment decision.
-4. Choose the first active post-V1 lane from `context/post-v1-roadmap.md`.
+1. Create/finalize the Unit 28 focused spec before implementation.
+2. Begin Phase 7 Unit 28 only after human approval.
+3. Commit and push completed changes when the human requests it.
 
 ---
 
@@ -1265,8 +1290,8 @@ Verification after refinement: `npm run lint` pass, `npm run build` pass, `npm r
 - V1 uses deterministic parsing only.
 - V1 does not include generative AI.
 - V1 does not include file uploads, photo evidence, audio evidence, voice notes, or PDF uploads.
-- V1 permanent storage should contain teacher-validated structured evidence only.
-- V1 should not permanently store raw draft notes.
+- Completed V1 permanent storage contains teacher-validated structured evidence only.
+- Pre-beta permanent storage may add the teacher-approved Evidence note, while original capture text must not become a hidden durable raw-capture record.
 - V1 saved evidence must belong to exactly one resolved roster student.
 - Captures with zero students cannot be saved.
 - Captures with multiple students cannot be saved in V1.
@@ -1277,6 +1302,11 @@ Verification after refinement: `npm run lint` pass, `npm run build` pass, `npm r
 - Deleting a student also deletes that student’s evidence records after sufficient warning.
 - The initial schema uses database cascade from `RosterStudent` to `EvidenceRecord`; later UI/actions must still require explicit warning before triggering permanent delete.
 - V1 export is individual-student export only.
+- Pre-beta active students must belong to exactly one active class.
+- Pre-beta classes organize roster setup and student management only; capture remains global.
+- New beta evidence saves must include a durable teacher-approved Evidence note.
+- Original capture text remains temporary and must not become a hidden durable raw-capture record.
+- Legacy V1 structured-only records must not receive fabricated Evidence note text.
 - Current calm ClassTrace visual style should be preserved.
 - Current Tailwind + shadcn/Radix-style component approach should be preserved.
 - Major refactors are allowed only when they support the current unit and are explained first.
@@ -1368,3 +1398,5 @@ Verification after refinement: `npm run lint` pass, `npm run build` pass, `npm r
 - Unit 21 implementation completed on 2026-06-17. `/app/students/[studentId]` now exposes a restrained "Export evidence" action for active students with validated evidence. The export path resolves the current workspace server-side, verifies the selected active student, reads only that student's non-archived validated evidence, and returns a generated CSV payload. Automated focused tests, lint, full tests, and build passed.
 - Unit 22 spec was created on 2026-06-18. It scopes Settings Page as a read-only authenticated account/workspace settings surface with sign out. It explicitly excludes editable settings, organizations, workspace switching, district/admin settings, billing, notifications, export controls, account deletion, privacy/legal pages, AI, uploads, SIS integrations, schema changes, migrations, API routes, Server Actions unless explicitly expanded, new dependencies, and app-shell redesign.
 - Unit 22 implementation added a server-only settings data helper, a read-only `/app/settings` account/workspace surface, and a small Clerk sign-out Client Component. Automated focused tests, lint, full tests, and build passed.
+- Unit 27 spec was created on 2026-06-29. It scopes the Phase 6 pre-beta contract reset as a documentation-only update to distinguish completed V1 from the active pre-beta contract: class-first roster with exactly one active class per active student, durable teacher-approved Evidence notes for new beta saves, honest legacy V1 data handling, and no runtime behavior changes unless a later approved unit requires them.
+- Unit 27 implementation completed on 2026-06-29. The source-of-truth docs now include the active pre-beta build path, class-first roster contract, durable teacher-approved Evidence note contract, and honest legacy V1 data posture. No runtime code, schema, migration, or UI files were changed.

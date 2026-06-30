@@ -1,8 +1,8 @@
 # Post-V1 Roadmap
 
-This is the active planning document for ClassTrace after completion of the scoped V1 build path.
+This is the strategic planning document for ClassTrace after completion of the scoped V1 build path.
 
-The completed V1 unit specs in `context/specs/` and the original `context/build-plan.md` are historical implementation records. Future work should not treat those files as the default work queue.
+The active pre-beta feature sequence is `context/post-v1-pre-beta-build-plan.md`. The completed V1 unit specs in `context/specs/` and the original `context/build-plan.md` are historical implementation records. Future work should not treat those files as the default work queue.
 
 ---
 
@@ -35,11 +35,18 @@ V1 includes:
 
 Deployment, release readiness, compliance review, privacy/legal pages, billing, analytics, organizations, AI, uploads, and school/district workflows are not part of completed V1.
 
+The current active feature build path is the post-V1/pre-beta plan. It intentionally changes a few V1 assumptions while preserving the teacher-first evidence model:
+
+- Classes become the required organizing structure for active students.
+- Capture remains global and student-specific.
+- New beta evidence saves include a durable teacher-approved Evidence note.
+- Student reports remain per-student and read-only.
+
 ---
 
 ## How Future Work Should Be Structured
 
-Future work should be managed as small post-V1 change units, not as a continuation of the old numbered pre-release build plan.
+Future work should be managed as small post-V1/pre-beta change units, not as a continuation of the old numbered V1 build plan.
 
 Each meaningful change should have:
 
@@ -93,7 +100,7 @@ Guardrails:
 
 - Do not claim FERPA compliance, legal de-identification, audit readiness, district approval, or production safety without human legal review.
 - Do not introduce telemetry casually.
-- Do not store raw draft notes permanently.
+- Do not store original capture text as a hidden durable raw-capture record.
 
 ### 3. Reliability And Quality
 

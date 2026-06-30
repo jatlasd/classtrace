@@ -17,9 +17,10 @@ Before making any code change, read these files in order:
 5. `context/code-standards.md`
 6. `context/ai-workflow-rules.md`
 7. `context/post-v1-roadmap.md`
-8. `context/progress-tracker.md`
-9. The current focused spec in `context/specs/`, if the current task explicitly uses one
-10. `AGENTS.md`
+8. `context/post-v1-pre-beta-build-plan.md` when pre-beta work is in scope
+9. `context/progress-tracker.md`
+10. The current focused spec in `context/specs/`, if the current task explicitly uses one
+11. `AGENTS.md`
 
 `context/build-plan.md` and the completed numbered specs in `context/specs/` are historical V1 build records. Read them only when implementation history matters or the user asks about a completed unit.
 
@@ -28,7 +29,7 @@ Do not start implementation until you understand:
 - What ClassTrace is
 - What V1 includes
 - What V1 excludes
-- What the current post-V1 task is
+- What the current post-V1/pre-beta task is
 - What files/folders own which responsibilities
 - What verification is required before the unit is complete
 
@@ -68,15 +69,16 @@ The correct workflow is:
 
 The scoped V1 build path is complete.
 
-The current phase is post-V1 stewardship:
+The current phase is post-V1/pre-beta stewardship:
 
-- Prepare release/deployment decisions.
+- Build the active pre-beta feature path from `context/post-v1-pre-beta-build-plan.md` one approved unit at a time.
+- Prepare release/deployment decisions separately from feature implementation.
 - Fix bugs in small units.
 - Improve reliability and tests.
-- Polish V1 UX without expanding scope accidentally.
+- Polish UX without expanding scope accidentally.
 - Plan beyond-V1 work before implementation.
 
-Use `context/post-v1-roadmap.md` for current lanes and `context/progress-tracker.md` for immediate status.
+Use `context/post-v1-pre-beta-build-plan.md` for the active Phase 6+ feature sequence, `context/post-v1-roadmap.md` for broader post-V1 lanes, and `context/progress-tracker.md` for immediate status.
 
 ---
 
@@ -351,7 +353,7 @@ The agent must never implement:
 - Multi-student captures in V1
 - Saved captures with no resolved roster student
 - Saved evidence without teacher validation
-- Raw draft note persistence in production V1
+- Hidden durable raw-capture persistence
 - AI interpretation in V1
 - AI-generated evidence
 - File uploads in V1
@@ -398,11 +400,12 @@ The agent must not:
 
 The agent must preserve these evidence rules:
 
-- Every saved V1 evidence record belongs to exactly one roster student.
+- Every saved evidence record belongs to exactly one roster student.
 - A capture with zero resolved students cannot be saved.
 - A capture with multiple students cannot be saved.
 - Evidence must be teacher-validated before permanent save.
-- Permanent V1 evidence must not store raw draft note text.
+- Original capture text must not become a hidden durable raw-capture record.
+- New pre-beta evidence saves require a teacher-reviewed Evidence note stored exactly as approved.
 - Parser output is draft-only.
 - Deterministic suggestions must not become final evidence automatically.
 
@@ -506,8 +509,9 @@ Before marking any unit complete, verify:
 - [ ] Auth/data changes enforce ownership server-side.
 - [ ] UI changes work on desktop and mobile sizes.
 - [ ] No obvious browser console errors exist.
-- [ ] No raw draft notes are permanently stored in production V1.
-- [ ] Captures still require exactly one resolved roster student in V1.
+- [ ] No hidden durable raw-capture record is introduced.
+- [ ] Captures still require exactly one resolved roster student.
+- [ ] Pre-beta roster/evidence changes preserve required active class assignment and teacher-approved Evidence notes where in scope.
 - [ ] Teacher validation is preserved.
 - [ ] Documentation/progress files are updated if needed.
 
@@ -545,7 +549,7 @@ Stop and ask the user before continuing if:
 - The unit conflicts with V1 scope.
 - The unit requires major restructuring.
 - The unit requires a new dependency not already approved.
-- The unit would store raw draft notes permanently.
+- The unit would store original capture text as a hidden durable raw-capture record.
 - The unit would add AI.
 - The unit would add file uploads.
 - The unit would add multi-student captures.

@@ -41,7 +41,14 @@ Current characteristics:
 - No file uploads
 - No durable raw draft note storage
 
-Post-V1 changes must preserve teacher-owned data boundaries and the student evidence model unless the human explicitly changes the product direction.
+Post-V1/pre-beta changes must preserve teacher-owned data boundaries and the student evidence model unless the human explicitly changes the product direction. The active feature sequence is `context/post-v1-pre-beta-build-plan.md`.
+
+The active pre-beta contract intentionally supersedes two completed V1 assumptions:
+
+- Every active student must belong to exactly one active class.
+- New beta evidence saves must include a durable teacher-approved Evidence note.
+
+These changes do not make capture class-scoped. The capture composer remains global and every saved evidence record still belongs to exactly one resolved roster student.
 
 ---
 
@@ -194,7 +201,8 @@ Responsibilities:
 Rules:
 
 - Permanent evidence must represent teacher-approved fields.
-- Raw draft note text must not be part of the permanent V1 evidence record.
+- Original capture text must not be stored as a hidden durable raw-capture record.
+- New pre-beta evidence records must include the teacher-approved Evidence note exactly as approved.
 - Evidence must belong to exactly one resolved roster student in V1.
 - Evidence must belong to the authenticated teacher’s workspace.
 
@@ -215,6 +223,7 @@ Responsibilities:
 Rules:
 
 - Students are teacher-owned roster entries in V1.
+- During pre-beta, every active student must belong to exactly one active class.
 - Students are not global identities.
 - There is no cross-teacher student matching in V1.
 - A capture cannot be saved unless the selected student resolves to an existing roster entry owned by the current teacher.
@@ -315,8 +324,8 @@ Expected database entities:
 | `TeacherProfile` | Stores teacher display/profile settings not owned by Clerk |
 | `Workspace` | One personal workspace per teacher in V1 |
 | `RosterStudent` | Teacher-owned student roster entry |
-| `ClassGroup` | Optional class/group/period organization |
-| `EvidenceRecord` | Permanent validated structured evidence |
+| `ClassGroup` | Teacher-workspace-owned class record; required for active students during pre-beta |
+| `EvidenceRecord` | Permanent validated evidence with structured metadata and, for new beta saves, a teacher-approved Evidence note |
 | `EvidenceTag` or tag fields | Tags/categories attached to validated evidence |
 | `ImportBatch` or import preview data if needed | Optional temporary support for roster import workflow |
 | `Archive/Delete metadata` | Tracks archive status and timestamps where needed |
@@ -327,7 +336,9 @@ V1 database records must be scoped to the authenticated teacher’s personal wor
 
 ## Evidence Storage
 
-Permanent evidence records store validated structured data only.
+Completed V1 permanent evidence records store validated structured data only.
+
+New beta evidence records store validated structured metadata plus a teacher-approved Evidence note. The Evidence note is durable because the teacher reviews and can edit it before saving.
 
 A saved evidence record may include:
 
@@ -336,6 +347,7 @@ A saved evidence record may include:
 - Teacher/user owner ID
 - Roster student ID
 - Optional class/group ID
+- Teacher-approved Evidence note for new beta records
 - Validated evidence summary/text
 - Evidence type/category
 - Topic/skill
@@ -349,7 +361,7 @@ A saved evidence record may include:
 - Updated timestamp
 - Archived timestamp if archived
 
-A saved V1 evidence record must not permanently store the raw draft note.
+A saved evidence record must not permanently store the original capture as a hidden raw-capture field.
 
 Raw draft text may exist temporarily:
 
@@ -357,7 +369,9 @@ Raw draft text may exist temporarily:
 - In a local draft before submission
 - In server memory during a request if server-side parsing is used
 
-Raw draft text must not be written to the permanent production evidence table in V1.
+Raw draft text must not be written to the permanent production evidence table as original capture text. New beta saves may write only the teacher-reviewed Evidence note, exactly as shown and approved in review.
+
+Legacy V1 evidence records without an Evidence note must remain honest structured-only records. Do not fabricate note text from summaries or metadata.
 
 ---
 
@@ -632,13 +646,16 @@ The codebase must never violate these rules.
 ### Data Invariants
 
 1. V1 must not use localStorage as the durable source of truth.
-2. Permanent V1 evidence must store validated structured evidence only.
-3. Permanent V1 evidence must not store raw draft notes.
+2. Permanent evidence must store teacher-validated evidence only.
+3. Original capture text must not become a hidden durable raw-capture record.
 4. Every roster student must belong to exactly one teacher workspace.
 5. Every evidence record must belong to exactly one teacher workspace.
 6. Every evidence record must belong to exactly one roster student.
 7. Student records must not be shared or matched across teachers in V1.
 8. Deleted student records must not leave active orphaned evidence records.
+9. During pre-beta, every active student must belong to exactly one active class.
+10. New beta evidence saves must include a non-empty teacher-approved Evidence note.
+11. Legacy V1 structured-only evidence must not receive fabricated Evidence note text.
 
 ### Auth and Access Invariants
 

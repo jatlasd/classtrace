@@ -34,9 +34,10 @@ Before implementing or making architectural decisions, read these files in this 
 4. `context/ui-registry.md` — actual component patterns already used in the app
 5. `context/code-standards.md` — TypeScript, Next.js, file organization, server actions, database, dependency, and testing rules
 6. `context/ai-workflow-rules.md` — agent workflow, scoping rules, ambiguity handling, verification, and stop conditions
-7. `context/post-v1-roadmap.md` — active post-V1 priorities, lanes, and planning rules
-8. `context/progress-tracker.md` — current status, completed work, open questions, and next steps
-9. Current focused spec in `context/specs/`, if the current task explicitly uses one
+7. `context/post-v1-roadmap.md` — post-V1 lanes and planning rules
+8. `context/post-v1-pre-beta-build-plan.md` — active pre-beta feature build path, when pre-beta work is in scope
+9. `context/progress-tracker.md` — current status, completed work, open questions, and next steps
+10. Current focused spec in `context/specs/`, if the current task explicitly uses one
 
 `context/build-plan.md` and the completed numbered specs in `context/specs/` are historical V1 build records. Read them only when you need implementation history or when the user asks about a completed unit.
 
@@ -96,14 +97,18 @@ The strongest early users are special education teachers, case managers, interve
 ## Rules That Never Change
 
 - ClassTrace is for student evidence, not general teacher notes.
-- V1 saved evidence must belong to exactly one resolved roster student.
+- Saved evidence must belong to exactly one resolved roster student.
 - Captures with zero resolved students must not be saved.
-- Captures with multiple students must not be saved in V1.
+- Captures with multiple students must not be saved.
 - Teacher validation is required before evidence becomes permanent.
-- Production V1 must not permanently store raw draft notes.
-- V1 uses deterministic parsing only; do not add generative AI.
-- V1 is text-only; do not add file, photo, audio, PDF, or attachment handling.
+- Original capture text may be temporary during compose/review, but must not be stored as a hidden durable raw-capture record.
+- Pre-beta evidence may permanently store only the teacher-reviewed Evidence note, exactly as approved by the teacher.
+- Deterministic parsing only; do not add generative AI.
+- Text-only evidence; do not add file, photo, audio, PDF, or attachment handling.
 - Student records are isolated per teacher in V1.
+- During pre-beta, every active student must belong to exactly one active class.
+- Classes organize roster setup and student management only; capture remains global and student-specific.
+- Do not invent class assignments or fabricate Evidence note text for legacy V1 data.
 - Do not add district/admin dashboards, shared student identities, SIS sync, gradebook features, IEP writing, or parent communication tools in V1.
 - Do not add dependencies, analytics, background jobs, queues, AI SDKs, file services, billing, organization features, or new external services unless the current focused task/spec explicitly requires them.
 - Update `context/progress-tracker.md` after every meaningful implementation change.
@@ -116,13 +121,14 @@ The strongest early users are special education teachers, case managers, interve
 
 ClassTrace has moved beyond the pre-build architecture setup and completed the scoped V1 build path.
 
-The active project posture is post-V1 stewardship:
+The active project posture is post-V1/pre-beta stewardship:
 
 - Keep the teacher-first evidence model stable.
-- Prepare release/deployment decisions carefully.
-- Fix bugs and polish V1 in small, reviewable units.
-- Plan any beyond-V1 expansion before implementing it.
-- Treat `context/post-v1-roadmap.md` as the active roadmap.
+- Build the pre-beta feature path in `context/post-v1-pre-beta-build-plan.md` one approved unit at a time.
+- Preserve global one-student capture while adding class-first roster organization and teacher-approved Evidence notes.
+- Prepare release/deployment decisions separately from the feature build.
+- Fix bugs and polish in small, reviewable units.
+- Treat `context/post-v1-roadmap.md` as strategic context and `context/post-v1-pre-beta-build-plan.md` as the active pre-beta sequence when working on Phase 6 and later.
 - Treat `context/build-plan.md` and completed numbered specs as historical records, not the current queue.
 
 ---
@@ -230,9 +236,9 @@ ClassTrace must distinguish these states:
 
 Do not collapse these states.
 
-Production V1 permanent evidence must be teacher-validated structured evidence only.
+Completed V1 permanent evidence was teacher-validated structured evidence only.
 
-Raw draft note text may be temporary during composing/review, but must not become the durable production record.
+For pre-beta work, original capture text may be temporary during composing/review, but must not become a hidden durable raw-capture record. The teacher-reviewed Evidence note may become durable because the teacher sees, edits, and approves it before saving.
 
 ---
 
@@ -245,7 +251,7 @@ For code changes:
 - Do not send student notes to external AI APIs.
 - Do not add telemetry or analytics casually.
 - Do not log raw notes.
-- Do not permanently store raw draft notes in production V1.
+- Do not store original capture text as a hidden durable raw-capture record.
 - Do not add demo data that looks like real student records.
 - Do not include disability labels, medical details, discipline conclusions, or sensitive family information in demo data unless explicitly provided as safe fictional content.
 - Do not use real student names.
