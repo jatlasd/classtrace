@@ -525,6 +525,7 @@ export async function getClassRosterReadinessForWorkspace(
   return {
     activeStudentCount,
     activeStudentsWithoutActiveClassCount,
-    readyForClassFirstRoster: activeStudentsWithoutActiveClassCount === 0,
+    readyForClassFirstRoster:
+      activeStudentCount > 0 && activeStudentsWithoutActiveClassCount === 0,
   };
 }

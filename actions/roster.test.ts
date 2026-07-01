@@ -37,6 +37,19 @@ describe("roster server actions", () => {
     );
   });
 
+  it("updates roster students through current workspace resolution", () => {
+    expect(source).toContain("updateRosterStudentForWorkspace");
+    expect(source).toContain("UpdateRosterStudentActionInput");
+    expect(source).toContain("workspace.workspaceId");
+    const updateAction = source.match(
+      /export async function updateRosterStudent[\s\S]*?\n\}/
+    );
+    expect(updateAction?.[0]).toBeDefined();
+    expect(updateAction?.[0]).not.toMatch(
+      /input\.workspaceId|input\.teacherProfileId|input\.clerkUserId/
+    );
+  });
+
   it("deletes roster students through current workspace resolution", () => {
     expect(source).toContain("deleteRosterStudentForWorkspace");
     expect(source).toContain("DeleteRosterStudentActionInput");

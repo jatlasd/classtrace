@@ -11,13 +11,19 @@ const inputClassName =
 
 type ManualStudentEntryFormProps = {
   isFirstStudent: boolean;
+  classGroupId: string;
+  className: string;
 };
 
 function normalizeHandleInput(value: string): string {
   return value.trim().replace(/^@+/, "").trim().toLowerCase();
 }
 
-export function ManualStudentEntryForm({ isFirstStudent }: ManualStudentEntryFormProps) {
+export function ManualStudentEntryForm({
+  isFirstStudent,
+  classGroupId,
+  className,
+}: ManualStudentEntryFormProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [displayName, setDisplayName] = useState("");
@@ -63,7 +69,7 @@ export function ManualStudentEntryForm({ isFirstStudent }: ManualStudentEntryFor
       const result = await createRosterStudent({
         displayName,
         mentionHandle,
-        classGroupId: "",
+        classGroupId,
         schoolLocalId: schoolLocalId.trim() || undefined,
       });
 
@@ -89,6 +95,7 @@ export function ManualStudentEntryForm({ isFirstStudent }: ManualStudentEntryFor
         </h2>
         <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
           Use a name and handle your capture notes will recognize.
+          This student will be added to {className}.
         </p>
       </div>
 
@@ -152,7 +159,7 @@ export function ManualStudentEntryForm({ isFirstStudent }: ManualStudentEntryFor
             disabled={isPending}
           />
           <p className="text-xs leading-relaxed text-muted-foreground">
-            Students must belong to a class before saving.
+            Optional. Leave blank if you do not use local IDs.
           </p>
         </div>
       </div>

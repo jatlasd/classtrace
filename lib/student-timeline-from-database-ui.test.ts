@@ -47,11 +47,12 @@ describe("Unit 17 student timeline from database UI bridge", () => {
     expect(timelineHelper).not.toMatch(/rawNote|draftText|originalCapture|sourceText/);
   });
 
-  it("exposes roster-to-timeline navigation without adding management actions", () => {
+  it("exposes roster-to-timeline navigation without adding timeline export actions to roster", () => {
     expect(rosterPage).toContain("routes.student(student.id)");
     expect(rosterPage).toContain("Open ${student.displayName} timeline");
     expect(rosterPage).toContain("Open timeline");
-    expect(rosterPage).not.toMatch(/\b(Archive|Delete|Export)\b/);
+    expect(rosterPage).toContain("RosterStudentRowActions");
+    expect(rosterPage).not.toMatch(/\bExport\b/);
     expect(timelineComponent).toContain("StudentEvidenceExportAction");
     expect(timelineComponent).not.toMatch(/\b(Archive|Delete)\b/);
   });

@@ -13,7 +13,8 @@ type RosterStudentImportRecord = {
   displayName: string;
   mentionHandle: string;
   schoolLocalId: string | null;
-  classGroup: { name: string } | null;
+  classGroupId: string | null;
+  classGroup: { name: string; archivedAt: Date | null } | null;
   createdAt: Date;
 };
 
@@ -93,6 +94,7 @@ const rosterImportDatabase: RosterImportDatabase = {
             classGroup: {
               select: {
                 name: true,
+                archivedAt: true,
               },
             },
           },
@@ -116,7 +118,12 @@ function toRosterStudentDisplay(record: RosterStudentImportRecord): RosterStuden
     displayName: record.displayName,
     mentionHandle: record.mentionHandle,
     schoolLocalId: record.schoolLocalId,
-    classGroupName: record.classGroup?.name ?? null,
+    classGroupId: record.classGroupId,
+    classGroupName:
+      record.classGroup && record.classGroup.archivedAt === null
+        ? record.classGroup.name
+        : null,
+    hasActiveClass: Boolean(record.classGroupId && record.classGroup?.archivedAt === null),
     createdAt: record.createdAt,
   };
 }

@@ -30,6 +30,7 @@ describe("Unit 09 roster import UI", () => {
   it("keeps roster rows connected to database-backed student timelines", () => {
     expect(rosterPageSource).toContain("routes.student(student.id)");
     expect(rosterPageSource).toContain("Open ${student.displayName} timeline");
-    expect(rosterPageSource).not.toMatch(/\b(Archive|Delete|Export)\b/);
+    expect(rosterPageSource).toContain("RosterStudentRowActions");
+    expect(rosterPageSource).not.toMatch(/\bExport\b/);
   });
 });

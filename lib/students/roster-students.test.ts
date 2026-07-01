@@ -50,7 +50,9 @@ function buildRecord(overrides: {
     createdAt: now,
     updatedAt: now,
     archivedAt: overrides.archivedAt ?? null,
-    classGroup: overrides.classGroupName ? { name: overrides.classGroupName } : null,
+    classGroup: overrides.classGroupName
+      ? { name: overrides.classGroupName, archivedAt: null }
+      : null,
   };
 }
 
@@ -84,7 +86,7 @@ describe("roster student database helpers", () => {
       {
         where: { workspaceId: "workspace_1", archivedAt: null },
         orderBy: [{ displayName: "asc" }, { createdAt: "asc" }],
-        include: { classGroup: { select: { name: true } } },
+        include: { classGroup: { select: { name: true, archivedAt: true } } },
       },
     ]);
     expect(students).toEqual([
@@ -93,7 +95,9 @@ describe("roster student database helpers", () => {
         displayName: "Mary",
         mentionHandle: "mary",
         schoolLocalId: null,
+        classGroupId: null,
         classGroupName: null,
+        hasActiveClass: false,
         createdAt: new Date("2026-06-15T12:00:00.000Z"),
       },
     ]);
@@ -250,7 +254,7 @@ describe("roster student database helpers", () => {
           classGroupId: "class_reading",
           schoolLocalId: undefined,
         },
-        include: { classGroup: { select: { name: true } } },
+        include: { classGroup: { select: { name: true, archivedAt: true } } },
       },
     ]);
     expect(result).toEqual({
@@ -260,7 +264,9 @@ describe("roster student database helpers", () => {
         displayName: "Stacy",
         mentionHandle: "stacy",
         schoolLocalId: null,
+        classGroupId: "class_reading",
         classGroupName: "Reading",
+        hasActiveClass: true,
         createdAt: new Date("2026-06-15T12:00:00.000Z"),
       },
     });
@@ -375,14 +381,14 @@ describe("roster student database helpers", () => {
         mentionHandle: "mary",
         archivedAt: null,
       },
-      include: { classGroup: { select: { name: true } } },
+      include: { classGroup: { select: { name: true, archivedAt: true } } },
     });
     expect(findFirstCalls).toContainEqual({
       where: {
         workspaceId: "workspace_1",
         schoolLocalId: "local-1",
       },
-      include: { classGroup: { select: { name: true } } },
+      include: { classGroup: { select: { name: true, archivedAt: true } } },
     });
     expect(result).toEqual({
       success: false,

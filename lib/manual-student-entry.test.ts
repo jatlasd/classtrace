@@ -34,10 +34,12 @@ describe("Unit 08 manual student entry UI", () => {
     expect(rosterPageSource).not.toContain("Manual entry connects next");
   });
 
-  it("reflects the beta rule that students need a class before saving", () => {
-    expect(rosterPageSource).toContain("Class-first roster setup");
-    expect(rosterPageSource).not.toContain("ManualStudentEntryForm");
-    expect(formSource).toContain("Students must belong to a class before saving.");
-    expect(formSource).toContain('classGroupId: ""');
+  it("saves students into the opened class instead of an unassigned roster", () => {
+    expect(rosterPageSource).toContain("OpenClassView");
+    expect(rosterPageSource).toContain("classGroupId={classGroup.id}");
+    expect(rosterPageSource).not.toContain("RosterImportForm");
+    expect(formSource).toContain("classGroupId,");
+    expect(formSource).toContain("This student will be added to {className}.");
+    expect(formSource).not.toContain('classGroupId: ""');
   });
 });

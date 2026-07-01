@@ -10,6 +10,7 @@ Update this file after every meaningful implementation change.
 - Post-V1 documentation reset completed: README, AGENTS, workflow, architecture/product framing, build-plan status, and active roadmap now treat completed V1 specs as historical records instead of the active queue.
 - Phase 6 Unit 27 documentation reset completed: context docs now distinguish completed V1 from the active pre-beta contract.
 - Phase 7 Unit 28 implemented and verified with automated checks - Class Domain, Ownership, and Migration Foundation (`context/specs/28-class-domain-ownership-and-migration-foundation.md`).
+- Phase 7 Unit 29 implemented with automated checks and post-review readiness fixes - Layered Roster and Class-First Onboarding (`context/specs/29-layered-roster-and-class-first-onboarding.md`).
 - Phase 2 complete — roster onboarding
 - Unit 02 complete and verified — Route Map and App Shell (`context/specs/02-route-map-and-app-shell.md`)
 - Unit 03 complete and verified — Public Landing Page UI (`context/specs/03-public-landing-page-ui.md`)
@@ -44,7 +45,7 @@ Update this file after every meaningful implementation change.
 
 - ClassTrace V1 is complete for the scoped teacher-first evidence capture build path.
 - Current active build path: `context/post-v1-pre-beta-build-plan.md`, starting with Phase 6.
-- Current task: Unit 28 Class Domain, Ownership, and Migration Foundation implemented and verified; next planned unit is Unit 29 Layered Roster and Class-First Onboarding.
+- Current task: Unit 29 Layered Roster and Class-First Onboarding implemented with post-review readiness fixes; next planned unit is Unit 30 Class-Scoped Roster Import.
 
 ---
 
@@ -121,6 +122,39 @@ Spec: `context/specs/28-class-domain-ownership-and-migration-foundation.md`
 - Updated roster row fallback from "No group yet" to "Needs class" for unassigned active students.
 - Updated UI registry notes for the temporary roster bridge and class readiness behavior.
 - Focused roster/class tests passed: `npm.cmd run test -- lib/manual-student-entry.test.ts lib/roster-import-ui.test.ts lib/guided-roster-setup-ui.test.ts lib/onboarding-routing.test.ts lib/student-roster-database-ui.test.ts lib/classes/class-groups.test.ts lib/students/roster-students.test.ts lib/import/roster-import.test.ts` (8 files / 41 tests).
+
+---
+
+## Unit 29 - Layered Roster and Class-First Onboarding (Implemented)
+
+Spec: `context/specs/29-layered-roster-and-class-first-onboarding.md`
+
+### What changed
+
+- Created the Unit 29 focused spec for replacing the temporary flat roster bridge with a class-first roster workflow.
+- Replaced `/app/roster` with a class-first surface: active class list, create class form, opened-class student list, archived-classes view, and class-level rename/archive actions.
+- Wired opened-class manual student entry so new students are saved to the selected active class instead of an unassigned roster.
+- Added a workspace-scoped student update Server Action and server-only helper so teachers can edit name, handle, optional school/local ID, and class assignment.
+- Added a legacy "Needs class" roster section for active students without an active class; assignment remains teacher-approved through the edit flow.
+- Preserved student archive/delete row actions and global one-student capture behavior.
+- Fixed post-review readiness routing so `/app` and `/app/feed` use class-first roster readiness instead of the old any-active-student gate.
+- Tightened the shared class readiness helper so an empty roster is not treated as ready.
+- Left paste-list import as a non-saving class-view handoff note; Unit 30 remains responsible for the working class-scoped import UI.
+- Updated UI registry patterns for the layered class-first roster and inline student edit flow.
+
+### Verification
+
+- `npm.cmd run test -- lib/classes/class-groups.test.ts lib/students/roster-students.test.ts actions/classes.test.ts actions/roster.test.ts lib/onboarding-routing.test.ts lib/student-roster-database-ui.test.ts lib/manual-student-entry.test.ts` passed (7 files / 42 tests).
+- `npm.cmd run lint` passed.
+- `npm.cmd run test -- lib/classes/class-groups.test.ts lib/onboarding-routing.test.ts` passed after review fixes (2 files / 13 tests).
+- `npm.cmd run test` passed after review fixes (49 files / 261 tests). Existing archive/delete failure-path tests intentionally logged contextual server errors while verifying safe generic error results.
+- `npm.cmd run build` passed after review fixes.
+- Browser verification attempted in the in-app browser on `http://127.0.0.1:3000/app/roster`, but the authenticated roster flow was blocked by Clerk sign-in. Chrome fallback was not used because it requires explicit human approval.
+
+### Remaining risks / follow-ups
+
+- Manual browser verification is still needed for the class-first roster path on desktop and mobile after an authenticated browser session is available.
+- Unit 30 remains responsible for the working class-scoped paste-list import flow.
 
 ---
 
@@ -1293,8 +1327,8 @@ Verification after refinement: `npm run lint` pass, `npm run build` pass, `npm r
 
 ## Next Up
 
-1. Create/finalize the Unit 29 focused spec before implementation.
-2. Begin Phase 7 Unit 29 only after human approval.
+1. Manually verify the Unit 29 class-first roster flow in browser when tooling is available.
+2. Create/finalize the Unit 30 focused spec for class-scoped roster import.
 3. Commit and push completed changes when the human requests it.
 
 ---

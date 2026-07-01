@@ -391,4 +391,21 @@ describe("class group domain helpers", () => {
       readyForClassFirstRoster: false,
     });
   });
+
+  it("does not mark an empty roster as class-first ready", async () => {
+    const { database } = buildDatabase({
+      readinessCounts: [0, 0],
+    });
+
+    const result = await getClassRosterReadinessForWorkspace(
+      "workspace_1",
+      database
+    );
+
+    expect(result).toEqual({
+      activeStudentCount: 0,
+      activeStudentsWithoutActiveClassCount: 0,
+      readyForClassFirstRoster: false,
+    });
+  });
 });
