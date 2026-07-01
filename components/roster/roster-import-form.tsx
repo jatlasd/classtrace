@@ -89,7 +89,7 @@ export function RosterImportForm({ existingStudents }: RosterImportFormProps) {
     }
 
     startTransition(async () => {
-      const result = await importRosterStudents({ rosterText });
+      const result = await importRosterStudents({ rosterText, classGroupId: "" });
 
       if (!result.success) {
         setPreview(result.preview);

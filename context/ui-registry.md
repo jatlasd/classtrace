@@ -637,7 +637,7 @@ Roster and student screens should support capture and evidence review. They shou
 ### Guided Roster Setup Cards
 
 File: `app/app/roster/page.tsx`  
-Last updated: 2026-06-17
+Last updated: 2026-06-30 (Unit 28 temporary class-required state)
 
 | Property | Class |
 |---|---|
@@ -646,22 +646,22 @@ Last updated: 2026-06-17
 | Eyebrow | `text-xs font-semibold uppercase tracking-wider text-muted-foreground` |
 | Page title | `font-display text-2xl font-semibold tracking-tight text-foreground` |
 | Helper copy | `text-sm leading-relaxed text-muted-foreground` |
-| Work area | `grid border border-border bg-card/55 lg:grid-cols-2` |
-| Work panel | `border-b border-border p-4 sm:p-5 lg:border-b-0 lg:border-r` |
+| Work area | `border border-border bg-card/55 p-4 sm:p-5` |
+| Work panel | `max-w-3xl space-y-2` |
 | Card title | `font-display text-lg font-semibold text-foreground` |
 | Card helper | `text-xs leading-relaxed text-muted-foreground` |
 | Empty roster card | `border border-border bg-card/60 p-5 text-sm leading-relaxed text-muted-foreground` |
 | Continue action | Existing `Button` with `variant="outline"` and `size="sm"` |
 
 **Pattern notes:**  
-Guided roster setup lives inside the authenticated app shell, not a full-screen wizard. The empty state can still frame the first student as the setup step, but after at least one roster student exists the page should shift into ordinary roster management language. Do not keep "recommended first step" or "setup started" card language visible after setup has begun. The roster page now uses a restrained split work area with hard borders, no shadows, and no rounded-card shell so it feels like a practical record surface rather than a generic SaaS onboarding board. Copy should explain that roster setup comes before evidence capture and avoid district, SIS, or admin language.
+Guided roster setup lives inside the authenticated app shell, not a full-screen wizard. The empty state can still frame the first student as the setup step, but after at least one roster student exists the page should shift into ordinary roster management language. Do not keep "recommended first step" or "setup started" card language visible after setup has begun. Unit 28 temporarily pauses the old flat manual-entry/import controls and replaces the split work area with a restrained class-required state so teachers are not shown controls that save unassigned students. Unit 29 should replace this bridge with the actual class-first roster workflow. Copy should explain that roster setup comes before evidence capture and avoid district, SIS, or admin language.
 
 ---
 
 ### Database Roster List
 
 File: `app/app/roster/page.tsx`  
-Last updated: 2026-06-17 (Unit 20 archive/delete student)
+Last updated: 2026-06-30 (Unit 28 class readiness)
 
 | Property | Class |
 |---|---|
@@ -686,7 +686,7 @@ Last updated: 2026-06-17 (Unit 20 archive/delete student)
 | Delete error text | `text-xs leading-relaxed text-destructive` with `role="status"` |
 
 **Pattern notes:**  
-The roster list is database-backed. After Unit 17, each active student's identity area links to that student's database-backed timeline using `routes.student(student.id)` and an accessible "Open [student] timeline" label. Use a ledger-like bordered list with column headers, divided rows, square initials, and no shadows; avoid returning to separate rounded student cards. Unit 20 adds secondary row management actions below the row metadata: archive is the calm first cleanup action and permanent delete is visually destructive with explicit warning copy ("Deleting this student will also permanently delete all evidence records attached to them. This cannot be undone."). Do not add restore, archived-student management, roster edit, export, bulk actions, shared student identity, or admin/district behavior to this row until explicitly scoped.
+The roster list is database-backed. After Unit 17, each active student's identity area links to that student's database-backed timeline using `routes.student(student.id)` and an accessible "Open [student] timeline" label. Use a ledger-like bordered list with column headers, divided rows, square initials, and no shadows; avoid returning to separate rounded student cards. Unit 20 adds secondary row management actions below the row metadata: archive is the calm first cleanup action and permanent delete is visually destructive with explicit warning copy ("Deleting this student will also permanently delete all evidence records attached to them. This cannot be undone."). Unit 28 labels missing class assignments as "Needs class" and suppresses capture-readiness continuation while active students lack an active class. Do not add restore, archived-student management, roster edit, export, bulk actions, shared student identity, or admin/district behavior to this row until explicitly scoped.
 
 ---
 

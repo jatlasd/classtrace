@@ -16,6 +16,8 @@ import { importRosterStudentsForWorkspace } from "@/lib/import/roster-import";
 const createdAt = new Date("2026-06-15T12:00:00.000Z");
 
 describe("importRosterStudentsForWorkspace", () => {
+  const classGroup = { id: "class_reading", name: "Reading" };
+
   it("loads existing workspace records including archived uniqueness conflicts", async () => {
     const listCalls: unknown[] = [];
     const database = {
@@ -23,12 +25,14 @@ describe("importRosterStudentsForWorkspace", () => {
         listCalls.push(args);
         return [{ mentionHandle: "mary", schoolLocalId: null }];
       },
+      findActiveClassGroup: async () => classGroup,
       createStudentsAtomically: async () => [],
     };
 
     const result = await importRosterStudentsForWorkspace(
       {
         workspaceId: "workspace_1",
+        classGroupId: "class_reading",
         rosterText: "Mary",
       },
       database
@@ -51,6 +55,7 @@ describe("importRosterStudentsForWorkspace", () => {
     let createCalled = false;
     const database = {
       listExistingStudents: async () => [],
+      findActiveClassGroup: async () => classGroup,
       createStudentsAtomically: async () => {
         createCalled = true;
         return [];
@@ -60,6 +65,7 @@ describe("importRosterStudentsForWorkspace", () => {
     const result = await importRosterStudentsForWorkspace(
       {
         workspaceId: "workspace_1",
+        classGroupId: "class_reading",
         rosterText: "Mary, mary, M-1, extra",
       },
       database
@@ -73,6 +79,7 @@ describe("importRosterStudentsForWorkspace", () => {
     const createCalls: unknown[] = [];
     const database = {
       listExistingStudents: async () => [],
+      findActiveClassGroup: async () => classGroup,
       createStudentsAtomically: async (input) => {
         createCalls.push(input);
         return [
@@ -81,6 +88,7 @@ describe("importRosterStudentsForWorkspace", () => {
             displayName: "Mary",
             mentionHandle: "mary",
             schoolLocalId: "M-1",
+            classGroup: { name: "Reading" },
             createdAt,
           },
         ];
@@ -90,6 +98,7 @@ describe("importRosterStudentsForWorkspace", () => {
     const result = await importRosterStudentsForWorkspace(
       {
         workspaceId: "workspace_1",
+        classGroupId: "class_reading",
         rosterText: "Mary, mary, M-1",
       },
       database
@@ -99,6 +108,7 @@ describe("importRosterStudentsForWorkspace", () => {
       [
         {
           workspaceId: "workspace_1",
+          classGroupId: "class_reading",
           displayName: "Mary",
           mentionHandle: "mary",
           schoolLocalId: "M-1",
@@ -114,16 +124,44 @@ describe("importRosterStudentsForWorkspace", () => {
           displayName: "Mary",
           mentionHandle: "mary",
           schoolLocalId: "M-1",
-          classGroupName: null,
+          classGroupName: "Reading",
           createdAt,
         },
       ],
     });
   });
 
+  it("blocks import when the selected class is missing or archived", async () => {
+    let createCalled = false;
+    const database = {
+      listExistingStudents: async () => [],
+      findActiveClassGroup: async () => null,
+      createStudentsAtomically: async () => {
+        createCalled = true;
+        return [];
+      },
+    };
+
+    const result = await importRosterStudentsForWorkspace(
+      {
+        workspaceId: "workspace_1",
+        classGroupId: "class_archived",
+        rosterText: "Mary",
+      },
+      database
+    );
+
+    expect(result).toMatchObject({
+      success: false,
+      error: "Choose a class before importing students.",
+    });
+    expect(createCalled).toBe(false);
+  });
+
   it("maps unique constraint races to safe import copy", async () => {
     const database = {
       listExistingStudents: async () => [],
+      findActiveClassGroup: async () => classGroup,
       createStudentsAtomically: async () => {
         throw { code: "P2002", meta: { target: ["workspaceId", "mentionHandle"] } };
       },
@@ -132,6 +170,7 @@ describe("importRosterStudentsForWorkspace", () => {
     const result = await importRosterStudentsForWorkspace(
       {
         workspaceId: "workspace_1",
+        classGroupId: "class_reading",
         rosterText: "Mary",
       },
       database

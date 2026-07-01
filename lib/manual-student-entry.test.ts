@@ -30,13 +30,14 @@ describe("Unit 08 manual student entry UI", () => {
     expect(formSource).toContain("setHandleWasEdited(true)");
   });
 
-  it("removes the Unit 07 transition copy from the roster page", () => {
-    expect(rosterPageSource).toContain("ManualStudentEntryForm");
+  it("keeps the old transition copy out of the roster page", () => {
     expect(rosterPageSource).not.toContain("Manual entry connects next");
   });
 
-  it("keeps class/group work deferred while import moves to Unit 09", () => {
-    expect(rosterPageSource).toContain("RosterImportForm");
-    expect(formSource).toContain("Class/group setup stays deferred");
+  it("reflects the beta rule that students need a class before saving", () => {
+    expect(rosterPageSource).toContain("Class-first roster setup");
+    expect(rosterPageSource).not.toContain("ManualStudentEntryForm");
+    expect(formSource).toContain("Students must belong to a class before saving.");
+    expect(formSource).toContain('classGroupId: ""');
   });
 });

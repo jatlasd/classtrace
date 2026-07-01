@@ -13,9 +13,10 @@ describe("Unit 07 roster database bridge", () => {
     expect(rosterPage).toContain("listActiveRosterStudentsForWorkspace");
   });
 
-  it("connects manual entry and roster import without returning to local storage", () => {
-    expect(rosterPage).toContain("ManualStudentEntryForm");
-    expect(rosterPage).toContain("RosterImportForm");
+  it("pauses flat manual entry and import without returning to local storage", () => {
+    expect(rosterPage).toContain("Class-first roster setup");
+    expect(rosterPage).not.toContain("ManualStudentEntryForm");
+    expect(rosterPage).not.toContain("RosterImportForm");
     expect(rosterPage).not.toContain("Manual entry connects next");
     expect(rosterPage).not.toContain("Import planned");
     expect(rosterPage).not.toMatch(/localStorage|addStudent|updateStudent|deleteStudent/);
@@ -29,7 +30,7 @@ describe("Unit 07 roster database bridge", () => {
 
   it("shows a quieter feed continuation action after roster setup has started", () => {
     expect(rosterPage).toContain("students.length === 1");
-    expect(rosterPage).toContain("ready");
+    expect(rosterPage).toContain("readyForClassFirstRoster");
     expect(rosterPage).toContain("Continue to evidence feed");
     expect(rosterPage).toContain("routes.feed");
     expect(rosterPage).not.toContain("Roster setup started.");

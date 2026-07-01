@@ -63,6 +63,7 @@ export function ManualStudentEntryForm({ isFirstStudent }: ManualStudentEntryFor
       const result = await createRosterStudent({
         displayName,
         mentionHandle,
+        classGroupId: "",
         schoolLocalId: schoolLocalId.trim() || undefined,
       });
 
@@ -151,7 +152,7 @@ export function ManualStudentEntryForm({ isFirstStudent }: ManualStudentEntryFor
             disabled={isPending}
           />
           <p className="text-xs leading-relaxed text-muted-foreground">
-            Optional. Class/group setup stays deferred to a later roster unit.
+            Students must belong to a class before saving.
           </p>
         </div>
       </div>

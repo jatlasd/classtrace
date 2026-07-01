@@ -60,7 +60,7 @@ type RosterStudentCreateArgs = {
     workspaceId: string;
     displayName: string;
     mentionHandle: string;
-    classGroupId?: string;
+    classGroupId: string;
     schoolLocalId?: string;
   };
   include: {
@@ -114,7 +114,7 @@ export type CreateRosterStudentInput = {
   workspaceId: string;
   displayName: string;
   mentionHandle: string;
-  classGroupId?: string;
+  classGroupId: string;
   schoolLocalId?: string;
 };
 
@@ -244,18 +244,23 @@ export async function createRosterStudentForWorkspace(
   const classGroupId = normalizeOptionalInput(input.classGroupId);
   const schoolLocalId = normalizeOptionalInput(input.schoolLocalId);
 
-  if (classGroupId) {
-    const classGroup = await database.classGroup.findFirst({
-      where: { id: classGroupId, workspaceId: input.workspaceId, archivedAt: null },
-      select: { id: true },
-    });
+  if (!classGroupId) {
+    return {
+      success: false,
+      error: "Choose a class before saving this student.",
+    };
+  }
 
-    if (!classGroup) {
-      return {
-        success: false,
-        error: "This class/group could not be found in your workspace.",
-      };
-    }
+  const classGroup = await database.classGroup.findFirst({
+    where: { id: classGroupId, workspaceId: input.workspaceId, archivedAt: null },
+    select: { id: true },
+  });
+
+  if (!classGroup) {
+    return {
+      success: false,
+      error: "This class could not be found in your workspace.",
+    };
   }
 
   const duplicate = await database.rosterStudent.findFirst({

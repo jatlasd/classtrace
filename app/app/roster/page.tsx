@@ -1,10 +1,8 @@
 import Link from "next/link";
 import { RosterStudentRowActions } from "@/components/roster/roster-student-row-actions";
-import { ManualStudentEntryForm } from "@/components/roster/manual-student-entry-form";
-import { RosterImportForm } from "@/components/roster/roster-import-form";
 import { Button } from "@/components/ui/button";
 import { getCurrentWorkspace } from "@/lib/auth/get-current-workspace";
-import { listExistingRosterImportStudentsForWorkspace } from "@/lib/import/roster-import";
+import { getClassRosterReadinessForWorkspace } from "@/lib/classes/class-groups";
 import { routes } from "@/lib/routes";
 import {
   listActiveRosterStudentsForWorkspace,
@@ -46,7 +44,7 @@ function StudentRow({ student }: { student: RosterStudentDisplay }) {
           @{student.mentionHandle}
         </p>
         <p className="text-xs text-muted-foreground">
-          {student.classGroupName || "No group yet"}
+          {student.classGroupName || "Needs class"}
         </p>
         <RosterStudentRowActions
           studentId={student.id}
@@ -59,11 +57,13 @@ function StudentRow({ student }: { student: RosterStudentDisplay }) {
 
 export default async function RosterPage() {
   const workspace = await getCurrentWorkspace();
-  const [students, existingImportStudents] = await Promise.all([
+  const [students, classReadiness] = await Promise.all([
     listActiveRosterStudentsForWorkspace(workspace.workspaceId),
-    listExistingRosterImportStudentsForWorkspace(workspace.workspaceId),
+    getClassRosterReadinessForWorkspace(workspace.workspaceId),
   ]);
   const rosterIsEmpty = students.length === 0;
+  const classSetupNeeded =
+    rosterIsEmpty || !classReadiness.readyForClassFirstRoster;
 
   return (
     <div className="mx-auto w-full max-w-[1180px] px-4 py-7 sm:px-6 lg:px-8">
@@ -88,27 +88,51 @@ export default async function RosterPage() {
         {!rosterIsEmpty && (
           <div className="border-l-4 border-primary bg-card/60 px-4 py-3">
             <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              Capture readiness
+              {classSetupNeeded ? "Class setup needed" : "Capture readiness"}
             </p>
             <p className="mt-1 text-sm text-foreground">
-              {students.length} {students.length === 1 ? "student" : "students"} ready
-              for capture.
+              {classSetupNeeded
+                ? `${classReadiness.activeStudentsWithoutActiveClassCount} ${
+                    classReadiness.activeStudentsWithoutActiveClassCount === 1
+                      ? "student needs"
+                      : "students need"
+                  } a class before beta roster setup is ready.`
+                : `${students.length} ${
+                    students.length === 1 ? "student" : "students"
+                  } ready for capture.`}
             </p>
-            <Button asChild size="sm" variant="outline" className="mt-3">
-              <Link href={routes.feed}>Continue to evidence feed</Link>
-            </Button>
+            {!classSetupNeeded && (
+              <Button asChild size="sm" variant="outline" className="mt-3">
+                <Link href={routes.feed}>Continue to evidence feed</Link>
+              </Button>
+            )}
           </div>
         )}
       </header>
 
-      <div className="mb-8 grid border border-border bg-card/55 lg:grid-cols-2">
-        <section className="border-b border-border p-4 sm:p-5 lg:border-b-0 lg:border-r">
-          <ManualStudentEntryForm isFirstStudent={rosterIsEmpty} />
-        </section>
-
-        <aside className="p-4 sm:p-5">
-          <RosterImportForm existingStudents={existingImportStudents} />
-        </aside>
+      <div className="mb-8 border border-border bg-card/55 p-4 sm:p-5">
+        <div className="max-w-3xl space-y-2">
+          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            Class-first roster setup
+          </p>
+          <h2 className="font-display text-lg font-semibold text-foreground">
+            Create classes before adding or importing students.
+          </h2>
+          <p className="text-sm leading-relaxed text-muted-foreground">
+            Active students now need one active class. New students and roster imports are paused
+            here until the class-first roster step is available, so ClassTrace does not save
+            unassigned students or invent class placements.
+          </p>
+          {classReadiness.activeStudentsWithoutActiveClassCount > 0 ? (
+            <p className="text-sm leading-relaxed text-muted-foreground">
+              {classReadiness.activeStudentsWithoutActiveClassCount} active{" "}
+              {classReadiness.activeStudentsWithoutActiveClassCount === 1
+                ? "student needs"
+                : "students need"}{" "}
+              a teacher-approved class assignment before this roster is beta-ready.
+            </p>
+          ) : null}
+        </div>
       </div>
 
       <section>

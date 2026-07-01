@@ -324,11 +324,13 @@ Expected database entities:
 | `TeacherProfile` | Stores teacher display/profile settings not owned by Clerk |
 | `Workspace` | One personal workspace per teacher in V1 |
 | `RosterStudent` | Teacher-owned student roster entry |
-| `ClassGroup` | Teacher-workspace-owned class record; required for active students during pre-beta |
+| `ClassGroup` | Teacher-workspace-owned class record with a required name and normalized workspace-unique name key; required for active students during pre-beta |
 | `EvidenceRecord` | Permanent validated evidence with structured metadata and, for new beta saves, a teacher-approved Evidence note |
 | `EvidenceTag` or tag fields | Tags/categories attached to validated evidence |
 | `ImportBatch` or import preview data if needed | Optional temporary support for roster import workflow |
 | `Archive/Delete metadata` | Tracks archive status and timestamps where needed |
+
+Pre-beta class records store both the teacher-facing class name and a normalized class-name key used to prevent confusing duplicates within one workspace. The normalization trims surrounding whitespace, collapses internal whitespace, and compares names case-insensitively.
 
 V1 database records must be scoped to the authenticated teacher’s personal workspace.
 

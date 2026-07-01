@@ -13,7 +13,13 @@ type RosterStudentImportRecord = {
   displayName: string;
   mentionHandle: string;
   schoolLocalId: string | null;
+  classGroup: { name: string } | null;
   createdAt: Date;
+};
+
+type ClassGroupImportRecord = {
+  id: string;
+  name: string;
 };
 
 type RosterImportFindManyArgs = {
@@ -28,18 +34,33 @@ type RosterImportFindManyArgs = {
 
 type RosterStudentCreateInput = {
   workspaceId: string;
+  classGroupId: string;
   displayName: string;
   mentionHandle: string;
   schoolLocalId?: string;
 };
 
+type ClassGroupFindFirstArgs = {
+  where: {
+    id: string;
+    workspaceId: string;
+    archivedAt: null;
+  };
+  select: {
+    id: true;
+    name: true;
+  };
+};
+
 type RosterImportDatabase = {
   listExistingStudents(args: RosterImportFindManyArgs): Promise<ExistingRosterImportStudent[]>;
+  findActiveClassGroup(args: ClassGroupFindFirstArgs): Promise<ClassGroupImportRecord | null>;
   createStudentsAtomically(input: RosterStudentCreateInput[]): Promise<RosterStudentImportRecord[]>;
 };
 
 export type ImportRosterStudentsInput = {
   workspaceId: string;
+  classGroupId: string;
   rosterText: string;
 };
 
@@ -62,17 +83,18 @@ type UniqueConstraintError = {
 
 const rosterImportDatabase: RosterImportDatabase = {
   listExistingStudents: (args) => prisma.rosterStudent.findMany(args),
+  findActiveClassGroup: (args) => prisma.classGroup.findFirst(args),
   createStudentsAtomically: async (input) =>
     prisma.$transaction(
       input.map((student) =>
         prisma.rosterStudent.create({
           data: student,
-          select: {
-            id: true,
-            displayName: true,
-            mentionHandle: true,
-            schoolLocalId: true,
-            createdAt: true,
+          include: {
+            classGroup: {
+              select: {
+                name: true,
+              },
+            },
           },
         })
       )
@@ -94,7 +116,7 @@ function toRosterStudentDisplay(record: RosterStudentImportRecord): RosterStuden
     displayName: record.displayName,
     mentionHandle: record.mentionHandle,
     schoolLocalId: record.schoolLocalId,
-    classGroupName: null,
+    classGroupName: record.classGroup?.name ?? null,
     createdAt: record.createdAt,
   };
 }
@@ -114,6 +136,30 @@ export async function importRosterStudentsForWorkspace(
   input: ImportRosterStudentsInput,
   database: RosterImportDatabase = rosterImportDatabase
 ): Promise<ImportRosterStudentsResult> {
+  const classGroupId = input.classGroupId.trim();
+  const classGroup = classGroupId
+    ? await database.findActiveClassGroup({
+        where: {
+          id: classGroupId,
+          workspaceId: input.workspaceId,
+          archivedAt: null,
+        },
+        select: {
+          id: true,
+          name: true,
+        },
+      })
+    : null;
+
+  if (!classGroup) {
+    const preview = parseRosterImport(input.rosterText, []);
+
+    return buildImportFailure(
+      preview,
+      "Choose a class before importing students."
+    );
+  }
+
   const existingStudents = await database.listExistingStudents({
     where: { workspaceId: input.workspaceId },
     select: { mentionHandle: true, schoolLocalId: true },
@@ -129,6 +175,7 @@ export async function importRosterStudentsForWorkspace(
 
   const studentsToCreate = preview.validRows.map((row) => ({
     workspaceId: input.workspaceId,
+    classGroupId: classGroup.id,
     displayName: row.displayName,
     mentionHandle: row.mentionHandle,
     schoolLocalId: row.schoolLocalId ?? undefined,

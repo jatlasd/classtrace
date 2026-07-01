@@ -23,7 +23,7 @@ import {
 export type CreateRosterStudentActionInput = {
   displayName: string;
   mentionHandle: string;
-  classGroupId?: string;
+  classGroupId: string;
   schoolLocalId?: string;
 };
 
@@ -33,6 +33,7 @@ export type CreateRosterStudentActionResult =
 
 export type ImportRosterStudentsActionInput = {
   rosterText: string;
+  classGroupId: string;
 };
 
 export type ImportRosterStudentsActionResult = ImportRosterStudentsResult;
@@ -81,6 +82,7 @@ export async function importRosterStudents(
     const result = await importRosterStudentsForWorkspace({
       workspaceId: workspace.workspaceId,
       rosterText: input.rosterText,
+      classGroupId: input.classGroupId,
     });
 
     if (result.success) {

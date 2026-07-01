@@ -39,12 +39,13 @@ describe("Unit 10 onboarding routing", () => {
 
   it("keeps roster setup accessible with a feed continuation action", () => {
     expect(rosterPage).toContain("Students in your roster");
-    expect(rosterPage).toContain("ready");
+    expect(rosterPage).toContain("getClassRosterReadinessForWorkspace");
     expect(rosterPage).toContain("Continue to evidence feed");
     expect(rosterPage).not.toContain("Roster setup started.");
     expect(rosterPage).not.toContain("Back to evidence feed");
-    expect(rosterPage).toContain("ManualStudentEntryForm");
-    expect(rosterPage).toContain("RosterImportForm");
+    expect(rosterPage).toContain("Class setup needed");
+    expect(rosterPage).not.toContain("ManualStudentEntryForm");
+    expect(rosterPage).not.toContain("RosterImportForm");
     expect(rosterPage).toContain("routes.student(student.id)");
     expect(rosterPage).not.toMatch(/\b(SIS|district|AI-powered|FERPA-compliant)\b/i);
   });

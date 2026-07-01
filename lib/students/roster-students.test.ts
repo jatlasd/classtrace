@@ -34,6 +34,8 @@ function buildRecord(overrides: {
   workspaceId: string;
   displayName: string;
   mentionHandle: string;
+  classGroupId?: string | null;
+  classGroupName?: string | null;
   archivedAt?: Date | null;
 }) {
   const now = new Date("2026-06-15T12:00:00.000Z");
@@ -41,14 +43,20 @@ function buildRecord(overrides: {
   return {
     id: overrides.id,
     workspaceId: overrides.workspaceId,
-    classGroupId: null,
+    classGroupId: overrides.classGroupId ?? null,
     displayName: overrides.displayName,
     mentionHandle: overrides.mentionHandle,
     schoolLocalId: null,
     createdAt: now,
     updatedAt: now,
     archivedAt: overrides.archivedAt ?? null,
-    classGroup: null,
+    classGroup: overrides.classGroupName ? { name: overrides.classGroupName } : null,
+  };
+}
+
+function buildClassGroup() {
+  return {
+    id: "class_reading",
   };
 }
 
@@ -142,7 +150,7 @@ describe("roster student database helpers", () => {
           }),
       },
       classGroup: {
-        findFirst: async () => null,
+        findFirst: async () => buildClassGroup(),
       },
     } satisfies RosterStudentDatabase;
 
@@ -178,7 +186,7 @@ describe("roster student database helpers", () => {
         },
       },
       classGroup: {
-        findFirst: async () => null,
+        findFirst: async () => buildClassGroup(),
       },
     } satisfies RosterStudentDatabase;
 
@@ -187,6 +195,7 @@ describe("roster student database helpers", () => {
         workspaceId: "workspace_1",
         displayName: "Jeremy",
         mentionHandle: "@Jeremy",
+        classGroupId: "class_reading",
       },
       database
     );
@@ -212,11 +221,13 @@ describe("roster student database helpers", () => {
             workspaceId: "workspace_1",
             displayName: "Stacy",
             mentionHandle: "stacy",
+            classGroupId: "class_reading",
+            classGroupName: "Reading",
           });
         },
       },
       classGroup: {
-        findFirst: async () => null,
+        findFirst: async () => buildClassGroup(),
       },
     } satisfies RosterStudentDatabase;
 
@@ -225,6 +236,7 @@ describe("roster student database helpers", () => {
         workspaceId: "workspace_1",
         displayName: " Stacy ",
         mentionHandle: "@Stacy",
+        classGroupId: "class_reading",
       },
       database
     );
@@ -235,7 +247,7 @@ describe("roster student database helpers", () => {
           workspaceId: "workspace_1",
           displayName: "Stacy",
           mentionHandle: "stacy",
-          classGroupId: undefined,
+          classGroupId: "class_reading",
           schoolLocalId: undefined,
         },
         include: { classGroup: { select: { name: true } } },
@@ -248,10 +260,62 @@ describe("roster student database helpers", () => {
         displayName: "Stacy",
         mentionHandle: "stacy",
         schoolLocalId: null,
-        classGroupName: null,
+        classGroupName: "Reading",
         createdAt: new Date("2026-06-15T12:00:00.000Z"),
       },
     });
+  });
+
+  it("requires a valid active class before creating a roster student", async () => {
+    let createCalled = false;
+    const database = {
+      rosterStudent: {
+        findMany: async () => [],
+        findFirst: async () => null,
+        count: async () => 0,
+        create: async () => {
+          createCalled = true;
+          return buildRecord({
+            id: "student_created",
+            workspaceId: "workspace_1",
+            displayName: "Mary",
+            mentionHandle: "mary",
+          });
+        },
+      },
+      classGroup: {
+        findFirst: async () => null,
+      },
+    } satisfies RosterStudentDatabase;
+
+    const missingClassResult = await createRosterStudentForWorkspace(
+      {
+        workspaceId: "workspace_1",
+        displayName: "Mary",
+        mentionHandle: "mary",
+        classGroupId: " ",
+      },
+      database
+    );
+    const unownedClassResult = await createRosterStudentForWorkspace(
+      {
+        workspaceId: "workspace_1",
+        displayName: "Mary",
+        mentionHandle: "mary",
+        classGroupId: "class_other",
+      },
+      database
+    );
+
+    expect(missingClassResult).toEqual({
+      success: false,
+      error: "Choose a class before saving this student.",
+    });
+    expect(unownedClassResult).toEqual({
+      success: false,
+      error: "This class could not be found in your workspace.",
+    });
+    expect(createCalled).toBe(false);
   });
 
   it("blocks duplicate school/local IDs inside the workspace before create", async () => {
@@ -290,7 +354,7 @@ describe("roster student database helpers", () => {
         },
       },
       classGroup: {
-        findFirst: async () => null,
+        findFirst: async () => buildClassGroup(),
       },
     } satisfies RosterStudentDatabase;
 
@@ -299,6 +363,7 @@ describe("roster student database helpers", () => {
         workspaceId: "workspace_1",
         displayName: "Mary",
         mentionHandle: "mary",
+        classGroupId: "class_reading",
         schoolLocalId: " local-1 ",
       },
       database
@@ -340,7 +405,7 @@ describe("roster student database helpers", () => {
         },
       },
       classGroup: {
-        findFirst: async () => null,
+        findFirst: async () => buildClassGroup(),
       },
     } satisfies RosterStudentDatabase;
 
@@ -349,6 +414,7 @@ describe("roster student database helpers", () => {
         workspaceId: "workspace_1",
         displayName: "Mary",
         mentionHandle: "mary",
+        classGroupId: "class_reading",
         schoolLocalId: "local-1",
       },
       database

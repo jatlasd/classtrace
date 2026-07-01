@@ -28,7 +28,10 @@ function buildStudent(overrides?: {
   return {
     id: overrides?.id ?? "student_mary",
     workspaceId: overrides?.workspaceId ?? "workspace_1",
-    classGroupId: overrides?.classGroupId ?? "class_group_1",
+    classGroupId:
+      overrides && "classGroupId" in overrides
+        ? overrides.classGroupId ?? null
+        : "class_group_1",
     archivedAt: overrides?.archivedAt ?? null,
   };
 }
@@ -283,6 +286,35 @@ describe("saveValidatedEvidenceForWorkspace", () => {
       success: false,
       error: "Failed to save evidence.",
     });
+  });
+
+  it("keeps legacy unassigned student evidence honest without inventing a class", async () => {
+    const { database, calls } = buildDatabase({
+      student: buildStudent({ classGroupId: null }),
+    });
+
+    const result = await saveValidatedEvidenceForWorkspace(
+      {
+        workspaceId: "workspace_1",
+        input: {
+          rosterStudentId: "student_mary",
+          summary: "Mary - reading",
+          evidenceType: "Academic check-in",
+          tags: [],
+        },
+        now,
+      },
+      database
+    );
+
+    expect(result).toEqual({ success: true, evidenceId: "evidence_1" });
+    expect(calls.create[0]).toEqual(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          classGroupId: undefined,
+        }),
+      })
+    );
   });
 
   it("normalizes malformed client list and optional text payloads safely", async () => {
