@@ -142,18 +142,45 @@ Evidence captures now render as rows inside the feed list container. Review, edi
 
 ---
 
-### Saved Evidence Row
 
-File: `components/dashboard/saved-evidence-row.tsx`
-Last updated: 2026-06-17 (Unit 19 permanent delete evidence)
+### Evidence Feed Header and Empty States
+
+File: `components/dashboard/evidence-feed-header.tsx`, `components/dashboard/evidence-feed.tsx`
+Last updated: 2026-07-02
 
 | Property | Class |
 |---|---|
-| Row shell | `border-b border-border last:border-b-0` |
+| Feed header shell | `border-b border-border pb-5` |
+| Header eyebrow | `text-xs font-semibold uppercase tracking-wider text-muted-foreground` |
+| Header title | `font-display text-2xl font-semibold tracking-tight text-foreground` |
+| Header helper | `mt-1 max-w-2xl text-sm leading-relaxed text-muted-foreground` |
+| Inbox heading | `text-base font-semibold text-foreground` with `id="evidence-inbox-heading"` |
+| Sort indicator | `inline-flex items-center gap-2 rounded-lg border border-border bg-muted/30 px-3 py-2 text-sm font-medium text-muted-foreground` |
+| Search input | `h-10 w-full rounded-lg border border-border bg-background/50 py-2 pl-9 pr-9 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:bg-card focus-visible:ring-3 focus-visible:ring-ring/20` |
+| Search clear action | `absolute right-3 top-1/2 -translate-y-1/2 rounded p-0.5 text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/30` |
+| Active filter | `rounded-lg border border-border bg-muted px-3 py-2 text-sm font-medium text-foreground shadow-sm` |
+| Empty state shell | `px-6 py-10 text-center sm:px-10` |
+| Empty state icon | `mx-auto flex size-12 items-center justify-center rounded-lg border border-border bg-muted/40 text-primary` |
+| Empty state title | `mt-4 font-display text-lg font-semibold text-foreground` |
+| Empty state body | `mx-auto mt-2 max-w-md text-sm leading-relaxed text-muted-foreground` |
+
+**Pattern notes:**
+The feed now uses a visible but compact header so teachers understand the capture/review loop without turning the app into a dashboard. The inbox toolbar uses an honest non-interactive "Newest first" indicator until alternate sorting exists. Empty, filtered-empty, search-empty, and roster-required states share one composed empty-state pattern with direct teacher language and no analytics/reporting framing.
+
+---
+
+### Saved Evidence Row
+
+File: `components/dashboard/saved-evidence-row.tsx`
+Last updated: 2026-07-02 (feed polish)
+
+| Property | Class |
+|---|---|
+| Row shell | `border-b border-border transition-colors hover:bg-muted/20 last:border-b-0` |
 | Row grid | `grid gap-4 px-4 py-5 md:grid-cols-[72px_88px_minmax(0,1fr)_220px] md:px-6` |
 | Icon cell | `flex size-11 items-center justify-center rounded-lg border border-validated/50 bg-validated/35 text-validated-foreground` |
-| Date text | `text-sm leading-relaxed text-muted-foreground` |
-| Student text | `text-sm font-medium text-foreground` |
+| Date chip | `hidden rounded-lg border border-border bg-background/45 px-3 py-2 text-center md:block` |
+| Student timeline link | `rounded-sm text-sm font-semibold text-foreground underline-offset-2 hover:text-link hover:underline focus-visible:ring-2 focus-visible:ring-ring/30` |
 | Summary text | `text-[15px] leading-relaxed text-foreground` |
 | Status column | `space-y-3 md:border-l md:border-border md:pl-6` |
 | Status pill | `inline-flex items-center gap-2 rounded-lg border border-validated/60 bg-validated/35 px-2.5 py-1 text-xs font-semibold text-validated-foreground` |
@@ -175,7 +202,7 @@ Last updated: 2026-06-17 (Unit 19 permanent delete evidence)
 | Delete error text | `text-xs leading-relaxed text-destructive` with `role="status"` |
 
 **Pattern notes:**
-Saved evidence rows are database-backed validated records, not raw draft captures. They intentionally reuse the Unit 11 row grid and chip vocabulary but use validated-state icon/status styling and `EvidenceRecord.summary` as the primary text. Unit 18 added a calm, non-destructive archive affordance with inline confirmation copy ("Hide this from default evidence views?") and a workspace-scoped Server Action. Unit 19 adds a destructive permanent delete affordance with inline warning copy ("Permanently delete this evidence record? This cannot be undone.") and a workspace-scoped Server Action. Keep archive visible as the safer cleanup action. Do not add edit, restore/deleted-record management, export, student-profile navigation, bulk actions, student delete, or raw-note fields to this row until those units are explicitly scoped.
+Saved evidence rows are database-backed validated records, not raw draft captures. They intentionally reuse the Unit 11 row grid and chip vocabulary but use validated-state icon/status styling, a compact date chip, and `EvidenceRecord.summary` as the primary text. The student name links to that student timeline. Unit 18 added a calm, non-destructive archive affordance with inline confirmation copy ("Hide this from default evidence views?") and a workspace-scoped Server Action. Unit 19 adds a destructive permanent delete affordance with inline warning copy ("Permanently delete this evidence record? This cannot be undone.") and a workspace-scoped Server Action. Keep archive visible as the safer cleanup action. Do not add edit, restore/deleted-record management, export, bulk actions, student delete, or raw-note fields to this row until those units are explicitly scoped.
 
 ---
 
@@ -211,7 +238,7 @@ The review panel is the trust moment between a captured draft and validated evid
 ### Patterns and Follow-ups Rail
 
 File: `components/dashboard/classtrace-noticed-panel.tsx`  
-Last updated: 2026-06-15
+Last updated: 2026-07-02 (feed polish)
 
 | Property | Class |
 |---|---|
@@ -224,7 +251,7 @@ Last updated: 2026-06-15
 | Secondary insight panel | `rounded-lg border border-border bg-muted/25 p-3` |
 
 **Pattern notes:**  
-The right rail uses deterministic/local capture summaries only. It may say "Patterns" and "Follow-ups", but it must not include clickable "View all" or "New follow-up" controls until those routes/actions exist, and it must not claim AI analysis, analytics, reminders, or persisted follow-up tasks.
+The right rail uses deterministic/local capture and saved-evidence summaries only. The primary heading is "Evidence cues" with `mt-1 text-xs leading-relaxed text-muted-foreground` helper copy that says it is based on saved evidence and current drafts. It may show follow-up prompts, but it must not include clickable "View all" or "New follow-up" controls until those routes/actions exist, and it must not claim AI analysis, analytics, reminders, or persisted follow-up tasks.
 
 ---
 
@@ -293,7 +320,7 @@ Last updated: 2026-06-11
 | Capture button | `h-9 rounded-lg px-5 text-sm font-semibold` |
 
 **Pattern notes:**  
-The quick capture card is the most important UI pattern in ClassTrace. Keep it fast, calm, and uncluttered. The prompt should be direct teacher language: “What happened?” The composer should remain visually prominent and should not become a long form. The footer uses a top border and keeps secondary icon actions visually quiet. V1 should block saving until exactly one resolved roster student is selected.
+The quick capture card is the most important UI pattern in ClassTrace. Keep it fast, calm, and uncluttered. The prompt should be direct teacher language: ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã¢â‚¬Å“What happened?ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â The composer should remain visually prominent and should not become a long form. The footer uses a top border and keeps secondary icon actions visually quiet. V1 should block saving until exactly one resolved roster student is selected.
 
 ---
 
@@ -317,7 +344,7 @@ Last updated: 2026-06-11
 | Full-width mobile action | `w-full sm:w-auto` |
 
 **Pattern notes:**  
-Evidence cards use the standard card surface and a quiet interpretation panel inside the card. The “ClassTrace read this as” section is visually secondary and should not feel like final truth. Validation and review actions should be clear but not louder than the evidence content.
+Evidence cards use the standard card surface and a quiet interpretation panel inside the card. The ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã¢â‚¬Å“ClassTrace read this asÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â section is visually secondary and should not feel like final truth. Validation and review actions should be clear but not louder than the evidence content.
 
 ---
 
@@ -462,7 +489,7 @@ Last updated: 2026-06-11 (full-mockup rebuild)
 |---|---|
 | Shell | `sticky top-0 z-40 border-b border-border/70 bg-background/95 backdrop-blur` |
 | Inner row | `mx-auto flex h-16 max-w-6xl items-center justify-between px-4 md:px-6 lg:px-8` |
-| Logo mark | `NotebookPen` line icon, `size-7 text-navy`, `strokeWidth={2}` — no filled block |
+| Logo mark | `NotebookPen` line icon, `size-7 text-navy`, `strokeWidth={2}` ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â no filled block |
 | Wordmark | `font-display text-xl font-semibold tracking-tight text-foreground` |
 | Header text link | `hidden ... text-sm font-medium text-foreground/80 hover:text-foreground sm:block` |
 | Header button | `Button variant="navy"` with `h-9 rounded-md px-4 text-sm font-semibold` |
@@ -484,10 +511,10 @@ Last updated: 2026-06-11 (full-mockup rebuild)
 | Headline | `font-display text-4xl font-semibold leading-[1.12] tracking-tight sm:text-5xl lg:text-[3.4rem]` |
 | Subhead | `text-[15px] leading-relaxed text-muted-foreground` |
 | Primary CTA | `Button` default with `h-11 rounded-md px-7 text-[15px] font-semibold` |
-| Secondary CTA | Underlined text link: `border-b border-link pb-0.5 text-sm font-medium text-link hover:text-foreground` ("See how one moment becomes evidence →") |
-| Handwritten margin note | `font-hand ... rotate-[-4deg] text-xl text-primary` absolute beside the CTA with `aria-hidden` ("for teachers who have to remember everything ↘") |
+| Secondary CTA | Underlined text link: `border-b border-link pb-0.5 text-sm font-medium text-link hover:text-foreground` ("See how one moment becomes evidence ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢") |
+| Handwritten margin note | `font-hand ... rotate-[-4deg] text-xl text-primary` absolute beside the CTA with `aria-hidden` ("for teachers who have to remember everything ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â Ãƒâ€¹Ã…â€œ") |
 | Raw note card | `-rotate-1 rounded-sm bg-accent/60 shadow-floating hover:rotate-0` with tape strip and inner ruled-line overlay; all text in `font-hand text-xl/2xl leading-[2rem]` |
-| Handwritten connector | `font-hand text-xl text-foreground` ("you review it ↓") with dashed leader line |
+| Handwritten connector | `font-hand text-xl text-foreground` ("you review it ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œ") with dashed leader line |
 | Evidence card | `rotate-1 rounded-card border border-border bg-card p-5 pl-7 shadow-floating hover:rotate-0` with red pin dot (`bg-primary/70`) |
 | Evidence card rows | `dl` with `divide-y divide-border/70`, labels/values in `font-mono text-[13px]` ("Student:", "Category:", "Status:", "Evidence:") |
 | Validated pill | `rounded-full border border-validated-foreground/20 bg-validated px-2.5 py-0.5 font-mono text-xs text-validated-foreground` |
@@ -511,11 +538,11 @@ Last updated: 2026-06-18 (how-it-works equal card height refinement)
 | Step card | `flex h-full flex-col rounded-card border border-border bg-card p-5 shadow-paper` |
 | Circled step numeral | `font-hand flex size-9 items-center justify-center rounded-full border-2 text-xl` colored per step (`border-primary text-primary`, validated, link) |
 | Step arrow connector | `font-hand absolute -right-9 top-24 text-xl text-muted-foreground` rendering `-->` (desktop only, `aria-hidden`) |
-| Step preview | Mini mock at card bottom: sticky note (`bg-accent/70 -rotate-2 shadow-paper`), composer mock with icon row + navy `Save`, checkbox review rows + `Validated ✓` pill, mini timeline with squiggle lines |
+| Step preview | Mini mock at card bottom: sticky note (`bg-accent/70 -rotate-2 shadow-paper`), composer mock with icon row + navy `Save`, checkbox review rows + `Validated ÃƒÆ’Ã‚Â¢Ãƒâ€¦Ã¢â‚¬Å“ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œ` pill, mini timeline with squiggle lines |
 | Timeline paper card | `-rotate-1 rounded-[0.7rem] border border-border bg-card pl-[4.5rem] shadow-floating hover:rotate-0 lg:min-h-[272px]` with tape strip, red margin rule (`left-12 w-px bg-destructive/45`), ruled-line overlay, entries in `font-hand text-[1.35rem] leading-[1.55rem]`, handwritten dates, and larger colored dots |
 | Timeline headline | `font-display text-4xl/5xl` with `hand-underline-blue` on "the receipts" and `hand-underline-rust` on "the easiest ones to lose" |
 | Audience heading | Centered `font-display text-2xl/3xl` |
-| Audience labels | `font-hand rounded-sm px-5 py-2 text-lg shadow-paper bg-audience-*` with small centered `tape-tab` and alternating ±1° rotation |
+| Audience labels | `font-hand rounded-sm px-5 py-2 text-lg shadow-paper bg-audience-*` with small centered `tape-tab` and alternating ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â±1ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â° rotation |
 | Closing CTA layout | Three-column paper strip: left handwritten `font-hand text-[1.65rem] text-link` note + oversized arrow, centered headline with `hand-underline-rust` on "need it later", centered rust CTA button, `font-hand text-7xl text-primary` star, and visible right-edge punched holes (`size-4 rounded-full border border-border/90 bg-card shadow-inner`) over `ruled-lines` |
 
 **Pattern notes:**  
@@ -532,7 +559,7 @@ Last updated: 2026-06-11 (full-mockup rebuild)
 |---|---|
 | Section shell | `bg-sidebar text-sidebar-foreground` with centered `max-w-4xl` column |
 | Headline | `font-display text-3xl/4xl font-semibold tracking-tight` |
-| Crossed-out tape strip | `bg-audience-tan px-5 py-2.5 shadow-paper` with alternating ±1° rotation; X drawn via two thin diagonal `linear-gradient` overlays in `var(--destructive)` at `opacity-60`, `aria-hidden`; label in `font-hand text-lg text-foreground` |
+| Crossed-out tape strip | `bg-audience-tan px-5 py-2.5 shadow-paper` with alternating ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â±1ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â° rotation; X drawn via two thin diagonal `linear-gradient` overlays in `var(--destructive)` at `opacity-60`, `aria-hidden`; label in `font-hand text-lg text-foreground` |
 | Gold payoff line | `font-display text-2xl/3xl font-semibold text-sidebar-primary` ("It's your private documentation memory.") |
 | Body | `max-w-2xl text-[15px] leading-relaxed text-sidebar-foreground/80` centered |
 | Handwritten closer | `font-hand text-xl/2xl text-sidebar-primary` with `underline decoration-sidebar-primary/70 underline-offset-4` on "One teacher, one workspace." |
@@ -553,7 +580,7 @@ Last updated: 2026-06-12 (Clerk auth foundation)
 | Inner row | `mx-auto flex max-w-6xl flex-col gap-4 px-4 py-6 md:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8` |
 | Logo | `NotebookPen` line icon `size-6 text-navy` + `font-display text-lg font-semibold` wordmark |
 | Sign in link | `text-sm font-medium text-foreground/80 hover:text-foreground` |
-| Secondary auth link | `text-sm text-muted-foreground hover:text-foreground` ("Create account →") |
+| Secondary auth link | `text-sm text-muted-foreground hover:text-foreground` ("Create account ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢") |
 
 **Pattern notes:**  
 Matches the mockup footer structure: logo left, auth links right. The old direct workspace dev link was removed when Clerk auth landed because `/app/*` is protected. Footer links should point to public auth routes, not protected app routes.
@@ -802,7 +829,7 @@ The roster import form supports pasted text only and keeps the workflow teacher-
 ### Feed Roster Required State
 
 File: `components/dashboard/evidence-feed.tsx`  
-Last updated: 2026-06-15
+Last updated: 2026-07-02 (feed polish)
 
 | Property | Class |
 |---|---|

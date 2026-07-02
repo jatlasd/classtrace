@@ -1,0 +1,139 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-07-02T00:00:00-04:00",
+  "title": "Design System: ClassTrace",
+  "extensions": {
+    "colorMeta": {
+      "paper-background": { "role": "neutral", "displayName": "Warm Paper Background", "canonical": "#f3eadc", "tonalRamp": ["oklch(15% 0.015 75)", "oklch(28% 0.018 75)", "oklch(42% 0.02 75)", "oklch(56% 0.022 75)", "oklch(70% 0.024 75)", "oklch(82% 0.026 75)", "oklch(91% 0.024 75)", "oklch(96% 0.021 75)"] },
+      "ink-foreground": { "role": "neutral", "displayName": "Ink Foreground", "canonical": "#182536", "tonalRamp": ["oklch(14% 0.035 250)", "oklch(24% 0.035 250)", "oklch(34% 0.035 250)", "oklch(46% 0.03 250)", "oklch(60% 0.025 250)", "oklch(74% 0.02 250)", "oklch(86% 0.015 250)", "oklch(96% 0.01 250)"] },
+      "paper-card": { "role": "neutral", "displayName": "Clean Paper Card", "canonical": "#fbf7ed", "tonalRamp": ["oklch(16% 0.012 80)", "oklch(30% 0.014 80)", "oklch(44% 0.016 80)", "oklch(58% 0.018 80)", "oklch(72% 0.02 80)", "oklch(84% 0.019 80)", "oklch(93% 0.016 80)", "oklch(98% 0.012 80)"] },
+      "rust-primary": { "role": "primary", "displayName": "Rust Capture", "canonical": "#b85a32", "tonalRamp": ["oklch(15% 0.06 38)", "oklch(28% 0.08 38)", "oklch(40% 0.1 38)", "oklch(52% 0.12 38)", "oklch(64% 0.1 38)", "oklch(76% 0.075 38)", "oklch(88% 0.045 38)", "oklch(95% 0.025 38)"] },
+      "navy-secondary": { "role": "secondary", "displayName": "Deep School Navy", "canonical": "#1d2f4b", "tonalRamp": ["oklch(14% 0.05 255)", "oklch(25% 0.06 255)", "oklch(36% 0.07 255)", "oklch(48% 0.065 255)", "oklch(62% 0.05 255)", "oklch(76% 0.035 255)", "oklch(88% 0.022 255)", "oklch(96% 0.012 255)"] },
+      "sage-validated": { "role": "secondary", "displayName": "Sage Validated", "canonical": "#c7d4a6", "tonalRamp": ["oklch(15% 0.04 125)", "oklch(28% 0.05 125)", "oklch(42% 0.055 125)", "oklch(56% 0.055 125)", "oklch(70% 0.05 125)", "oklch(82% 0.04 125)", "oklch(90% 0.03 125)", "oklch(96% 0.018 125)"] },
+      "gold-accent": { "role": "tertiary", "displayName": "Gold Desk Note", "canonical": "#e7bd64", "tonalRamp": ["oklch(16% 0.055 82)", "oklch(30% 0.075 82)", "oklch(44% 0.095 82)", "oklch(58% 0.11 82)", "oklch(72% 0.09 82)", "oklch(84% 0.065 82)", "oklch(92% 0.04 82)", "oklch(97% 0.022 82)"] },
+      "blue-link": { "role": "tertiary", "displayName": "Blue Evidence Link", "canonical": "#2c526f", "tonalRamp": ["oklch(15% 0.045 235)", "oklch(28% 0.055 235)", "oklch(40% 0.06 235)", "oklch(52% 0.055 235)", "oklch(66% 0.045 235)", "oklch(78% 0.032 235)", "oklch(90% 0.02 235)", "oklch(96% 0.012 235)"] },
+      "soft-muted": { "role": "neutral", "displayName": "Soft Muted", "canonical": "#ebe3d6", "tonalRamp": ["oklch(16% 0.012 75)", "oklch(30% 0.014 75)", "oklch(44% 0.016 75)", "oklch(58% 0.018 75)", "oklch(72% 0.018 75)", "oklch(84% 0.016 75)", "oklch(91% 0.014 75)", "oklch(96% 0.01 75)"] },
+      "muted-ink": { "role": "neutral", "displayName": "Muted Ink", "canonical": "#5d554a", "tonalRamp": ["oklch(15% 0.012 75)", "oklch(27% 0.014 75)", "oklch(39% 0.016 75)", "oklch(51% 0.014 75)", "oklch(64% 0.012 75)", "oklch(76% 0.01 75)", "oklch(88% 0.008 75)", "oklch(96% 0.006 75)"] },
+      "warm-border": { "role": "neutral", "displayName": "Warm Border", "canonical": "#ddd0be", "tonalRamp": ["oklch(16% 0.012 70)", "oklch(30% 0.014 70)", "oklch(44% 0.016 70)", "oklch(58% 0.018 70)", "oklch(72% 0.018 70)", "oklch(84% 0.016 70)", "oklch(91% 0.014 70)", "oklch(96% 0.01 70)"] },
+      "destructive-rust": { "role": "primary", "displayName": "Destructive Rust", "canonical": "#a33d2e", "tonalRamp": ["oklch(14% 0.06 32)", "oklch(26% 0.08 32)", "oklch(38% 0.1 32)", "oklch(50% 0.12 32)", "oklch(64% 0.095 32)", "oklch(78% 0.065 32)", "oklch(89% 0.04 32)", "oklch(96% 0.02 32)"] }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "Page titles, composer labels, and major authenticated headings." },
+      "headline": { "displayName": "Headline", "purpose": "Panel titles and compact section headings." },
+      "title": { "displayName": "Title", "purpose": "Rows, student names, and local emphasis." },
+      "body": { "displayName": "Body", "purpose": "Evidence text, helper copy, and product UI prose." },
+      "label": { "displayName": "Label", "purpose": "Ledger headers, metadata labels, and form labels." }
+    },
+    "shadows": [
+      { "name": "paper", "value": "0 10px 24px rgba(31, 25, 17, 0.12)", "purpose": "Tactile separation for capture composer, evidence cards, and popovers." },
+      { "name": "floating", "value": "0 18px 28px rgba(31, 25, 17, 0.22)", "purpose": "Rare elevated surfaces that need stronger paper separation." }
+    ],
+    "motion": [
+      { "name": "state-transition", "value": "150ms-250ms color, background-color, border-color, box-shadow, transform", "purpose": "Small state feedback only; no decorative choreography." },
+      { "name": "active-press", "value": "translateY(1px)", "purpose": "Subtle button press feedback for existing button primitive." }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px" },
+      { "name": "md", "value": "768px" },
+      { "name": "lg", "value": "1024px" },
+      { "name": "xl", "value": "1280px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Rust primary action for the one main action in a local area.",
+      "html": "<button class=\"ds-btn-primary\">Capture Note</button>",
+      "css": ".ds-btn-primary { display: inline-flex; align-items: center; justify-content: center; gap: 0.375rem; height: 2.25rem; padding: 0 0.875rem; border: 1px solid transparent; border-radius: 0.5625rem; background: var(--primary, #b85a32); color: var(--primary-foreground, #fbf7ed); font-family: Inter, ui-sans-serif, system-ui, sans-serif; font-size: 0.875rem; font-weight: 600; box-shadow: var(--shadow-paper, 0 10px 24px rgba(31, 25, 17, 0.12)); transition: background-color 180ms ease, box-shadow 180ms ease, transform 120ms ease; } .ds-btn-primary:hover { background: color-mix(in srgb, var(--primary, #b85a32) 90%, black); } .ds-btn-primary:active { transform: translateY(1px); } .ds-btn-primary:focus-visible { outline: none; border-color: var(--ring, #b85a32); box-shadow: 0 0 0 3px color-mix(in srgb, var(--ring, #b85a32) 35%, transparent), var(--shadow-paper, 0 10px 24px rgba(31, 25, 17, 0.12)); }"
+    },
+    {
+      "name": "Outline Button",
+      "kind": "button",
+      "refersTo": "button-outline",
+      "description": "Calm secondary action for navigation, confirmation, and low-drama controls.",
+      "html": "<button class=\"ds-btn-outline\">Open class</button>",
+      "css": ".ds-btn-outline { display: inline-flex; align-items: center; justify-content: center; gap: 0.375rem; height: 2rem; padding: 0 0.75rem; border: 1px solid var(--border, #ddd0be); border-radius: 0.5625rem; background: var(--card, #fbf7ed); color: var(--foreground, #182536); font-family: Inter, ui-sans-serif, system-ui, sans-serif; font-size: 0.875rem; font-weight: 600; transition: background-color 180ms ease, color 180ms ease, border-color 180ms ease, transform 120ms ease; } .ds-btn-outline:hover { background: var(--muted, #ebe3d6); } .ds-btn-outline:active { transform: translateY(1px); } .ds-btn-outline:focus-visible { outline: none; border-color: var(--ring, #b85a32); box-shadow: 0 0 0 3px color-mix(in srgb, var(--ring, #b85a32) 30%, transparent); }"
+    },
+    {
+      "name": "Paper Card",
+      "kind": "card",
+      "refersTo": "card-paper",
+      "description": "Tactile paper panel for composer, evidence, and work surfaces.",
+      "html": "<section class=\"ds-paper-card\"><h3>What happened?</h3><p>Type a quick note for one student, then review before saving.</p></section>",
+      "css": ".ds-paper-card { max-width: 360px; padding: 1.25rem; border: 1px solid var(--border, #ddd0be); border-radius: var(--radius-card, 1.125rem); background: var(--card, #fbf7ed); color: var(--foreground, #182536); box-shadow: var(--shadow-paper, 0 10px 24px rgba(31, 25, 17, 0.12)); font-family: Inter, ui-sans-serif, system-ui, sans-serif; } .ds-paper-card h3 { margin: 0 0 0.5rem; font-family: Fraunces, Georgia, serif; font-size: 1.375rem; line-height: 1.2; font-weight: 600; letter-spacing: -0.02em; } .ds-paper-card p { margin: 0; color: var(--muted-foreground, #5d554a); font-size: 0.875rem; line-height: 1.6; }"
+    },
+    {
+      "name": "Text Field",
+      "kind": "input",
+      "refersTo": "input-field",
+      "description": "Forgiving paper field for roster forms and review inputs.",
+      "html": "<label class=\"ds-field\"><span>Student name</span><input placeholder=\"Mary\" /></label>",
+      "css": ".ds-field { display: grid; gap: 0.375rem; color: var(--foreground, #182536); font-family: Inter, ui-sans-serif, system-ui, sans-serif; font-size: 0.875rem; font-weight: 500; } .ds-field input { height: 2.5rem; border: 1px solid var(--border, #ddd0be); border-radius: var(--radius, 0.5rem); background: color-mix(in srgb, var(--background, #f3eadc) 50%, transparent); color: var(--foreground, #182536); padding: 0 0.75rem; font: inherit; outline: none; transition: border-color 180ms ease, box-shadow 180ms ease; } .ds-field input::placeholder { color: var(--muted-foreground, #5d554a); } .ds-field input:focus-visible { border-color: var(--ring, #b85a32); box-shadow: 0 0 0 3px color-mix(in srgb, var(--ring, #b85a32) 24%, transparent); }"
+    },
+    {
+      "name": "Muted Chip",
+      "kind": "chip",
+      "refersTo": "chip-muted",
+      "description": "Quiet organizational chip for tags, hints, and metadata.",
+      "html": "<span class=\"ds-chip-muted\">#reading</span>",
+      "css": ".ds-chip-muted { display: inline-flex; align-items: center; justify-content: center; min-height: 1.25rem; padding: 0.125rem 0.625rem; border: 1px solid var(--border, #ddd0be); border-radius: 9999px; background: color-mix(in srgb, var(--muted, #ebe3d6) 60%, transparent); color: var(--link, #2c526f); font-family: Inter, ui-sans-serif, system-ui, sans-serif; font-size: 0.75rem; font-weight: 500; white-space: nowrap; }"
+    },
+    {
+      "name": "Validated Pill",
+      "kind": "chip",
+      "refersTo": "chip-muted",
+      "description": "Sage validation badge for saved evidence states.",
+      "html": "<span class=\"ds-validated-pill\"><span></span>Validated</span>",
+      "css": ".ds-validated-pill { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.25rem 0.625rem; border: 1px solid color-mix(in srgb, var(--validated, #c7d4a6) 60%, transparent); border-radius: 0.5625rem; background: color-mix(in srgb, var(--validated, #c7d4a6) 35%, transparent); color: var(--validated-foreground, #182536); font-family: Inter, ui-sans-serif, system-ui, sans-serif; font-size: 0.75rem; font-weight: 600; } .ds-validated-pill span { width: 0.5rem; height: 0.5rem; border-radius: 9999px; background: currentColor; }"
+    },
+    {
+      "name": "Top Navigation Item",
+      "kind": "nav",
+      "refersTo": "button-outline",
+      "description": "Light top-nav item with rust active state and compact product rhythm.",
+      "html": "<a class=\"ds-nav-item ds-nav-item-active\" href=\"#\">Capture</a>",
+      "css": ".ds-nav-item { position: relative; display: inline-flex; align-items: center; height: 2.75rem; padding: 0 0.75rem; border-radius: 0.5625rem; color: var(--muted-foreground, #5d554a); font-family: Inter, ui-sans-serif, system-ui, sans-serif; font-size: 0.875rem; font-weight: 600; text-decoration: none; transition: background-color 180ms ease, color 180ms ease; } .ds-nav-item:hover { background: color-mix(in srgb, var(--muted, #ebe3d6) 60%, transparent); color: var(--foreground, #182536); } .ds-nav-item:focus-visible { outline: none; box-shadow: 0 0 0 3px color-mix(in srgb, var(--ring, #b85a32) 24%, transparent); } .ds-nav-item-active { color: var(--foreground, #182536); } .ds-nav-item-active::after { content: \"\"; position: absolute; left: 0.75rem; right: 0.75rem; bottom: -0.75rem; height: 2px; border-radius: 9999px; background: var(--primary, #b85a32); }"
+    }
+  ],
+  "narrative": {
+    "northStar": "Calm Evidence Desk",
+    "overview": "ClassTrace should feel like a quiet teacher workspace where quick classroom observations become organized evidence without ceremony. The surface is warm paper, not corporate glass; the structure is a desk tray and ledger, not an analytics dashboard. Every visual decision should help a tired teacher capture one student-specific moment, review it calmly, and trust what was saved.\n\nThe system is restrained and tactile. Paper-toned surfaces, soft borders, and limited shadow create enough layering to separate capture, review, roster, and timeline work without turning the app into a stack of decorative cards. The rust primary color is intentionally rare: it marks real action, current state, or focus, not decoration.",
+    "keyCharacteristics": [
+      "Capture-first hierarchy with the composer or current work surface near the top.",
+      "Warm paper surfaces with ink-forward text and restrained accents.",
+      "Ledger-like lists for roster and evidence where scanning matters.",
+      "Teacher-controlled validation states that never imply system certainty.",
+      "Familiar controls, small transitions, and visible focus states."
+    ],
+    "rules": [
+      { "name": "The Rust Rarity Rule", "body": "Rust belongs to primary actions, active indicators, and focus states. If a screen has rust everywhere, the hierarchy is broken.", "section": "colors" },
+      { "name": "The Validation Is Sage Rule", "body": "Saved or validated evidence uses sage. Do not replace validation with blue info states, gold celebration, or loud success green.", "section": "colors" },
+      { "name": "The No Rainbow Tags Rule", "body": "Tags organize evidence; they are not decoration. Use muted, bordered chips unless a scoped component pattern says otherwise.", "section": "colors" },
+      { "name": "The App Is Not a Poster Rule", "body": "Hero-scale type belongs to the public landing page only. Authenticated product surfaces use compact, scannable hierarchy.", "section": "typography" },
+      { "name": "The Labels Stay Sans Rule", "body": "Buttons, form labels, nav items, metadata, and table-like headers use Inter, never Fraunces or Caveat.", "section": "typography" },
+      { "name": "The Border-First Rule", "body": "If a border can explain the surface, use the border. Add shadow only when the surface needs tactile paper separation.", "section": "elevation" },
+      { "name": "The No Ghost-Card Rule", "body": "Do not pair decorative 1px borders with large generic drop shadows. Shadows here are paper-like and purposeful, not SaaS gloss.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do keep fast capture visually prominent on evidence surfaces.",
+      "Do use semantic tokens from app/globals.css rather than raw colors in components.",
+      "Do use rust for primary action, active navigation, and focus hierarchy only.",
+      "Do use sage for validated evidence states.",
+      "Do make roster and evidence lists ledger-like when scanning matters.",
+      "Do keep archive calmer and easier to choose than permanent delete.",
+      "Do use plain teacher language: Capture, Evidence feed, What happened?, Review before saving, Student, Tags, Follow-up, Timeline.",
+      "Do keep focus rings, labels, errors, and icon-only accessible names visible and reliable."
+    ],
+    "donts": [
+      "Don't make ClassTrace look like an enterprise analytics dashboard, SIS, gradebook, compliance factory, gamified classroom app, child-facing product, social feed, generic SaaS template, or AI-powered documentation tool.",
+      "Don't add fake controls for workflows that do not exist, including inert search, notifications, reporting dashboards, review queues, or admin tools.",
+      "Don't use AI language, compliance overclaims, district approval language, or generated-documentation copy in V1/pre-beta UI.",
+      "Don't use bright rainbow tag systems, decorative gradients, glassmorphism, neon effects, heavy shadows, or dashboard chart styling.",
+      "Don't use Caveat in authenticated app forms, validation states, dense controls, or critical instructions.",
+      "Don't use card grids when a ledger/list is clearer.",
+      "Don't create class-scoped capture, classwide note affordances, multi-student capture flows, upload controls, or report navigation without an approved product unit."
+    ]
+  }
+}
