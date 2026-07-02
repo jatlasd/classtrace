@@ -56,6 +56,10 @@ const filterOptions: { value: InboxFilter; label: string }[] = [
   { value: "validated", label: "Validated" },
 ];
 
+function feedItemCountLabel(count: number): string {
+  return count === 1 ? "1 item showing" : `${count} items showing`;
+}
+
 function isValidated(item: FeedItem): boolean {
   return item.validation?.status === "validated";
 }
@@ -454,8 +458,9 @@ export function EvidenceFeed({
 
   const hasAnyFeedItems =
     draftItems.length > 0 || initialEvidenceRecords.length > 0;
-  const hasVisibleFeedItems =
-    visibleDraftItems.length > 0 || visibleEvidenceRecords.length > 0;
+  const visibleFeedItemCount =
+    visibleDraftItems.length + visibleEvidenceRecords.length;
+  const hasVisibleFeedItems = visibleFeedItemCount > 0;
 
   function handleDraft(draft: NoteDraft) {
     const resolution = resolveCaptureStudents(
@@ -631,52 +636,65 @@ export function EvidenceFeed({
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-[1560px] flex-col gap-6 px-4 py-6 sm:px-6 lg:flex-row lg:items-start lg:px-8">
-      <div className="min-w-0 flex-1 space-y-6">
-        <EvidenceFeedHeader />
-        {rosterSetupNeeded ? (
-          <RosterRequiredState />
-        ) : (
-          <QuickCaptureCard
-            rosterStudents={rosterStudents}
-            onDraft={handleDraft}
-          />
-        )}
+    <div className="mx-auto w-full max-w-[1560px] px-4 py-6 sm:px-6 lg:px-8">
+      <EvidenceFeedHeader />
 
-        <section className="space-y-4" aria-labelledby="evidence-inbox-heading">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex flex-wrap items-center gap-3">
-              <RecentCapturesLabel />
-              <span className="inline-flex items-center gap-2 rounded-lg border border-border bg-muted/30 px-3 py-2 text-sm font-medium text-muted-foreground">
-                <ArrowDownUp className="size-4" />
-                Newest first
-              </span>
-            </div>
-            <EvidenceSearchControl
-              query={searchQuery}
-              onQueryChange={setSearchQuery}
+      <div className="mt-6 flex flex-col gap-6 lg:flex-row lg:items-start">
+        <div className="min-w-0 flex-1 space-y-7">
+          {rosterSetupNeeded ? (
+            <RosterRequiredState />
+          ) : (
+            <QuickCaptureCard
+              rosterStudents={rosterStudents}
+              onDraft={handleDraft}
             />
-          </div>
+          )}
 
-          <InboxFilterControl filter={filter} onFilterChange={setFilter} />
+          <section
+            className="overflow-hidden rounded-card border border-border bg-card shadow-paper"
+            aria-labelledby="evidence-inbox-heading"
+          >
+            <div className="space-y-4 border-b border-border bg-card px-4 py-4 sm:px-6">
+              <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+                <div className="min-w-0 space-y-1">
+                  <div className="flex flex-wrap items-center gap-3">
+                    <RecentCapturesLabel />
+                    <span className="inline-flex items-center gap-2 rounded-lg border border-border bg-muted/30 px-3 py-2 text-sm font-medium text-muted-foreground">
+                      <ArrowDownUp className="size-4" />
+                      Newest first
+                    </span>
+                  </div>
+                  <p className="text-xs leading-relaxed text-muted-foreground">
+                    {hasVisibleFeedItems
+                      ? feedItemCountLabel(visibleFeedItemCount)
+                      : "Drafts and saved evidence will appear here."}
+                  </p>
+                </div>
+                <EvidenceSearchControl
+                  query={searchQuery}
+                  onQueryChange={setSearchQuery}
+                />
+              </div>
 
-          {captureEditError ? (
-            <p className="rounded-lg border border-border bg-muted/30 px-3 py-2 text-sm text-destructive">
-              {captureEditError}
-            </p>
-          ) : null}
+              <InboxFilterControl filter={filter} onFilterChange={setFilter} />
+            </div>
 
-          <div className="overflow-hidden rounded-card border border-border bg-card shadow-paper">
-            {renderFeedList()}
-          </div>
-        </section>
+            {captureEditError ? (
+              <p className="border-b border-border bg-muted/30 px-4 py-3 text-sm text-destructive sm:px-6">
+                {captureEditError}
+              </p>
+            ) : null}
+
+            <div>{renderFeedList()}</div>
+          </section>
+        </div>
+
+        <ClassTraceNoticedPanel
+          items={summaryItems}
+          rosterStudents={rosterStudents}
+          evidenceRecords={initialEvidenceRecords}
+        />
       </div>
-
-      <ClassTraceNoticedPanel
-        items={summaryItems}
-        rosterStudents={rosterStudents}
-        evidenceRecords={initialEvidenceRecords}
-      />
     </div>
   );
 }
