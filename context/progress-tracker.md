@@ -1466,6 +1466,7 @@ Verification after refinement: `npm run lint` pass, `npm run build` pass, `npm r
 
 ## Session Notes
 
+- Evidence feed layout pass completed on 2026-07-02: changed `/app/feed` page structure so the header spans the workspace and inbox controls sit inside the same ledger surface as the rows, preserving capture, validation, persistence, and roster behavior.
 - Feed polish pass completed on 2026-07-02: improved `/app/feed` header hierarchy, inbox empty/search states, saved evidence row scanability, and deterministic side-rail copy without changing capture, validation, persistence, or roster behavior.
 - Impeccable document ran on 2026-07-02: added root DESIGN.md and .impeccable/design.json from existing ClassTrace tokens, components, and UI registry using the confirmed Calm Evidence Desk direction.
 - Impeccable init ran on 2026-07-02: added root PRODUCT.md from existing ClassTrace context and configured .impeccable/live/config.json for the Next.js App Router layout. CSP detection reported no policy to patch.

@@ -103,24 +103,25 @@ The composer is larger and closer to the uploaded reference. Unit 12 made the `@
 
 ### Unit 11 Evidence Feed Workspace
 
-File: `components/dashboard/evidence-feed.tsx`  
-Last updated: 2026-06-15
+File: `components/dashboard/evidence-feed.tsx`
+Last updated: 2026-07-02 (layout pass)
 
 | Property | Class |
 |---|---|
-| Page shell | `mx-auto flex w-full max-w-[1560px] flex-col gap-6 px-4 py-6 sm:px-6 lg:flex-row lg:items-start lg:px-8` |
-| Main column | `min-w-0 flex-1 space-y-6` |
-| Toolbar | `flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between` |
-| List container | `overflow-hidden rounded-card border border-border bg-card shadow-paper` |
-| Search input | `h-10 w-full rounded-lg border border-border bg-card py-2 pl-3 pr-9 text-sm outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/20` |
+| Page shell | `mx-auto w-full max-w-[1560px] px-4 py-6 sm:px-6 lg:px-8` |
+| Work area | `mt-6 flex flex-col gap-6 lg:flex-row lg:items-start` |
+| Main column | `min-w-0 flex-1 space-y-7` |
+| Inbox container | `overflow-hidden rounded-card border border-border bg-card shadow-paper` |
+| Inbox header | `space-y-4 border-b border-border bg-card px-4 py-4 sm:px-6` |
+| Inbox header row | `flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between` |
+| Search input | `h-10 w-full rounded-lg border border-border bg-background/50 py-2 pl-9 pr-9 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:bg-card focus-visible:ring-3 focus-visible:ring-ring/20` |
 | Filter buttons | `rounded-lg border px-3 py-2 text-sm font-medium transition-colors` |
-| Utility card | `rounded-card border border-border bg-card/70 p-4` |
+| Capture edit error | `border-b border-border bg-muted/30 px-4 py-3 text-sm text-destructive sm:px-6` |
 
-**Pattern notes:**  
-The feed workspace follows the reference image: composer first, recent captures toolbar, row-based capture list, right rail, and secondary browser-local POC utilities below the main workflow. It remains localStorage-backed POC behavior until later evidence database units.
+**Pattern notes:**
+The feed workspace keeps capture first, then groups inbox controls and feed rows inside one ledger-like surface. The compact page header spans the full workspace, while the two-column work area begins below it so the right rail aligns with the active capture/feed flow. This preserves the global, student-specific feed and avoids dashboard framing.
 
 ---
-
 ### Unit 11 Evidence Capture Row
 
 File: `components/dashboard/evidence-capture-card.tsx`  
@@ -146,7 +147,7 @@ Evidence captures now render as rows inside the feed list container. Review, edi
 ### Evidence Feed Header and Empty States
 
 File: `components/dashboard/evidence-feed-header.tsx`, `components/dashboard/evidence-feed.tsx`
-Last updated: 2026-07-02
+Last updated: 2026-07-02 (layout pass)
 
 | Property | Class |
 |---|---|
@@ -154,8 +155,9 @@ Last updated: 2026-07-02
 | Header eyebrow | `text-xs font-semibold uppercase tracking-wider text-muted-foreground` |
 | Header title | `font-display text-2xl font-semibold tracking-tight text-foreground` |
 | Header helper | `mt-1 max-w-2xl text-sm leading-relaxed text-muted-foreground` |
-| Inbox heading | `text-base font-semibold text-foreground` with `id="evidence-inbox-heading"` |
+| Inbox heading cluster | `flex flex-wrap items-center gap-3` |
 | Sort indicator | `inline-flex items-center gap-2 rounded-lg border border-border bg-muted/30 px-3 py-2 text-sm font-medium text-muted-foreground` |
+| Count helper | `text-xs leading-relaxed text-muted-foreground` |
 | Search input | `h-10 w-full rounded-lg border border-border bg-background/50 py-2 pl-9 pr-9 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:bg-card focus-visible:ring-3 focus-visible:ring-ring/20` |
 | Search clear action | `absolute right-3 top-1/2 -translate-y-1/2 rounded p-0.5 text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/30` |
 | Active filter | `rounded-lg border border-border bg-muted px-3 py-2 text-sm font-medium text-foreground shadow-sm` |
@@ -165,10 +167,9 @@ Last updated: 2026-07-02
 | Empty state body | `mx-auto mt-2 max-w-md text-sm leading-relaxed text-muted-foreground` |
 
 **Pattern notes:**
-The feed now uses a visible but compact header so teachers understand the capture/review loop without turning the app into a dashboard. The inbox toolbar uses an honest non-interactive "Newest first" indicator until alternate sorting exists. Empty, filtered-empty, search-empty, and roster-required states share one composed empty-state pattern with direct teacher language and no analytics/reporting framing.
+The feed uses a visible but compact header so teachers understand the capture/review loop without turning the app into a dashboard. Inbox controls sit in the same surface as the rows, making search, filter, count, and newest-first status feel attached to the evidence ledger. Empty, filtered-empty, search-empty, and roster-required states share one composed empty-state pattern with direct teacher language and no analytics/reporting framing.
 
 ---
-
 ### Saved Evidence Row
 
 File: `components/dashboard/saved-evidence-row.tsx`
