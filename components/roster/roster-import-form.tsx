@@ -16,6 +16,7 @@ const textareaClassName =
 type RosterImportFormProps = {
   existingStudents: ExistingRosterImportStudent[];
   classGroupId: string;
+  className: string;
 };
 
 function PreviewRow({ row }: { row: RosterImportPreview["rows"][number] }) {
@@ -56,6 +57,7 @@ function PreviewRow({ row }: { row: RosterImportPreview["rows"][number] }) {
 export function RosterImportForm({
   existingStudents,
   classGroupId,
+  className,
 }: RosterImportFormProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -106,7 +108,7 @@ export function RosterImportForm({
       setStatusMessage(
         `${result.importedCount} ${
           result.importedCount === 1 ? "student" : "students"
-        } added to your roster.`
+        } added to ${className}.`
       );
       router.refresh();
     });
@@ -119,7 +121,7 @@ export function RosterImportForm({
           Paste several students
         </h2>
         <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-          One student per line. Add an optional handle or school/local ID after a comma.
+          These students will be added to {className}. One student per line. Add an optional handle or school/local ID after a comma.
         </p>
       </div>
 

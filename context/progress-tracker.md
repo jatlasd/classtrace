@@ -11,6 +11,7 @@ Update this file after every meaningful implementation change.
 - Phase 6 Unit 27 documentation reset completed: context docs now distinguish completed V1 from the active pre-beta contract.
 - Phase 7 Unit 28 implemented and verified with automated checks - Class Domain, Ownership, and Migration Foundation (`context/specs/28-class-domain-ownership-and-migration-foundation.md`).
 - Phase 7 Unit 29 implemented with automated checks and post-review/merge-prep readiness fixes - Layered Roster and Class-First Onboarding (`context/specs/29-layered-roster-and-class-first-onboarding.md`).
+- Phase 7 Unit 30 implemented and verified with automated checks - Class-Scoped Roster Import (`context/specs/30-class-scoped-roster-import.md`).
 - Phase 2 complete — roster onboarding
 - Unit 02 complete and verified — Route Map and App Shell (`context/specs/02-route-map-and-app-shell.md`)
 - Unit 03 complete and verified — Public Landing Page UI (`context/specs/03-public-landing-page-ui.md`)
@@ -45,7 +46,7 @@ Update this file after every meaningful implementation change.
 
 - ClassTrace V1 is complete for the scoped teacher-first evidence capture build path.
 - Current active build path: `context/post-v1-pre-beta-build-plan.md`, starting with Phase 6.
-- Current task: Unit 29 Layered Roster and Class-First Onboarding implemented with post-review/merge-prep readiness fixes; next planned unit is Unit 30 Class-Scoped Roster Import after the post-V1 branch is merged back to main.
+- Current task: Unit 30 Class-Scoped Roster Import implemented with automated checks; next planned unit is Unit 31 Evidence Note Data Contract after human review/approval.
 
 ---
 
@@ -159,6 +160,35 @@ Spec: `context/specs/29-layered-roster-and-class-first-onboarding.md`
 
 - Manual browser verification is still needed for the class-first roster path on desktop and mobile after an authenticated browser session is available.
 - Unit 30 remains responsible for the working class-scoped paste-list import flow.
+
+---
+
+## Unit 30 - Class-Scoped Roster Import (Implemented)
+
+Spec: `context/specs/30-class-scoped-roster-import.md`
+
+### What changed
+
+- Created the Unit 30 focused spec for moving paste-list roster import into an opened active class.
+- Rendered the working roster import form inside the opened active-class view and removed the deferred paste-list handoff copy.
+- Loaded existing roster import conflict data server-side only when an active class is selected, while keeping the submitted import scoped to the opened class's verified `classGroupId`.
+- Updated import form copy and success messaging so teachers see the destination class before previewing and saving pasted students.
+- Preserved the existing deterministic paste, preview, duplicate-warning, and atomic class-scoped import behavior; no class column, class picker, inline class creation, file upload, external sync, or workspace ID submission was added.
+- Updated static UI guard tests and UI registry notes for the class-scoped import placement.
+
+### Verification
+
+- `npm.cmd run test -- lib/import/roster-import.test.ts actions/roster.test.ts lib/roster-import-ui.test.ts lib/guided-roster-setup-ui.test.ts lib/student-roster-database-ui.test.ts lib/onboarding-routing.test.ts` passed (6 files / 26 tests).
+- `npm.cmd run test -- lib/manual-student-entry.test.ts lib/roster-import-ui.test.ts lib/guided-roster-setup-ui.test.ts lib/student-roster-database-ui.test.ts lib/onboarding-routing.test.ts` passed (5 files / 18 tests).
+- `npm.cmd run test` passed (49 files / 261 tests). Existing archive/delete failure-path tests intentionally logged contextual database errors while verifying safe generic error results.
+- `npm.cmd run lint` passed.
+- `npm.cmd run build` passed.
+- Chrome manual verification reached the restarted dev server. Before sign-in it redirected to Clerk as expected; after sign-in, the Chrome connector hung while reacquiring a browser session, so the authenticated class-view smoke check could not be completed in this run.
+
+### Remaining risks / follow-ups
+
+- Manual browser verification is still needed for the Unit 30 class-scoped import placement inside an authenticated opened class after Chrome connector access is stable.
+- Unit 31 remains responsible for the Evidence note data/save boundary after class-scoped import is reviewed.
 
 ---
 
@@ -1331,9 +1361,10 @@ Verification after refinement: `npm run lint` pass, `npm run build` pass, `npm r
 
 ## Next Up
 
-1. Manually verify the Unit 29 class-first roster flow in browser when tooling is available.
-2. Create/finalize the Unit 30 focused spec for class-scoped roster import.
-3. Commit and push completed changes when the human requests it.
+1. Manually verify the Unit 30 class-scoped import placement inside an authenticated opened class when Chrome connector access is stable.
+2. Review/approve the Unit 30 implementation.
+3. Begin Unit 31 Evidence Note Data Contract after approval.
+4. Commit and push completed changes when the human requests it.
 
 ---
 

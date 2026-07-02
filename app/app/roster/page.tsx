@@ -4,6 +4,7 @@ import { ClassGroupActions } from "@/components/roster/class-group-actions";
 import { ClassGroupForm } from "@/components/roster/class-group-form";
 import { ManualStudentEntryForm } from "@/components/roster/manual-student-entry-form";
 import { RosterStudentEditForm } from "@/components/roster/roster-student-edit-form";
+import { RosterImportForm } from "@/components/roster/roster-import-form";
 import { RosterStudentRowActions } from "@/components/roster/roster-student-row-actions";
 import { Button } from "@/components/ui/button";
 import { getCurrentWorkspace } from "@/lib/auth/get-current-workspace";
@@ -15,6 +16,8 @@ import {
   type ClassGroupDisplay,
   type ClassRosterStudentDisplay,
 } from "@/lib/classes/class-groups";
+import { listExistingRosterImportStudentsForWorkspace } from "@/lib/import/roster-import";
+import { type ExistingRosterImportStudent } from "@/lib/import/parse-roster-import";
 import { routes } from "@/lib/routes";
 import {
   listActiveRosterStudentsForWorkspace,
@@ -257,11 +260,13 @@ function OpenClassView({
   classGroup,
   students,
   activeClasses,
+  existingImportStudents,
   isFirstStudent,
 }: {
   classGroup: ClassGroupDisplay;
   students: ClassRosterStudentDisplay[];
   activeClasses: ActiveClassOption[];
+  existingImportStudents: ExistingRosterImportStudent[];
   isFirstStudent: boolean;
 }) {
   return (
@@ -346,9 +351,12 @@ function OpenClassView({
             />
           </div>
           <ClassGroupActions classGroupId={classGroup.id} className={classGroup.name} />
-          <div className="border border-border bg-card/60 p-4 text-sm leading-relaxed text-muted-foreground">
-            Paste-list import will move into this class view next. For now, add students
-            one at a time so every active student has a class.
+          <div className="border border-border bg-card/55 p-4 sm:p-5">
+            <RosterImportForm
+              existingStudents={existingImportStudents}
+              classGroupId={classGroup.id}
+              className={classGroup.name}
+            />
           </div>
         </div>
       </div>
@@ -379,12 +387,15 @@ export default async function RosterPage({ searchParams }: RosterPageProps) {
   const selectedClass = selectedClassId
     ? activeClasses.find((classGroup) => classGroup.id === selectedClassId) ?? null
     : null;
-  const selectedClassStudents = selectedClass
-    ? await listActiveRosterStudentsForClass({
-        workspaceId: workspace.workspaceId,
-        classGroupId: selectedClass.id,
-      })
-    : null;
+  const [selectedClassStudents, existingImportStudents] = selectedClass
+    ? await Promise.all([
+        listActiveRosterStudentsForClass({
+          workspaceId: workspace.workspaceId,
+          classGroupId: selectedClass.id,
+        }),
+        listExistingRosterImportStudentsForWorkspace(workspace.workspaceId),
+      ])
+    : [null, []];
   const unassignedStudents = activeStudents.filter((student) => !student.hasActiveClass);
   const selectedClassMissing = Boolean(selectedClassId && !selectedClass);
   const readyForCapture =
@@ -438,6 +449,7 @@ export default async function RosterPage({ searchParams }: RosterPageProps) {
           classGroup={selectedClass}
           students={selectedClassStudents ?? []}
           activeClasses={activeClassOptions}
+          existingImportStudents={existingImportStudents}
           isFirstStudent={(selectedClassStudents ?? []).length === 0}
         />
       ) : selectedClassMissing ? (

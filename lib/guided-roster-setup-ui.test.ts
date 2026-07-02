@@ -22,7 +22,7 @@ describe("Unit 06 guided roster setup UI", () => {
     expect(rosterPage).toContain("Create your first class");
     expect(rosterPage).toContain("OpenClassView");
     expect(rosterPage).toContain("ManualStudentEntryForm");
-    expect(rosterPage).not.toContain("RosterImportForm");
+    expect(rosterPage).toContain("RosterImportForm");
     expect(rosterPage).not.toMatch(/\b(SIS|district)\b/i);
   });
 

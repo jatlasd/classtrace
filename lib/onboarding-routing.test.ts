@@ -48,7 +48,7 @@ describe("Unit 10 onboarding routing", () => {
     expect(rosterPage).not.toContain("Back to evidence feed");
     expect(rosterPage).toContain("Class setup");
     expect(rosterPage).toContain("ManualStudentEntryForm");
-    expect(rosterPage).not.toContain("RosterImportForm");
+    expect(rosterPage).toContain("RosterImportForm");
     expect(rosterPage).toContain("routes.student(student.id)");
     expect(rosterPage).not.toMatch(/\b(SIS|district|AI-powered|FERPA-compliant)\b/i);
   });
