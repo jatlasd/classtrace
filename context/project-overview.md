@@ -4,7 +4,17 @@
 
 ClassTrace is a teacher-first student evidence capture app. Teachers set up a roster, capture student-specific observations quickly, review the system's structured interpretation, and save validated evidence to student timelines.
 
-The current repo is a browser-only proof of concept. It already supports a global evidence feed, roster management, quick captures, deterministic interpretation, validation, localStorage persistence, demo data, student timelines, and JSON export. The production V1 will keep the core product direction but move from a local POC to a real public app with authentication, database-backed storage, and stricter student-evidence rules.
+The scoped V1 build path is complete. The current app supports a public landing page, Clerk authentication, one personal teacher workspace, guided roster setup, manual and paste-list roster entry, deterministic student-specific capture, structured draft review, teacher-validated database-backed evidence, a global evidence feed, student timelines, archive/delete behavior, individual student CSV export, and basic settings.
+
+Post-V1/pre-beta work should preserve the core product direction while making the existing teacher-first evidence loop usable in a real classroom over time. The active feature build path is `context/post-v1-pre-beta-build-plan.md`.
+
+The active pre-beta product loop is:
+
+```txt
+class-first roster setup -> student-specific capture -> structured draft + teacher-approved Evidence note -> saved evidence -> student timeline -> readable student report
+```
+
+This pre-beta loop intentionally supersedes two completed V1 assumptions: active students must belong to exactly one active class, and new saved evidence must include a durable teacher-approved Evidence note. It does not change the global capture workflow or the one-student evidence rule.
 
 ClassTrace is not a teacher notebook. It is not for general notes, classwide reflections, lesson planning, parent messaging, gradebook behavior, IEP writing, or district/admin surveillance. The purpose of every capture is student evidence.
 
@@ -97,10 +107,14 @@ The default authenticated destination after onboarding is the global evidence fe
 - Students are teacher-owned roster entries.
 - Student records are isolated per teacher.
 - There is no shared student identity across teachers in V1.
+- During pre-beta, classes become the required roster organizing layer.
+- Every active student must belong to exactly one active class.
+- Classes have one required name and can exist with no students.
+- Classes organize roster setup and student management only; teachers do not choose a class before capturing evidence.
 - A student can have:
   - Display name
   - Mention handle
-  - Optional class/group
+  - Required active class during pre-beta
   - Optional school/local ID
   - Active/archive status
 - The app should auto-generate handles from names but allow edits.
@@ -122,7 +136,7 @@ The default authenticated destination after onboarding is the global evidence fe
 - The app may structure the capture using deterministic parsing/rules.
 - V1 does not use generative AI.
 - V1 does not use AI interpretation.
-- V1 does not store raw draft notes permanently.
+- V1 did not store raw draft notes permanently. In pre-beta, the original capture remains temporary and only the teacher-approved Evidence note may become durable.
 
 ### Validation Flow
 
@@ -151,24 +165,9 @@ The default authenticated destination after onboarding is the global evidence fe
 
 ## Data Architecture
 
-### Current POC Data
+### V1 Data
 
-The current proof of concept stores data in browser localStorage.
-
-Current POC behavior includes:
-
-- Local roster data
-- Local capture data
-- Raw note persistence
-- Validation persistence
-- Demo classroom loading
-- JSON export
-
-This is acceptable for the current POC only. It is not production-safe.
-
-### Production V1 Data
-
-Production V1 should use:
+V1 uses:
 
 - Clerk for authentication
 - Neon Postgres for the database
@@ -191,9 +190,11 @@ Expected V1 data objects:
 
 ### Evidence Storage Rule
 
-V1 must not permanently store raw draft notes.
+Completed V1 permanently stored validated structured evidence only and did not store raw draft notes.
 
-The raw text can exist temporarily while the teacher is composing and reviewing. Once the teacher validates the capture, the permanent record should be the structured teacher-approved evidence only.
+For pre-beta work, the original capture text can exist temporarily while the teacher is composing and reviewing. It must not become a hidden durable raw-capture record. New beta evidence saves require a teacher-reviewed Evidence note that is shown before save and stored permanently exactly as approved.
+
+Historical V1 structured-only records must remain honest legacy structured records. Do not fabricate teacher-authored Evidence note text for them.
 
 ### Student Ownership Rule
 
@@ -215,14 +216,16 @@ If three teachers have the same real student, ClassTrace V1 treats those as thre
 - Manual student entry
 - Basic roster import
 - Teacher-owned student records
-- Optional class/group organization
+- Completed V1 optional class/group organization
+- Required class organization for active students in the pre-beta path
 - Global evidence feed
 - Guided first capture
 - Text-only captures
 - Exactly one resolved student per capture
 - Deterministic parsing/structuring
 - Teacher validation before permanent save
-- Permanent storage of validated structured evidence only
+- Completed V1 permanent storage of validated structured evidence only
+- Pre-beta permanent storage of teacher-validated structured metadata plus the teacher-approved Evidence note
 - Student profile/timeline
 - Archive behavior
 - Permanent delete behavior with strong warning
@@ -269,11 +272,13 @@ If three teachers have the same real student, ClassTrace V1 treats those as thre
 ## Product Invariants
 
 - ClassTrace is for student evidence, not general teacher notes.
-- Every V1 saved capture must belong to exactly one resolved roster student.
+- Every saved capture must belong to exactly one resolved roster student.
 - Teacher validation is required before evidence is saved permanently.
-- The app must not permanently store raw draft notes in V1.
+- The app must not permanently store original capture text as a hidden raw-capture record.
+- New beta saves must store the teacher-approved Evidence note exactly as approved.
 - The app must not invent facts or save claims the teacher did not approve.
 - Student records are isolated per teacher in V1.
+- Active pre-beta students must belong to exactly one active class.
 - The app must not behave like an admin surveillance tool.
 - The app must not become a gradebook, SIS, IEP system, or parent messaging tool.
 - Archive should be the safe default.
@@ -305,6 +310,8 @@ If three teachers have the same real student, ClassTrace V1 treats those as thre
 - Teacher can export validated evidence for one student.
 - UI remains calm, fast, and teacher-native.
 - V1 does not include out-of-scope district, admin, gradebook, IEP, parent communication, AI, or file-upload features.
+
+These criteria were satisfied for the scoped V1 build path as of 2026-06-25. Deployment, release readiness, compliance/legal review, billing, analytics, and beyond-V1 product expansion remain separate human-owned decisions.
 
 ---
 

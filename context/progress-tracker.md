@@ -7,6 +7,10 @@ Update this file after every meaningful implementation change.
 ## Current Phase
 
 - Current status: ClassTrace V1 build path is complete as of 2026-06-25 after Unit 26 final-review follow-up fixes.
+- Post-V1 documentation reset completed: README, AGENTS, workflow, architecture/product framing, build-plan status, and active roadmap now treat completed V1 specs as historical records instead of the active queue.
+- Phase 6 Unit 27 documentation reset completed: context docs now distinguish completed V1 from the active pre-beta contract.
+- Phase 7 Unit 28 implemented and verified with automated checks - Class Domain, Ownership, and Migration Foundation (`context/specs/28-class-domain-ownership-and-migration-foundation.md`).
+- Phase 7 Unit 29 implemented with automated checks and post-review/merge-prep readiness fixes - Layered Roster and Class-First Onboarding (`context/specs/29-layered-roster-and-class-first-onboarding.md`).
 - Phase 2 complete — roster onboarding
 - Unit 02 complete and verified — Route Map and App Shell (`context/specs/02-route-map-and-app-shell.md`)
 - Unit 03 complete and verified — Public Landing Page UI (`context/specs/03-public-landing-page-ui.md`)
@@ -40,8 +44,8 @@ Update this file after every meaningful implementation change.
 ## Current Goal
 
 - ClassTrace V1 is complete for the scoped teacher-first evidence capture build path.
-- No implementation unit is currently in progress.
-- Current task: prepare the completed V1 work for push.
+- Current active build path: `context/post-v1-pre-beta-build-plan.md`, starting with Phase 6.
+- Current task: Unit 29 Layered Roster and Class-First Onboarding implemented with post-review/merge-prep readiness fixes; next planned unit is Unit 30 Class-Scoped Roster Import after the post-V1 branch is merged back to main.
 
 ---
 
@@ -52,6 +56,109 @@ Update this file after every meaningful implementation change.
 - Unit 25 findings were resolved in Unit 26.
 - Latest verification before completion: focused tests passed, full `npm.cmd run test` passed (47 files / 243 tests), `npm.cmd run lint` passed, `npm.cmd run build` passed, and Chrome manual review confirmed the Unit 26 user-visible fixes.
 - This marks the scoped V1 implementation complete; deployment setup and any release/compliance decisions remain separate human-owned decisions.
+
+---
+
+## Unit 27 - Pre-Beta Product and Architecture Contract Reset (Implemented)
+
+Spec: `context/specs/27-pre-beta-product-and-architecture-contract-reset.md`
+
+### What changed
+
+- Added the active pre-beta build plan to the standard read order in `AGENTS.md` and `context/ai-workflow-rules.md`.
+- Updated product, architecture, code-standard, and roadmap language to distinguish completed V1 from the active pre-beta contract.
+- Documented that active pre-beta students must belong to exactly one active class while global capture remains student-specific and not class-scoped.
+- Documented the durable teacher-approved Evidence note rule for new beta saves.
+- Replaced misleading V1-only raw-note language with the pre-beta rule: original capture text remains temporary and must not become a hidden durable raw-capture record.
+- Documented the legacy-data posture: do not invent class assignments for existing students and do not fabricate Evidence note text for historical structured-only records.
+
+### Verification
+
+- Documentation scan passed for obsolete active-contract phrases around raw draft persistence, optional class organization, V1-only structured evidence storage, and pre-beta read-order omissions.
+- `git diff --check` passed with line-ending warnings only.
+
+### Remaining risks / follow-ups
+
+- Unit 28 must implement actual class-domain enforcement and migration/assignment behavior before class-first roster UI work begins.
+- Unit 31 must implement the actual Evidence note data/save boundary before UI surfaces rely on durable notes.
+
+---
+
+## Unit 28 - Class Domain, Ownership, and Migration Foundation (Implemented)
+
+Spec: `context/specs/28-class-domain-ownership-and-migration-foundation.md`
+
+### What changed
+
+- Created the Unit 28 focused spec for the server-side class foundation required before class-first roster UI work.
+- Added a normalized `ClassGroup.nameKey` schema field and migration so duplicate class names are prevented by a workspace-scoped normalized key.
+- Added server-only class helpers for listing active/archived classes, creating classes, renaming classes, archiving empty classes, listing active students inside a class, and detecting active students without an active class.
+- Added workspace-resolving class Server Actions for create, rename, and archive.
+- Tightened manual roster-student creation so new active students require a valid active class owned by the current workspace.
+- Tightened roster import so imported students must be attached to a verified active class server-side.
+- Preserved the legacy migration posture: existing active V1 students without a valid active class are detected, not silently assigned to invented classes.
+- Preserved evidence class snapshot behavior and added a regression test proving legacy unassigned evidence does not receive fabricated class data.
+- Kept global capture unchanged: still text-only, one resolved roster student, deterministic draft, teacher validation before save.
+
+### Verification
+
+- Focused `npm.cmd run test -- lib/classes/class-groups.test.ts lib/students/roster-students.test.ts lib/import/roster-import.test.ts lib/evidence/save-validated-evidence.test.ts actions/classes.test.ts actions/roster.test.ts` passed (6 files / 43 tests).
+- Full `npm.cmd run test` passed (49 files / 259 tests). Existing archive/delete failure-path tests intentionally logged contextual server errors while verifying safe generic error results.
+- `npm.cmd run lint` passed.
+- `npm.cmd run build` passed.
+- Chrome manual check was attempted against the user's open localhost tab, but the Chrome extension backend was unavailable and the packaged troubleshooting docs were missing. No manual browser verification was completed.
+
+### Remaining risks / follow-ups
+
+- Apply the new Prisma migration before relying on beta class behavior in any persistent environment.
+- If existing local/prod data contains duplicate normalized class names, the migration intentionally fails and needs human direction rather than auto-renaming.
+- The current flat roster UI can now surface class-required errors, but the teacher-friendly class-first roster experience belongs to Unit 29.
+- Unit 29 should use the new readiness helper to guide legacy unassigned active students into teacher-approved class assignments.
+
+### Review follow-up fix
+
+- Replaced the old flat roster manual-entry/import work area with a temporary class-required state so teachers are not shown controls that can only fail before Unit 29 supplies class context.
+- Updated roster capture-readiness copy so active students without an active class are not labeled ready for capture.
+- Updated roster row fallback from "No group yet" to "Needs class" for unassigned active students.
+- Updated UI registry notes for the temporary roster bridge and class readiness behavior.
+- Focused roster/class tests passed: `npm.cmd run test -- lib/manual-student-entry.test.ts lib/roster-import-ui.test.ts lib/guided-roster-setup-ui.test.ts lib/onboarding-routing.test.ts lib/student-roster-database-ui.test.ts lib/classes/class-groups.test.ts lib/students/roster-students.test.ts lib/import/roster-import.test.ts` (8 files / 41 tests).
+
+---
+
+## Unit 29 - Layered Roster and Class-First Onboarding (Implemented)
+
+Spec: `context/specs/29-layered-roster-and-class-first-onboarding.md`
+
+### What changed
+
+- Created the Unit 29 focused spec for replacing the temporary flat roster bridge with a class-first roster workflow.
+- Replaced `/app/roster` with a class-first surface: active class list, create class form, opened-class student list, archived-classes view, and class-level rename/archive actions.
+- Wired opened-class manual student entry so new students are saved to the selected active class instead of an unassigned roster.
+- Added a workspace-scoped student update Server Action and server-only helper so teachers can edit name, handle, optional school/local ID, and class assignment.
+- Added a legacy "Needs class" roster section for active students without an active class; assignment remains teacher-approved through the edit flow.
+- Preserved student archive/delete row actions and global one-student capture behavior.
+- Fixed post-review readiness routing so `/app` and `/app/feed` use class-first roster readiness instead of the old any-active-student gate.
+- Tightened the shared class readiness helper so an empty roster is not treated as ready.
+- Left paste-list import as a non-saving class-view handoff note; Unit 30 remains responsible for rendering the working class-scoped import UI.
+- Cleaned up the dormant roster import form so it now requires and submits a real `classGroupId` instead of preserving an empty class id for future reuse.
+- Fixed opened-class manual-entry copy so an empty class is treated as the first-student state even when legacy unassigned students exist elsewhere in the workspace.
+- Updated UI registry patterns for the layered class-first roster and inline student edit flow.
+
+### Verification
+
+- `npm.cmd run test -- lib/classes/class-groups.test.ts lib/students/roster-students.test.ts actions/classes.test.ts actions/roster.test.ts lib/onboarding-routing.test.ts lib/student-roster-database-ui.test.ts lib/manual-student-entry.test.ts` passed (7 files / 42 tests).
+- `npm.cmd run lint` passed.
+- `npm.cmd run test -- lib/classes/class-groups.test.ts lib/onboarding-routing.test.ts` passed after review fixes (2 files / 13 tests).
+- `npm.cmd run test` passed after review fixes (49 files / 261 tests). Existing archive/delete failure-path tests intentionally logged contextual server errors while verifying safe generic error results.
+- `npm.cmd run build` passed after review fixes.
+- Merge-prep focused roster UI checks passed: `npm.cmd run test -- lib/roster-import-ui.test.ts lib/manual-student-entry.test.ts lib/guided-roster-setup-ui.test.ts lib/student-roster-database-ui.test.ts` (4 files / 15 tests).
+- Merge-prep full checks passed: `npm.cmd run lint`, `npm.cmd run test` (49 files / 261 tests), and `npm.cmd run build`.
+- Browser verification attempted in the in-app browser on `http://127.0.0.1:3000/app/roster`, but the authenticated roster flow was blocked by Clerk sign-in. Chrome fallback was not used because it requires explicit human approval.
+
+### Remaining risks / follow-ups
+
+- Manual browser verification is still needed for the class-first roster path on desktop and mobile after an authenticated browser session is available.
+- Unit 30 remains responsible for the working class-scoped paste-list import flow.
 
 ---
 
@@ -1224,15 +1331,14 @@ Verification after refinement: `npm run lint` pass, `npm run build` pass, `npm r
 
 ## Next Up
 
-1. Commit and push the completed V1 changes.
-2. Human release/deployment decision.
-3. Optionally expand `README.md` with a short pointer to `AGENTS.md` and the context framework beyond the Unit 02 route updates already made.
+1. Manually verify the Unit 29 class-first roster flow in browser when tooling is available.
+2. Create/finalize the Unit 30 focused spec for class-scoped roster import.
+3. Commit and push completed changes when the human requests it.
 
 ---
 
 ## Open Questions
 
-- Should `README.md` get a fuller Phase 1 refresh beyond the Unit 02 route/path updates?
 - Exact Prisma schema has an initial migrated foundation, but future workflow units may refine fields as validation/export needs become concrete.
 - Exact deployment setup is not decided yet.
 
@@ -1264,8 +1370,8 @@ Verification after refinement: `npm run lint` pass, `npm run build` pass, `npm r
 - V1 uses deterministic parsing only.
 - V1 does not include generative AI.
 - V1 does not include file uploads, photo evidence, audio evidence, voice notes, or PDF uploads.
-- V1 permanent storage should contain teacher-validated structured evidence only.
-- V1 should not permanently store raw draft notes.
+- Completed V1 permanent storage contains teacher-validated structured evidence only.
+- Pre-beta permanent storage may add the teacher-approved Evidence note, while original capture text must not become a hidden durable raw-capture record.
 - V1 saved evidence must belong to exactly one resolved roster student.
 - Captures with zero students cannot be saved.
 - Captures with multiple students cannot be saved in V1.
@@ -1276,6 +1382,11 @@ Verification after refinement: `npm run lint` pass, `npm run build` pass, `npm r
 - Deleting a student also deletes that student’s evidence records after sufficient warning.
 - The initial schema uses database cascade from `RosterStudent` to `EvidenceRecord`; later UI/actions must still require explicit warning before triggering permanent delete.
 - V1 export is individual-student export only.
+- Pre-beta active students must belong to exactly one active class.
+- Pre-beta classes organize roster setup and student management only; capture remains global.
+- New beta evidence saves must include a durable teacher-approved Evidence note.
+- Original capture text remains temporary and must not become a hidden durable raw-capture record.
+- Legacy V1 structured-only records must not receive fabricated Evidence note text.
 - Current calm ClassTrace visual style should be preserved.
 - Current Tailwind + shadcn/Radix-style component approach should be preserved.
 - Major refactors are allowed only when they support the current unit and are explained first.
@@ -1367,3 +1478,5 @@ Verification after refinement: `npm run lint` pass, `npm run build` pass, `npm r
 - Unit 21 implementation completed on 2026-06-17. `/app/students/[studentId]` now exposes a restrained "Export evidence" action for active students with validated evidence. The export path resolves the current workspace server-side, verifies the selected active student, reads only that student's non-archived validated evidence, and returns a generated CSV payload. Automated focused tests, lint, full tests, and build passed.
 - Unit 22 spec was created on 2026-06-18. It scopes Settings Page as a read-only authenticated account/workspace settings surface with sign out. It explicitly excludes editable settings, organizations, workspace switching, district/admin settings, billing, notifications, export controls, account deletion, privacy/legal pages, AI, uploads, SIS integrations, schema changes, migrations, API routes, Server Actions unless explicitly expanded, new dependencies, and app-shell redesign.
 - Unit 22 implementation added a server-only settings data helper, a read-only `/app/settings` account/workspace surface, and a small Clerk sign-out Client Component. Automated focused tests, lint, full tests, and build passed.
+- Unit 27 spec was created on 2026-06-29. It scopes the Phase 6 pre-beta contract reset as a documentation-only update to distinguish completed V1 from the active pre-beta contract: class-first roster with exactly one active class per active student, durable teacher-approved Evidence notes for new beta saves, honest legacy V1 data handling, and no runtime behavior changes unless a later approved unit requires them.
+- Unit 27 implementation completed on 2026-06-29. The source-of-truth docs now include the active pre-beta build path, class-first roster contract, durable teacher-approved Evidence note contract, and honest legacy V1 data posture. No runtime code, schema, migration, or UI files were changed.

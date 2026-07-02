@@ -32,6 +32,7 @@ model ClassGroup {
   id              String           @id @default(cuid())
   workspaceId     String
   name            String
+  nameKey         String
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
   archivedAt      DateTime?
@@ -40,6 +41,7 @@ model ClassGroup {
   evidenceRecords EvidenceRecord[]
 
   @@unique([workspaceId, name])
+  @@unique([workspaceId, nameKey])
   @@index([workspaceId])
 }
 

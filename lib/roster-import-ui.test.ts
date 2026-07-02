@@ -13,11 +13,13 @@ const rosterPageSource = readFileSync(
 );
 
 describe("Unit 09 roster import UI", () => {
-  it("replaces the import placeholder with a paste-list import form", () => {
-    expect(rosterPageSource).toContain("RosterImportForm");
+  it("keeps the paste-list import form available for class-scoped reuse", () => {
+    expect(rosterPageSource).not.toContain("RosterImportForm");
     expect(rosterPageSource).not.toContain("Import planned");
     expect(importFormSource).toContain("Paste several students");
     expect(importFormSource).toContain("Preview students before saving");
+    expect(importFormSource).toContain("classGroupId: string;");
+    expect(importFormSource).toContain("classGroupId,");
   });
 
   it("keeps the client form away from workspace IDs and database imports", () => {
@@ -29,6 +31,7 @@ describe("Unit 09 roster import UI", () => {
   it("keeps roster rows connected to database-backed student timelines", () => {
     expect(rosterPageSource).toContain("routes.student(student.id)");
     expect(rosterPageSource).toContain("Open ${student.displayName} timeline");
-    expect(rosterPageSource).not.toMatch(/\b(Archive|Delete|Export)\b/);
+    expect(rosterPageSource).toContain("RosterStudentRowActions");
+    expect(rosterPageSource).not.toMatch(/\bExport\b/);
   });
 });

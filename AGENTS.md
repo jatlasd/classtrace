@@ -28,15 +28,18 @@ The human remains the architect. The AI agent is the implementation engine.
 
 Before implementing or making architectural decisions, read these files in this exact order:
 
-1. `context/project-overview.md` — product definition, V1 scope, user flow, in-scope and out-of-scope features
+1. `context/project-overview.md` — product definition, V1 status, user flow, in-scope and out-of-scope features
 2. `context/architecture.md` — stack, system boundaries, storage model, auth/access model, and invariants
 3. `context/ui-context.md` — visual language, tokens, typography, layout patterns, component conventions, and icon rules
 4. `context/ui-registry.md` — actual component patterns already used in the app
 5. `context/code-standards.md` — TypeScript, Next.js, file organization, server actions, database, dependency, and testing rules
 6. `context/ai-workflow-rules.md` — agent workflow, scoping rules, ambiguity handling, verification, and stop conditions
-7. `context/build-plan.md` — ordered implementation phases and build units
-8. `context/progress-tracker.md` — current phase, completed work, open questions, and next steps
-9. Current unit spec in `context/specs/`, if one exists
+7. `context/post-v1-roadmap.md` — post-V1 lanes and planning rules
+8. `context/post-v1-pre-beta-build-plan.md` — active pre-beta feature build path, when pre-beta work is in scope
+9. `context/progress-tracker.md` — current status, completed work, open questions, and next steps
+10. Current focused spec in `context/specs/`, if the current task explicitly uses one
+
+`context/build-plan.md` and the completed numbered specs in `context/specs/` are historical V1 build records. Read them only when you need implementation history or when the user asks about a completed unit.
 
 If these files conflict with each other, stop and ask for clarification before coding.
 
@@ -94,16 +97,20 @@ The strongest early users are special education teachers, case managers, interve
 ## Rules That Never Change
 
 - ClassTrace is for student evidence, not general teacher notes.
-- V1 saved evidence must belong to exactly one resolved roster student.
+- Saved evidence must belong to exactly one resolved roster student.
 - Captures with zero resolved students must not be saved.
-- Captures with multiple students must not be saved in V1.
+- Captures with multiple students must not be saved.
 - Teacher validation is required before evidence becomes permanent.
-- Production V1 must not permanently store raw draft notes.
-- V1 uses deterministic parsing only; do not add generative AI.
-- V1 is text-only; do not add file, photo, audio, PDF, or attachment handling.
+- Original capture text may be temporary during compose/review, but must not be stored as a hidden durable raw-capture record.
+- Pre-beta evidence may permanently store only the teacher-reviewed Evidence note, exactly as approved by the teacher.
+- Deterministic parsing only; do not add generative AI.
+- Text-only evidence; do not add file, photo, audio, PDF, or attachment handling.
 - Student records are isolated per teacher in V1.
+- During pre-beta, every active student must belong to exactly one active class.
+- Classes organize roster setup and student management only; capture remains global and student-specific.
+- Do not invent class assignments or fabricate Evidence note text for legacy V1 data.
 - Do not add district/admin dashboards, shared student identities, SIS sync, gradebook features, IEP writing, or parent communication tools in V1.
-- Do not add dependencies, auth, database, external services, analytics, or background jobs unless the current unit/spec explicitly requires them.
+- Do not add dependencies, analytics, background jobs, queues, AI SDKs, file services, billing, organization features, or new external services unless the current focused task/spec explicitly requires them.
 - Update `context/progress-tracker.md` after every meaningful implementation change.
 - If a change affects product scope, architecture, code standards, workflow, or UI rules, update the relevant context file before continuing.
 - If the same issue remains after one focused correction attempt, stop and ask for human direction.
@@ -112,21 +119,17 @@ The strongest early users are special education teachers, case managers, interve
 
 ## Current Project Phase
 
-This repo began as a browser-only proof of concept.
+ClassTrace has moved beyond the pre-build architecture setup and completed the scoped V1 build path.
 
-Phase 0 (context and agent foundation) is complete. The JSM-style project foundation exists:
+The active project posture is post-V1/pre-beta stewardship:
 
-- `context/project-overview.md`
-- `context/architecture.md`
-- `context/code-standards.md`
-- `context/ai-workflow-rules.md`
-- `context/ui-context.md`
-- `context/ui-registry.md`
-- `context/build-plan.md`
-- `context/progress-tracker.md`
-- Future unit specs in `context/specs/`
-
-Do not begin production implementation work until the user explicitly returns to code mode.
+- Keep the teacher-first evidence model stable.
+- Build the pre-beta feature path in `context/post-v1-pre-beta-build-plan.md` one approved unit at a time.
+- Preserve global one-student capture while adding class-first roster organization and teacher-approved Evidence notes.
+- Prepare release/deployment decisions separately from the feature build.
+- Fix bugs and polish in small, reviewable units.
+- Treat `context/post-v1-roadmap.md` as strategic context and `context/post-v1-pre-beta-build-plan.md` as the active pre-beta sequence when working on Phase 6 and later.
+- Treat `context/build-plan.md` and completed numbered specs as historical records, not the current queue.
 
 ---
 
@@ -135,7 +138,7 @@ Do not begin production implementation work until the user explicitly returns to
 Use the correct mode for the task:
 
 - Planning mode — clarify product, architecture, build order, or specs before coding.
-- Implementation mode — implement one approved unit/spec only.
+- Implementation mode — implement one approved focused task/spec only.
 - Review mode — inspect code against context files, invariants, and verification requirements.
 - Recovery mode — stop broad changes, identify what broke, and propose the smallest safe fix.
 
@@ -153,8 +156,9 @@ Default rules:
 - Touch only the files needed for the current task.
 - Do not perform broad refactors while implementing a feature.
 - Do not redesign the app while fixing a bug.
-- Do not introduce new dependencies unless the current unit/spec requires them.
-- Do not add auth, database, Prisma, Clerk, Neon, server actions, API routes, analytics, background jobs, queues, AI SDKs, or external services unless explicitly required by the current unit/spec.
+- Do not introduce new dependencies unless the current focused task/spec requires them.
+- Do not add analytics, background jobs, queues, AI SDKs, file services, billing, organization features, or new external services unless explicitly approved.
+- Do not change existing auth, database, Prisma, Clerk, Neon, server action, or API-route behavior unless the task specifically requires it.
 - Do not change product language, information architecture, or workflow assumptions without making that change explicit.
 
 One layer per task:
@@ -172,7 +176,7 @@ If the requested change crosses layers, explain why before coding and keep the i
 
 ## Refactor Rules
 
-Refactoring is allowed only when it supports the current unit.
+Refactoring is allowed only when it supports the current focused task.
 
 Allowed without asking:
 
@@ -193,7 +197,7 @@ Ask before doing:
 - Replacing existing UI patterns
 - Changing the app’s visual language
 - Changing the chosen stack
-- Removing existing working POC behavior before the replacement is ready
+- Removing existing working V1 behavior before the replacement is ready
 
 Do not surprise the user with a large rewrite.
 
@@ -203,7 +207,7 @@ Do not surprise the user with a large rewrite.
 
 The note-processing layer is central to ClassTrace.
 
-Use the existing deterministic pipeline unless a unit/spec explicitly changes it.
+Use the existing deterministic pipeline unless a focused task/spec explicitly changes it.
 
 General flow:
 
@@ -232,9 +236,9 @@ ClassTrace must distinguish these states:
 
 Do not collapse these states.
 
-Production V1 permanent evidence must be teacher-validated structured evidence only.
+Completed V1 permanent evidence was teacher-validated structured evidence only.
 
-Raw draft note text may be temporary during composing/review, but must not become the durable production record.
+For pre-beta work, original capture text may be temporary during composing/review, but must not become a hidden durable raw-capture record. The teacher-reviewed Evidence note may become durable because the teacher sees, edits, and approves it before saving.
 
 ---
 
@@ -247,7 +251,7 @@ For code changes:
 - Do not send student notes to external AI APIs.
 - Do not add telemetry or analytics casually.
 - Do not log raw notes.
-- Do not permanently store raw draft notes in production V1.
+- Do not store original capture text as a hidden durable raw-capture record.
 - Do not add demo data that looks like real student records.
 - Do not include disability labels, medical details, discipline conclusions, or sensitive family information in demo data unless explicitly provided as safe fictional content.
 - Do not use real student names.

@@ -15,11 +15,14 @@ const rosterPage = readFileSync(rosterPagePath, "utf8");
 const evidenceFeed = readFileSync(evidenceFeedPath, "utf8");
 
 describe("Unit 06 guided roster setup UI", () => {
-  it("frames the empty roster page as the first setup step", () => {
-    expect(rosterPage).toContain("Add your first student to start capturing evidence.");
+  it("frames the roster page around class-first setup", () => {
+    expect(rosterPage).toContain("Classes in your roster");
     expect(rosterPage).toContain("Your roster is private to your ClassTrace workspace.");
+    expect(rosterPage).toContain("Class-first setup");
+    expect(rosterPage).toContain("Create your first class");
+    expect(rosterPage).toContain("OpenClassView");
     expect(rosterPage).toContain("ManualStudentEntryForm");
-    expect(rosterPage).toContain("RosterImportForm");
+    expect(rosterPage).not.toContain("RosterImportForm");
     expect(rosterPage).not.toMatch(/\b(SIS|district)\b/i);
   });
 

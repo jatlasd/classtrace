@@ -14,6 +14,7 @@ import {
 import {
   createRosterStudentForWorkspace,
   type RosterStudentDisplay,
+  updateRosterStudentForWorkspace,
 } from "@/lib/students/roster-students";
 import {
   importRosterStudentsForWorkspace,
@@ -23,7 +24,7 @@ import {
 export type CreateRosterStudentActionInput = {
   displayName: string;
   mentionHandle: string;
-  classGroupId?: string;
+  classGroupId: string;
   schoolLocalId?: string;
 };
 
@@ -31,8 +32,21 @@ export type CreateRosterStudentActionResult =
   | { success: true; student: RosterStudentDisplay }
   | { success: false; error: string };
 
+export type UpdateRosterStudentActionInput = {
+  studentId: string;
+  displayName: string;
+  mentionHandle: string;
+  classGroupId: string;
+  schoolLocalId?: string;
+};
+
+export type UpdateRosterStudentActionResult =
+  | { success: true; student: RosterStudentDisplay }
+  | { success: false; error: string };
+
 export type ImportRosterStudentsActionInput = {
   rosterText: string;
+  classGroupId: string;
 };
 
 export type ImportRosterStudentsActionResult = ImportRosterStudentsResult;
@@ -81,6 +95,7 @@ export async function importRosterStudents(
     const result = await importRosterStudentsForWorkspace({
       workspaceId: workspace.workspaceId,
       rosterText: input.rosterText,
+      classGroupId: input.classGroupId,
     });
 
     if (result.success) {
@@ -102,6 +117,33 @@ export async function importRosterStudents(
         error: "Failed to import roster.",
       },
     };
+  }
+}
+
+export async function updateRosterStudent(
+  input: UpdateRosterStudentActionInput
+): Promise<UpdateRosterStudentActionResult> {
+  try {
+    const workspace = await getCurrentWorkspace();
+    const result = await updateRosterStudentForWorkspace({
+      workspaceId: workspace.workspaceId,
+      studentId: input.studentId,
+      displayName: input.displayName,
+      mentionHandle: input.mentionHandle,
+      classGroupId: input.classGroupId,
+      schoolLocalId: input.schoolLocalId,
+    });
+
+    if (result.success) {
+      revalidatePath(routes.roster);
+      revalidatePath(routes.feed);
+      revalidatePath(routes.student(result.student.id));
+    }
+
+    return result;
+  } catch (error) {
+    console.error("[actions/roster/updateRosterStudent]", error);
+    return { success: false, error: "Failed to save student." };
   }
 }
 

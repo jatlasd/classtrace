@@ -2,7 +2,7 @@
 
 Implementation rules and conventions for the entire ClassTrace project. The AI agent must follow these in every session without exception. These rules prevent pattern drift across sessions.
 
-ClassTrace is a teacher-first student evidence capture app. The codebase must protect fast capture, teacher validation, student-data boundaries, and the V1 rule that every saved evidence record belongs to exactly one resolved roster student.
+ClassTrace is a teacher-first student evidence capture app. The codebase must protect fast capture, teacher validation, student-data boundaries, and the rule that every saved evidence record belongs to exactly one resolved roster student.
 
 ---
 
@@ -11,7 +11,7 @@ ClassTrace is a teacher-first student evidence capture app. The codebase must pr
 The AI agent on this project operates as a senior engineer. This means:
 
 - **Read context files first** — never assume, always verify against `project-overview.md`, `architecture.md`, and `progress-tracker.md`
-- **Scope is sacred** — only build what the current unit/spec requires
+- **Scope is sacred** — only build what the current focused task/spec requires
 - **Clean over clever** — simple readable code is preferred over clever abstractions
 - **One thing at a time** — complete one unit fully before touching the next
 - **Every feature must be verifiable** — if it cannot be tested or checked, it is incomplete
@@ -170,7 +170,7 @@ Owns evidence models, validation state, and saved evidence helpers.
 Rules:
 
 - Permanent evidence must be teacher-validated
-- Permanent V1 evidence must not include raw draft note text
+- Permanent evidence must not include a hidden raw-capture record; pre-beta saves may include the teacher-approved Evidence note
 - Every saved evidence record must belong to exactly one roster student
 
 ### `lib/students/`
@@ -290,7 +290,7 @@ Rules:
 - Always authenticate before protected mutations
 - Always verify workspace ownership before changing data
 - Always call `revalidatePath` after mutations that affect page data
-- Do not store raw draft notes permanently
+- Do not store original capture text as a hidden durable raw-capture record
 - Do not combine unrelated mutations in one action
 
 ---
@@ -388,15 +388,17 @@ Rules:
 
 ## Capture and Evidence Rules
 
-V1 capture rules:
+Capture rules:
 
 - Captures are text-only
 - Captures must attach to exactly one resolved roster student
 - Captures with no resolved student cannot be saved
 - Captures with multiple students cannot be saved
 - Teacher validation is required before permanent save
-- Raw draft note text must not be permanently stored
-- Saved evidence must be structured teacher-approved evidence
+- Original capture text may exist only temporarily during compose/review
+- Original capture text must not become a hidden durable raw-capture record
+- New pre-beta saved evidence must include the teacher-reviewed Evidence note exactly as approved
+- Structured fields remain teacher-approved metadata
 
 Do not weaken these rules unless `project-overview.md` and `architecture.md` are explicitly updated first.
 
@@ -574,7 +576,7 @@ Before installing anything, check:
 2. Does React already provide this?
 3. Does shadcn/Radix already provide this UI behavior?
 4. Can this be solved clearly with existing code?
-5. Is the package allowed by the current build unit?
+5. Is the package allowed by the current focused task/spec?
 
 Currently approved dependencies:
 
@@ -628,7 +630,7 @@ Do not add these without explicit approval:
 
 ## Testing
 
-A build unit is not done unless verification passes.
+A change unit is not done unless verification passes.
 
 Required before marking work complete:
 
@@ -678,7 +680,7 @@ The agent must not add any of the following without explicit human approval:
 
 - Generative AI
 - AI interpretation
-- Raw draft note persistence
+- Hidden durable raw-capture persistence
 - File uploads
 - Photo evidence
 - Audio evidence
@@ -708,13 +710,13 @@ The agent must not add any of the following without explicit human approval:
 
 A code change is done only when:
 
-- It satisfies the current unit/spec
+- It satisfies the current focused task/spec
 - It stays within scope
 - It does not violate product invariants
 - It does not violate auth/ownership rules
-- It does not store raw draft notes permanently
+- It does not store original capture text as a hidden durable raw-capture record
 - It preserves teacher validation
-- It preserves exactly-one-student capture for V1
+- It preserves exactly-one-student capture
 - Relevant tests pass
 - Build/lint checks pass when applicable
 - UI remains usable on desktop and mobile if UI changed

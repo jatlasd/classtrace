@@ -1,13 +1,15 @@
 import { redirect } from "next/navigation";
 import { EvidenceFeed } from "@/components/dashboard/evidence-feed";
 import { getCurrentWorkspace } from "@/lib/auth/get-current-workspace";
+import { getClassRosterReadinessForWorkspace } from "@/lib/classes/class-groups";
 import { listEvidenceFeedRecordsForWorkspace } from "@/lib/evidence/evidence-feed-records";
 import { routes } from "@/lib/routes";
 import { listActiveRosterStudentsForWorkspace } from "@/lib/students/roster-students";
 
 export default async function FeedPage() {
   const workspace = await getCurrentWorkspace();
-  const [rosterStudents, evidenceRecords] = await Promise.all([
+  const [classRosterReadiness, rosterStudents, evidenceRecords] = await Promise.all([
+    getClassRosterReadinessForWorkspace(workspace.workspaceId),
     listActiveRosterStudentsForWorkspace(workspace.workspaceId).then((students) =>
       students.map((student) => ({
         id: student.id,
@@ -19,7 +21,7 @@ export default async function FeedPage() {
     listEvidenceFeedRecordsForWorkspace(workspace.workspaceId),
   ]);
 
-  if (rosterStudents.length === 0) {
+  if (!classRosterReadiness.readyForClassFirstRoster) {
     redirect(routes.roster);
   }
 

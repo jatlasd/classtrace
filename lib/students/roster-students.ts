@@ -15,6 +15,7 @@ type RosterStudentListArgs = {
     classGroup: {
       select: {
         name: true;
+        archivedAt: true;
       };
     };
   };
@@ -32,6 +33,7 @@ type RosterStudentFindFirstArgs = {
     classGroup: {
       select: {
         name: true;
+        archivedAt: true;
       };
     };
   };
@@ -60,15 +62,30 @@ type RosterStudentCreateArgs = {
     workspaceId: string;
     displayName: string;
     mentionHandle: string;
-    classGroupId?: string;
+    classGroupId: string;
     schoolLocalId?: string;
   };
   include: {
     classGroup: {
       select: {
         name: true;
+        archivedAt: true;
       };
     };
+  };
+};
+
+type RosterStudentUpdateManyArgs = {
+  where: {
+    id: string;
+    workspaceId: string;
+    archivedAt: null;
+  };
+  data: {
+    displayName: string;
+    mentionHandle: string;
+    classGroupId: string;
+    schoolLocalId?: string | null;
   };
 };
 
@@ -86,7 +103,11 @@ type RosterStudentRecord = {
   createdAt: Date;
   updatedAt: Date;
   archivedAt: Date | null;
-  classGroup: { name: string } | null;
+  classGroup: { name: string; archivedAt: Date | null } | null;
+};
+
+type UpdateManyResult = {
+  count: number;
 };
 
 export type RosterStudentDatabase = {
@@ -95,6 +116,7 @@ export type RosterStudentDatabase = {
     findFirst(args: RosterStudentFindFirstArgs): Promise<RosterStudentRecord | null>;
     count(args: RosterStudentCountArgs): Promise<number>;
     create(args: RosterStudentCreateArgs): Promise<RosterStudentRecord>;
+    updateMany(args: RosterStudentUpdateManyArgs): Promise<UpdateManyResult>;
   };
   classGroup: {
     findFirst(args: ClassGroupFindFirstArgs): Promise<ClassGroupRecord | null>;
@@ -106,7 +128,9 @@ export type RosterStudentDisplay = {
   displayName: string;
   mentionHandle: string;
   schoolLocalId: string | null;
+  classGroupId: string | null;
   classGroupName: string | null;
+  hasActiveClass: boolean;
   createdAt: Date;
 };
 
@@ -114,7 +138,7 @@ export type CreateRosterStudentInput = {
   workspaceId: string;
   displayName: string;
   mentionHandle: string;
-  classGroupId?: string;
+  classGroupId: string;
   schoolLocalId?: string;
 };
 
@@ -122,10 +146,24 @@ export type CreateRosterStudentResult =
   | { success: true; student: RosterStudentDisplay }
   | { success: false; error: string };
 
+export type UpdateRosterStudentInput = {
+  workspaceId: string;
+  studentId: string;
+  displayName: string;
+  mentionHandle: string;
+  classGroupId: string;
+  schoolLocalId?: string;
+};
+
+export type UpdateRosterStudentResult =
+  | { success: true; student: RosterStudentDisplay }
+  | { success: false; error: string };
+
 const classGroupInclude = {
   classGroup: {
     select: {
       name: true,
+      archivedAt: true,
     },
   },
 } as const;
@@ -136,6 +174,7 @@ const rosterStudentDatabase: RosterStudentDatabase = {
     findFirst: (args) => prisma.rosterStudent.findFirst(args),
     count: (args) => prisma.rosterStudent.count(args),
     create: (args) => prisma.rosterStudent.create(args),
+    updateMany: (args) => prisma.rosterStudent.updateMany(args),
   },
   classGroup: {
     findFirst: (args) => prisma.classGroup.findFirst(args),
@@ -148,7 +187,12 @@ function toRosterStudentDisplay(record: RosterStudentRecord): RosterStudentDispl
     displayName: record.displayName,
     mentionHandle: record.mentionHandle,
     schoolLocalId: record.schoolLocalId,
-    classGroupName: record.classGroup?.name ?? null,
+    classGroupId: record.classGroupId,
+    classGroupName:
+      record.classGroup && record.classGroup.archivedAt === null
+        ? record.classGroup.name
+        : null,
+    hasActiveClass: Boolean(record.classGroupId && record.classGroup?.archivedAt === null),
     createdAt: record.createdAt,
   };
 }
@@ -244,18 +288,23 @@ export async function createRosterStudentForWorkspace(
   const classGroupId = normalizeOptionalInput(input.classGroupId);
   const schoolLocalId = normalizeOptionalInput(input.schoolLocalId);
 
-  if (classGroupId) {
-    const classGroup = await database.classGroup.findFirst({
-      where: { id: classGroupId, workspaceId: input.workspaceId, archivedAt: null },
-      select: { id: true },
-    });
+  if (!classGroupId) {
+    return {
+      success: false,
+      error: "Choose a class before saving this student.",
+    };
+  }
 
-    if (!classGroup) {
-      return {
-        success: false,
-        error: "This class/group could not be found in your workspace.",
-      };
-    }
+  const classGroup = await database.classGroup.findFirst({
+    where: { id: classGroupId, workspaceId: input.workspaceId, archivedAt: null },
+    select: { id: true },
+  });
+
+  if (!classGroup) {
+    return {
+      success: false,
+      error: "This class could not be found in your workspace.",
+    };
   }
 
   const duplicate = await database.rosterStudent.findFirst({
@@ -319,6 +368,160 @@ export async function createRosterStudentForWorkspace(
       };
     }
 
+    return { success: false, error: "Failed to save student." };
+  }
+}
+
+export async function updateRosterStudentForWorkspace(
+  input: UpdateRosterStudentInput,
+  database: RosterStudentDatabase = rosterStudentDatabase
+): Promise<UpdateRosterStudentResult> {
+  const studentId = normalizeOptionalInput(input.studentId);
+  const displayName = input.displayName.trim();
+
+  if (!studentId) {
+    return { success: false, error: "Choose a student before saving." };
+  }
+
+  if (!displayName) {
+    return { success: false, error: "Display name is required." };
+  }
+
+  const normalizedHandle = normalizeMentionHandle(input.mentionHandle);
+
+  if (!normalizedHandle.success) {
+    return { success: false, error: normalizedHandle.error };
+  }
+
+  const classGroupId = normalizeOptionalInput(input.classGroupId);
+  const schoolLocalId = normalizeOptionalInput(input.schoolLocalId);
+
+  if (!classGroupId) {
+    return {
+      success: false,
+      error: "Choose a class before saving this student.",
+    };
+  }
+
+  const existingStudent = await database.rosterStudent.findFirst({
+    where: {
+      id: studentId,
+      workspaceId: input.workspaceId,
+      archivedAt: null,
+    },
+    include: classGroupInclude,
+  });
+
+  if (!existingStudent) {
+    return {
+      success: false,
+      error: "This student could not be found in your roster.",
+    };
+  }
+
+  const classGroup = await database.classGroup.findFirst({
+    where: { id: classGroupId, workspaceId: input.workspaceId, archivedAt: null },
+    select: { id: true },
+  });
+
+  if (!classGroup) {
+    return {
+      success: false,
+      error: "This class could not be found in your workspace.",
+    };
+  }
+
+  const duplicateHandle = await database.rosterStudent.findFirst({
+    where: {
+      workspaceId: input.workspaceId,
+      mentionHandle: normalizedHandle.mentionHandle,
+      archivedAt: null,
+    },
+    include: classGroupInclude,
+  });
+
+  if (duplicateHandle && duplicateHandle.id !== existingStudent.id) {
+    return {
+      success: false,
+      error: "A student with this handle already exists on your roster.",
+    };
+  }
+
+  if (schoolLocalId) {
+    const duplicateSchoolLocalId = await database.rosterStudent.findFirst({
+      where: {
+        workspaceId: input.workspaceId,
+        schoolLocalId,
+      },
+      include: classGroupInclude,
+    });
+
+    if (
+      duplicateSchoolLocalId &&
+      duplicateSchoolLocalId.id !== existingStudent.id
+    ) {
+      return {
+        success: false,
+        error: "A student with this school/local ID already exists on your roster.",
+      };
+    }
+  }
+
+  try {
+    const result = await database.rosterStudent.updateMany({
+      where: {
+        id: existingStudent.id,
+        workspaceId: input.workspaceId,
+        archivedAt: null,
+      },
+      data: {
+        displayName,
+        mentionHandle: normalizedHandle.mentionHandle,
+        classGroupId,
+        schoolLocalId: schoolLocalId ?? null,
+      },
+    });
+
+    if (result.count !== 1) {
+      return {
+        success: false,
+        error: "This student could not be found in your roster.",
+      };
+    }
+
+    const updatedStudent = await database.rosterStudent.findFirst({
+      where: {
+        id: existingStudent.id,
+        workspaceId: input.workspaceId,
+        archivedAt: null,
+      },
+      include: classGroupInclude,
+    });
+
+    if (!updatedStudent) {
+      return {
+        success: false,
+        error: "This student could not be found in your roster.",
+      };
+    }
+
+    return { success: true, student: toRosterStudentDisplay(updatedStudent) };
+  } catch (error) {
+    if (uniqueConstraintIncludes(error, "schoolLocalId")) {
+      return {
+        success: false,
+        error: "A student with this school/local ID already exists on your roster.",
+      };
+    }
+
+    if (uniqueConstraintIncludes(error, "mentionHandle") || isUniqueConstraintError(error)) {
+      return {
+        success: false,
+        error: "A student with this handle already exists on your roster.",
+      };
+    }
+
+    console.error("[lib/students/updateRosterStudentForWorkspace]", error);
     return { success: false, error: "Failed to save student." };
   }
 }

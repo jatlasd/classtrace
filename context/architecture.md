@@ -2,9 +2,9 @@
 
 ## Architecture Summary
 
-ClassTrace is a Next.js application that is currently a browser-only proof of concept and will evolve into a production V1 public app for individual teachers.
+ClassTrace is a Next.js application for individual teachers capturing student evidence. The scoped V1 build path is complete and uses authenticated, database-backed, teacher-owned data.
 
-The production V1 architecture is:
+The V1 architecture is:
 
 - Next.js application
 - Clerk authentication
@@ -22,23 +22,33 @@ The architecture must protect the core product rule: ClassTrace is a student evi
 
 ## Current State
 
-The current repo is a working local proof of concept.
+The current repo contains the completed scoped V1 app.
 
-Current POC characteristics:
+Current characteristics:
 
-- Browser-only
-- Uses `localStorage`
-- No authentication
-- No database
-- No backend ownership model
-- No real AI processing
-- Raw notes can currently persist in localStorage
-- Demo data can be loaded locally
-- JSON export exists for the POC feed
+- Public landing page
+- Clerk authentication
+- Protected `/app` workspace
+- One personal teacher workspace per user
+- Prisma 7 database access backed by Neon Postgres
+- Workspace-scoped roster students
+- Workspace-scoped validated evidence records
+- Deterministic note parsing and student resolution
+- Teacher validation before durable evidence save
+- Student timelines and individual student CSV export
+- Archive and permanent delete behavior
+- No generative AI
+- No file uploads
+- No durable raw draft note storage
 
-This is acceptable for the current POC only.
+Post-V1/pre-beta changes must preserve teacher-owned data boundaries and the student evidence model unless the human explicitly changes the product direction. The active feature sequence is `context/post-v1-pre-beta-build-plan.md`.
 
-Production V1 must replace local-only persistence with authenticated, database-backed, teacher-owned data.
+The active pre-beta contract intentionally supersedes two completed V1 assumptions:
+
+- Every active student must belong to exactly one active class.
+- New beta evidence saves must include a durable teacher-approved Evidence note.
+
+These changes do not make capture class-scoped. The capture composer remains global and every saved evidence record still belongs to exactly one resolved roster student.
 
 ---
 
@@ -191,7 +201,8 @@ Responsibilities:
 Rules:
 
 - Permanent evidence must represent teacher-approved fields.
-- Raw draft note text must not be part of the permanent V1 evidence record.
+- Original capture text must not be stored as a hidden durable raw-capture record.
+- New pre-beta evidence records must include the teacher-approved Evidence note exactly as approved.
 - Evidence must belong to exactly one resolved roster student in V1.
 - Evidence must belong to the authenticated teacher’s workspace.
 
@@ -212,6 +223,7 @@ Responsibilities:
 Rules:
 
 - Students are teacher-owned roster entries in V1.
+- During pre-beta, every active student must belong to exactly one active class.
 - Students are not global identities.
 - There is no cross-teacher student matching in V1.
 - A capture cannot be saved unless the selected student resolves to an existing roster entry owned by the current teacher.
@@ -312,11 +324,13 @@ Expected database entities:
 | `TeacherProfile` | Stores teacher display/profile settings not owned by Clerk |
 | `Workspace` | One personal workspace per teacher in V1 |
 | `RosterStudent` | Teacher-owned student roster entry |
-| `ClassGroup` | Optional class/group/period organization |
-| `EvidenceRecord` | Permanent validated structured evidence |
+| `ClassGroup` | Teacher-workspace-owned class record with a required name and normalized workspace-unique name key; required for active students during pre-beta |
+| `EvidenceRecord` | Permanent validated evidence with structured metadata and, for new beta saves, a teacher-approved Evidence note |
 | `EvidenceTag` or tag fields | Tags/categories attached to validated evidence |
 | `ImportBatch` or import preview data if needed | Optional temporary support for roster import workflow |
 | `Archive/Delete metadata` | Tracks archive status and timestamps where needed |
+
+Pre-beta class records store both the teacher-facing class name and a normalized class-name key used to prevent confusing duplicates within one workspace. The normalization trims surrounding whitespace, collapses internal whitespace, and compares names case-insensitively.
 
 V1 database records must be scoped to the authenticated teacher’s personal workspace.
 
@@ -324,7 +338,9 @@ V1 database records must be scoped to the authenticated teacher’s personal wor
 
 ## Evidence Storage
 
-Permanent evidence records store validated structured data only.
+Completed V1 permanent evidence records store validated structured data only.
+
+New beta evidence records store validated structured metadata plus a teacher-approved Evidence note. The Evidence note is durable because the teacher reviews and can edit it before saving.
 
 A saved evidence record may include:
 
@@ -333,6 +349,7 @@ A saved evidence record may include:
 - Teacher/user owner ID
 - Roster student ID
 - Optional class/group ID
+- Teacher-approved Evidence note for new beta records
 - Validated evidence summary/text
 - Evidence type/category
 - Topic/skill
@@ -346,7 +363,7 @@ A saved evidence record may include:
 - Updated timestamp
 - Archived timestamp if archived
 
-A saved V1 evidence record must not permanently store the raw draft note.
+A saved evidence record must not permanently store the original capture as a hidden raw-capture field.
 
 Raw draft text may exist temporarily:
 
@@ -354,7 +371,9 @@ Raw draft text may exist temporarily:
 - In a local draft before submission
 - In server memory during a request if server-side parsing is used
 
-Raw draft text must not be written to the permanent production evidence table in V1.
+Raw draft text must not be written to the permanent production evidence table as original capture text. New beta saves may write only the teacher-reviewed Evidence note, exactly as shown and approved in review.
+
+Legacy V1 evidence records without an Evidence note must remain honest structured-only records. Do not fabricate note text from summaries or metadata.
 
 ---
 
@@ -387,9 +406,9 @@ Framework-level caching and database query optimization are acceptable, but must
 
 ## Local Storage
 
-`localStorage` is acceptable only for the current POC or non-sensitive temporary UI state.
+`localStorage` is acceptable only for non-sensitive temporary UI state.
 
-Production V1 must not use localStorage as the durable source of truth for:
+V1 must not use localStorage as the durable source of truth for:
 
 - Rosters
 - Student records
@@ -398,7 +417,7 @@ Production V1 must not use localStorage as the durable source of truth for:
 - Validated evidence
 - Exports
 
-Potential acceptable localStorage uses in production:
+Potential acceptable localStorage uses:
 
 - Dismissed UI hints
 - Non-sensitive layout preferences
@@ -628,14 +647,17 @@ The codebase must never violate these rules.
 
 ### Data Invariants
 
-1. Production V1 must not use localStorage as the durable source of truth.
-2. Permanent V1 evidence must store validated structured evidence only.
-3. Permanent V1 evidence must not store raw draft notes.
+1. V1 must not use localStorage as the durable source of truth.
+2. Permanent evidence must store teacher-validated evidence only.
+3. Original capture text must not become a hidden durable raw-capture record.
 4. Every roster student must belong to exactly one teacher workspace.
 5. Every evidence record must belong to exactly one teacher workspace.
 6. Every evidence record must belong to exactly one roster student.
 7. Student records must not be shared or matched across teachers in V1.
 8. Deleted student records must not leave active orphaned evidence records.
+9. During pre-beta, every active student must belong to exactly one active class.
+10. New beta evidence saves must include a non-empty teacher-approved Evidence note.
+11. Legacy V1 structured-only evidence must not receive fabricated Evidence note text.
 
 ### Auth and Access Invariants
 
@@ -672,21 +694,21 @@ The codebase must never violate these rules.
 4. Do not add organization accounts or district admin dashboards in V1.
 5. Do not add parent communication features in V1.
 6. Do not add full-account or all-student export in V1.
-7. Do not add new external services unless they are part of an approved build unit.
+7. Do not add new external services unless they are part of an approved focused task/spec.
 
 ---
 
 ## Refactor Rules
 
-The current POC may be refactored as the production architecture is introduced.
+The completed V1 app may be refactored only when a focused post-V1 task needs it.
 
 Allowed:
 
-- Restructuring folders to support production boundaries
-- Replacing localStorage persistence with database-backed persistence
+- Small restructuring that clarifies existing production boundaries
+- Removing obsolete POC-only code when verified unused
 - Splitting large components into feature-specific components
 - Moving logic from UI components into `lib/` modules
-- Tightening current POC behavior to match V1 rules
+- Tightening legacy behavior to match V1 rules
 
 Not allowed without explicit human approval:
 
@@ -705,7 +727,7 @@ Major restructuring must be explained before implementation. The agent must stat
 
 ## Verification Expectations
 
-Every build unit must pass verification before it is considered done.
+Every meaningful change unit must pass verification before it is considered done.
 
 Expected checks:
 

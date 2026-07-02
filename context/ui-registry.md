@@ -634,10 +634,10 @@ Roster and student screens should support capture and evidence review. They shou
 
 ---
 
-### Guided Roster Setup Cards
+### Layered Class-First Roster
 
-File: `app/app/roster/page.tsx`  
-Last updated: 2026-06-17
+File: `app/app/roster/page.tsx`, `components/roster/class-group-form.tsx`, `components/roster/class-group-actions.tsx`
+Last updated: 2026-07-01 (Unit 29 layered roster)
 
 | Property | Class |
 |---|---|
@@ -646,22 +646,29 @@ Last updated: 2026-06-17
 | Eyebrow | `text-xs font-semibold uppercase tracking-wider text-muted-foreground` |
 | Page title | `font-display text-2xl font-semibold tracking-tight text-foreground` |
 | Helper copy | `text-sm leading-relaxed text-muted-foreground` |
-| Work area | `grid border border-border bg-card/55 lg:grid-cols-2` |
-| Work panel | `border-b border-border p-4 sm:p-5 lg:border-b-0 lg:border-r` |
-| Card title | `font-display text-lg font-semibold text-foreground` |
-| Card helper | `text-xs leading-relaxed text-muted-foreground` |
+| Readiness panel | `border-l-4 border-primary bg-card/60 px-4 py-3` |
+| Class list header | `mb-2 grid gap-2 border-b border-border pb-2 sm:grid-cols-[minmax(0,1fr)_160px_120px]` |
+| Class list shell | `border border-border bg-card/60` |
+| Class row | `border-b border-border last:border-b-0` |
+| Class row content | `grid gap-3 px-4 py-3.5 sm:grid-cols-[minmax(0,1fr)_160px_120px] sm:items-center sm:px-5` |
+| Class icon | `flex size-9 shrink-0 items-center justify-center rounded-md border border-border bg-muted/50 text-primary` |
+| Create-class panel | `border border-border bg-card/55 p-4 sm:p-5` |
+| Open-class panel | `border border-border bg-card/60 p-5` |
+| Archived-class panel | `border border-border bg-card/60 p-5` |
 | Empty roster card | `border border-border bg-card/60 p-5 text-sm leading-relaxed text-muted-foreground` |
-| Continue action | Existing `Button` with `variant="outline"` and `size="sm"` |
+| Form input | `h-10 w-full rounded-md border border-border bg-background/50 px-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/20 disabled:cursor-not-allowed disabled:opacity-50` |
+| Class actions shell | `space-y-3 border border-border bg-card/60 p-4` |
+| Deferred import note | `border border-border bg-card/60 p-4 text-sm leading-relaxed text-muted-foreground` |
 
 **Pattern notes:**  
-Guided roster setup lives inside the authenticated app shell, not a full-screen wizard. The empty state can still frame the first student as the setup step, but after at least one roster student exists the page should shift into ordinary roster management language. Do not keep "recommended first step" or "setup started" card language visible after setup has begun. The roster page now uses a restrained split work area with hard borders, no shadows, and no rounded-card shell so it feels like a practical record surface rather than a generic SaaS onboarding board. Copy should explain that roster setup comes before evidence capture and avoid district, SIS, or admin language.
+Unit 29 replaces the temporary Unit 28 bridge with the active class-first roster. The default roster view is a ledger-like active class list plus a restrained create-class panel. Opening a class keeps the teacher inside Roster and shows that class's student list, class-scoped manual entry, class rename/archive actions, and a non-saving note that paste-list import moves here in Unit 30. Empty classes are valid. Archived classes are hidden from the default list and appear only in a secondary archived-classes view with no add/import actions. Keep class language teacher-facing and plain; do not add a separate Classes navigation item or make capture class-scoped.
 
 ---
 
 ### Database Roster List
 
 File: `app/app/roster/page.tsx`  
-Last updated: 2026-06-17 (Unit 20 archive/delete student)
+Last updated: 2026-07-01 (Unit 29 class-first roster)
 
 | Property | Class |
 |---|---|
@@ -674,6 +681,10 @@ Last updated: 2026-06-17 (Unit 20 archive/delete student)
 | Student name | `font-medium leading-snug text-foreground` |
 | Handle text | `text-sm text-muted-foreground sm:text-foreground` |
 | Class/group text | `text-xs text-muted-foreground` |
+| Edit action area | `space-y-2` inside the row management area |
+| Edit form shell | `space-y-3 border-t border-border/50 pt-3` |
+| Edit field grid | `grid gap-3 sm:grid-cols-2` |
+| Edit form input/select | `h-10 w-full rounded-md border border-border bg-background/50 px-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/20 disabled:cursor-not-allowed disabled:opacity-50` |
 | Management action area | `space-y-2 border-t border-border/50 pt-3 sm:col-span-3` |
 | Archive trigger | Existing `Button` with `variant="ghost"`, `size="sm"`, `-ml-2 text-muted-foreground`, and `Archive` icon `size-3.5` |
 | Archive confirmation copy | `text-xs leading-relaxed text-muted-foreground` |
@@ -686,7 +697,7 @@ Last updated: 2026-06-17 (Unit 20 archive/delete student)
 | Delete error text | `text-xs leading-relaxed text-destructive` with `role="status"` |
 
 **Pattern notes:**  
-The roster list is database-backed. After Unit 17, each active student's identity area links to that student's database-backed timeline using `routes.student(student.id)` and an accessible "Open [student] timeline" label. Use a ledger-like bordered list with column headers, divided rows, square initials, and no shadows; avoid returning to separate rounded student cards. Unit 20 adds secondary row management actions below the row metadata: archive is the calm first cleanup action and permanent delete is visually destructive with explicit warning copy ("Deleting this student will also permanently delete all evidence records attached to them. This cannot be undone."). Do not add restore, archived-student management, roster edit, export, bulk actions, shared student identity, or admin/district behavior to this row until explicitly scoped.
+The roster list is database-backed. After Unit 17, each active student's identity area links to that student's database-backed timeline using `routes.student(student.id)` and an accessible "Open [student] timeline" label. Use a ledger-like bordered list with column headers, divided rows, square initials, and no shadows; avoid returning to separate rounded student cards. Unit 20 adds secondary row management actions below the row metadata: archive is the calm first cleanup action and permanent delete is visually destructive with explicit warning copy ("Deleting this student will also permanently delete all evidence records attached to them. This cannot be undone."). Unit 29 adds a restrained inline edit form for display name, mention handle, optional school/local ID, and active class assignment; moving students must happen through this edit flow, not drag and drop. Legacy unassigned students appear in a "Needs class" section and use the same edit form for teacher-approved assignment. Do not add restore, archived-student management, export, bulk actions, shared student identity, or admin/district behavior to this row until explicitly scoped.
 
 ---
 
