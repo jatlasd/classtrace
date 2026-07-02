@@ -15,6 +15,7 @@ const textareaClassName =
 
 type RosterImportFormProps = {
   existingStudents: ExistingRosterImportStudent[];
+  classGroupId: string;
 };
 
 function PreviewRow({ row }: { row: RosterImportPreview["rows"][number] }) {
@@ -52,7 +53,10 @@ function PreviewRow({ row }: { row: RosterImportPreview["rows"][number] }) {
   );
 }
 
-export function RosterImportForm({ existingStudents }: RosterImportFormProps) {
+export function RosterImportForm({
+  existingStudents,
+  classGroupId,
+}: RosterImportFormProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [rosterText, setRosterText] = useState("");
@@ -89,7 +93,7 @@ export function RosterImportForm({ existingStudents }: RosterImportFormProps) {
     }
 
     startTransition(async () => {
-      const result = await importRosterStudents({ rosterText, classGroupId: "" });
+      const result = await importRosterStudents({ rosterText, classGroupId });
 
       if (!result.success) {
         setPreview(result.preview);

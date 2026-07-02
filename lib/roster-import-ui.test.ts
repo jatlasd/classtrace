@@ -18,7 +18,8 @@ describe("Unit 09 roster import UI", () => {
     expect(rosterPageSource).not.toContain("Import planned");
     expect(importFormSource).toContain("Paste several students");
     expect(importFormSource).toContain("Preview students before saving");
-    expect(importFormSource).toContain('classGroupId: ""');
+    expect(importFormSource).toContain("classGroupId: string;");
+    expect(importFormSource).toContain("classGroupId,");
   });
 
   it("keeps the client form away from workspace IDs and database imports", () => {

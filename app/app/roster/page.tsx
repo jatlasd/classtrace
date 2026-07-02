@@ -438,7 +438,7 @@ export default async function RosterPage({ searchParams }: RosterPageProps) {
           classGroup={selectedClass}
           students={selectedClassStudents ?? []}
           activeClasses={activeClassOptions}
-          isFirstStudent={activeStudents.length === 0}
+          isFirstStudent={(selectedClassStudents ?? []).length === 0}
         />
       ) : selectedClassMissing ? (
         <div className="border border-border bg-card/60 p-5 text-sm leading-relaxed text-muted-foreground">

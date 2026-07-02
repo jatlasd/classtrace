@@ -10,7 +10,7 @@ Update this file after every meaningful implementation change.
 - Post-V1 documentation reset completed: README, AGENTS, workflow, architecture/product framing, build-plan status, and active roadmap now treat completed V1 specs as historical records instead of the active queue.
 - Phase 6 Unit 27 documentation reset completed: context docs now distinguish completed V1 from the active pre-beta contract.
 - Phase 7 Unit 28 implemented and verified with automated checks - Class Domain, Ownership, and Migration Foundation (`context/specs/28-class-domain-ownership-and-migration-foundation.md`).
-- Phase 7 Unit 29 implemented with automated checks and post-review readiness fixes - Layered Roster and Class-First Onboarding (`context/specs/29-layered-roster-and-class-first-onboarding.md`).
+- Phase 7 Unit 29 implemented with automated checks and post-review/merge-prep readiness fixes - Layered Roster and Class-First Onboarding (`context/specs/29-layered-roster-and-class-first-onboarding.md`).
 - Phase 2 complete — roster onboarding
 - Unit 02 complete and verified — Route Map and App Shell (`context/specs/02-route-map-and-app-shell.md`)
 - Unit 03 complete and verified — Public Landing Page UI (`context/specs/03-public-landing-page-ui.md`)
@@ -45,7 +45,7 @@ Update this file after every meaningful implementation change.
 
 - ClassTrace V1 is complete for the scoped teacher-first evidence capture build path.
 - Current active build path: `context/post-v1-pre-beta-build-plan.md`, starting with Phase 6.
-- Current task: Unit 29 Layered Roster and Class-First Onboarding implemented with post-review readiness fixes; next planned unit is Unit 30 Class-Scoped Roster Import.
+- Current task: Unit 29 Layered Roster and Class-First Onboarding implemented with post-review/merge-prep readiness fixes; next planned unit is Unit 30 Class-Scoped Roster Import after the post-V1 branch is merged back to main.
 
 ---
 
@@ -139,7 +139,9 @@ Spec: `context/specs/29-layered-roster-and-class-first-onboarding.md`
 - Preserved student archive/delete row actions and global one-student capture behavior.
 - Fixed post-review readiness routing so `/app` and `/app/feed` use class-first roster readiness instead of the old any-active-student gate.
 - Tightened the shared class readiness helper so an empty roster is not treated as ready.
-- Left paste-list import as a non-saving class-view handoff note; Unit 30 remains responsible for the working class-scoped import UI.
+- Left paste-list import as a non-saving class-view handoff note; Unit 30 remains responsible for rendering the working class-scoped import UI.
+- Cleaned up the dormant roster import form so it now requires and submits a real `classGroupId` instead of preserving an empty class id for future reuse.
+- Fixed opened-class manual-entry copy so an empty class is treated as the first-student state even when legacy unassigned students exist elsewhere in the workspace.
 - Updated UI registry patterns for the layered class-first roster and inline student edit flow.
 
 ### Verification
@@ -149,6 +151,8 @@ Spec: `context/specs/29-layered-roster-and-class-first-onboarding.md`
 - `npm.cmd run test -- lib/classes/class-groups.test.ts lib/onboarding-routing.test.ts` passed after review fixes (2 files / 13 tests).
 - `npm.cmd run test` passed after review fixes (49 files / 261 tests). Existing archive/delete failure-path tests intentionally logged contextual server errors while verifying safe generic error results.
 - `npm.cmd run build` passed after review fixes.
+- Merge-prep focused roster UI checks passed: `npm.cmd run test -- lib/roster-import-ui.test.ts lib/manual-student-entry.test.ts lib/guided-roster-setup-ui.test.ts lib/student-roster-database-ui.test.ts` (4 files / 15 tests).
+- Merge-prep full checks passed: `npm.cmd run lint`, `npm.cmd run test` (49 files / 261 tests), and `npm.cmd run build`.
 - Browser verification attempted in the in-app browser on `http://127.0.0.1:3000/app/roster`, but the authenticated roster flow was blocked by Clerk sign-in. Chrome fallback was not used because it requires explicit human approval.
 
 ### Remaining risks / follow-ups
