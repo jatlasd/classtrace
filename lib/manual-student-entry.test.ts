@@ -37,7 +37,7 @@ describe("Unit 08 manual student entry UI", () => {
   it("saves students into the opened class instead of an unassigned roster", () => {
     expect(rosterPageSource).toContain("OpenClassView");
     expect(rosterPageSource).toContain("classGroupId={classGroup.id}");
-    expect(rosterPageSource).not.toContain("RosterImportForm");
+    expect(rosterPageSource).toContain("RosterImportForm");
     expect(formSource).toContain("classGroupId,");
     expect(formSource).toContain("This student will be added to {className}.");
     expect(formSource).not.toContain('classGroupId: ""');

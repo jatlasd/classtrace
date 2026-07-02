@@ -637,7 +637,7 @@ Roster and student screens should support capture and evidence review. They shou
 ### Layered Class-First Roster
 
 File: `app/app/roster/page.tsx`, `components/roster/class-group-form.tsx`, `components/roster/class-group-actions.tsx`
-Last updated: 2026-07-01 (Unit 29 layered roster)
+Last updated: 2026-07-02 (Unit 30 class-scoped roster import)
 
 | Property | Class |
 |---|---|
@@ -658,10 +658,10 @@ Last updated: 2026-07-01 (Unit 29 layered roster)
 | Empty roster card | `border border-border bg-card/60 p-5 text-sm leading-relaxed text-muted-foreground` |
 | Form input | `h-10 w-full rounded-md border border-border bg-background/50 px-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/20 disabled:cursor-not-allowed disabled:opacity-50` |
 | Class actions shell | `space-y-3 border border-border bg-card/60 p-4` |
-| Deferred import note | `border border-border bg-card/60 p-4 text-sm leading-relaxed text-muted-foreground` |
+| Class import panel | `border border-border bg-card/55 p-4 sm:p-5` |
 
 **Pattern notes:**  
-Unit 29 replaces the temporary Unit 28 bridge with the active class-first roster. The default roster view is a ledger-like active class list plus a restrained create-class panel. Opening a class keeps the teacher inside Roster and shows that class's student list, class-scoped manual entry, class rename/archive actions, and a non-saving note that paste-list import moves here in Unit 30. Empty classes are valid. Archived classes are hidden from the default list and appear only in a secondary archived-classes view with no add/import actions. Keep class language teacher-facing and plain; do not add a separate Classes navigation item or make capture class-scoped.
+Unit 29 replaces the temporary Unit 28 bridge with the active class-first roster. The default roster view is a ledger-like active class list plus a restrained create-class panel. Opening a class keeps the teacher inside Roster and shows that class's student list, class-scoped manual entry, class rename/archive actions, and the working class-scoped paste-list import form. Empty classes are valid. Archived classes are hidden from the default list and appear only in a secondary archived-classes view with no add/import actions. Keep class language teacher-facing and plain; do not add a separate Classes navigation item or make capture class-scoped.
 
 ---
 
@@ -772,7 +772,7 @@ The manual entry form lives inside the roster work panel. It keeps the form shor
 ### Roster Import Form
 
 File: `components/roster/roster-import-form.tsx`  
-Last updated: 2026-06-17
+Last updated: 2026-07-02 (Unit 30 class-scoped roster import)
 
 | Property | Class |
 |---|---|
@@ -795,7 +795,7 @@ Last updated: 2026-06-17
 | Actions | Existing `Button` with `variant="outline"`, default, and `variant="ghost"` using `size="sm"` |
 
 **Pattern notes:**  
-The roster import form supports pasted text only and keeps the workflow teacher-controlled: paste, preview, then confirm. It should sit in the split roster work area, not a squeezed right rail. Preview rows are compact, squared-off records instead of rounded mini-cards. The form receives only handle and school/local ID conflict data from the server-rendered roster page; it does not receive or submit workspace IDs, and confirmed import still revalidates server-side before atomic save. Class/group import remains deferred.
+The roster import form supports pasted text only and keeps the workflow teacher-controlled: paste, preview, then confirm. In Unit 30 it renders only inside an opened active class, and every confirmed row is saved to that class server-side. Preview rows are compact, squared-off records instead of rounded mini-cards. The form receives only handle and school/local ID conflict data, the opened class ID, and class display name from the server-rendered roster page; it does not receive or submit workspace IDs, and confirmed import still revalidates server-side before atomic save. Do not add class columns, class pickers, inline class creation, file upload, or external roster sync.
 
 ---
 

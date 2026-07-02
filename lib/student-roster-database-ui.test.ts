@@ -18,7 +18,7 @@ describe("Unit 07 roster database bridge", () => {
     expect(rosterPage).toContain("ClassList");
     expect(rosterPage).toContain("OpenClassView");
     expect(rosterPage).toContain("ManualStudentEntryForm");
-    expect(rosterPage).not.toContain("RosterImportForm");
+    expect(rosterPage).toContain("RosterImportForm");
     expect(rosterPage).not.toContain("Manual entry connects next");
     expect(rosterPage).not.toContain("Import planned");
     expect(rosterPage).not.toMatch(/localStorage|addStudent|updateStudent|deleteStudent/);

@@ -12,13 +12,17 @@ const rosterPageSource = readFileSync(
   "utf8"
 );
 
-describe("Unit 09 roster import UI", () => {
-  it("keeps the paste-list import form available for class-scoped reuse", () => {
-    expect(rosterPageSource).not.toContain("RosterImportForm");
-    expect(rosterPageSource).not.toContain("Import planned");
+describe("class-scoped roster import UI", () => {
+  it("renders the paste-list import form inside the opened class workflow", () => {
+    expect(rosterPageSource).toContain("RosterImportForm");
+    expect(rosterPageSource).toContain("existingImportStudents");
+    expect(rosterPageSource).toContain("listExistingRosterImportStudentsForWorkspace");
+    expect(rosterPageSource).not.toContain("Paste-list import will move into this class view next");
     expect(importFormSource).toContain("Paste several students");
+    expect(importFormSource).toContain("These students will be added to {className}");
     expect(importFormSource).toContain("Preview students before saving");
     expect(importFormSource).toContain("classGroupId: string;");
+    expect(importFormSource).toContain("className: string;");
     expect(importFormSource).toContain("classGroupId,");
   });
 
