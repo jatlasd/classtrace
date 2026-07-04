@@ -181,70 +181,84 @@ export function QuickCaptureCard({
   }
 
   return (
-    <div className="rounded-card border border-border bg-card shadow-paper ring-1 ring-transparent transition-shadow focus-within:ring-primary/20">
-      <div className="px-5 pb-2 pt-5 sm:px-8 sm:pt-7">
-        <label
-          htmlFor="quick-capture"
-          className="font-display mb-3 block text-2xl font-semibold tracking-tight text-foreground sm:text-3xl"
-        >
-          What happened?
-        </label>
-        <p className="mb-6 text-sm leading-relaxed text-muted-foreground sm:text-base">
-          Type a quick note. Use <span className="font-semibold text-link">@student</span>{" "}
-          to name one student and <span className="font-semibold text-validated-foreground">#tag</span>{" "}
-          to add context.
-        </p>
-        <div className="quick-capture-mentions">
-          <MentionsInput
-            id="quick-capture"
-            value={markupValue}
-            onChange={handleChange}
-            onKeyDown={handleKeyDown}
-            placeholder="@Mary used a new reading strategy during small group #reading #strategy"
-            style={quickCaptureMentionsStyle}
-            allowSuggestionsAboveCursor
+    <section className="overflow-hidden rounded-card border border-border bg-card shadow-paper ring-1 ring-transparent transition-shadow focus-within:ring-primary/20">
+      <div className="grid lg:grid-cols-[180px_minmax(0,1fr)]">
+        <div className="border-b border-border bg-muted/25 px-5 py-4 lg:border-b-0 lg:border-r lg:px-6 lg:py-6">
+          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            Quick capture
+          </p>
+          <label
+            htmlFor="quick-capture"
+            className="mt-2 block font-display text-2xl font-semibold tracking-tight text-foreground"
           >
-            <Mention
-              trigger="@"
-              data={studentSuggestions}
-              markup="@[__display__](__id__)"
-              displayTransform={(id) => `@${id}`}
-              appendSpaceOnAdd
-              style={mentionHighlightStyle}
-            />
-            <Mention
-              trigger="#"
-              data={tagSuggestions}
-              markup="#[__display__](__id__)"
-              displayTransform={(id) => `#${id}`}
-              appendSpaceOnAdd
-              style={mentionHighlightStyle}
-            />
-          </MentionsInput>
+            What happened?
+          </label>
+          <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+            Write the moment first. Mention exactly one roster student before
+            capture.
+          </p>
         </div>
-        <div aria-live="polite" className="mt-4 min-h-5">
-          {guidance ? (
-            <p
-              className={`text-sm ${
-                guidance.tone === "error"
-                  ? "text-destructive"
-                  : "text-muted-foreground"
-              }`}
+
+        <div className="min-w-0 px-5 py-5 sm:px-6 lg:px-8 lg:py-6">
+          <p className="mb-4 max-w-3xl text-sm leading-relaxed text-muted-foreground">
+            Use <span className="font-semibold text-link">@student</span> to
+            name one student and <span className="font-semibold text-validated-foreground">#tag</span>{" "}
+            to add context.
+          </p>
+          <div className="quick-capture-mentions rounded-lg border border-border bg-background/45 px-4 py-3 transition-colors focus-within:border-ring focus-within:bg-card focus-within:ring-3 focus-within:ring-ring/20">
+            <MentionsInput
+              id="quick-capture"
+              name="quick-capture"
+              autoComplete="off"
+              value={markupValue}
+              onChange={handleChange}
+              onKeyDown={handleKeyDown}
+              placeholder="@Mary used a new reading strategy during small group #reading #strategy..."
+              style={quickCaptureMentionsStyle}
+              allowSuggestionsAboveCursor
             >
-              {guidance.text}
-            </p>
-          ) : null}
+              <Mention
+                trigger="@"
+                data={studentSuggestions}
+                markup="@[__display__](__id__)"
+                displayTransform={(id) => `@${id}`}
+                appendSpaceOnAdd
+                style={mentionHighlightStyle}
+              />
+              <Mention
+                trigger="#"
+                data={tagSuggestions}
+                markup="#[__display__](__id__)"
+                displayTransform={(id) => `#${id}`}
+                appendSpaceOnAdd
+                style={mentionHighlightStyle}
+              />
+            </MentionsInput>
+          </div>
+          <div aria-live="polite" className="mt-3 min-h-5">
+            {guidance ? (
+              <p
+                className={`text-sm ${
+                  guidance.tone === "error"
+                    ? "text-destructive"
+                    : "text-muted-foreground"
+                }`}
+              >
+                {guidance.text}
+              </p>
+            ) : null}
+          </div>
         </div>
       </div>
 
-      <div className="flex flex-col gap-3 border-t border-border px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-8">
+      <div className="flex flex-col gap-3 border-t border-border px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
         <div className="flex flex-wrap items-center gap-2">
           {captureHints.map((hint) => (
             <span
               key={hint.label}
-              className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-border bg-muted/30 px-3 text-sm font-medium text-muted-foreground"
+              className="inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-border bg-muted/30 px-3 text-sm font-medium text-muted-foreground"
             >
-              <hint.icon className="size-[18px]" strokeWidth={1.75} />
+              <hint.icon aria-hidden="true" className="size-4" strokeWidth={1.75} />
               <span>{hint.label}</span>
             </span>
           ))}
@@ -253,12 +267,11 @@ export function QuickCaptureCard({
         <Button
           onClick={handlePost}
           disabled={!canCapture}
-          variant="outline"
-          className="h-11 rounded-lg px-6 text-sm font-semibold text-primary hover:text-primary sm:self-auto"
+          className="h-10 rounded-lg px-5 text-sm font-semibold"
         >
           {posted ? (
             <>
-              <Check className="size-4" />
+              <Check aria-hidden="true" className="size-4" />
               Captured
             </>
           ) : (
@@ -266,6 +279,6 @@ export function QuickCaptureCard({
           )}
         </Button>
       </div>
-    </div>
+    </section>
   );
 }

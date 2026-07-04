@@ -46,7 +46,7 @@ Update this file after every meaningful implementation change.
 
 - ClassTrace V1 is complete for the scoped teacher-first evidence capture build path.
 - Current active build path: `context/post-v1-pre-beta-build-plan.md`, starting with Phase 6.
-- Current task: Unit 30 Class-Scoped Roster Import implemented with automated checks; next planned unit is Unit 31 Evidence Note Data Contract after human review/approval.
+- Current task: `/app/feed` overhaul implemented as a UI-only rebuild on 2026-07-02; next planned pre-beta unit remains Unit 31 Evidence Note Data Contract after human review/approval.
 
 ---
 
@@ -1466,6 +1466,7 @@ Verification after refinement: `npm run lint` pass, `npm run build` pass, `npm r
 
 ## Session Notes
 
+- `/app/feed` overhaul completed on 2026-07-02: rebuilt the feed route composition into a command-strip header, capture desk, one-student boundary panel, and split evidence/cues ledger while preserving capture validation, search/filter behavior, saved evidence rows, archive/delete actions, workspace-scoped data loading, and deterministic-only cue copy. Updated the UI registry with the new active feed desk/ledger pattern.
 - Evidence feed layout pass completed on 2026-07-02: changed `/app/feed` page structure so the header spans the workspace and inbox controls sit inside the same ledger surface as the rows, preserving capture, validation, persistence, and roster behavior.
 - Feed polish pass completed on 2026-07-02: improved `/app/feed` header hierarchy, inbox empty/search states, saved evidence row scanability, and deterministic side-rail copy without changing capture, validation, persistence, or roster behavior.
 - Impeccable document ran on 2026-07-02: added root DESIGN.md and .impeccable/design.json from existing ClassTrace tokens, components, and UI registry using the confirmed Calm Evidence Desk direction.

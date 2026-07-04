@@ -35,6 +35,28 @@ Run `/imprint` after building UI components so new patterns are captured here.
 
 ## Components
 
+### Feed Desk and Split Ledger
+
+File: `components/dashboard/evidence-feed.tsx`, `components/dashboard/evidence-feed-header.tsx`, `components/dashboard/quick-capture-card.tsx`, `components/dashboard/classtrace-noticed-panel.tsx`  
+Last updated: 2026-07-02 (feed overhaul)
+
+| Property | Class / Rule |
+|---|---|
+| Page shell | `mx-auto w-full max-w-[1560px] px-4 py-5 sm:px-6 lg:px-8` |
+| Header layout | `grid gap-4 border-b border-border pb-5 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end` |
+| Header count strip | `grid grid-cols-3 overflow-hidden rounded-lg border border-border bg-card text-sm` |
+| Capture desk | `mt-5 grid gap-4 lg:grid-cols-[minmax(0,1fr)_300px] xl:grid-cols-[minmax(0,1fr)_340px]` |
+| Composer shell | `overflow-hidden rounded-card border border-border bg-card shadow-paper ring-1 ring-transparent transition-shadow focus-within:ring-primary/20` |
+| Composer internal grid | `grid lg:grid-cols-[180px_minmax(0,1fr)]` |
+| Mention input frame | `quick-capture-mentions rounded-lg border border-border bg-background/45 px-4 py-3 transition-colors focus-within:border-ring focus-within:bg-card focus-within:ring-3 focus-within:ring-ring/20` |
+| Capture boundary panel | `rounded-card border border-border bg-card/70 p-4 lg:mt-3` |
+| Ledger shell | `mt-5 overflow-hidden rounded-card border border-border bg-card shadow-paper` |
+| Ledger grid | `grid lg:grid-cols-[minmax(0,1fr)_340px] xl:grid-cols-[minmax(0,1fr)_380px]` |
+| Ledger cues pane | `border-t border-border bg-muted/20 lg:border-l lg:border-t-0` |
+
+**Pattern notes:**  
+The active /app/feed composition is a desk-and-ledger workspace: compact route header with roster/saved/review counts, a full capture desk with one-student boundary guidance, then one split ledger where evidence rows and deterministic cues share a single surface. This supersedes the earlier two-column workbench pattern for the feed route while preserving the global capture workflow, client-side search/filter behavior, current-session draft review, saved evidence rows, archive/delete actions, and deterministic-only right-rail summaries. Do not add report, notification, task, analytics, AI, upload, or class-scoped capture controls to this surface.
+
 ### Landing Page Paper Texture
 
 File: `app/page.tsx`, `app/globals.css`

@@ -243,13 +243,15 @@ function EvidenceSearchControl({
     <div className="relative min-w-0 flex-1 sm:max-w-[300px]">
       <input
         type="search"
+        name="evidence-search"
+        autoComplete="off"
         value={query}
         onChange={(event) => onQueryChange(event.target.value)}
-        placeholder="Search evidence"
+        placeholder="Search evidence..."
         aria-label="Search evidence inbox"
         className="h-10 w-full rounded-lg border border-border bg-background/50 py-2 pl-9 pr-9 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:bg-card focus-visible:ring-3 focus-visible:ring-ring/20"
       />
-      <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+      <Search aria-hidden="true" className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
       {query ? (
         <button
           type="button"
@@ -257,7 +259,7 @@ function EvidenceSearchControl({
           aria-label="Clear search"
           className="absolute right-3 top-1/2 -translate-y-1/2 rounded p-0.5 text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/30"
         >
-          <X className="size-4" />
+          <X aria-hidden="true" className="size-4" />
         </button>
       ) : null}
     </div>
@@ -308,7 +310,7 @@ function FeedEmptyState({
   return (
     <div className="px-6 py-10 text-center sm:px-10">
       <div className="mx-auto flex size-12 items-center justify-center rounded-lg border border-border bg-muted/40 text-primary">
-        <ClipboardCheck className="size-5" strokeWidth={1.75} />
+        <ClipboardCheck aria-hidden="true" className="size-5" strokeWidth={1.75} />
       </div>
       <h3 className="mt-4 font-display text-lg font-semibold text-foreground">
         {title}
@@ -334,7 +336,7 @@ function FilterEmptyMessage({ filter }: { filter: InboxFilter }) {
   if (filter === "validated") {
     return (
       <FeedEmptyState
-        title="No validated evidence yet"
+        title="No validated evidence yet."
         body="Capture a student-specific note, review the draft, and saved records will collect in this view."
       />
     );
@@ -354,7 +356,7 @@ function RosterRequiredState() {
       </h2>
       <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
         Captures need one student from your roster. Start with a name and handle,
-        then come back here for your first student-specific capture.
+        then come back here for your first student-specific capture. Your evidence feed will start here after roster setup.
       </p>
       <Button asChild className="mt-4 h-9 rounded-lg px-5 text-sm font-semibold">
         <Link href={routes.roster}>Set up roster</Link>
@@ -461,6 +463,9 @@ export function EvidenceFeed({
   const visibleFeedItemCount =
     visibleDraftItems.length + visibleEvidenceRecords.length;
   const hasVisibleFeedItems = visibleFeedItemCount > 0;
+  const needsReviewItemCount = draftItems.filter((item) =>
+    needsReview(item, rosterStudents)
+  ).length;
 
   function handleDraft(draft: NoteDraft) {
     const resolution = resolveCaptureStudents(
@@ -636,11 +641,18 @@ export function EvidenceFeed({
   }
 
   return (
-    <div className="mx-auto w-full max-w-[1560px] px-4 py-6 sm:px-6 lg:px-8">
-      <EvidenceFeedHeader />
+    <main className="mx-auto w-full max-w-[1560px] px-4 py-5 sm:px-6 lg:px-8">
+      <EvidenceFeedHeader
+        rosterCount={rosterStudents.length}
+        savedCount={initialEvidenceRecords.length}
+        reviewCount={needsReviewItemCount}
+      />
 
-      <div className="mt-6 flex flex-col gap-6 lg:flex-row lg:items-start">
-        <div className="min-w-0 flex-1 space-y-7">
+      <section
+        className="mt-5 grid gap-4 lg:grid-cols-[minmax(0,1fr)_300px] xl:grid-cols-[minmax(0,1fr)_340px]"
+        aria-label="Capture desk"
+      >
+        <div className="min-w-0">
           {rosterSetupNeeded ? (
             <RosterRequiredState />
           ) : (
@@ -649,18 +661,45 @@ export function EvidenceFeed({
               onDraft={handleDraft}
             />
           )}
+        </div>
 
-          <section
-            className="overflow-hidden rounded-card border border-border bg-card shadow-paper"
-            aria-labelledby="evidence-inbox-heading"
-          >
+        <aside className="rounded-card border border-border bg-card/70 p-4 lg:mt-3">
+          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            Capture boundary
+          </p>
+          <div className="mt-3 space-y-3 text-sm leading-relaxed text-muted-foreground">
+            <p>
+              Every saved record starts with one resolved roster student and a
+              teacher review.
+            </p>
+            <div className="grid grid-cols-3 gap-2 text-center text-xs">
+              <span className="rounded-lg border border-border bg-muted/30 px-2 py-2 font-medium text-foreground">
+                Mention
+              </span>
+              <span className="rounded-lg border border-border bg-muted/30 px-2 py-2 font-medium text-foreground">
+                Review
+              </span>
+              <span className="rounded-lg border border-border bg-muted/30 px-2 py-2 font-medium text-foreground">
+                Save
+              </span>
+            </div>
+          </div>
+        </aside>
+      </section>
+
+      <section
+        className="mt-5 overflow-hidden rounded-card border border-border bg-card shadow-paper"
+        aria-labelledby="evidence-inbox-heading"
+      >
+        <div className="grid lg:grid-cols-[minmax(0,1fr)_340px] xl:grid-cols-[minmax(0,1fr)_380px]">
+          <div className="min-w-0">
             <div className="space-y-4 border-b border-border bg-card px-4 py-4 sm:px-6">
-              <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+              <div className="flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
                 <div className="min-w-0 space-y-1">
                   <div className="flex flex-wrap items-center gap-3">
                     <RecentCapturesLabel />
                     <span className="inline-flex items-center gap-2 rounded-lg border border-border bg-muted/30 px-3 py-2 text-sm font-medium text-muted-foreground">
-                      <ArrowDownUp className="size-4" />
+                      <ArrowDownUp aria-hidden="true" className="size-4" />
                       Newest first
                     </span>
                   </div>
@@ -686,15 +725,17 @@ export function EvidenceFeed({
             ) : null}
 
             <div>{renderFeedList()}</div>
-          </section>
-        </div>
+          </div>
 
-        <ClassTraceNoticedPanel
-          items={summaryItems}
-          rosterStudents={rosterStudents}
-          evidenceRecords={initialEvidenceRecords}
-        />
-      </div>
-    </div>
+          <ClassTraceNoticedPanel
+            items={summaryItems}
+            rosterStudents={rosterStudents}
+            evidenceRecords={initialEvidenceRecords}
+          />
+        </div>
+      </section>
+    </main>
   );
 }
+
+
