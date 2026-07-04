@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import {
   saveValidatedEvidence,
   type SaveValidatedEvidenceActionInput,
@@ -21,21 +21,19 @@ import type {
   CaptureValidation,
   InterpretationFields,
 } from "@/lib/evidence/capture-validation";
-import {
-  resolveCaptureDisplay,
-} from "@/lib/evidence/capture-validation";
+import { resolveCaptureDisplay } from "@/lib/evidence/capture-validation";
 import type { EvidenceFeedRecord } from "@/lib/evidence/evidence-feed-records";
 import { normalizeTag } from "@/lib/format-tag";
 import { buildNoteDraft } from "@/lib/note-processing";
 import type { NoteDraft } from "@/lib/note-processing/types";
+import { routes } from "@/lib/routes";
 import { mentionDisplayLabel } from "@/lib/students";
 import {
   resolveCaptureStudents,
   type CaptureRosterStudent,
   type CaptureStudentResolution,
 } from "@/lib/students/resolve-capture-students";
-import { routes } from "@/lib/routes";
-import { ArrowDownUp, X } from "lucide-react";
+import { ArrowDownUp, ClipboardCheck, Search, X } from "lucide-react";
 
 type FeedItem = {
   id: string;
@@ -57,6 +55,10 @@ const filterOptions: { value: InboxFilter; label: string }[] = [
   { value: "needs_review", label: "Needs review" },
   { value: "validated", label: "Validated" },
 ];
+
+function feedItemCountLabel(count: number): string {
+  return count === 1 ? "1 item showing" : `${count} items showing`;
+}
 
 function isValidated(item: FeedItem): boolean {
   return item.validation?.status === "validated";
@@ -238,23 +240,26 @@ function EvidenceSearchControl({
   onQueryChange: (query: string) => void;
 }) {
   return (
-    <div className="relative min-w-0 flex-1 sm:max-w-[280px]">
+    <div className="relative min-w-0 flex-1 sm:max-w-[300px]">
       <input
         type="search"
+        name="evidence-search"
+        autoComplete="off"
         value={query}
         onChange={(event) => onQueryChange(event.target.value)}
-        placeholder="Search"
+        placeholder="Search evidence..."
         aria-label="Search evidence inbox"
-        className="h-10 w-full rounded-lg border border-border bg-card py-2 pl-3 pr-9 text-sm outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/20"
+        className="h-10 w-full rounded-lg border border-border bg-background/50 py-2 pl-9 pr-9 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:bg-card focus-visible:ring-3 focus-visible:ring-ring/20"
       />
+      <Search aria-hidden="true" className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
       {query ? (
         <button
           type="button"
           onClick={() => onQueryChange("")}
           aria-label="Clear search"
-          className="absolute right-3 top-1/2 -translate-y-1/2 rounded p-0.5 text-muted-foreground hover:text-foreground"
+          className="absolute right-3 top-1/2 -translate-y-1/2 rounded p-0.5 text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/30"
         >
-          <X className="size-4" />
+          <X aria-hidden="true" className="size-4" />
         </button>
       ) : null}
     </div>
@@ -281,7 +286,7 @@ function InboxFilterControl({
           onClick={() => onFilterChange(option.value)}
           className={`rounded-lg border px-3 py-2 text-sm font-medium transition-colors ${
             filter === option.value
-              ? "border-border bg-muted text-foreground"
+              ? "border-border bg-muted text-foreground shadow-sm"
               : "border-transparent text-muted-foreground hover:bg-muted/60 hover:text-foreground"
           }`}
         >
@@ -293,20 +298,47 @@ function InboxFilterControl({
   );
 }
 
+function FeedEmptyState({
+  title,
+  body,
+  action,
+}: {
+  title: string;
+  body: string;
+  action?: ReactNode;
+}) {
+  return (
+    <div className="px-6 py-10 text-center sm:px-10">
+      <div className="mx-auto flex size-12 items-center justify-center rounded-lg border border-border bg-muted/40 text-primary">
+        <ClipboardCheck aria-hidden="true" className="size-5" strokeWidth={1.75} />
+      </div>
+      <h3 className="mt-4 font-display text-lg font-semibold text-foreground">
+        {title}
+      </h3>
+      <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-muted-foreground">
+        {body}
+      </p>
+      {action ? <div className="mt-4">{action}</div> : null}
+    </div>
+  );
+}
+
 function FilterEmptyMessage({ filter }: { filter: InboxFilter }) {
   if (filter === "needs_review") {
     return (
-      <p className="px-1 py-8 text-center text-sm text-muted-foreground">
-        Nothing needs review right now.
-      </p>
+      <FeedEmptyState
+        title="Review queue is clear"
+        body="New captures that need teacher validation will appear here before they become saved evidence."
+      />
     );
   }
 
   if (filter === "validated") {
     return (
-      <p className="px-1 py-8 text-center text-sm text-muted-foreground">
-        No validated evidence yet. Review a capture to turn it into a record.
-      </p>
+      <FeedEmptyState
+        title="No validated evidence yet."
+        body="Capture a student-specific note, review the draft, and saved records will collect in this view."
+      />
     );
   }
 
@@ -324,7 +356,7 @@ function RosterRequiredState() {
       </h2>
       <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
         Captures need one student from your roster. Start with a name and handle,
-        then come back here for your first student-specific capture.
+        then come back here for your first student-specific capture. Your evidence feed will start here after roster setup.
       </p>
       <Button asChild className="mt-4 h-9 rounded-lg px-5 text-sm font-semibold">
         <Link href={routes.roster}>Set up roster</Link>
@@ -428,8 +460,12 @@ export function EvidenceFeed({
 
   const hasAnyFeedItems =
     draftItems.length > 0 || initialEvidenceRecords.length > 0;
-  const hasVisibleFeedItems =
-    visibleDraftItems.length > 0 || visibleEvidenceRecords.length > 0;
+  const visibleFeedItemCount =
+    visibleDraftItems.length + visibleEvidenceRecords.length;
+  const hasVisibleFeedItems = visibleFeedItemCount > 0;
+  const needsReviewItemCount = draftItems.filter((item) =>
+    needsReview(item, rosterStudents)
+  ).length;
 
   function handleDraft(draft: NoteDraft) {
     const resolution = resolveCaptureStudents(
@@ -542,27 +578,34 @@ export function EvidenceFeed({
   function renderFeedList() {
     if (rosterSetupNeeded) {
       return (
-        <p className="px-6 py-10 text-center text-sm text-muted-foreground">
-          Your evidence feed will start here after roster setup.
-        </p>
+        <FeedEmptyState
+          title="Roster setup comes first"
+          body="Add one active student to keep every capture attached to exactly one roster record."
+          action={
+            <Button asChild variant="outline" size="sm">
+              <Link href={routes.roster}>Set up roster</Link>
+            </Button>
+          }
+        />
       );
     }
 
     if (!hasAnyFeedItems) {
       return (
-        <p className="px-6 py-10 text-center text-sm text-muted-foreground">
-          No validated evidence yet. Capture a student-specific note, review it,
-          and saved evidence will appear here.
-        </p>
+        <FeedEmptyState
+          title="No evidence in the inbox yet"
+          body="Use the capture box above for one student-specific observation. Drafts and saved evidence will stay in this chronological feed."
+        />
       );
     }
 
     if (!hasVisibleFeedItems) {
       if (searchQuery.trim()) {
         return (
-          <p className="px-6 py-10 text-center text-sm text-muted-foreground">
-            No evidence matches your search.
-          </p>
+          <FeedEmptyState
+            title="No evidence matches this search"
+            body="Try a student handle, tag, class name, or a word from the saved evidence summary."
+          />
         );
       }
 
@@ -598,57 +641,101 @@ export function EvidenceFeed({
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-[1560px] flex-col gap-6 px-4 py-6 sm:px-6 lg:flex-row lg:items-start lg:px-8">
-      <div className="min-w-0 flex-1 space-y-6">
-        <EvidenceFeedHeader />
-        {rosterSetupNeeded ? (
-          <RosterRequiredState />
-        ) : (
-          <QuickCaptureCard
-            rosterStudents={rosterStudents}
-            onDraft={handleDraft}
-          />
-        )}
-
-        <section className="space-y-4">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex flex-wrap items-center gap-5">
-              <RecentCapturesLabel />
-              <button
-                type="button"
-                className="inline-flex items-center gap-2 text-sm font-medium text-foreground"
-              >
-                <ArrowDownUp className="size-4 text-muted-foreground" />
-                Newest
-              </button>
-            </div>
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-              <EvidenceSearchControl
-                query={searchQuery}
-                onQueryChange={setSearchQuery}
-              />
-            </div>
-          </div>
-
-          <InboxFilterControl filter={filter} onFilterChange={setFilter} />
-
-          {captureEditError ? (
-            <p className="rounded-lg border border-border bg-muted/30 px-3 py-2 text-sm text-destructive">
-              {captureEditError}
-            </p>
-          ) : null}
-
-          <div className="overflow-hidden rounded-card border border-border bg-card shadow-paper">
-            {renderFeedList()}
-          </div>
-        </section>
-      </div>
-
-      <ClassTraceNoticedPanel
-        items={summaryItems}
-        rosterStudents={rosterStudents}
-        evidenceRecords={initialEvidenceRecords}
+    <main className="mx-auto w-full max-w-[1560px] px-4 py-5 sm:px-6 lg:px-8">
+      <EvidenceFeedHeader
+        rosterCount={rosterStudents.length}
+        savedCount={initialEvidenceRecords.length}
+        reviewCount={needsReviewItemCount}
       />
-    </div>
+
+      <section
+        className="mt-5 grid gap-4 lg:grid-cols-[minmax(0,1fr)_300px] xl:grid-cols-[minmax(0,1fr)_340px]"
+        aria-label="Capture desk"
+      >
+        <div className="min-w-0">
+          {rosterSetupNeeded ? (
+            <RosterRequiredState />
+          ) : (
+            <QuickCaptureCard
+              rosterStudents={rosterStudents}
+              onDraft={handleDraft}
+            />
+          )}
+        </div>
+
+        <aside className="rounded-card border border-border bg-card/70 p-4 lg:mt-3">
+          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            Capture boundary
+          </p>
+          <div className="mt-3 space-y-3 text-sm leading-relaxed text-muted-foreground">
+            <p>
+              Every saved record starts with one resolved roster student and a
+              teacher review.
+            </p>
+            <div className="grid grid-cols-3 gap-2 text-center text-xs">
+              <span className="rounded-lg border border-border bg-muted/30 px-2 py-2 font-medium text-foreground">
+                Mention
+              </span>
+              <span className="rounded-lg border border-border bg-muted/30 px-2 py-2 font-medium text-foreground">
+                Review
+              </span>
+              <span className="rounded-lg border border-border bg-muted/30 px-2 py-2 font-medium text-foreground">
+                Save
+              </span>
+            </div>
+          </div>
+        </aside>
+      </section>
+
+      <section
+        className="mt-5 overflow-hidden rounded-card border border-border bg-card shadow-paper"
+        aria-labelledby="evidence-inbox-heading"
+      >
+        <div className="grid lg:grid-cols-[minmax(0,1fr)_340px] xl:grid-cols-[minmax(0,1fr)_380px]">
+          <div className="min-w-0">
+            <div className="space-y-4 border-b border-border bg-card px-4 py-4 sm:px-6">
+              <div className="flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
+                <div className="min-w-0 space-y-1">
+                  <div className="flex flex-wrap items-center gap-3">
+                    <RecentCapturesLabel />
+                    <span className="inline-flex items-center gap-2 rounded-lg border border-border bg-muted/30 px-3 py-2 text-sm font-medium text-muted-foreground">
+                      <ArrowDownUp aria-hidden="true" className="size-4" />
+                      Newest first
+                    </span>
+                  </div>
+                  <p className="text-xs leading-relaxed text-muted-foreground">
+                    {hasVisibleFeedItems
+                      ? feedItemCountLabel(visibleFeedItemCount)
+                      : "Drafts and saved evidence will appear here."}
+                  </p>
+                </div>
+                <EvidenceSearchControl
+                  query={searchQuery}
+                  onQueryChange={setSearchQuery}
+                />
+              </div>
+
+              <InboxFilterControl filter={filter} onFilterChange={setFilter} />
+            </div>
+
+            {captureEditError ? (
+              <p className="border-b border-border bg-muted/30 px-4 py-3 text-sm text-destructive sm:px-6">
+                {captureEditError}
+              </p>
+            ) : null}
+
+            <div>{renderFeedList()}</div>
+          </div>
+
+          <ClassTraceNoticedPanel
+            items={summaryItems}
+            rosterStudents={rosterStudents}
+            evidenceRecords={initialEvidenceRecords}
+          />
+        </div>
+      </section>
+    </main>
   );
 }
+
+

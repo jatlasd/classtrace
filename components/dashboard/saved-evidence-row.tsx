@@ -1,11 +1,13 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { archiveEvidence, deleteEvidence } from "@/actions/evidence";
 import { Button } from "@/components/ui/button";
-import { formatTagLabel } from "@/lib/format-tag";
 import type { EvidenceFeedRecord } from "@/lib/evidence/evidence-feed-records";
+import { formatTagLabel } from "@/lib/format-tag";
+import { routes } from "@/lib/routes";
 import { Archive, CheckCircle2, Circle, Trash2 } from "lucide-react";
 
 type SavedEvidenceRowProps = {
@@ -14,17 +16,28 @@ type SavedEvidenceRowProps = {
   onDeleted?: (evidenceId: string) => void;
 };
 
-function formatEvidenceDate(value: string): string {
+type EvidenceDateParts = {
+  month: string;
+  day: string;
+  label: string;
+};
+
+function formatEvidenceDate(value: string): EvidenceDateParts {
   const date = new Date(value);
 
   if (Number.isNaN(date.getTime())) {
-    return "Recently";
+    return { month: "Recent", day: "", label: "Recently" };
   }
 
-  return new Intl.DateTimeFormat("en", {
-    month: "short",
-    day: "numeric",
-  }).format(date);
+  return {
+    month: new Intl.DateTimeFormat("en", { month: "short" }).format(date),
+    day: new Intl.DateTimeFormat("en", { day: "numeric" }).format(date),
+    label: new Intl.DateTimeFormat("en", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    }).format(date),
+  };
 }
 
 function Chip({
@@ -61,6 +74,7 @@ export function SavedEvidenceRow({
   const [archiveError, setArchiveError] = useState("");
   const [deleteError, setDeleteError] = useState("");
   const [isPending, startTransition] = useTransition();
+  const evidenceDate = formatEvidenceDate(record.evidenceDate);
 
   function handleArchive(): void {
     setArchiveError("");
@@ -95,38 +109,48 @@ export function SavedEvidenceRow({
   }
 
   return (
-    <article className="border-b border-border last:border-b-0">
+    <article className="border-b border-border transition-colors hover:bg-muted/20 last:border-b-0">
       <div className="grid gap-4 px-4 py-5 md:grid-cols-[72px_88px_minmax(0,1fr)_220px] md:px-6">
         <div className="flex items-start gap-3 md:block">
           <span className="flex size-11 items-center justify-center rounded-lg border border-validated/50 bg-validated/35 text-validated-foreground">
             <CheckCircle2 className="size-5" strokeWidth={1.75} />
           </span>
           <div className="md:hidden">
-            <p className="text-xs text-muted-foreground">
-              {formatEvidenceDate(record.evidenceDate)}
-            </p>
-            <span className="inline-flex items-center gap-2 rounded-lg border border-validated/60 bg-validated/35 px-2.5 py-1 text-xs font-semibold text-validated-foreground">
+            <p className="text-xs text-muted-foreground">{evidenceDate.label}</p>
+            <span className="mt-1 inline-flex items-center gap-2 rounded-lg border border-validated/60 bg-validated/35 px-2.5 py-1 text-xs font-semibold text-validated-foreground">
               <Circle className="size-2 fill-current" />
               Validated
             </span>
           </div>
         </div>
 
-        <div className="hidden text-sm leading-relaxed text-muted-foreground md:block">
-          <p>{formatEvidenceDate(record.evidenceDate)}</p>
-        </div>
+        <time
+          dateTime={record.evidenceDate}
+          className="hidden rounded-lg border border-border bg-background/45 px-3 py-2 text-center md:block"
+        >
+          <span className="block text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+            {evidenceDate.month}
+          </span>
+          <span className="mt-0.5 block font-display text-xl font-semibold leading-none text-foreground">
+            {evidenceDate.day}
+          </span>
+        </time>
 
         <div className="min-w-0 space-y-3">
           <div>
-            <p className="text-sm font-medium text-foreground">
-              {record.studentDisplayName}
+            <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+              <Link
+                href={routes.student(record.rosterStudentId)}
+                className="rounded-sm text-sm font-semibold text-foreground underline-offset-2 hover:text-link hover:underline focus-visible:ring-2 focus-visible:ring-ring/30"
+              >
+                {record.studentDisplayName}
+              </Link>
               {record.classGroupName ? (
-                <span className="font-normal text-muted-foreground">
-                  {" "}
-                  - {record.classGroupName}
+                <span className="text-xs text-muted-foreground">
+                  {record.classGroupName}
                 </span>
               ) : null}
-            </p>
+            </div>
             <p className="mt-1 text-[15px] leading-relaxed text-foreground">
               {record.summary}
             </p>

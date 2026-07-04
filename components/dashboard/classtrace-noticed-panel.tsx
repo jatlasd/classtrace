@@ -4,8 +4,8 @@ import {
   resolveCaptureDisplay,
   type CaptureValidation,
 } from "@/lib/evidence/capture-validation";
-import { summarizeCaptures } from "@/lib/evidence/summarize-captures";
 import type { EvidenceFeedRecord } from "@/lib/evidence/evidence-feed-records";
+import { summarizeCaptures } from "@/lib/evidence/summarize-captures";
 import { formatTagLabel } from "@/lib/format-tag";
 import type { NoteDraft } from "@/lib/note-processing/types";
 import type { CaptureRosterStudent } from "@/lib/students/resolve-capture-students";
@@ -14,7 +14,6 @@ import {
   BookOpen,
   CheckCircle2,
   MessageCircle,
-  TrendingUp,
   Users,
 } from "lucide-react";
 
@@ -39,22 +38,21 @@ function getFollowUps(
   rosterStudents: CaptureRosterStudent[],
   evidenceRecords: EvidenceFeedRecord[]
 ): { title: string; detail: string }[] {
-  const draftFollowUps = items
-    .flatMap((item) => {
-      const display = resolveCaptureDisplay(
-        item.draft,
-        item.validation,
-        rosterStudents
-      );
-      const student = display.studentMentions[0];
-      const studentLabel =
-        student?.status === "resolved" ? student.student.displayName : "student";
+  const draftFollowUps = items.flatMap((item) => {
+    const display = resolveCaptureDisplay(
+      item.draft,
+      item.validation,
+      rosterStudents
+    );
+    const student = display.studentMentions[0];
+    const studentLabel =
+      student?.status === "resolved" ? student.student.displayName : "student";
 
-      return display.followUps.map((followUp) => ({
-        title: followUp,
-        detail: `Check in with ${studentLabel}`,
-      }));
-    });
+    return display.followUps.map((followUp) => ({
+      title: followUp,
+      detail: `Check in with ${studentLabel}`,
+    }));
+  });
 
   const savedFollowUps = evidenceRecords
     .filter((record) => record.followUpNotes)
@@ -63,8 +61,7 @@ function getFollowUps(
       detail: `Check in with ${record.studentDisplayName}`,
     }));
 
-  return [...draftFollowUps, ...savedFollowUps]
-    .slice(0, 3);
+  return [...draftFollowUps, ...savedFollowUps].slice(0, 3);
 }
 
 function incrementCount(counts: Map<string, number>, key: string): void {
@@ -85,7 +82,9 @@ function sortCounts(counts: Map<string, number>): CountSummary[] {
 
 function recordCountLabel(count: number, hasSavedRecords: boolean): string {
   if (hasSavedRecords) {
-    return count === 1 ? "1 recent evidence record" : `${count} recent evidence records`;
+    return count === 1
+      ? "1 recent evidence record"
+      : `${count} recent evidence records`;
   }
 
   return count === 1 ? "1 recent capture" : `${count} recent captures`;
@@ -93,7 +92,9 @@ function recordCountLabel(count: number, hasSavedRecords: boolean): string {
 
 function noteCountLabel(count: number, hasSavedRecords: boolean): string {
   if (hasSavedRecords) {
-    return count === 1 ? "1 recent evidence record" : `${count} recent evidence records`;
+    return count === 1
+      ? "1 recent evidence record"
+      : `${count} recent evidence records`;
   }
 
   return count === 1 ? "1 recent note" : `${count} recent notes`;
@@ -133,7 +134,7 @@ export function ClassTraceNoticedPanel({
   const primaryPatterns = [
     topStudents[0]
       ? {
-          title: `${topStudents[0].name} is appearing often`,
+          title: `${topStudents[0].name} has the most recent evidence`,
           detail: recordCountLabel(topStudents[0].count, savedRecordCount > 0),
           icon: Users,
         }
@@ -144,7 +145,7 @@ export function ClassTraceNoticedPanel({
         },
     topTags[0]
       ? {
-          title: `${formatTagLabel(topTags[0].name)} is active`,
+          title: `${formatTagLabel(topTags[0].name)} appears most often`,
           detail: noteCountLabel(topTags[0].count, savedRecordCount > 0),
           icon: BookOpen,
         }
@@ -161,16 +162,24 @@ export function ClassTraceNoticedPanel({
             } review`
           : "Review queue is clear",
       detail: "Teacher validation stays required",
-      icon: needsReviewCount > 0 ? TrendingUp : CheckCircle2,
+      icon: CheckCircle2,
     },
   ];
 
   return (
-    <aside className="w-full shrink-0 lg:w-[340px] xl:w-[360px]">
-      <div className="rounded-card border border-border bg-card p-5 shadow-paper lg:sticky lg:top-24">
+    <aside className="border-t border-border bg-muted/20 lg:border-l lg:border-t-0">
+      <div className="p-4 sm:p-5 lg:sticky lg:top-24">
         <section>
-          <div className="mb-5 flex items-center justify-between gap-3">
-            <h2 className="text-lg font-semibold text-foreground">Patterns</h2>
+          <div className="mb-5">
+            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Patterns
+            </p>
+            <h2 className="mt-1 text-lg font-semibold text-foreground">
+              Evidence cues
+            </h2>
+            <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+              Based on saved evidence and current drafts.
+            </p>
           </div>
 
           <ul className="space-y-5">
@@ -185,7 +194,7 @@ export function ClassTraceNoticedPanel({
                         : "border-primary/20 bg-primary/10 text-primary"
                   }`}
                 >
-                  <pattern.icon className="size-5" strokeWidth={1.75} />
+                  <pattern.icon aria-hidden="true" className="size-5" strokeWidth={1.75} />
                 </div>
                 <div className="min-w-0">
                   <p className="text-sm font-semibold text-foreground">
@@ -201,8 +210,13 @@ export function ClassTraceNoticedPanel({
         </section>
 
         <section className="mt-8 border-t border-border pt-6">
-          <div className="mb-5 flex items-center justify-between gap-3">
-            <h2 className="text-lg font-semibold text-foreground">Follow-ups</h2>
+          <div className="mb-5">
+            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Follow-ups
+            </p>
+            <h2 className="mt-1 text-lg font-semibold text-foreground">
+              Review prompts
+            </h2>
           </div>
 
           {followUps.length > 0 ? (
@@ -226,30 +240,29 @@ export function ClassTraceNoticedPanel({
           ) : (
             <div className="flex gap-4">
               <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-secondary text-link">
-                <MessageCircle className="size-4" strokeWidth={1.75} />
+                <MessageCircle aria-hidden="true" className="size-4" strokeWidth={1.75} />
               </div>
               <div>
                 <p className="text-sm font-medium text-foreground">
                   No follow-ups yet
                 </p>
                 <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                  Follow-up suggestions appear when deterministic capture rules
-                  find one worth reviewing.
+                  Follow-up suggestions appear only when deterministic capture
+                  rules find one worth reviewing.
                 </p>
               </div>
             </div>
           )}
 
           <p className="mt-6 text-xs leading-relaxed text-muted-foreground">
-            Follow-ups are suggestions only until a later unit adds saved
-            follow-up tasks.
+            These are review prompts, not saved tasks.
           </p>
         </section>
 
         {summary.insights.length > 0 && (
           <section className="mt-6 rounded-lg border border-border bg-muted/25 p-3">
             <p className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-              Recent notes
+              Recent cues
             </p>
             <ul className="space-y-2">
               {summary.insights.slice(0, 2).map((insight) => (
@@ -257,7 +270,7 @@ export function ClassTraceNoticedPanel({
                   key={insight.text}
                   className="flex gap-2 text-xs leading-relaxed text-muted-foreground"
                 >
-                  <ArrowUpRight className="mt-0.5 size-3.5 shrink-0 text-primary" />
+                  <ArrowUpRight aria-hidden="true" className="mt-0.5 size-3.5 shrink-0 text-primary" />
                   <span>{insight.text}</span>
                 </li>
               ))}
