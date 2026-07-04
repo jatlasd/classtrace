@@ -28,14 +28,20 @@ describe("Unit 14 save validated evidence UI bridge", () => {
     expect(reviewPanel).toContain("Save validated evidence");
     expect(reviewPanel).toContain("Saving evidence");
     expect(reviewPanel).toContain("Validated evidence saved.");
+    expect(reviewPanel).toContain("Evidence note");
+    expect(reviewPanel).toContain("This note will be saved exactly as shown.");
+    expect(reviewPanel).toContain("Add an evidence note before saving evidence.");
   });
 
   it("passes a roster student id and structured summary instead of raw draft text", () => {
     const combined = `${reviewPanel}\n${captureCard}\n${evidenceFeed}\n${captureValidation}`;
     expect(combined).toContain("rosterStudentId");
+    expect(combined).toContain("evidenceNote");
+    expect(combined).toContain("display.cleanText");
     expect(combined).toContain("buildValidatedEvidenceSummary");
     expect(combined).not.toMatch(/summary:\s*draft\.parsed\.rawNote/);
     expect(evidenceFeed).not.toMatch(/saveValidatedEvidence\([^)]*rawNote/s);
+    expect(reviewPanel).not.toMatch(/evidenceNote:\s*draft\.parsed\.rawNote/);
   });
 
   it("tracks server save metadata separately from local validation", () => {

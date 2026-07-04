@@ -83,6 +83,7 @@ describe("saveValidatedEvidenceForWorkspace", () => {
         input: {
           rosterStudentId: "student_mary",
           evidenceDate: "2026-06-16T13:00:00.000Z",
+          evidenceNote: "Mary worked through the reading passage.",
           summary: "Mary - reading - Academic check-in",
           evidenceType: "Academic check-in",
           topic: "reading",
@@ -119,6 +120,7 @@ describe("saveValidatedEvidenceForWorkspace", () => {
         rosterStudentId: "student_mary",
         classGroupId: "class_group_1",
         evidenceDate: new Date("2026-06-16T13:00:00.000Z"),
+        evidenceNote: "Mary worked through the reading passage.",
         summary: "Mary - reading - Academic check-in",
         evidenceType: "Academic check-in",
         topic: "reading",
@@ -144,6 +146,7 @@ describe("saveValidatedEvidenceForWorkspace", () => {
         workspaceId: "workspace_1",
         input: {
           rosterStudentId: " ",
+          evidenceNote: "Mary worked through the reading passage.",
           summary: "Mary - reading - Academic check-in",
           evidenceType: "Academic check-in",
           tags: [],
@@ -161,6 +164,31 @@ describe("saveValidatedEvidenceForWorkspace", () => {
     expect(calls.create).toEqual([]);
   });
 
+  it("rejects missing evidence note", async () => {
+    const { database, calls } = buildDatabase();
+
+    const result = await saveValidatedEvidenceForWorkspace(
+      {
+        workspaceId: "workspace_1",
+        input: {
+          rosterStudentId: "student_mary",
+          evidenceNote: " ",
+          summary: "Mary - reading - Academic check-in",
+          evidenceType: "Academic check-in",
+          tags: [],
+        },
+        now,
+      },
+      database
+    );
+
+    expect(result).toEqual({
+      success: false,
+      error: "Add an evidence note before saving evidence.",
+    });
+    expect(calls.findFirst).toEqual([]);
+    expect(calls.create).toEqual([]);
+  });
   it("rejects missing summary", async () => {
     const { database, calls } = buildDatabase();
 
@@ -169,6 +197,7 @@ describe("saveValidatedEvidenceForWorkspace", () => {
         workspaceId: "workspace_1",
         input: {
           rosterStudentId: "student_mary",
+          evidenceNote: "Mary worked through the reading passage.",
           summary: " ",
           evidenceType: "Academic check-in",
           tags: [],
@@ -194,6 +223,7 @@ describe("saveValidatedEvidenceForWorkspace", () => {
         workspaceId: "workspace_1",
         input: {
           rosterStudentId: "student_mary",
+          evidenceNote: "Mary worked through the reading passage.",
           summary: "Mary - reading",
           evidenceType: " ",
           tags: [],
@@ -219,6 +249,7 @@ describe("saveValidatedEvidenceForWorkspace", () => {
         workspaceId: "workspace_1",
         input: {
           rosterStudentId: "student_other",
+          evidenceNote: "Mary worked through the reading passage.",
           summary: "Mary - reading",
           evidenceType: "Academic check-in",
           tags: [],
@@ -244,6 +275,7 @@ describe("saveValidatedEvidenceForWorkspace", () => {
         workspaceId: "workspace_1",
         input: {
           rosterStudentId: "student_archived",
+          evidenceNote: "Mary worked through the reading passage.",
           summary: "Mary - reading",
           evidenceType: "Academic check-in",
           tags: [],
@@ -273,6 +305,7 @@ describe("saveValidatedEvidenceForWorkspace", () => {
         workspaceId: "workspace_1",
         input: {
           rosterStudentId: "student_mary",
+          evidenceNote: "Mary worked through the reading passage.",
           summary: "Mary - reading",
           evidenceType: "Academic check-in",
           tags: [],
@@ -298,6 +331,7 @@ describe("saveValidatedEvidenceForWorkspace", () => {
         workspaceId: "workspace_1",
         input: {
           rosterStudentId: "student_mary",
+          evidenceNote: "Mary worked through the reading passage.",
           summary: "Mary - reading",
           evidenceType: "Academic check-in",
           tags: [],
@@ -321,6 +355,7 @@ describe("saveValidatedEvidenceForWorkspace", () => {
     const { database, calls } = buildDatabase();
     const malformedInput = {
       rosterStudentId: "student_mary",
+      evidenceNote: "Mary worked through the reading passage.",
       summary: "Mary - reading",
       evidenceType: "Academic check-in",
       rawNote: "@Mary raw draft should not persist",

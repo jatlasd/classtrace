@@ -28,6 +28,7 @@ type InterpretationReviewPanelProps = {
 
 type ValidatedEvidenceSaveInput = {
   rosterStudentId: string;
+  evidenceNote: string;
   summary: string;
   evidenceType: string;
   topic?: string;
@@ -42,6 +43,7 @@ type ValidatedEvidenceSaveResult =
   | { success: false; error: string };
 
 type FormState = {
+  evidenceNote: string;
   evidenceType: string;
   topic: string;
   performance: string;
@@ -53,6 +55,7 @@ type FormState = {
 function displayToFormState(display: DraftDisplay): FormState {
   const fields = displayToInterpretationFields(display);
   return {
+    evidenceNote: display.cleanText,
     evidenceType: fields.evidenceType,
     topic: fields.topic ?? "",
     performance: fields.performance ?? "",
@@ -119,6 +122,7 @@ function FieldRow({
 function draftDisplayKey(display: DraftDisplay): string {
   return [
     display.summaryLine,
+    display.cleanText,
     display.evidenceType,
     display.studentMentions
       .map((mention) =>
@@ -178,6 +182,13 @@ function InterpretationReviewPanelContent({
       return;
     }
 
+    const evidenceNote = form.evidenceNote.trim();
+
+    if (!evidenceNote) {
+      setValidationError("Add an evidence note before saving evidence.");
+      return;
+    }
+
     const fields = formStateToFields(form, studentValidation.studentName);
     const summary = buildValidatedEvidenceSummary(fields);
 
@@ -194,6 +205,7 @@ function InterpretationReviewPanelContent({
     try {
       result = await onConfirm(fields, {
         rosterStudentId: studentValidation.studentId,
+        evidenceNote,
         summary,
         evidenceType: fields.evidenceType,
         topic: fields.topic,
@@ -231,6 +243,26 @@ function InterpretationReviewPanelContent({
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2">
+        <div className="space-y-1 sm:col-span-2">
+          <label
+            htmlFor="review-evidence-note"
+            className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground"
+          >
+            Evidence note
+          </label>
+          <Textarea
+            id="review-evidence-note"
+            value={form.evidenceNote}
+            onChange={(e) => updateField("evidenceNote", e.target.value)}
+            rows={3}
+            disabled={isSaving || Boolean(savedEvidenceId)}
+            className="min-h-[84px] resize-none text-sm"
+          />
+          <p className="text-xs leading-relaxed text-muted-foreground">
+            This note will be saved exactly as shown.
+          </p>
+        </div>
+
         <FieldRow
           label="Student"
           value={

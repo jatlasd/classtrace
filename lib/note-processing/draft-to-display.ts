@@ -17,6 +17,7 @@ export type DraftDisplay = {
   performance?: string;
   followUps: string[];
   needsReview: boolean;
+  cleanText: string;
   summaryLine: string;
 };
 
@@ -131,6 +132,7 @@ export function draftToDisplay(
     performance,
     followUps: draft.suggestedFollowUps,
     needsReview: draft.needsTeacherValidation || hasUnresolved,
+    cleanText: draft.parsed.cleanText,
   };
 
   return {

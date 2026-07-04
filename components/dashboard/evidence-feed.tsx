@@ -514,6 +514,7 @@ export function EvidenceFeed({
               validation: {
                 status: "validated" as const,
                 fields,
+                evidenceNote: saveInput.evidenceNote,
                 validatedAt: Date.now(),
                 savedEvidenceId: result.evidenceId,
                 savedAt: Date.now(),

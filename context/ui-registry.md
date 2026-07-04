@@ -232,7 +232,7 @@ Saved evidence rows are database-backed validated records, not raw draft capture
 ### Structured Draft Review Panel
 
 File: `components/dashboard/interpretation-review-panel.tsx`  
-Last updated: 2026-06-16 (Unit 14 save states)
+Last updated: 2026-07-04 (Unit 31 Evidence note bridge)
 
 | Property | Class |
 |---|---|
@@ -242,6 +242,7 @@ Last updated: 2026-06-16 (Unit 14 save states)
 | Title | `font-display text-lg font-semibold text-foreground` |
 | Helper copy | `text-sm leading-relaxed text-muted-foreground` |
 | Field grid | `grid gap-3 sm:grid-cols-2` |
+| Evidence note textarea | `min-h-[84px] resize-none text-sm` with visible `Evidence note` label and helper copy |
 | Field label | `text-[10px] font-semibold uppercase tracking-wider text-muted-foreground` |
 | Read-only value | `text-sm leading-snug text-foreground` |
 | Input/select | `h-8 w-full rounded-md border border-border bg-background px-2.5 text-sm text-foreground outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/30` |
@@ -254,7 +255,7 @@ Last updated: 2026-06-16 (Unit 14 save states)
 | Action row | `mt-4 flex flex-wrap items-center gap-2 border-t border-border/50 pt-3` |
 
 **Pattern notes:**  
-The review panel is the trust moment between a captured draft and validated evidence. It uses explicit draft-language copy ("ClassTrace read this as", "Review before saving") and keeps the student anchored to exactly one resolved roster student. Optional interpretation fields can be edited before save. Unit 14 changed the primary action to "Save validated evidence", added pending copy ("Saving evidence..."), success copy ("Validated evidence saved."), and locks editing after a successful database-backed save. Failure messages stay inline in the existing status area, and the permanent save payload is structured fields only, not the raw draft note.
+The review panel is the trust moment between a captured draft and validated evidence. It uses explicit draft-language copy ("ClassTrace read this as", "Review before saving") and keeps the student anchored to exactly one resolved roster student. Optional interpretation fields can be edited before save. Unit 14 changed the primary action to "Save validated evidence", added pending copy ("Saving evidence..."), success copy ("Validated evidence saved."), and locks editing after a successful database-backed save. Unit 31 adds the minimum Evidence note bridge: the review panel shows an editable Evidence note textarea prefilled from deterministic clean text and explains that the note will be saved exactly as shown. Failure messages stay inline in the existing status area, and the permanent save payload now includes the teacher-approved Evidence note plus structured metadata, not a hidden raw draft note.
 
 ---
 

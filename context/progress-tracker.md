@@ -12,6 +12,7 @@ Update this file after every meaningful implementation change.
 - Phase 7 Unit 28 implemented and verified with automated checks - Class Domain, Ownership, and Migration Foundation (`context/specs/28-class-domain-ownership-and-migration-foundation.md`).
 - Phase 7 Unit 29 implemented with automated checks and post-review/merge-prep readiness fixes - Layered Roster and Class-First Onboarding (`context/specs/29-layered-roster-and-class-first-onboarding.md`).
 - Phase 7 Unit 30 implemented and verified with automated checks - Class-Scoped Roster Import (`context/specs/30-class-scoped-roster-import.md`).
+- Phase 8 Unit 31 implemented and verified with automated checks - Evidence Note Data Contract and Save Boundary (`context/specs/31-evidence-note-data-contract-and-save-boundary.md`).
 - Phase 2 complete — roster onboarding
 - Unit 02 complete and verified — Route Map and App Shell (`context/specs/02-route-map-and-app-shell.md`)
 - Unit 03 complete and verified — Public Landing Page UI (`context/specs/03-public-landing-page-ui.md`)
@@ -46,7 +47,7 @@ Update this file after every meaningful implementation change.
 
 - ClassTrace V1 is complete for the scoped teacher-first evidence capture build path.
 - Current active build path: `context/post-v1-pre-beta-build-plan.md`, starting with Phase 6.
-- Current task: `/app/feed` overhaul implemented as a UI-only rebuild on 2026-07-02; next planned pre-beta unit remains Unit 31 Evidence Note Data Contract after human review/approval.
+- Current task: Unit 31 Evidence Note Data Contract and Save Boundary implemented and verified on 2026-07-04; next planned pre-beta unit is Unit 32 Evidence Note Review, Feed, Timeline, and Export Pass after human review/approval.
 
 ---
 
@@ -189,6 +190,36 @@ Spec: `context/specs/30-class-scoped-roster-import.md`
 
 - Manual browser verification is still needed for the Unit 30 class-scoped import placement inside an authenticated opened class after Chrome connector access is stable.
 - Unit 31 remains responsible for the Evidence note data/save boundary after class-scoped import is reviewed.
+
+---
+
+## Unit 31 - Evidence Note Data Contract and Save Boundary (Implemented)
+
+Spec: `context/specs/31-evidence-note-data-contract-and-save-boundary.md`
+
+### What changed
+
+- Created the Unit 31 focused spec and implemented the durable teacher-approved Evidence note data/save boundary.
+- Added nullable `EvidenceRecord.evidenceNote` schema support and a migration that does not backfill or fabricate notes for legacy V1 records.
+- Updated the save helper/action contract so every new beta evidence save requires a non-empty `evidenceNote` while keeping `summary` as separate structured metadata.
+- Threaded deterministic parser `cleanText` into the draft display model and used it as the initial review-panel Evidence note value.
+- Added a minimal editable Evidence note textarea to the existing review panel with copy that the note is saved exactly as shown.
+- Preserved one resolved roster student, workspace ownership, active-student checks, class snapshot behavior, teacher validation, archive/delete/export behavior, and no hidden durable raw-capture persistence.
+- Updated focused schema, save-helper, action, and UI bridge tests.
+- Updated `context/ui-registry.md` for the Evidence note bridge in the structured draft review panel.
+
+### Verification
+
+- `npm.cmd run test -- lib/evidence/save-validated-evidence.test.ts actions/evidence.test.ts lib/save-validated-evidence-ui.test.ts lib/db/prisma-foundation.test.ts` passed (4 files / 30 tests).
+- `npm.cmd run test` passed (49 files / 263 tests). Existing archive/delete failure-path tests intentionally logged contextual server errors while verifying safe generic error results.
+- `npm.cmd run lint` passed.
+- `npm.cmd run build` passed.
+
+### Remaining risks / follow-ups
+
+- Apply the new Prisma migration before relying on Unit 31 behavior in any persistent environment.
+- Manual authenticated browser/database verification was not run in this implementation pass.
+- Unit 32 remains responsible for making Evidence notes primary in review, feed, timeline, and individual CSV export surfaces.
 
 ---
 
@@ -1363,8 +1394,9 @@ Verification after refinement: `npm run lint` pass, `npm run build` pass, `npm r
 
 1. Manually verify the Unit 30 class-scoped import placement inside an authenticated opened class when Chrome connector access is stable.
 2. Review/approve the Unit 30 implementation.
-3. Begin Unit 31 Evidence Note Data Contract after approval.
-4. Commit and push completed changes when the human requests it.
+3. Review/approve Unit 31 implementation.
+4. Begin Unit 32 Evidence Note Review, Feed, Timeline, and Export Pass after approval.
+5. Commit and push completed changes when the human requests it.
 
 ---
 

@@ -22,6 +22,7 @@ type EvidenceRecordCreateData = {
   rosterStudentId: string;
   classGroupId?: string;
   evidenceDate: Date;
+  evidenceNote: string;
   summary: string;
   evidenceType: string;
   topic?: string;
@@ -63,6 +64,7 @@ export type SaveValidatedEvidenceDatabase = {
 export type SaveValidatedEvidenceInput = {
   rosterStudentId: string;
   evidenceDate?: string;
+  evidenceNote: string;
   summary: string;
   evidenceType: string;
   topic?: string;
@@ -152,6 +154,15 @@ export async function saveValidatedEvidenceForWorkspace(
     };
   }
 
+  const evidenceNote = normalizeRequiredText(args.input.evidenceNote);
+
+  if (!evidenceNote) {
+    return {
+      success: false,
+      error: "Add an evidence note before saving evidence.",
+    };
+  }
+
   const summary = normalizeRequiredText(args.input.summary);
 
   if (!summary) {
@@ -198,6 +209,7 @@ export async function saveValidatedEvidenceForWorkspace(
         rosterStudentId: student.id,
         classGroupId: student.classGroupId ?? undefined,
         evidenceDate: normalizeEvidenceDate(args.input.evidenceDate, now),
+        evidenceNote,
         summary,
         evidenceType,
         topic: normalizeOptionalText(args.input.topic),

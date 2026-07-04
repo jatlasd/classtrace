@@ -30,6 +30,7 @@ export type CaptureValidation =
   | {
       status: "validated";
       fields: InterpretationFields;
+      evidenceNote?: string;
       validatedAt?: number;
       savedEvidenceId?: string;
       savedAt?: number;
@@ -218,6 +219,7 @@ export function resolveCaptureDisplay(
     behavior: fields.behavior,
     followUps: fields.followUpNotes,
     needsReview: hasUnresolved,
+    cleanText: validation.evidenceNote ?? base.cleanText,
   };
 
   return {

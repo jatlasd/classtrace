@@ -71,6 +71,7 @@ model EvidenceRecord {
   rosterStudentId String
   classGroupId    String?
   evidenceDate    DateTime       @default(now())
+  evidenceNote    String?
   summary         String
   evidenceType    String
   topic           String?

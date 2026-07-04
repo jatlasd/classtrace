@@ -45,6 +45,7 @@ type EvidenceCaptureCardProps = {
 
 type ValidatedEvidenceSaveInput = {
   rosterStudentId: string;
+  evidenceNote: string;
   summary: string;
   evidenceType: string;
   topic?: string;

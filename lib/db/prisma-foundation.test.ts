@@ -7,6 +7,13 @@ const schemaPath = join(projectRoot, "prisma", "schema.prisma");
 const dbHelperPath = join(projectRoot, "lib", "db", "prisma.ts");
 const envExamplePath = join(projectRoot, ".env.example");
 const packageJsonPath = join(projectRoot, "package.json");
+const evidenceNoteMigrationPath = join(
+  projectRoot,
+  "prisma",
+  "migrations",
+  "20260704000000_add_evidence_note_to_evidence_record",
+  "migration.sql"
+);
 
 const schema = readFileSync(schemaPath, "utf8");
 const envExample = readFileSync(envExamplePath, "utf8");
@@ -28,11 +35,21 @@ describe("Prisma database foundation", () => {
 
   it("keeps permanent evidence structured and teacher validated", () => {
     expect(schema).toContain("summary");
+    expect(schema).toContain("evidenceNote    String?");
     expect(schema).toContain("evidenceType");
     expect(schema).toContain("validatedAt");
     expect(schema).not.toMatch(/\b(rawNote|draftNote|originalText|prompt|aiSummary)\b/i);
   });
 
+  it("adds nullable evidence notes without fabricating legacy note text", () => {
+    expect(existsSync(evidenceNoteMigrationPath)).toBe(true);
+
+    const migration = readFileSync(evidenceNoteMigrationPath, "utf8");
+
+    expect(migration).toContain('ADD COLUMN "evidenceNote" TEXT');
+    expect(migration).not.toMatch(/NOT NULL|UPDATE\s+"EvidenceRecord"|summary/i);
+    expect(schema).not.toMatch(/\b(rawNote|draftText|originalCapture|sourceText|aiSummary)\b/i);
+  });
   it("does not add out-of-scope V1 models", () => {
     expect(schema).not.toMatch(/\b(model|enum)\s+(Organization|District|Admin|Membership|File|Attachment|Ai|AI|Embedding|Billing|Subscription|Sis|SIS)\b/);
   });
