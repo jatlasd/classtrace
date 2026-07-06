@@ -257,3 +257,38 @@
   outline: none;
   box-shadow: none;
 }
+
+@media print {
+  body:has(.student-report-page) {
+    background: white;
+    color: black;
+  }
+
+  body:has(.student-report-page) .app-top-nav,
+  .student-report-screen-only {
+    display: none !important;
+  }
+
+  .student-report-page {
+    max-width: none !important;
+    padding: 0 !important;
+  }
+
+  .student-report-page header {
+    break-after: avoid;
+  }
+
+  .student-report-print-root {
+    display: block !important;
+  }
+
+  .student-report-print-context {
+    margin-bottom: 1rem;
+  }
+
+  .student-report-entry {
+    break-inside: avoid;
+    box-shadow: none !important;
+    page-break-inside: avoid;
+  }
+}

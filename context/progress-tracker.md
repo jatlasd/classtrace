@@ -15,6 +15,7 @@ Update this file after every meaningful implementation change.
 - Phase 8 Unit 31 implemented and verified with automated checks - Evidence Note Data Contract and Save Boundary (`context/specs/31-evidence-note-data-contract-and-save-boundary.md`).
 - Phase 8 Unit 32 implemented and verified with automated checks - Evidence Note Review, Feed, Timeline, and Export Pass (`context/specs/32-evidence-note-review-feed-timeline-export-pass.md`).
 - Phase 9 Unit 33 implemented and verified with automated checks - Per-Student Report View and Date-Range Query (`context/specs/33-per-student-report-view-and-date-range-query.md`).
+- Phase 9 Unit 34 implemented and verified with automated checks - Printable Student Report (`context/specs/34-printable-student-report.md`).
 - Phase 2 complete — roster onboarding
 - Unit 02 complete and verified — Route Map and App Shell (`context/specs/02-route-map-and-app-shell.md`)
 - Unit 03 complete and verified — Public Landing Page UI (`context/specs/03-public-landing-page-ui.md`)
@@ -49,7 +50,7 @@ Update this file after every meaningful implementation change.
 
 - ClassTrace V1 is complete for the scoped teacher-first evidence capture build path.
 - Current active build path: `context/post-v1-pre-beta-build-plan.md`, starting with Phase 6.
-- Current task: Unit 33 Per-Student Report View and Date-Range Query implemented; next planned pre-beta unit is Unit 34 Printable Student Report after human review/approval.
+- Current task: Unit 34 Printable Student Report implemented and verified with automated checks; next planned pre-beta unit is Unit 35 Pre-Beta Feature Review and Coverage Pass after human review/approval.
 
 ---
 
@@ -286,6 +287,35 @@ Spec: `context/specs/33-per-student-report-view-and-date-range-query.md`
 
 - Manual authenticated browser verification was not run in this implementation pass.
 - Unit 34 remains responsible for browser Print / Save as PDF behavior after Unit 33 is reviewed.
+
+---
+
+## Unit 34 - Printable Student Report (Implemented)
+
+Spec: `context/specs/34-printable-student-report.md`
+
+### What changed
+
+- Added a small `StudentReportPrintAction` Client Component that opens the browser print dialog with `window.print()`.
+- Added the restrained `Print / Save as PDF` action to the existing one-student report header without adding generated PDF files, a PDF route, report templates, Reports navigation, or new dependencies.
+- Added scoped print hooks to the report page so screen-only controls can be hidden while report title, student context, selected range, count, and evidence entries remain printable.
+- Added narrow print CSS that hides the authenticated top nav and report screen controls, removes report shadows, and applies page-break protection to evidence entries.
+- Preserved the Unit 33 one-student, workspace-scoped, read-only report data path and existing date range query behavior.
+- Updated focused static UI guard tests and `context/ui-registry.md`.
+- Cleared stale generated `.next/dev` route metadata after the user's dev server showed a 404 for the report route and `next build` found a malformed stale validator file. The successful build now lists `/app/students/[studentId]/report`.
+
+### Verification
+
+- Focused `npm.cmd run test -- lib/student-report-ui.test.ts` passed (1 file / 5 tests).
+- `npm.cmd run lint` passed.
+- `npm.cmd run test` passed (51 files / 276 tests). Existing archive/delete failure-path tests intentionally logged contextual server errors while verifying safe generic error results.
+- Initial `npm.cmd run build` failed because stale `.next/dev` generated route metadata was malformed and missing the report route. After deleting only generated `.next/dev`, `npm.cmd run build` passed and listed `/app/students/[studentId]/report` as a dynamic route.
+
+### Remaining risks / follow-ups
+
+- Manual browser print-preview verification was not completed in this implementation pass.
+- If a dev server is still running from before the cache cleanup, restart it so the report route is picked up in local browsing.
+- Unit 35 remains responsible for the full pre-beta feature review and coverage pass.
 
 ---
 
@@ -1460,7 +1490,7 @@ Verification after refinement: `npm run lint` pass, `npm run build` pass, `npm r
 
 1. Manually verify the Unit 30 class-scoped import placement inside an authenticated opened class when Chrome connector access is stable.
 2. Review/approve Unit 31 and Unit 32 implementations.
-3. Review/approve Unit 33 implementation, then begin Unit 34 Printable Student Report after approval.
+3. Review/approve Unit 34 implementation, then begin Unit 35 Pre-Beta Feature Review and Coverage Pass after approval.
 4. Commit and push completed changes when the human requests it.
 
 ---

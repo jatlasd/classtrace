@@ -19,6 +19,15 @@ const reportComponent = readFileSync(
   join(projectRoot, "components", "students", "student-report-page.tsx"),
   "utf8"
 );
+const reportPrintAction = readFileSync(
+  join(
+    projectRoot,
+    "components",
+    "students",
+    "student-report-print-action.tsx"
+  ),
+  "utf8"
+);
 const timelineComponent = readFileSync(
   join(projectRoot, "components", "students", "student-timeline-page.tsx"),
   "utf8"
@@ -31,6 +40,7 @@ const reportHelper = readFileSync(
   join(projectRoot, "lib", "evidence", "student-report-records.ts"),
   "utf8"
 );
+const globalsCss = readFileSync(join(projectRoot, "app", "globals.css"), "utf8");
 
 describe("Unit 33 student report UI", () => {
   it("adds a student-scoped report route resolved through the current workspace", () => {
@@ -66,10 +76,10 @@ describe("Unit 33 student report UI", () => {
     expect(reportComponent).toContain("Legacy structured entry");
   });
 
-  it("keeps the report read-only and out of print, AI, dashboard, and admin scope", () => {
+  it("keeps the report read-only and out of generated-report, AI, dashboard, and admin scope", () => {
     const combined = `${reportRoute}\n${reportComponent}\n${reportHelper}\n${appTopNav}`;
 
-    expect(combined).not.toMatch(/\b(Print|Save as PDF|Generate report)\b/);
+    expect(combined).not.toMatch(/\b(Generate report)\b/);
     expect(combined).not.toMatch(/\b(Insights|Trends|Recommendations)\b/);
     expect(combined).not.toMatch(
       /\b(AI|AI-powered|FERPA-compliant|compliance-ready|IEP-ready|Parent report|Behavior analysis)\b/i
@@ -79,5 +89,25 @@ describe("Unit 33 student report UI", () => {
     );
     expect(combined).not.toMatch(/\b(Archive evidence|Delete evidence)\b/);
     expect(combined).not.toMatch(/rawNote|draftText|originalCapture|sourceText/);
+  });
+
+  it("adds browser-native print behavior without generated PDF scope", () => {
+    const combined = `${reportComponent}\n${reportPrintAction}\n${globalsCss}`;
+
+    expect(reportComponent).toContain("StudentReportPrintAction");
+    expect(reportComponent).toContain("student-report-screen-only");
+    expect(reportComponent).toContain("student-report-page");
+    expect(reportComponent).toContain("student-report-print-root");
+    expect(reportComponent).toContain("student-report-print-context");
+    expect(reportComponent).toContain("student-report-entry");
+    expect(reportPrintAction).toContain("Print / Save as PDF");
+    expect(reportPrintAction).toContain("window.print()");
+    expect(reportPrintAction).not.toMatch(/href=|download|api/i);
+    expect(appTopNav).toContain("app-top-nav");
+    expect(globalsCss).toContain("@media print");
+    expect(globalsCss).toContain("body:has(.student-report-page) .app-top-nav");
+    expect(globalsCss).toContain(".student-report-screen-only");
+    expect(globalsCss).toContain("break-inside: avoid");
+    expect(combined).not.toMatch(/generatePdf|PDFDocument|download report/i);
   });
 });

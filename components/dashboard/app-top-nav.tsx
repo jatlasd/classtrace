@@ -69,7 +69,7 @@ export function AppTopNav() {
   }
 
   return (
-    <header className="sticky top-0 z-40 border-b border-border bg-card/95 backdrop-blur">
+    <header className="app-top-nav sticky top-0 z-40 border-b border-border bg-card/95 backdrop-blur">
       <div className="mx-auto flex min-h-16 max-w-[1560px] flex-col gap-2 px-4 py-3 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:gap-6 lg:px-8">
         <div className="flex items-center justify-between gap-4">
           <Link href={routes.feed} className="flex items-center gap-3">

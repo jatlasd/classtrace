@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { ReactElement, ReactNode } from "react";
 import { BookOpenText, CalendarDays, Circle, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { StudentReportPrintAction } from "@/components/students/student-report-print-action";
 import { formatTagLabel } from "@/lib/format-tag";
 import { routes } from "@/lib/routes";
 import type {
@@ -105,13 +106,16 @@ function ReportHeader({
 
   return (
     <header className="mb-6 border-b border-border pb-6">
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+      <div className="student-report-screen-only mb-4 flex flex-wrap items-center justify-between gap-3">
         <Button asChild variant="ghost" size="sm" className="-ml-2">
           <Link href={routes.student(student.id)}>Back to timeline</Link>
         </Button>
-        <Button asChild variant="outline" size="sm">
-          <Link href={routes.feed}>Capture evidence</Link>
-        </Button>
+        <div className="flex flex-wrap items-center gap-2">
+          <StudentReportPrintAction />
+          <Button asChild variant="outline" size="sm">
+            <Link href={routes.feed}>Capture evidence</Link>
+          </Button>
+        </div>
       </div>
 
       <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_300px] lg:items-end">
@@ -156,7 +160,7 @@ function ReportDateRangeForm({
   const end = dateRange.status === "valid" ? dateRange.end : dateRange.end;
 
   return (
-    <section className="mb-5 border border-border bg-card/60 p-4 sm:p-5">
+    <section className="student-report-screen-only mb-5 border border-border bg-card/60 p-4 sm:p-5">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div className="flex min-w-0 gap-3">
           <div className="flex size-10 shrink-0 items-center justify-center rounded-md border border-border bg-muted/50 text-primary">
@@ -226,7 +230,7 @@ function ReportEvidenceItem({ record }: ReportEvidenceItemProps) {
 
   return (
     <li>
-      <article className="border border-border bg-card p-4 shadow-paper">
+      <article className="student-report-entry border border-border bg-card p-4 shadow-paper">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div className="min-w-0">
             <p className="text-sm font-medium text-foreground">
@@ -318,8 +322,8 @@ function ReportEvidenceList({
   dateRange,
 }: ReportEvidenceListProps) {
   return (
-    <section className="grid gap-4 lg:grid-cols-[220px_minmax(0,1fr)]">
-      <div className="border border-border bg-card/60 p-4">
+    <section className="student-report-print-root grid gap-4 lg:grid-cols-[220px_minmax(0,1fr)]">
+      <div className="student-report-print-context border border-border bg-card/60 p-4">
         <div className="flex size-10 items-center justify-center rounded-md border border-border bg-muted/50 text-primary">
           <BookOpenText className="size-5" strokeWidth={1.75} />
         </div>
@@ -354,7 +358,7 @@ export function StudentReportPage({
   dateRange,
 }: StudentReportPageProps): ReactElement {
   return (
-    <div className="mx-auto w-full max-w-[1180px] px-4 py-7 sm:px-6 lg:px-8">
+    <div className="student-report-page mx-auto w-full max-w-[1180px] px-4 py-7 sm:px-6 lg:px-8">
       <ReportHeader
         student={student}
         evidenceCount={evidenceRecords.length}

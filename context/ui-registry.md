@@ -81,7 +81,7 @@ Last updated: 2026-06-25
 
 | Property | Class |
 |---|---|
-| Shell | `sticky top-0 z-40 border-b border-border bg-card/95 backdrop-blur` |
+| Shell | `app-top-nav sticky top-0 z-40 border-b border-border bg-card/95 backdrop-blur` |
 | Inner row | `mx-auto flex min-h-16 max-w-[1560px] flex-col gap-2 px-4 py-3 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:gap-6 lg:px-8` |
 | Brand link | `flex items-center gap-3` |
 | Logo mark | `flex size-9 items-center justify-center rounded-lg text-primary` |
@@ -943,30 +943,32 @@ The student timeline item adapts the Unit 15 saved-evidence vocabulary for a one
 
 ### Student Report Page
 
-File: `components/students/student-report-page.tsx`, `app/app/students/[studentId]/report/page.tsx`
-Last updated: 2026-07-06 (Unit 33 per-student report)
+File: `components/students/student-report-page.tsx`, `components/students/student-report-print-action.tsx`, `app/app/students/[studentId]/report/page.tsx`, `app/globals.css`
+Last updated: 2026-07-06 (Unit 34 printable report)
 
 | Property | Class |
 |---|---|
-| Page shell | `mx-auto w-full max-w-[1180px] px-4 py-7 sm:px-6 lg:px-8` |
+| Page shell | `student-report-page mx-auto w-full max-w-[1180px] px-4 py-7 sm:px-6 lg:px-8` |
 | Header | `mb-6 border-b border-border pb-6` |
-| Header action row | `mb-4 flex flex-wrap items-center justify-between gap-3` |
+| Header action row | `student-report-screen-only mb-4 flex flex-wrap items-center justify-between gap-3` |
 | Page eyebrow | `text-xs font-semibold uppercase tracking-wider text-muted-foreground` |
 | Page title | `font-display text-2xl font-semibold tracking-tight text-foreground` |
 | Metadata row | `mt-2 flex flex-wrap gap-2 text-sm text-muted-foreground` |
 | Evidence included panel | `border-l-4 border-validated bg-card/60 px-4 py-3` |
-| Date range panel | `mb-5 border border-border bg-card/60 p-4 sm:p-5` |
+| Date range panel | `student-report-screen-only mb-5 border border-border bg-card/60 p-4 sm:p-5` |
 | Date input | `h-10 w-full rounded-md border border-border bg-background/50 px-3 text-sm text-foreground outline-none transition-colors focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/20` |
-| Report layout | `grid gap-4 lg:grid-cols-[220px_minmax(0,1fr)]` |
-| Report intro panel | `border border-border bg-card/60 p-4` |
-| Evidence card | `border border-border bg-card p-4 shadow-paper` |
+| Report layout | `student-report-print-root grid gap-4 lg:grid-cols-[220px_minmax(0,1fr)]` |
+| Report intro panel | `student-report-print-context border border-border bg-card/60 p-4` |
+| Evidence card | `student-report-entry border border-border bg-card p-4 shadow-paper` |
 | Primary evidence text | `mt-2 text-[15px] leading-relaxed text-foreground`; uses `record.evidenceNote` when present and `record.summary` only for legacy structured entries |
 | Structured detail text | `mt-2 text-xs leading-relaxed text-muted-foreground` with `font-medium text-foreground` label |
 | Validated pill | `inline-flex w-fit items-center gap-2 rounded-lg border border-validated/60 bg-validated/35 px-2.5 py-1 text-xs font-semibold text-validated-foreground` |
 | Empty state | `border border-border bg-card/60 p-5 text-sm leading-relaxed text-muted-foreground` |
+| Print action | Existing `Button` with `variant="outline"`, `size="sm"`, `h-9 rounded-lg px-4`, `Printer` icon `size-3.5`, and copy `Print / Save as PDF` |
+| Print CSS | `@media print` hides `.app-top-nav` and `.student-report-screen-only`, removes report shadows, and applies `break-inside: avoid` to `.student-report-entry` |
 
 **Pattern notes:**
-Unit 33 adds a read-only student report from the existing student timeline workflow at `/app/students/[studentId]/report`. The report is one-student and workspace-scoped, supports optional `start` and `end` date filters through normal GET query parameters, and orders evidence from oldest to newest so it reads like a factual document view. Evidence notes are primary, structured summaries and chips are supporting context, and legacy note-less records stay labeled as legacy structured entries. Keep this surface restrained: no Reports navigation item, class/all-student reports, templates, trend analysis, AI summaries, report generation language, print/PDF controls, archive/delete actions, uploads, admin concepts, or raw draft notes. Unit 34 owns printable report behavior.
+Unit 33 added the read-only student report from the existing student timeline workflow at `/app/students/[studentId]/report`. Unit 34 adds a restrained browser-native Print / Save as PDF action and print-only layout rules for the same one-student, workspace-scoped report. The selected date range remains URL/query based, evidence notes stay primary, structured summaries and chips stay supporting context, and legacy note-less records stay labeled as legacy structured entries. Print behavior uses `window.print()` only: no generated PDF files, PDF dependencies, report templates, Reports navigation item, class/all-student reports, trend analysis, AI summaries, archive/delete actions, uploads, admin concepts, or raw draft notes.
 
 ---
 
