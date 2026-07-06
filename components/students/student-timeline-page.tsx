@@ -115,9 +115,14 @@ function StudentProfileHeader({
         <Button asChild variant="ghost" size="sm" className="-ml-2">
           <Link href={routes.roster}>Back to roster</Link>
         </Button>
-        <Button asChild variant="outline" size="sm">
-          <Link href={routes.feed}>Capture evidence</Link>
-        </Button>
+        <div className="flex flex-wrap items-center gap-2">
+          <Button asChild variant="outline" size="sm">
+            <Link href={routes.studentReport(student.id)}>View report</Link>
+          </Button>
+          <Button asChild variant="outline" size="sm">
+            <Link href={routes.feed}>Capture evidence</Link>
+          </Button>
+        </div>
       </div>
 
       <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_260px] lg:items-end">

@@ -5,6 +5,8 @@ export const routes = {
   roster: "/app/roster",
   studentsPrefix: "/app/students",
   student: (studentId: string): string => `/app/students/${studentId}`,
+  studentReport: (studentId: string): string =>
+    `/app/students/${studentId}/report`,
   settings: "/app/settings",
   signIn: "/sign-in",
   signUp: "/sign-up",

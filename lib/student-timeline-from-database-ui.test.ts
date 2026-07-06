@@ -54,6 +54,8 @@ describe("Unit 17 student timeline from database UI bridge", () => {
     expect(rosterPage).toContain("RosterStudentRowActions");
     expect(rosterPage).not.toMatch(/\bExport\b/);
     expect(timelineComponent).toContain("StudentEvidenceExportAction");
+    expect(timelineComponent).toContain("View report");
+    expect(timelineComponent).toContain("routes.studentReport(student.id)");
     expect(timelineComponent).not.toMatch(/\b(Archive|Delete)\b/);
   });
 

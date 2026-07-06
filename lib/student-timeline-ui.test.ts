@@ -35,6 +35,8 @@ describe("Unit 16 student timeline UI", () => {
     expect(timelinePage).toContain("Student timeline");
     expect(timelinePage).toContain("Evidence timeline");
     expect(timelinePage).toContain("Validated evidence");
+    expect(timelinePage).toContain("View report");
+    expect(timelinePage).toContain("routes.studentReport(student.id)");
     expect(timelinePage).toContain("No validated evidence yet.");
     expect(timelinePage).toContain("Capture a student-specific note");
   });

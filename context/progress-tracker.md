@@ -14,6 +14,7 @@ Update this file after every meaningful implementation change.
 - Phase 7 Unit 30 implemented and verified with automated checks - Class-Scoped Roster Import (`context/specs/30-class-scoped-roster-import.md`).
 - Phase 8 Unit 31 implemented and verified with automated checks - Evidence Note Data Contract and Save Boundary (`context/specs/31-evidence-note-data-contract-and-save-boundary.md`).
 - Phase 8 Unit 32 implemented and verified with automated checks - Evidence Note Review, Feed, Timeline, and Export Pass (`context/specs/32-evidence-note-review-feed-timeline-export-pass.md`).
+- Phase 9 Unit 33 implemented and verified with automated checks - Per-Student Report View and Date-Range Query (`context/specs/33-per-student-report-view-and-date-range-query.md`).
 - Phase 2 complete — roster onboarding
 - Unit 02 complete and verified — Route Map and App Shell (`context/specs/02-route-map-and-app-shell.md`)
 - Unit 03 complete and verified — Public Landing Page UI (`context/specs/03-public-landing-page-ui.md`)
@@ -48,7 +49,7 @@ Update this file after every meaningful implementation change.
 
 - ClassTrace V1 is complete for the scoped teacher-first evidence capture build path.
 - Current active build path: `context/post-v1-pre-beta-build-plan.md`, starting with Phase 6.
-- Current task: Unit 32 Evidence Note Review, Feed, Timeline, and Export Pass implemented and verified on 2026-07-04; next planned pre-beta unit is Unit 33 Per-Student Report View and Date-Range Query after human review/approval.
+- Current task: Unit 33 Per-Student Report View and Date-Range Query implemented; next planned pre-beta unit is Unit 34 Printable Student Report after human review/approval.
 
 ---
 
@@ -253,6 +254,41 @@ Spec: `context/specs/32-evidence-note-review-feed-timeline-export-pass.md`
 - Unit 33 remains responsible for adding the per-student report view and date-range query.
 
 ---
+## Unit 33 - Per-Student Report View and Date-Range Query (Implemented)
+
+Spec: `context/specs/33-per-student-report-view-and-date-range-query.md`
+
+### What changed
+
+- Added a nested `/app/students/[studentId]/report` route that resolves the current workspace server-side and reads one active roster student's report data.
+- Added a workspace-scoped server-only report helper with injected database support for tests, active-student ownership verification, non-archived evidence filtering, oldest-to-newest ordering, and client-safe display models.
+- Added date-only `start` and `end` query parsing with teacher-safe errors, start/end validation, and inclusive evidence-date filtering.
+- Added a restrained "View report" action from the existing student timeline header without adding a Reports navigation item.
+- Added a calm read-only student report page with factual student context, date controls, evidence count/range context, Evidence notes as primary content, structured metadata as supporting detail, and honest legacy structured-entry copy.
+- Preserved one-student report scope, archive/delete/export behavior, raw-draft exclusion, no AI, no report generation/templates, no print/PDF behavior, no new dependencies, and no schema changes.
+- Updated focused helper/static UI tests and route tests.
+- Updated `context/ui-registry.md` with the Student Report Page pattern.
+
+### Verification
+
+- Focused `npm.cmd run test -- lib/evidence/student-report-records.test.ts lib/student-report-ui.test.ts lib/student-timeline-ui.test.ts lib/student-timeline-from-database-ui.test.ts lib/routes.test.ts` passed (5 files / 21 tests).
+- `npm.cmd run lint` passed.
+- `npm.cmd run test` passed (51 files / 275 tests). Existing archive/delete failure-path tests intentionally logged contextual server errors while verifying safe generic error results.
+- `npm.cmd run build` passed and included `/app/students/[studentId]/report` as a dynamic route.
+
+### Review follow-up fix
+
+- Removed misleading `totalEvidenceCount` report UI plumbing that implied an unfiltered total without querying one.
+- The report now shows the count of records included by the current report range only, which matches Unit 33 scope.
+- Focused cleanup verification passed: `npm.cmd run test -- lib/student-report-ui.test.ts lib/evidence/student-report-records.test.ts` (2 files / 12 tests), `npm.cmd run lint`, and `npm.cmd run build`.
+
+### Remaining risks / follow-ups
+
+- Manual authenticated browser verification was not run in this implementation pass.
+- Unit 34 remains responsible for browser Print / Save as PDF behavior after Unit 33 is reviewed.
+
+---
+
 ## Unit 25 - Final V1 Review (Completed)
 
 Spec: `context/specs/25-final-v1-review.md`
@@ -1424,7 +1460,7 @@ Verification after refinement: `npm run lint` pass, `npm run build` pass, `npm r
 
 1. Manually verify the Unit 30 class-scoped import placement inside an authenticated opened class when Chrome connector access is stable.
 2. Review/approve Unit 31 and Unit 32 implementations.
-3. Begin Unit 33 Per-Student Report View and Date-Range Query after approval.
+3. Review/approve Unit 33 implementation, then begin Unit 34 Printable Student Report after approval.
 4. Commit and push completed changes when the human requests it.
 
 ---
