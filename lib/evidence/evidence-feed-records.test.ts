@@ -24,6 +24,7 @@ function buildRecord(overrides?: {
     id: overrides?.id ?? "evidence_1",
     rosterStudentId: "student_mary",
     evidenceDate: overrides?.evidenceDate ?? new Date("2026-06-16T14:00:00.000Z"),
+    evidenceNote: "used a reading strategy after one prompt",
     summary: "Mary - reading - Academic check-in",
     evidenceType: "Academic check-in",
     topic: "reading",
@@ -82,6 +83,7 @@ describe("listEvidenceFeedRecordsForWorkspace", () => {
           id: true,
           rosterStudentId: true,
           evidenceDate: true,
+          evidenceNote: true,
           summary: true,
           evidenceType: true,
           topic: true,
@@ -115,6 +117,7 @@ describe("listEvidenceFeedRecordsForWorkspace", () => {
         studentMentionHandle: "mary",
         classGroupName: "Reading group",
         evidenceDate: "2026-06-16T14:00:00.000Z",
+        evidenceNote: "used a reading strategy after one prompt",
         summary: "Mary - reading - Academic check-in",
         evidenceType: "Academic check-in",
         topic: "reading",
@@ -161,6 +164,7 @@ describe("listEvidenceFeedRecordsForWorkspace", () => {
     const { database } = buildDatabase([
       {
         ...buildRecord({ id: "evidence_with_blank_fields", classGroup: { name: " " } }),
+        evidenceNote: " ",
         topic: " ",
         performance: "",
         behavior: null,
@@ -174,6 +178,7 @@ describe("listEvidenceFeedRecordsForWorkspace", () => {
     );
 
     expect(records[0]).not.toHaveProperty("classGroupName");
+    expect(records[0]).not.toHaveProperty("evidenceNote");
     expect(records[0]).not.toHaveProperty("topic");
     expect(records[0]).not.toHaveProperty("performance");
     expect(records[0]).not.toHaveProperty("behavior");

@@ -47,9 +47,12 @@ describe("Unit 15 database-backed evidence feed", () => {
   });
 
   it("renders saved evidence as validated structured records without raw draft storage", () => {
-    expect(savedEvidenceRow).toContain("Saved evidence record");
+    expect(savedEvidenceRow).toContain("Saved evidence note");
+    expect(savedEvidenceRow).toContain("Legacy structured record");
     expect(savedEvidenceRow).toContain("Validated");
+    expect(savedEvidenceRow).toContain("record.evidenceNote");
     expect(savedEvidenceRow).toContain("record.summary");
+    expect(savedEvidenceRow).toContain("Structured details:");
     expect(savedEvidenceRow).not.toMatch(/rawNote|draftText|originalCapture|sourceText/);
     expect(evidenceFeed).toContain("No validated evidence yet.");
     expect(evidenceFeed).toContain("Capture a student-specific note");

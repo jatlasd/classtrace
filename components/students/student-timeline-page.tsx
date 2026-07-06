@@ -17,6 +17,7 @@ export type StudentTimelineStudent = {
 export type StudentTimelineEvidenceRecord = {
   id: string;
   evidenceDate: string;
+  evidenceNote?: string;
   summary: string;
   evidenceType: string;
   topic?: string;
@@ -166,6 +167,8 @@ function StudentProfileHeader({
 function StudentTimelineEvidenceItem({
   record,
 }: StudentTimelineEvidenceItemProps) {
+  const primaryEvidenceText = record.evidenceNote ?? record.summary;
+
   return (
     <li className="relative pl-8">
       <span
@@ -181,8 +184,18 @@ function StudentTimelineEvidenceItem({
               {formatTimelineDate(record.evidenceDate)}
             </p>
             <p className="mt-1 text-[15px] leading-relaxed text-foreground">
-              {record.summary}
+              {primaryEvidenceText}
             </p>
+            {record.evidenceNote ? (
+              <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+                <span className="font-medium text-foreground">Structured details:</span>{" "}
+                {record.summary}
+              </p>
+            ) : (
+              <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+                Legacy structured entry. This record was saved before Evidence notes were added.
+              </p>
+            )}
           </div>
           <span className="inline-flex w-fit items-center gap-2 rounded-lg border border-validated/60 bg-validated/35 px-2.5 py-1 text-xs font-semibold text-validated-foreground">
             <Circle className="size-2 fill-current" />

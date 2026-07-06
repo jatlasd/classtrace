@@ -33,6 +33,7 @@ function buildEvidenceRecord() {
   return {
     id: "evidence_1",
     evidenceDate: new Date("2026-06-17T14:00:00.000Z"),
+    evidenceNote: "worked through a reading passage with one prompt",
     summary: "Mary worked through a reading passage with one prompt.",
     evidenceType: "Academic check-in",
     topic: "reading",
@@ -114,6 +115,7 @@ describe("getStudentTimelineRecordsForWorkspace", () => {
         select: {
           id: true,
           evidenceDate: true,
+          evidenceNote: true,
           summary: true,
           evidenceType: true,
           topic: true,
@@ -139,6 +141,7 @@ describe("getStudentTimelineRecordsForWorkspace", () => {
         {
           id: "evidence_1",
           evidenceDate: "2026-06-17T14:00:00.000Z",
+          evidenceNote: "worked through a reading passage with one prompt",
           summary: "Mary worked through a reading passage with one prompt.",
           evidenceType: "Academic check-in",
           topic: "reading",
@@ -177,6 +180,7 @@ describe("getStudentTimelineRecordsForWorkspace", () => {
       evidenceRecords: [
         {
           ...buildEvidenceRecord(),
+          evidenceNote: " ",
           topic: " ",
           performance: null,
           behavior: "",
@@ -206,6 +210,7 @@ describe("getStudentTimelineRecordsForWorkspace", () => {
     expect(result?.evidenceRecords[0]).not.toHaveProperty("draftText");
     expect(result?.evidenceRecords[0]).not.toHaveProperty("originalCapture");
     expect(result?.evidenceRecords[0]).not.toHaveProperty("sourceText");
+    expect(result?.evidenceRecords[0]).not.toHaveProperty("evidenceNote");
     expect(result?.evidenceRecords[0]).not.toHaveProperty("topic");
     expect(result?.evidenceRecords[0]).not.toHaveProperty("performance");
     expect(result?.evidenceRecords[0]).not.toHaveProperty("behavior");

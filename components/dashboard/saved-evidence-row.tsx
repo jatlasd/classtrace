@@ -75,6 +75,8 @@ export function SavedEvidenceRow({
   const [deleteError, setDeleteError] = useState("");
   const [isPending, startTransition] = useTransition();
   const evidenceDate = formatEvidenceDate(record.evidenceDate);
+  const primaryEvidenceText = record.evidenceNote ?? record.summary;
+  const isLegacyStructuredEntry = !record.evidenceNote;
 
   function handleArchive(): void {
     setArchiveError("");
@@ -152,8 +154,18 @@ export function SavedEvidenceRow({
               ) : null}
             </div>
             <p className="mt-1 text-[15px] leading-relaxed text-foreground">
-              {record.summary}
+              {primaryEvidenceText}
             </p>
+            {record.evidenceNote ? (
+              <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+                <span className="font-medium text-foreground">Structured details:</span>{" "}
+                {record.summary}
+              </p>
+            ) : (
+              <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+                Legacy structured entry. This record was saved before Evidence notes were added.
+              </p>
+            )}
           </div>
 
           <div className="flex flex-wrap gap-1.5">
@@ -182,7 +194,7 @@ export function SavedEvidenceRow({
             Validated
           </span>
           <p className="text-xs leading-relaxed text-muted-foreground">
-            Saved evidence record
+            {isLegacyStructuredEntry ? "Legacy structured record" : "Saved evidence note"}
           </p>
           <div className="space-y-2 border-t border-border/50 pt-3">
             {isConfirmingArchive ? (

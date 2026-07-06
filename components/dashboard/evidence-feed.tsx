@@ -214,6 +214,7 @@ function evidenceRecordMatchesSearch(
   }
 
   const generalHaystack = [
+    record.evidenceNote,
     record.summary,
     record.studentDisplayName,
     record.studentMentionHandle,
@@ -605,7 +606,7 @@ export function EvidenceFeed({
         return (
           <FeedEmptyState
             title="No evidence matches this search"
-            body="Try a student handle, tag, class name, or a word from the saved evidence summary."
+            body="Try a student handle, tag, class name, or a word from the saved Evidence note."
           />
         );
       }

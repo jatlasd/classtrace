@@ -33,6 +33,7 @@ type EvidenceRecordFindManyArgs = {
   select: {
     id: true;
     evidenceDate: true;
+    evidenceNote: true;
     summary: true;
     evidenceType: true;
     topic: true;
@@ -60,6 +61,7 @@ type ExportStudentFromDatabase = {
 type ExportEvidenceFromDatabase = {
   id: string;
   evidenceDate: Date;
+  evidenceNote: string | null;
   summary: string;
   evidenceType: string;
   topic: string | null;
@@ -119,6 +121,7 @@ const EXPORT_COLUMNS = [
   "Evidence date",
   "Validated at",
   "Evidence type",
+  "Evidence note",
   "Topic",
   "Support level",
   "Context",
@@ -187,6 +190,7 @@ function buildCsvContent({
       formatIsoDate(record.evidenceDate),
       formatIsoDate(record.validatedAt),
       record.evidenceType,
+      optionalText(record.evidenceNote),
       optionalText(record.topic),
       optionalText(record.supportLevel),
       optionalText(record.context),
@@ -259,6 +263,7 @@ export async function exportStudentEvidenceForWorkspace(
       select: {
         id: true,
         evidenceDate: true,
+        evidenceNote: true,
         summary: true,
         evidenceType: true,
         topic: true,

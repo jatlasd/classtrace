@@ -31,6 +31,7 @@ type EvidenceRecordFindManyArgs = {
   select: {
     id: true;
     evidenceDate: true;
+    evidenceNote: true;
     summary: true;
     evidenceType: true;
     topic: true;
@@ -55,6 +56,7 @@ type TimelineStudentFromDatabase = {
 type TimelineEvidenceFromDatabase = {
   id: string;
   evidenceDate: Date;
+  evidenceNote: string | null;
   summary: string;
   evidenceType: string;
   topic: string | null;
@@ -91,6 +93,7 @@ export type StudentTimelineStudentRecord = {
 export type StudentTimelineEvidenceRecord = {
   id: string;
   evidenceDate: string;
+  evidenceNote?: string;
   summary: string;
   evidenceType: string;
   topic?: string;
@@ -158,11 +161,15 @@ function toTimelineEvidence(
     createdAt: record.createdAt.toISOString(),
   };
 
+  const evidenceNote = optionalText(record.evidenceNote);
   const topic = optionalText(record.topic);
   const performance = optionalText(record.performance);
   const behavior = optionalText(record.behavior);
   const followUpNotes = optionalText(record.followUpNotes);
 
+  if (evidenceNote) {
+    timelineRecord.evidenceNote = evidenceNote;
+  }
   if (topic) {
     timelineRecord.topic = topic;
   }
@@ -217,6 +224,7 @@ export async function getStudentTimelineRecordsForWorkspace(
     select: {
       id: true,
       evidenceDate: true,
+      evidenceNote: true,
       summary: true,
       evidenceType: true,
       topic: true,

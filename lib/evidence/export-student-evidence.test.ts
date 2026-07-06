@@ -36,6 +36,7 @@ function buildEvidenceRecord() {
   return {
     id: "evidence_1",
     evidenceDate: new Date("2026-06-17T14:00:00.000Z"),
+    evidenceNote: 'used a "chunking" strategy, then explained her answer.',
     summary: 'Mary used a "chunking" strategy, then explained her answer.',
     evidenceType: "Academic check-in",
     topic: "reading",
@@ -122,6 +123,7 @@ describe("exportStudentEvidenceForWorkspace", () => {
         select: {
           id: true,
           evidenceDate: true,
+          evidenceNote: true,
           summary: true,
           evidenceType: true,
           topic: true,
@@ -164,10 +166,10 @@ describe("exportStudentEvidenceForWorkspace", () => {
     }
 
     expect(result.content).toContain(
-      "Student,Mention handle,Class/group,School/local ID,Evidence date,Validated at,Evidence type,Topic,Support level,Context,Summary,Performance,Communication,Behavior,Tags,Follow-up needed,Follow-up notes"
+      "Student,Mention handle,Class/group,School/local ID,Evidence date,Validated at,Evidence type,Evidence note,Topic,Support level,Context,Summary,Performance,Communication,Behavior,Tags,Follow-up needed,Follow-up notes"
     );
     expect(result.content).toContain(
-      'Mary,\'@mary,Reading group,local-7,2026-06-17T14:00:00.000Z,2026-06-17T14:05:00.000Z,Academic check-in,reading,one prompt,small group,"Mary used a ""chunking"" strategy, then explained her answer.",worked through the passage,explained answer,used a strategy,reading; prompt,Yes,"Check comprehension,'
+      'Mary,\'@mary,Reading group,local-7,2026-06-17T14:00:00.000Z,2026-06-17T14:05:00.000Z,Academic check-in,"used a ""chunking"" strategy, then explained her answer.",reading,one prompt,small group,"Mary used a ""chunking"" strategy, then explained her answer.",worked through the passage,explained answer,used a strategy,reading; prompt,Yes,"Check comprehension,'
     );
     expect(result.content).toContain('then fade prompt."');
   });

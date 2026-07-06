@@ -25,7 +25,7 @@ describe("Unit 13 structured draft review UI", () => {
     expect(reviewPanel).toContain("ClassTrace read this as");
     expect(reviewPanel).toContain("Review before saving");
     expect(reviewPanel).toContain(
-      "Adjust anything that looks off before this becomes validated evidence."
+      "The Evidence note is the saved observation. Structured details below support searching and scanning."
     );
     expect(reviewPanel).toContain("Save validated evidence");
     expect(reviewPanel).toContain("Dismiss for now");

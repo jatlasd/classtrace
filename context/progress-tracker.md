@@ -13,6 +13,7 @@ Update this file after every meaningful implementation change.
 - Phase 7 Unit 29 implemented with automated checks and post-review/merge-prep readiness fixes - Layered Roster and Class-First Onboarding (`context/specs/29-layered-roster-and-class-first-onboarding.md`).
 - Phase 7 Unit 30 implemented and verified with automated checks - Class-Scoped Roster Import (`context/specs/30-class-scoped-roster-import.md`).
 - Phase 8 Unit 31 implemented and verified with automated checks - Evidence Note Data Contract and Save Boundary (`context/specs/31-evidence-note-data-contract-and-save-boundary.md`).
+- Phase 8 Unit 32 implemented and verified with automated checks - Evidence Note Review, Feed, Timeline, and Export Pass (`context/specs/32-evidence-note-review-feed-timeline-export-pass.md`).
 - Phase 2 complete — roster onboarding
 - Unit 02 complete and verified — Route Map and App Shell (`context/specs/02-route-map-and-app-shell.md`)
 - Unit 03 complete and verified — Public Landing Page UI (`context/specs/03-public-landing-page-ui.md`)
@@ -47,7 +48,7 @@ Update this file after every meaningful implementation change.
 
 - ClassTrace V1 is complete for the scoped teacher-first evidence capture build path.
 - Current active build path: `context/post-v1-pre-beta-build-plan.md`, starting with Phase 6.
-- Current task: Unit 31 Evidence Note Data Contract and Save Boundary implemented and verified on 2026-07-04; next planned pre-beta unit is Unit 32 Evidence Note Review, Feed, Timeline, and Export Pass after human review/approval.
+- Current task: Unit 32 Evidence Note Review, Feed, Timeline, and Export Pass implemented and verified on 2026-07-04; next planned pre-beta unit is Unit 33 Per-Student Report View and Date-Range Query after human review/approval.
 
 ---
 
@@ -219,10 +220,39 @@ Spec: `context/specs/31-evidence-note-data-contract-and-save-boundary.md`
 
 - Apply the new Prisma migration before relying on Unit 31 behavior in any persistent environment.
 - Manual authenticated browser/database verification was not run in this implementation pass.
-- Unit 32 remains responsible for making Evidence notes primary in review, feed, timeline, and individual CSV export surfaces.
+- Unit 32 completed the Evidence note review/read-surface pass for review, feed, timeline, and individual CSV export surfaces.
 
 ---
 
+## Unit 32 - Evidence Note Review, Feed, Timeline, and Export Pass (Implemented)
+
+Spec: `context/specs/32-evidence-note-review-feed-timeline-export-pass.md`
+
+### What changed
+
+- Created the Unit 32 focused spec and implemented the Evidence note read-surface pass.
+- Strengthened the structured review panel so the Evidence note is explicitly framed as the saved observation, with structured details separated as supporting metadata.
+- Updated the workspace-scoped evidence feed read model to select and return nullable `evidenceNote` without fabricating notes for legacy records.
+- Updated saved evidence rows so new beta records show `EvidenceRecord.evidenceNote` as the primary readable text, structured `summary` as supporting detail, and legacy note-less records as explicit legacy structured entries.
+- Updated saved evidence search so Evidence note text is included in normal feed search.
+- Updated the workspace-scoped student timeline read model and timeline UI so Evidence notes are primary and structured summaries are supporting details, with legacy fallback copy for older structured-only records.
+- Updated individual student CSV export to include a distinct `Evidence note` column while preserving the existing `Summary` column, one-student workspace scoping, escaping, and formula neutralization.
+- Updated focused read-model, export, and UI guardrail tests.
+- Updated `context/ui-registry.md` for the changed review panel, saved evidence row, timeline evidence item, and CSV export behavior.
+
+### Verification
+
+- Focused `npm.cmd run test -- lib/evidence/evidence-feed-records.test.ts lib/evidence/student-timeline-records.test.ts lib/evidence/export-student-evidence.test.ts lib/evidence-feed-from-database-ui.test.ts lib/student-timeline-ui.test.ts lib/individual-student-export-ui.test.ts lib/save-validated-evidence-ui.test.ts` passed (7 files / 35 tests).
+- `npm.cmd run test` passed (49 files / 263 tests). Existing archive/delete failure-path tests intentionally logged contextual server errors while verifying safe generic error results.
+- `npm.cmd run lint` passed.
+- `npm.cmd run build` passed.
+
+### Remaining risks / follow-ups
+
+- Manual authenticated browser verification was not run in this implementation pass.
+- Unit 33 remains responsible for adding the per-student report view and date-range query.
+
+---
 ## Unit 25 - Final V1 Review (Completed)
 
 Spec: `context/specs/25-final-v1-review.md`
@@ -1393,10 +1423,9 @@ Verification after refinement: `npm run lint` pass, `npm run build` pass, `npm r
 ## Next Up
 
 1. Manually verify the Unit 30 class-scoped import placement inside an authenticated opened class when Chrome connector access is stable.
-2. Review/approve the Unit 30 implementation.
-3. Review/approve Unit 31 implementation.
-4. Begin Unit 32 Evidence Note Review, Feed, Timeline, and Export Pass after approval.
-5. Commit and push completed changes when the human requests it.
+2. Review/approve Unit 31 and Unit 32 implementations.
+3. Begin Unit 33 Per-Student Report View and Date-Range Query after approval.
+4. Commit and push completed changes when the human requests it.
 
 ---
 

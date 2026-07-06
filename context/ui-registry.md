@@ -195,7 +195,7 @@ The feed uses a visible but compact header so teachers understand the capture/re
 ### Saved Evidence Row
 
 File: `components/dashboard/saved-evidence-row.tsx`
-Last updated: 2026-07-02 (feed polish)
+Last updated: 2026-07-04 (Unit 32 Evidence note read surface)
 
 | Property | Class |
 |---|---|
@@ -204,7 +204,8 @@ Last updated: 2026-07-02 (feed polish)
 | Icon cell | `flex size-11 items-center justify-center rounded-lg border border-validated/50 bg-validated/35 text-validated-foreground` |
 | Date chip | `hidden rounded-lg border border-border bg-background/45 px-3 py-2 text-center md:block` |
 | Student timeline link | `rounded-sm text-sm font-semibold text-foreground underline-offset-2 hover:text-link hover:underline focus-visible:ring-2 focus-visible:ring-ring/30` |
-| Summary text | `text-[15px] leading-relaxed text-foreground` |
+| Primary evidence text | `text-[15px] leading-relaxed text-foreground`; uses `record.evidenceNote` when present and `record.summary` only for legacy structured entries |
+| Structured detail text | `mt-2 text-xs leading-relaxed text-muted-foreground` with `font-medium text-foreground` label |
 | Status column | `space-y-3 md:border-l md:border-border md:pl-6` |
 | Status pill | `inline-flex items-center gap-2 rounded-lg border border-validated/60 bg-validated/35 px-2.5 py-1 text-xs font-semibold text-validated-foreground` |
 | Chip group | `flex flex-wrap gap-1.5` |
@@ -225,14 +226,14 @@ Last updated: 2026-07-02 (feed polish)
 | Delete error text | `text-xs leading-relaxed text-destructive` with `role="status"` |
 
 **Pattern notes:**
-Saved evidence rows are database-backed validated records, not raw draft captures. They intentionally reuse the Unit 11 row grid and chip vocabulary but use validated-state icon/status styling, a compact date chip, and `EvidenceRecord.summary` as the primary text. The student name links to that student timeline. Unit 18 added a calm, non-destructive archive affordance with inline confirmation copy ("Hide this from default evidence views?") and a workspace-scoped Server Action. Unit 19 adds a destructive permanent delete affordance with inline warning copy ("Permanently delete this evidence record? This cannot be undone.") and a workspace-scoped Server Action. Keep archive visible as the safer cleanup action. Do not add edit, restore/deleted-record management, export, bulk actions, student delete, or raw-note fields to this row until those units are explicitly scoped.
+Saved evidence rows are database-backed validated records, not raw draft captures. They intentionally reuse the Unit 11 row grid and chip vocabulary but use validated-state icon/status styling and a compact date chip. Unit 32 makes `EvidenceRecord.evidenceNote` the primary text when present, moves `EvidenceRecord.summary` to supporting structured detail text, and labels note-less historical rows as legacy structured records. The student name links to that student timeline. Unit 18 added a calm, non-destructive archive affordance with inline confirmation copy ("Hide this from default evidence views?") and a workspace-scoped Server Action. Unit 19 adds a destructive permanent delete affordance with inline warning copy ("Permanently delete this evidence record? This cannot be undone.") and a workspace-scoped Server Action. Keep archive visible as the safer cleanup action. Do not add edit, restore/deleted-record management, export, bulk actions, student delete, or raw-note fields to this row until those units are explicitly scoped.
 
 ---
 
 ### Structured Draft Review Panel
 
 File: `components/dashboard/interpretation-review-panel.tsx`  
-Last updated: 2026-07-04 (Unit 31 Evidence note bridge)
+Last updated: 2026-07-04 (Unit 32 Evidence note hierarchy)
 
 | Property | Class |
 |---|---|
@@ -242,7 +243,8 @@ Last updated: 2026-07-04 (Unit 31 Evidence note bridge)
 | Title | `font-display text-lg font-semibold text-foreground` |
 | Helper copy | `text-sm leading-relaxed text-muted-foreground` |
 | Field grid | `grid gap-3 sm:grid-cols-2` |
-| Evidence note textarea | `min-h-[84px] resize-none text-sm` with visible `Evidence note` label and helper copy |
+| Evidence note textarea | `min-h-[84px] resize-none text-sm` with visible `Evidence note` label and exact-save helper copy |
+| Structured details divider | `border-t border-border/50 pt-3 sm:col-span-2` with label `text-[10px] font-semibold uppercase tracking-wider text-muted-foreground` |
 | Field label | `text-[10px] font-semibold uppercase tracking-wider text-muted-foreground` |
 | Read-only value | `text-sm leading-snug text-foreground` |
 | Input/select | `h-8 w-full rounded-md border border-border bg-background px-2.5 text-sm text-foreground outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/30` |
@@ -255,7 +257,7 @@ Last updated: 2026-07-04 (Unit 31 Evidence note bridge)
 | Action row | `mt-4 flex flex-wrap items-center gap-2 border-t border-border/50 pt-3` |
 
 **Pattern notes:**  
-The review panel is the trust moment between a captured draft and validated evidence. It uses explicit draft-language copy ("ClassTrace read this as", "Review before saving") and keeps the student anchored to exactly one resolved roster student. Optional interpretation fields can be edited before save. Unit 14 changed the primary action to "Save validated evidence", added pending copy ("Saving evidence..."), success copy ("Validated evidence saved."), and locks editing after a successful database-backed save. Unit 31 adds the minimum Evidence note bridge: the review panel shows an editable Evidence note textarea prefilled from deterministic clean text and explains that the note will be saved exactly as shown. Failure messages stay inline in the existing status area, and the permanent save payload now includes the teacher-approved Evidence note plus structured metadata, not a hidden raw draft note.
+The review panel is the trust moment between a captured draft and validated evidence. It uses explicit draft-language copy ("ClassTrace read this as", "Review before saving") and keeps the student anchored to exactly one resolved roster student. Optional interpretation fields can be edited before save. Unit 14 changed the primary action to "Save validated evidence", added pending copy ("Saving evidence..."), success copy ("Validated evidence saved."), and locks editing after a successful database-backed save. Unit 31 added the minimum Evidence note bridge. Unit 32 makes the hierarchy explicit: the editable Evidence note sits first, helper copy names it as the saved observation, and a subtle structured-details divider separates supporting metadata. Failure messages stay inline in the existing status area, and the permanent save payload includes the teacher-approved Evidence note plus structured metadata, not a hidden raw draft note.
 
 ---
 
@@ -895,7 +897,7 @@ The student profile header is a quiet roster-owned identity surface, not a data 
 ### Student Evidence Export Action
 
 File: `components/students/student-evidence-export-action.tsx`
-Last updated: 2026-06-17
+Last updated: 2026-07-04 (Unit 32 Evidence note export column)
 
 | Property | Class |
 |---|---|
@@ -907,14 +909,14 @@ Last updated: 2026-06-17
 | Error status | `text-destructive` |
 
 **Pattern notes:**
-This small Client Component owns only the browser download interaction for a Server Action-generated CSV. It sends only `studentId`; no workspace, teacher, Clerk, evidence, or roster-student ownership IDs cross the client boundary. Keep it secondary and compact inside the student header evidence count panel. The zero-record state disables export with "No validated evidence to export yet." Do not expand this component into format selection, PDF/DOCX/XLSX generation, report templates, all-student export, raw-note export, or compliance-oriented copy.
+This small Client Component owns only the browser download interaction for a Server Action-generated CSV. It sends only `studentId`; no workspace, teacher, Clerk, evidence, or roster-student ownership IDs cross the client boundary. Keep it secondary and compact inside the student header evidence count panel. The zero-record state disables export with "No validated evidence to export yet." Unit 32 adds the durable Evidence note to the generated CSV as its own column while preserving the structured Summary column and one-student scope. Do not expand this component into format selection, PDF/DOCX/XLSX generation, report templates, all-student export, raw-note export, or compliance-oriented copy.
 
 ---
 
 ### Student Timeline Evidence Item
 
 File: `components/students/student-timeline-page.tsx`
-Last updated: 2026-06-17
+Last updated: 2026-07-04 (Unit 32 Evidence note read surface)
 
 | Property | Class |
 |---|---|
@@ -926,7 +928,8 @@ Last updated: 2026-06-17
 | Timeline dot | `absolute left-0 top-5 flex size-4 items-center justify-center rounded-full border border-validated/60 bg-validated` |
 | Evidence card | `border border-border bg-card p-4 shadow-paper` |
 | Date text | `text-sm font-medium text-foreground` |
-| Summary text | `text-[15px] leading-relaxed text-foreground` |
+| Primary evidence text | `text-[15px] leading-relaxed text-foreground`; uses `record.evidenceNote` when present and `record.summary` only for legacy structured entries |
+| Structured detail text | `mt-2 text-xs leading-relaxed text-muted-foreground` with `font-medium text-foreground` label |
 | Validated pill | `inline-flex w-fit items-center gap-2 rounded-lg border border-validated/60 bg-validated/35 px-2.5 py-1 text-xs font-semibold text-validated-foreground` |
 | Default chip | `inline-flex items-center rounded-full border border-border bg-card px-2.5 py-0.5 text-xs font-medium text-foreground` |
 | Tag chip | `inline-flex items-center rounded-full border border-border bg-muted/60 px-2.5 py-0.5 text-xs font-medium text-link` |
@@ -934,7 +937,7 @@ Last updated: 2026-06-17
 | Empty state | `border border-border bg-card/60 p-5 text-sm leading-relaxed text-muted-foreground` |
 
 **Pattern notes:**
-The student timeline item adapts the Unit 15 saved-evidence vocabulary for a one-student vertical timeline. It renders structured validated evidence fields only: date, summary, evidence type, optional topic/performance/behavior, tags, and follow-up notes. The Unit 16 route currently passes an empty evidence array so Unit 17 can wire real workspace-scoped `EvidenceRecord` reads without redesigning the surface. Do not show raw draft notes, local POC capture parsing, export, archive, delete, reporting controls, analytics, AI language, uploads, or admin/district concepts in this pattern.
+The student timeline item adapts the Unit 15 saved-evidence vocabulary for a one-student vertical timeline. It renders validated evidence fields only: date, Evidence note as primary text when present, structured summary as supporting detail, evidence type, optional topic/performance/behavior, tags, and follow-up notes. Legacy structured-only records fall back to summary with explicit legacy copy. The Unit 16 route currently passes an empty evidence array so Unit 17 can wire real workspace-scoped `EvidenceRecord` reads without redesigning the surface. Do not show raw draft notes, local POC capture parsing, export, archive, delete, reporting controls, analytics, AI language, uploads, or admin/district concepts in this pattern.
 
 ---
 

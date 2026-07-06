@@ -15,6 +15,7 @@ type EvidenceFeedFindManyArgs = {
     id: true;
     rosterStudentId: true;
     evidenceDate: true;
+    evidenceNote: true;
     summary: true;
     evidenceType: true;
     topic: true;
@@ -44,6 +45,7 @@ type EvidenceFeedRecordFromDatabase = {
   id: string;
   rosterStudentId: string;
   evidenceDate: Date;
+  evidenceNote: string | null;
   summary: string;
   evidenceType: string;
   topic: string | null;
@@ -79,6 +81,7 @@ export type EvidenceFeedRecord = {
   studentMentionHandle: string;
   classGroupName?: string;
   evidenceDate: string;
+  evidenceNote?: string;
   summary: string;
   evidenceType: string;
   topic?: string;
@@ -118,6 +121,7 @@ function toFeedRecord(record: EvidenceFeedRecordFromDatabase): EvidenceFeedRecor
   };
 
   const classGroupName = optionalText(record.classGroup?.name ?? null);
+  const evidenceNote = optionalText(record.evidenceNote);
   const topic = optionalText(record.topic);
   const performance = optionalText(record.performance);
   const behavior = optionalText(record.behavior);
@@ -125,6 +129,9 @@ function toFeedRecord(record: EvidenceFeedRecordFromDatabase): EvidenceFeedRecor
 
   if (classGroupName) {
     feedRecord.classGroupName = classGroupName;
+  }
+  if (evidenceNote) {
+    feedRecord.evidenceNote = evidenceNote;
   }
   if (topic) {
     feedRecord.topic = topic;
@@ -159,6 +166,7 @@ export async function listEvidenceFeedRecordsForWorkspace(
       id: true,
       rosterStudentId: true,
       evidenceDate: true,
+      evidenceNote: true,
       summary: true,
       evidenceType: true,
       topic: true,

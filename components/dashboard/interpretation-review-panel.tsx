@@ -238,7 +238,7 @@ function InterpretationReviewPanelContent({
           Review before saving
         </p>
         <p className="text-sm leading-relaxed text-muted-foreground">
-          Adjust anything that looks off before this becomes validated evidence.
+          The Evidence note is the saved observation. Structured details below support searching and scanning.
         </p>
       </div>
 
@@ -260,6 +260,12 @@ function InterpretationReviewPanelContent({
           />
           <p className="text-xs leading-relaxed text-muted-foreground">
             This note will be saved exactly as shown.
+          </p>
+        </div>
+
+        <div className="border-t border-border/50 pt-3 sm:col-span-2">
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+            Structured details
           </p>
         </div>
 
