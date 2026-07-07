@@ -50,7 +50,7 @@ Update this file after every meaningful implementation change.
 
 - ClassTrace V1 is complete for the scoped teacher-first evidence capture build path.
 - Current active build path: `context/post-v1-pre-beta-build-plan.md`, starting with Phase 6.
-- Current task: Unit 34 Printable Student Report implemented and verified with automated checks; next planned pre-beta unit is Unit 35 Pre-Beta Feature Review and Coverage Pass after human review/approval.
+- Current task: User-identified problems converted into focused proposed tasks in `context/user-identified-problems.md`; no implementation has started.
 
 ---
 
@@ -1491,7 +1491,8 @@ Verification after refinement: `npm run lint` pass, `npm run build` pass, `npm r
 1. Manually verify the Unit 30 class-scoped import placement inside an authenticated opened class when Chrome connector access is stable.
 2. Review/approve Unit 31 and Unit 32 implementations.
 3. Review/approve Unit 34 implementation, then begin Unit 35 Pre-Beta Feature Review and Coverage Pass after approval.
-4. Commit and push completed changes when the human requests it.
+4. Review and choose the next approved user-identified problem task from `context/user-identified-problems.md` when ready.
+5. Commit and push completed changes when the human requests it.
 
 ---
 
@@ -1592,6 +1593,8 @@ Verification after refinement: `npm run lint` pass, `npm run build` pass, `npm r
 ---
 
 ## Session Notes
+
+- User-identified problems were converted on 2026-07-07 from a raw issue list into focused proposed tasks in `context/user-identified-problems.md`, including goals, scope boundaries, likely files, verification expectations, suggested order, and product-decision callouts. No fixes were implemented.
 
 - `/app/feed` overhaul completed on 2026-07-02: rebuilt the feed route composition into a command-strip header, capture desk, one-student boundary panel, and split evidence/cues ledger while preserving capture validation, search/filter behavior, saved evidence rows, archive/delete actions, workspace-scoped data loading, and deterministic-only cue copy. Updated the UI registry with the new active feed desk/ledger pattern.
 - Evidence feed layout pass completed on 2026-07-02: changed `/app/feed` page structure so the header spans the workspace and inbox controls sit inside the same ledger surface as the rows, preserving capture, validation, persistence, and roster behavior.
