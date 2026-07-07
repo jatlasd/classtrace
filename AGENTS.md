@@ -26,20 +26,31 @@ The human remains the architect. The AI agent is the implementation engine.
 
 ## Read Before Anything Else
 
-Before implementing or making architectural decisions, read these files in this exact order:
+Start with this file. It is the compact operating guide.
 
-1. `context/project-overview.md` — product definition, V1 status, user flow, in-scope and out-of-scope features
-2. `context/architecture.md` — stack, system boundaries, storage model, auth/access model, and invariants
-3. `context/ui-context.md` — visual language, tokens, typography, layout patterns, component conventions, and icon rules
-4. `context/ui-registry.md` — actual component patterns already used in the app
-5. `context/code-standards.md` — TypeScript, Next.js, file organization, server actions, database, dependency, and testing rules
-6. `context/ai-workflow-rules.md` — agent workflow, scoping rules, ambiguity handling, verification, and stop conditions
-7. `context/post-v1-roadmap.md` — post-V1 lanes and planning rules
-8. `context/post-v1-pre-beta-build-plan.md` — active pre-beta feature build path, when pre-beta work is in scope
-9. `context/progress-tracker.md` — current status, completed work, open questions, and next steps
-10. Current focused spec in `context/specs/`, if the current task explicitly uses one
+Do not read every context file by default. The context folder contains both current rules and long historical archives. Load only the files needed for the current task.
 
-`context/build-plan.md` and the completed numbered specs in `context/specs/` are historical V1 build records. Read them only when you need implementation history or when the user asks about a completed unit.
+Always read before coding:
+
+1. `AGENTS.md`
+2. Current focused spec in `context/specs/`, if the user explicitly names or approves one
+3. The task-relevant source-of-truth files from the routing list below
+
+Task-based routing:
+
+- Product/scope/planning task: read `context/project-overview.md`, then the relevant sections of `context/post-v1-roadmap.md` or `context/post-v1-pre-beta-build-plan.md`.
+- Architecture/auth/database/server-action task: read `context/architecture.md` and `context/code-standards.md`.
+- UI task: read `context/ui-context.md`, then search `context/ui-registry.md` for the relevant component or route section only.
+- Note-processing, student resolution, evidence validation, export, archive/delete task: read `context/architecture.md`, `context/code-standards.md`, and the relevant source/tests.
+- Workflow/documentation task: read `context/ai-workflow-rules.md` and the specific docs being changed.
+- Review task: read broader context as needed, but start with targeted sections rather than full historical files.
+- Historical question or regression archaeology: read only the relevant sections of `context/progress-tracker.md`, `context/build-plan.md`, or completed specs.
+
+Large files are not mandatory startup reading:
+
+- `context/ui-registry.md` is a component-pattern reference. Search it by heading/component instead of reading the whole file.
+- `context/progress-tracker.md` is a historical implementation archive. Use targeted sections unless the task is a broad review.
+- `context/build-plan.md` and completed numbered specs in `context/specs/` are historical V1 build records. Read them only when implementation history matters or the user asks about a completed unit.
 
 If these files conflict with each other, stop and ask for clarification before coding.
 
