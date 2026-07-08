@@ -50,7 +50,7 @@ Update this file after every meaningful implementation change.
 
 - ClassTrace V1 is complete for the scoped teacher-first evidence capture build path.
 - Current active build path: `context/post-v1-pre-beta-build-plan.md`, starting with Phase 6.
-- Current task: User-identified problems converted into focused proposed tasks in `context/user-identified-problems.md`; no implementation has started.
+- Current task: UIP-01, UIP-02, UIP-03, and UIP-04 implemented and verified; next user-identified problem task should be selected separately.
 
 ---
 
@@ -1491,7 +1491,7 @@ Verification after refinement: `npm run lint` pass, `npm run build` pass, `npm r
 1. Manually verify the Unit 30 class-scoped import placement inside an authenticated opened class when Chrome connector access is stable.
 2. Review/approve Unit 31 and Unit 32 implementations.
 3. Review/approve Unit 34 implementation, then begin Unit 35 Pre-Beta Feature Review and Coverage Pass after approval.
-4. Review and choose the next approved user-identified problem task from `context/user-identified-problems.md` when ready.
+4. Review and choose the next approved user-identified problem task from `context/user-identified-problems.md` when ready; UIP-01, UIP-02, UIP-03, and UIP-04 are implemented.
 5. Commit and push completed changes when the human requests it.
 
 ---
@@ -1594,6 +1594,9 @@ Verification after refinement: `npm run lint` pass, `npm run build` pass, `npm r
 
 ## Session Notes
 
+- UIP-04 was implemented on 2026-07-08: the review panel now disables `Dismiss for now` while `isSaving` is true so a reviewed draft cannot be hidden before the save request resolves. Added focused UI/static coverage for the pending-save dismiss guard. Verification passed: focused `npm.cmd run test -- lib/save-validated-evidence-ui.test.ts lib/structured-draft-review-ui.test.ts` (11 tests), full `npm.cmd run test` (51 files / 281 tests), `npm.cmd run lint`, and `npm.cmd run build`. Full tests still log expected archive/delete failure-path console errors while asserting safe generic errors.
+- UIP-03 was implemented on 2026-07-08: student report date-only range parsing now uses local calendar-day boundaries instead of UTC-only midnights, so late-evening local observations remain included on the selected teacher calendar day. Added focused report helper coverage for local start/end boundaries and late-evening inclusion. Verification passed: focused `npm.cmd run test -- lib/evidence/student-report-records.test.ts` (9 tests), full `npm.cmd run test` (51 files / 280 tests), `npm.cmd run lint`, and `npm.cmd run build`. Full tests still log expected archive/delete failure-path console errors while asserting safe generic errors.
+- UIP-01 and UIP-02 were implemented on 2026-07-07: removed the hard-coded `Ms. Rivera` label from capture cards and changed the remaining mock teacher label to generic `Teacher`; evidence save now rejects active students with no class, stale class, archived class, or unowned class before creating the saved record. Verification passed: focused `npm.cmd run test -- lib/evidence/save-validated-evidence.test.ts` (13 tests), full `npm.cmd run test` (51 files / 278 tests), `npm.cmd run lint`, and `npm.cmd run build`. Full tests still log expected archive/delete failure-path console errors while asserting safe generic errors.
 - User-identified problems were converted on 2026-07-07 from a raw issue list into focused proposed tasks in `context/user-identified-problems.md`, including goals, scope boundaries, likely files, verification expectations, suggested order, and product-decision callouts. No fixes were implemented.
 
 - `/app/feed` overhaul completed on 2026-07-02: rebuilt the feed route composition into a command-strip header, capture desk, one-student boundary panel, and split evidence/cues ledger while preserving capture validation, search/filter behavior, saved evidence rows, archive/delete actions, workspace-scoped data loading, and deterministic-only cue copy. Updated the UI registry with the new active feed desk/ledger pattern.

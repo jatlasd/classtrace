@@ -116,6 +116,29 @@ describe("parseStudentReportDateRange", () => {
       error: "Choose a start date before the end date.",
     });
   });
+
+  it("treats date-only ranges as local calendar days", () => {
+    const range = parseStudentReportDateRange({
+      start: "2026-07-03",
+      end: "2026-07-03",
+    });
+
+    expect(range.status).toBe("valid");
+    if (range.status !== "valid") {
+      throw new Error("Expected a valid report range.");
+    }
+
+    const localEveningObservation = new Date(2026, 6, 3, 23, 30);
+
+    expect(range.startDate).toEqual(new Date(2026, 6, 3));
+    expect(range.endExclusiveDate).toEqual(new Date(2026, 6, 4));
+    expect(localEveningObservation.getTime()).toBeGreaterThanOrEqual(
+      range.startDate?.getTime() ?? 0
+    );
+    expect(localEveningObservation.getTime()).toBeLessThan(
+      range.endExclusiveDate?.getTime() ?? 0
+    );
+  });
 });
 
 describe("getStudentReportRecordsForWorkspace", () => {
@@ -234,7 +257,7 @@ describe("getStudentReportRecordsForWorkspace", () => {
     expect(startOnly.evidenceCalls[0]).toMatchObject({
       where: {
         evidenceDate: {
-          gte: new Date("2026-07-01T00:00:00.000Z"),
+          gte: new Date(2026, 6, 1),
         },
       },
     });
@@ -249,7 +272,7 @@ describe("getStudentReportRecordsForWorkspace", () => {
     expect(endOnly.evidenceCalls[0]).toMatchObject({
       where: {
         evidenceDate: {
-          lt: new Date("2026-07-04T00:00:00.000Z"),
+          lt: new Date(2026, 6, 4),
         },
       },
     });
@@ -264,8 +287,8 @@ describe("getStudentReportRecordsForWorkspace", () => {
     expect(both.evidenceCalls[0]).toMatchObject({
       where: {
         evidenceDate: {
-          gte: new Date("2026-07-01T00:00:00.000Z"),
-          lt: new Date("2026-07-04T00:00:00.000Z"),
+          gte: new Date(2026, 6, 1),
+          lt: new Date(2026, 6, 4),
         },
       },
     });

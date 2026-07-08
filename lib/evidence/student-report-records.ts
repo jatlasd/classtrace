@@ -165,12 +165,12 @@ function parseDateOnly(value: string): Date | null {
   const year = Number(yearText);
   const month = Number(monthText);
   const day = Number(dayText);
-  const date = new Date(Date.UTC(year, month - 1, day));
+  const date = new Date(year, month - 1, day);
 
   if (
-    date.getUTCFullYear() !== year ||
-    date.getUTCMonth() !== month - 1 ||
-    date.getUTCDate() !== day
+    date.getFullYear() !== year ||
+    date.getMonth() !== month - 1 ||
+    date.getDate() !== day
   ) {
     return null;
   }
@@ -178,9 +178,9 @@ function parseDateOnly(value: string): Date | null {
   return date;
 }
 
-function addUtcDays(date: Date, days: number): Date {
+function addLocalDays(date: Date, days: number): Date {
   const next = new Date(date);
-  next.setUTCDate(next.getUTCDate() + days);
+  next.setDate(next.getDate() + days);
   return next;
 }
 
@@ -229,7 +229,7 @@ export function parseStudentReportDateRange(input: {
     range.startDate = startDate;
   }
   if (endDate) {
-    range.endExclusiveDate = addUtcDays(endDate, 1);
+    range.endExclusiveDate = addLocalDays(endDate, 1);
   }
 
   return range;

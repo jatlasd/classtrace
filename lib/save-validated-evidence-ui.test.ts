@@ -58,6 +58,17 @@ describe("Unit 14 save validated evidence UI bridge", () => {
     expect(reviewPanel).toContain("setSavedEvidenceId(result.evidenceId)");
   });
 
+  it("keeps draft dismiss unavailable while a save is pending", () => {
+    expect(reviewPanel).toMatch(
+      /<Button\s+size="sm"\s+variant="ghost"\s+disabled=\{isSaving\}\s+onClick=\{onDismiss\}\s*>\s*Dismiss for now/s
+    );
+    expect(reviewPanel).toContain("Saving evidence...");
+    expect(reviewPanel).toContain("onSavePendingChange?.(true)");
+    expect(reviewPanel).toContain("onSavePendingChange?.(false)");
+    expect(captureCard).toContain("setIsReviewSavePending");
+    expect(captureCard).toContain("disabled={isReviewSavePending}");
+  });
+
   it("does not add raw draft storage to the schema", () => {
     const evidenceModel = schema.slice(
       schema.indexOf("model EvidenceRecord"),

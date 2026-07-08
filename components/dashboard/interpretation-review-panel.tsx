@@ -24,6 +24,7 @@ type InterpretationReviewPanelProps = {
     saveInput: ValidatedEvidenceSaveInput
   ) => Promise<ValidatedEvidenceSaveResult>;
   onDismiss: () => void;
+  onSavePendingChange?: (isPending: boolean) => void;
 };
 
 type ValidatedEvidenceSaveInput = {
@@ -139,6 +140,7 @@ function InterpretationReviewPanelContent({
   display,
   onConfirm,
   onDismiss,
+  onSavePendingChange,
 }: InterpretationReviewPanelProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [form, setForm] = useState<FormState>(() => displayToFormState(display));
@@ -199,6 +201,7 @@ function InterpretationReviewPanelContent({
 
     setValidationError("");
     setIsSaving(true);
+    onSavePendingChange?.(true);
 
     let result: ValidatedEvidenceSaveResult;
 
@@ -218,6 +221,7 @@ function InterpretationReviewPanelContent({
       result = { success: false, error: "Failed to save evidence." };
     } finally {
       setIsSaving(false);
+      onSavePendingChange?.(false);
     }
 
     if (result.success) {
@@ -419,7 +423,12 @@ function InterpretationReviewPanelContent({
             Edit
           </Button>
         )}
-        <Button size="sm" variant="ghost" onClick={onDismiss}>
+        <Button
+          size="sm"
+          variant="ghost"
+          disabled={isSaving}
+          onClick={onDismiss}
+        >
           Dismiss for now
         </Button>
       </div>

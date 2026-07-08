@@ -233,7 +233,7 @@ Saved evidence rows are database-backed validated records, not raw draft capture
 ### Structured Draft Review Panel
 
 File: `components/dashboard/interpretation-review-panel.tsx`  
-Last updated: 2026-07-04 (Unit 32 Evidence note hierarchy)
+Last updated: 2026-07-08 (UIP-04 pending-save dismiss guard)
 
 | Property | Class |
 |---|---|
@@ -257,7 +257,7 @@ Last updated: 2026-07-04 (Unit 32 Evidence note hierarchy)
 | Action row | `mt-4 flex flex-wrap items-center gap-2 border-t border-border/50 pt-3` |
 
 **Pattern notes:**  
-The review panel is the trust moment between a captured draft and validated evidence. It uses explicit draft-language copy ("ClassTrace read this as", "Review before saving") and keeps the student anchored to exactly one resolved roster student. Optional interpretation fields can be edited before save. Unit 14 changed the primary action to "Save validated evidence", added pending copy ("Saving evidence..."), success copy ("Validated evidence saved."), and locks editing after a successful database-backed save. Unit 31 added the minimum Evidence note bridge. Unit 32 makes the hierarchy explicit: the editable Evidence note sits first, helper copy names it as the saved observation, and a subtle structured-details divider separates supporting metadata. Failure messages stay inline in the existing status area, and the permanent save payload includes the teacher-approved Evidence note plus structured metadata, not a hidden raw draft note.
+The review panel is the trust moment between a captured draft and validated evidence. It uses explicit draft-language copy ("ClassTrace read this as", "Review before saving") and keeps the student anchored to exactly one resolved roster student. Optional interpretation fields can be edited before save. Unit 14 changed the primary action to "Save validated evidence", added pending copy ("Saving evidence..."), success copy ("Validated evidence saved."), and locks editing after a successful database-backed save. UIP-04 disables the ghost "Dismiss for now" action while a save is pending and lets the parent card disable edit/delete controls during that pending request so the reviewed draft cannot be hidden before the save resolves. Unit 31 added the minimum Evidence note bridge. Unit 32 makes the hierarchy explicit: the editable Evidence note sits first, helper copy names it as the saved observation, and a subtle structured-details divider separates supporting metadata. Failure messages stay inline in the existing status area, and the permanent save payload includes the teacher-approved Evidence note plus structured metadata, not a hidden raw draft note.
 
 ---
 

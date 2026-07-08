@@ -1,7 +1,7 @@
 export const teacher = {
-  name: "Ms. Rivera",
+  name: "Teacher",
   role: "5th Grade Math",
-  initials: "MR",
+  initials: "T",
 };
 
 export type Capture = {

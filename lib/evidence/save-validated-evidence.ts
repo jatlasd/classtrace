@@ -14,6 +14,13 @@ type RosterStudentFindFirstArgs = {
     workspaceId: true;
     classGroupId: true;
     archivedAt: true;
+    classGroup: {
+      select: {
+        id: true;
+        workspaceId: true;
+        archivedAt: true;
+      };
+    };
   };
 };
 
@@ -46,6 +53,11 @@ type RosterStudentRecord = {
   workspaceId: string;
   classGroupId: string | null;
   archivedAt: Date | null;
+  classGroup: {
+    id: string;
+    workspaceId: string;
+    archivedAt: Date | null;
+  } | null;
 };
 
 type EvidenceRecordCreateResult = {
@@ -189,6 +201,13 @@ export async function saveValidatedEvidenceForWorkspace(
       workspaceId: true,
       classGroupId: true,
       archivedAt: true,
+      classGroup: {
+        select: {
+          id: true,
+          workspaceId: true,
+          archivedAt: true,
+        },
+      },
     },
   });
 
@@ -196,6 +215,19 @@ export async function saveValidatedEvidenceForWorkspace(
     return {
       success: false,
       error: "This student could not be found in your roster.",
+    };
+  }
+
+  if (
+    !student.classGroupId ||
+    !student.classGroup ||
+    student.classGroup.id !== student.classGroupId ||
+    student.classGroup.workspaceId !== args.workspaceId ||
+    student.classGroup.archivedAt !== null
+  ) {
+    return {
+      success: false,
+      error: "Assign this student to an active class before saving evidence.",
     };
   }
 
@@ -207,7 +239,7 @@ export async function saveValidatedEvidenceForWorkspace(
       data: {
         workspaceId: args.workspaceId,
         rosterStudentId: student.id,
-        classGroupId: student.classGroupId ?? undefined,
+        classGroupId: student.classGroupId,
         evidenceDate: normalizeEvidenceDate(args.input.evidenceDate, now),
         evidenceNote,
         summary,

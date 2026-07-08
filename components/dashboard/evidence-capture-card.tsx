@@ -203,6 +203,7 @@ export function EvidenceCaptureCard({
   onDelete,
 }: EvidenceCaptureCardProps) {
   const [reviewOpen, setReviewOpen] = useState(false);
+  const [isReviewSavePending, setIsReviewSavePending] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editText, setEditText] = useState("");
   const display = resolveCaptureDisplay(draft, validation, rosterStudents);
@@ -230,6 +231,10 @@ export function EvidenceCaptureCard({
   }
 
   function handleStartEdit() {
+    if (isReviewSavePending) {
+      return;
+    }
+
     setEditText(draft.parsed.rawNote);
     setReviewOpen(false);
     setIsEditing(true);
@@ -251,6 +256,10 @@ export function EvidenceCaptureCard({
   }
 
   function handleDelete() {
+    if (isReviewSavePending) {
+      return;
+    }
+
     if (
       window.confirm(
         "Delete this capture? It will be removed from this browser."
@@ -400,7 +409,6 @@ export function EvidenceCaptureCard({
                 status={display.validationStatus}
                 needsReview={showReviewCta}
               />
-              <p className="text-sm text-muted-foreground">Ms. Rivera</p>
               {display.validationStatus === "validated" && validation?.status === "validated" && (
                 <p className="text-xs text-muted-foreground">
                   {validation.savedEvidenceId
@@ -417,6 +425,7 @@ export function EvidenceCaptureCard({
                     type="button"
                     variant="ghost"
                     size="xs"
+                    disabled={isReviewSavePending}
                     onClick={handleStartEdit}
                   >
                     Edit
@@ -429,6 +438,7 @@ export function EvidenceCaptureCard({
                     size="icon-sm"
                     className="text-muted-foreground hover:text-destructive"
                     aria-label="Delete capture"
+                    disabled={isReviewSavePending}
                     onClick={handleDelete}
                   >
                     <MoreHorizontal className="size-4" />
@@ -463,6 +473,7 @@ export function EvidenceCaptureCard({
             display={parserDisplay}
             onConfirm={handleConfirm}
             onDismiss={() => setReviewOpen(false)}
+            onSavePendingChange={setIsReviewSavePending}
           />
           </div>
         )}

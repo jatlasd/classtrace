@@ -19,20 +19,39 @@ import {
 
 const now = new Date("2026-06-16T14:00:00.000Z");
 
+type StudentClassGroup = {
+  id: string;
+  workspaceId: string;
+  archivedAt: Date | null;
+};
+
 function buildStudent(overrides?: {
   id?: string;
   workspaceId?: string;
   classGroupId?: string | null;
   archivedAt?: Date | null;
+  classGroup?: StudentClassGroup | null;
 }) {
+  const classGroupId =
+    overrides && "classGroupId" in overrides
+      ? overrides.classGroupId ?? null
+      : "class_group_1";
+
   return {
     id: overrides?.id ?? "student_mary",
     workspaceId: overrides?.workspaceId ?? "workspace_1",
-    classGroupId:
-      overrides && "classGroupId" in overrides
-        ? overrides.classGroupId ?? null
-        : "class_group_1",
+    classGroupId,
     archivedAt: overrides?.archivedAt ?? null,
+    classGroup:
+      overrides && "classGroup" in overrides
+        ? overrides.classGroup ?? null
+        : classGroupId
+          ? {
+              id: classGroupId,
+              workspaceId: overrides?.workspaceId ?? "workspace_1",
+              archivedAt: null,
+            }
+          : null,
   };
 }
 
@@ -110,6 +129,13 @@ describe("saveValidatedEvidenceForWorkspace", () => {
           workspaceId: true,
           classGroupId: true,
           archivedAt: true,
+          classGroup: {
+            select: {
+              id: true,
+              workspaceId: true,
+              archivedAt: true,
+            },
+          },
         },
       },
     ]);
@@ -321,7 +347,7 @@ describe("saveValidatedEvidenceForWorkspace", () => {
     });
   });
 
-  it("keeps legacy unassigned student evidence honest without inventing a class", async () => {
+  it("rejects an active student without an active class", async () => {
     const { database, calls } = buildDatabase({
       student: buildStudent({ classGroupId: null }),
     });
@@ -341,14 +367,109 @@ describe("saveValidatedEvidenceForWorkspace", () => {
       database
     );
 
-    expect(result).toEqual({ success: true, evidenceId: "evidence_1" });
-    expect(calls.create[0]).toEqual(
-      expect.objectContaining({
-        data: expect.objectContaining({
-          classGroupId: undefined,
-        }),
-      })
+    expect(result).toEqual({
+      success: false,
+      error: "Assign this student to an active class before saving evidence.",
+    });
+    expect(calls.create).toEqual([]);
+  });
+
+  it("rejects an active student with a stale class relationship", async () => {
+    const { database, calls } = buildDatabase({
+      student: buildStudent({
+        classGroupId: "class_stale",
+        classGroup: null,
+      }),
+    });
+
+    const result = await saveValidatedEvidenceForWorkspace(
+      {
+        workspaceId: "workspace_1",
+        input: {
+          rosterStudentId: "student_mary",
+          evidenceNote: "Mary worked through the reading passage.",
+          summary: "Mary - reading",
+          evidenceType: "Academic check-in",
+          tags: [],
+        },
+        now,
+      },
+      database
     );
+
+    expect(result).toEqual({
+      success: false,
+      error: "Assign this student to an active class before saving evidence.",
+    });
+    expect(calls.create).toEqual([]);
+  });
+
+  it("rejects an active student assigned to an archived class", async () => {
+    const { database, calls } = buildDatabase({
+      student: buildStudent({
+        classGroupId: "class_archived",
+        classGroup: {
+          id: "class_archived",
+          workspaceId: "workspace_1",
+          archivedAt: new Date("2026-06-01T00:00:00.000Z"),
+        },
+      }),
+    });
+
+    const result = await saveValidatedEvidenceForWorkspace(
+      {
+        workspaceId: "workspace_1",
+        input: {
+          rosterStudentId: "student_mary",
+          evidenceNote: "Mary worked through the reading passage.",
+          summary: "Mary - reading",
+          evidenceType: "Academic check-in",
+          tags: [],
+        },
+        now,
+      },
+      database
+    );
+
+    expect(result).toEqual({
+      success: false,
+      error: "Assign this student to an active class before saving evidence.",
+    });
+    expect(calls.create).toEqual([]);
+  });
+
+  it("rejects an active student assigned to a class outside the workspace", async () => {
+    const { database, calls } = buildDatabase({
+      student: buildStudent({
+        classGroupId: "class_other",
+        classGroup: {
+          id: "class_other",
+          workspaceId: "workspace_other",
+          archivedAt: null,
+        },
+      }),
+    });
+
+    const result = await saveValidatedEvidenceForWorkspace(
+      {
+        workspaceId: "workspace_1",
+        input: {
+          rosterStudentId: "student_mary",
+          evidenceNote: "Mary worked through the reading passage.",
+          summary: "Mary - reading",
+          evidenceType: "Academic check-in",
+          tags: [],
+        },
+        now,
+      },
+      database
+    );
+
+    expect(result).toEqual({
+      success: false,
+      error: "Assign this student to an active class before saving evidence.",
+    });
+    expect(calls.create).toEqual([]);
   });
 
   it("normalizes malformed client list and optional text payloads safely", async () => {
