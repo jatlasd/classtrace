@@ -108,7 +108,7 @@ function resolutionMessage(
   if (resolution.status === "multiple_students") {
     return {
       tone: "error",
-      text: "Choose one student for this V1 capture.",
+      text: "Choose one student for this capture.",
     };
   }
 

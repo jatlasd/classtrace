@@ -283,3 +283,33 @@ Delete stale mock/demo code that is no longer part of the active product and inc
 5. UIP-03: report date-range correctness.
 6. UIP-10: cleanup after the hard-coded teacher-name source is removed.
 7. UIP-07: product decision and follow-up implementation.
+
+
+### Next Round of UIP to be Completed After UIP-01 through UIP-07 are finished. 
+UX Review Findings
+Evidence note can become too thin before save.
+In /app/feed, I captured @jeremy worked on #reading. The draft review panel turned the saved Evidence note into only worked on, while reading moved into structured metadata. That is risky because the teacher could save a technically valid but low-value evidence note. The review UI says “This note will be saved exactly as shown,” which helps, but the default note should preserve enough meaning.
+
+Mention resolution behaved inconsistently before reload.
+Initially, @jeremy, @stacy, @Jeremy, and @Stacy all showed “This student is not on your roster yet,” even though the roster lists @jeremy and @stacy. After reloading /app/feed, @jeremy resolved correctly. This smells like stale or delayed roster-backed mention state.
+
+Roster copy is wrong once a class already exists.
+/app/roster shows an active Reading class with 2 students, but the right panel still says “Create your first class.” That should become something like “Create another class.”
+
+Opened roster class repeats the feed CTA.
+In /app/roster?classId=..., “Continue to evidence feed” appears twice near the top. It makes the class page feel a little accidental.
+
+The feed’s right “Capture Boundary” pills look clickable.
+The “Mention / Review / Save” controls read visually like buttons, but they are explanatory. That can create a false affordance, especially because they sit beside the actual composer.
+
+Saved row actions are noisy.
+Every saved evidence row exposes both “Archive evidence” and “Delete evidence” inline. Functionally clear, but visually it makes destructive management feel nearly as prominent as reading the evidence.
+
+Filter selected state may be weak for accessibility.
+The filter buttons expose selected state through text like “All selected” / “Needs review selected,” but I did not see aria-pressed on the controls. Worth tightening so screen reader and keyboard users get a proper toggle state.
+
+Placeholder example can conflict with the actual roster.
+The composer placeholder uses @Mary, but this workspace has Jeremy and Stacy. Since the app blocks non-roster handles, a roster-aware placeholder or generic @student example would reduce confusion.
+
+Account label is inconsistent across routes.
+On the feed, the account link showed Jatlas; on roster/timeline/report it showed Account. That feels like a hydration or data-display inconsistency.

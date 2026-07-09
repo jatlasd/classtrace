@@ -163,7 +163,7 @@ function InterpretationReviewPanelContent({
     }
 
     if (studentValidation.status === "multiple_students") {
-      return "Choose one student for this V1 evidence record.";
+      return "Choose one student for this evidence record.";
     }
 
     return "This student is not on your roster yet.";

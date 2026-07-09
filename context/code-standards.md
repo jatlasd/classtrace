@@ -451,7 +451,7 @@ Good user-facing errors:
 
 ```txt
 Add one student before saving this capture.
-Choose only one student for this V1 capture.
+Choose only one student for this capture.
 This student could not be found in your roster.
 You do not have access to this record.
 Deleting this student will also delete their evidence records.

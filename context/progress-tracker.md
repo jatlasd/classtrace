@@ -19,6 +19,7 @@ Update this file after every meaningful implementation change.
 - UIP-05 implemented and verified with automated checks - class-page continue-to-feed readiness now follows global class-first capture eligibility.
 - UIP-06 implemented and verified with automated checks - archived/deleted saved evidence rows are hidden from feed rendering immediately after successful action.
 - UIP-07 implemented and verified with automated checks - archived roster students can be restored into an active class without releasing identifiers or creating new student records.
+- UIP-08 implemented and verified with automated checks - user-facing multi-student validation copy no longer says `V1`.
 - Phase 2 complete — roster onboarding
 - Unit 02 complete and verified — Route Map and App Shell (`context/specs/02-route-map-and-app-shell.md`)
 - Unit 03 complete and verified — Public Landing Page UI (`context/specs/03-public-landing-page-ui.md`)
@@ -53,7 +54,7 @@ Update this file after every meaningful implementation change.
 
 - ClassTrace V1 is complete for the scoped teacher-first evidence capture build path.
 - Current active build path: `context/post-v1-pre-beta-build-plan.md`, starting with Phase 6.
-- Current task: UIP-01 through UIP-07 implemented and verified; next user-identified problem task should be selected separately.
+- Current task: UIP-01 through UIP-08 implemented and verified; next user-identified problem task should be selected separately.
 
 ---
 
@@ -1597,6 +1598,7 @@ Verification after refinement: `npm run lint` pass, `npm run build` pass, `npm r
 
 ## Session Notes
 
+- UIP-08 was implemented on 2026-07-09: user-facing multi-student validation copy now uses plain teacher-facing language instead of visible `V1` wording in the quick capture card, feed edit validation, and structured draft review panel. Updated the deterministic student-resolution UI assertion and the code-standards example copy; no validation behavior, persistence logic, or product scope changed. Verification passed: focused `npm.cmd run test -- lib/deterministic-student-resolution-ui.test.ts` (5 tests), full `npm.cmd run test` (53 files / 293 tests), `npm.cmd run lint`, and `npm.cmd run build`. Full tests still log expected archive/delete failure-path console errors while asserting safe generic errors.
 - UIP-07 restore hardening was completed on 2026-07-09 after review: archived-student restore now performs the final active-class check and student restore inside a serializable database transaction boundary so a restore cannot proceed from a stale active-class read. Added focused coverage for class/student availability changing during restore and fixed the Archived Roster Student Actions UI registry separator formatting.
 
 - UIP-07 was implemented on 2026-07-08 after the human chose the restore path: Roster now lists archived students in a secondary section and lets the teacher restore the same student record into a selected active class. Added server-only archived-student listing and restore helpers, a workspace-resolving `restoreRosterStudent` Server Action, and a focused archived-student restore form that sends only `studentId` and `classGroupId`. The implementation preserves identifier reservation and evidence history; it does not add identifier release, bulk restore, shared identities, or admin behavior. Updated product, architecture, UI registry, and progress docs. Verification passed: focused `npm.cmd run test -- lib/students/restore-roster-student.test.ts lib/students/archived-roster-students.test.ts actions/roster.test.ts lib/archive-delete-student-ui.test.ts lib/student-roster-database-ui.test.ts` (25 tests), full `npm.cmd run test` (53 files / 291 tests), `npm.cmd run lint`, and `npm.cmd run build`. Full tests still log expected archive/delete failure-path console errors while asserting safe generic errors.

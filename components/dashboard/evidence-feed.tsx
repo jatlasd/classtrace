@@ -374,7 +374,7 @@ function studentResolutionErrorMessage(
   }
 
   if (resolution.status === "multiple_students") {
-    return "Choose one student for this V1 capture before saving this edit.";
+    return "Choose one student for this capture before saving this edit.";
   }
 
   if (resolution.status === "unresolved_student") {
