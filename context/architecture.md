@@ -498,6 +498,7 @@ V1 has one app role: teacher owner.
 The teacher owner can:
 
 - Manage their own roster
+- Restore archived roster students into active classes
 - Create validated evidence for their own roster students
 - View their own student timelines
 - Archive their own records
@@ -596,7 +597,7 @@ Archive behavior:
 
 - Archive is the safer default.
 - Archived records are hidden from normal active views.
-- Archived records may be restorable if the UI supports restore.
+- Archived student records can be restored from Roster into an active class. Other archived records may be restorable only if a focused UI supports restore.
 
 Permanent delete behavior:
 

@@ -195,7 +195,7 @@ The feed uses a visible but compact header so teachers understand the capture/re
 ### Saved Evidence Row
 
 File: `components/dashboard/saved-evidence-row.tsx`
-Last updated: 2026-07-04 (Unit 32 Evidence note read surface)
+Last updated: 2026-07-08 (UIP-06 optimistic hide after archive/delete)
 
 | Property | Class |
 |---|---|
@@ -226,7 +226,7 @@ Last updated: 2026-07-04 (Unit 32 Evidence note read surface)
 | Delete error text | `text-xs leading-relaxed text-destructive` with `role="status"` |
 
 **Pattern notes:**
-Saved evidence rows are database-backed validated records, not raw draft captures. They intentionally reuse the Unit 11 row grid and chip vocabulary but use validated-state icon/status styling and a compact date chip. Unit 32 makes `EvidenceRecord.evidenceNote` the primary text when present, moves `EvidenceRecord.summary` to supporting structured detail text, and labels note-less historical rows as legacy structured records. The student name links to that student timeline. Unit 18 added a calm, non-destructive archive affordance with inline confirmation copy ("Hide this from default evidence views?") and a workspace-scoped Server Action. Unit 19 adds a destructive permanent delete affordance with inline warning copy ("Permanently delete this evidence record? This cannot be undone.") and a workspace-scoped Server Action. Keep archive visible as the safer cleanup action. Do not add edit, restore/deleted-record management, export, bulk actions, student delete, or raw-note fields to this row until those units are explicitly scoped.
+Saved evidence rows are database-backed validated records, not raw draft captures. They intentionally reuse the Unit 11 row grid and chip vocabulary but use validated-state icon/status styling and a compact date chip. Unit 32 makes `EvidenceRecord.evidenceNote` the primary text when present, moves `EvidenceRecord.summary` to supporting structured detail text, and labels note-less historical rows as legacy structured records. The student name links to that student timeline. Unit 18 added a calm, non-destructive archive affordance with inline confirmation copy ("Hide this from default evidence views?") and a workspace-scoped Server Action. Unit 19 adds a destructive permanent delete affordance with inline warning copy ("Permanently delete this evidence record? This cannot be undone.") and a workspace-scoped Server Action. UIP-06 keeps successfully archived or deleted rows out of the rendered saved-evidence feed immediately by filtering the list with tracked hidden evidence IDs while preserving inline safe errors for failed actions. Keep archive visible as the safer cleanup action. Do not add edit, restore/deleted-record management, export, bulk actions, student delete, or raw-note fields to this row until those units are explicitly scoped.
 
 ---
 
@@ -721,7 +721,7 @@ Unit 29 replaces the temporary Unit 28 bridge with the active class-first roster
 ### Database Roster List
 
 File: `app/app/roster/page.tsx`  
-Last updated: 2026-07-01 (Unit 29 class-first roster)
+Last updated: 2026-07-08 (UIP-07 archived-student restore)
 
 | Property | Class |
 |---|---|
@@ -750,7 +750,25 @@ Last updated: 2026-07-01 (Unit 29 class-first roster)
 | Delete error text | `text-xs leading-relaxed text-destructive` with `role="status"` |
 
 **Pattern notes:**  
-The roster list is database-backed. After Unit 17, each active student's identity area links to that student's database-backed timeline using `routes.student(student.id)` and an accessible "Open [student] timeline" label. Use a ledger-like bordered list with column headers, divided rows, square initials, and no shadows; avoid returning to separate rounded student cards. Unit 20 adds secondary row management actions below the row metadata: archive is the calm first cleanup action and permanent delete is visually destructive with explicit warning copy ("Deleting this student will also permanently delete all evidence records attached to them. This cannot be undone."). Unit 29 adds a restrained inline edit form for display name, mention handle, optional school/local ID, and active class assignment; moving students must happen through this edit flow, not drag and drop. Legacy unassigned students appear in a "Needs class" section and use the same edit form for teacher-approved assignment. Do not add restore, archived-student management, export, bulk actions, shared student identity, or admin/district behavior to this row until explicitly scoped.
+The roster list is database-backed. After Unit 17, each active student's identity area links to that student's database-backed timeline using `routes.student(student.id)` and an accessible "Open [student] timeline" label. Use a ledger-like bordered list with column headers, divided rows, square initials, and no shadows; avoid returning to separate rounded student cards. Unit 20 adds secondary row management actions below the row metadata: archive is the calm first cleanup action and permanent delete is visually destructive with explicit warning copy ("Deleting this student will also permanently delete all evidence records attached to them. This cannot be undone."). Unit 29 adds a restrained inline edit form for display name, mention handle, optional school/local ID, and active class assignment; moving students must happen through this edit flow, not drag and drop. Legacy unassigned students appear in a "Needs class" section and use the same edit form for teacher-approved assignment. UIP-07 adds a secondary Archived students section on the class-level roster page; restoring an archived student requires choosing an active class and keeps the same student record/evidence history. Do not add identifier release, bulk restore, export, shared student identity, or admin/district behavior to roster rows.
+
+---
+
+### Archived Roster Student Actions
+
+File: `components/roster/archived-roster-student-actions.tsx`
+Last updated: 2026-07-08 (UIP-07 archived-student restore)
+
+| Property | Class |
+|---|---|
+| Action shell | `space-y-2 border-t border-border/50 pt-3` |
+| Label | `block text-xs font-medium text-foreground` |
+| Class selector | `h-9 w-full rounded-md border border-border bg-background/50 px-2 text-sm text-foreground` |
+| Restore action | Existing `Button` with `variant="outline"`, `size="sm"`, and `RotateCcw` icon `size-3.5` |
+| Error text | `text-xs leading-relaxed text-destructive` with `role="status"` |
+
+**Pattern notes:**
+This Client Component owns only archived-student restore state. It sends only `studentId` and selected `classGroupId` to the workspace-resolving restore Server Action. Restore returns the same archived roster student to active status and assigns the chosen active class; it does not create a new student, release identifiers, merge identities, restore in bulk, or expose workspace/teacher IDs to the client.
 
 ---
 
@@ -781,7 +799,7 @@ This Client Component owns only row-level confirmation state for archive/delete.
 ### Roster Continue Action
 
 File: `app/app/roster/page.tsx`  
-Last updated: 2026-06-17
+Last updated: 2026-07-08
 
 | Property | Class |
 |---|---|
@@ -791,7 +809,7 @@ Last updated: 2026-06-17
 | Action | Existing `Button` with `variant="outline"` and `size="sm"` |
 
 **Pattern notes:**  
-The roster continue action appears only after the teacher has at least one active database roster student. It should feel like a quiet readiness note in the page header, not a completion badge, wizard, or alert card. The primary-colored left rule is the only accent. Keep the copy plain: show the active student count and offer a low-emphasis path back to the evidence feed. This pattern does not hide the roster page or remove manual entry/import controls.
+The roster continue action appears only when the full workspace is globally ready for capture: at least one active student exists and every active student has one active class. It should feel like a quiet readiness note in the page header, not a completion badge, wizard, or alert card. The opened class view may repeat the feed action only when that same global readiness rule passes; if another active student elsewhere still needs a class, show plain guidance instead of linking to a feed route that will redirect back. The primary-colored left rule is the only accent. Keep the copy plain: show the active student count or class-assignment blocker and offer a low-emphasis path back to the evidence feed only when capture is actually available. This pattern does not hide the roster page, remove manual entry/import controls, or make capture class-scoped.
 
 ---
 

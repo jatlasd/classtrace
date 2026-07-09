@@ -32,9 +32,18 @@ describe("Unit 07 roster database bridge", () => {
 
   it("shows feed continuation only after class-ready roster setup has started", () => {
     expect(rosterPage).toContain("readyForCapture");
-    expect(rosterPage).toContain("activeStudentsWithoutActiveClassCount === 0");
+    expect(rosterPage).toContain("classReadiness.readyForClassFirstRoster");
     expect(rosterPage).toContain("Continue to evidence feed");
     expect(rosterPage).toContain("routes.feed");
     expect(rosterPage).not.toContain("Roster setup started.");
+  });
+  it("keeps an opened class from linking to the feed while another active student still needs a class", () => {
+    expect(rosterPage).toContain("canContinueToFeed={readyForCapture}");
+    expect(rosterPage).toContain("canContinueToFeed ? (");
+    expect(rosterPage).toContain("students.length > 0 ? (");
+    expect(rosterPage).toContain(
+      "Finish assigning every active student to an active class before opening"
+    );
+    expect(rosterPage).toContain("the evidence feed.");
   });
 });

@@ -15,6 +15,10 @@ const rosterAction = readFileSync(
   join(projectRoot, "actions", "roster.ts"),
   "utf8"
 );
+const archivedRowActions = readFileSync(
+  join(projectRoot, "components", "roster", "archived-roster-student-actions.tsx"),
+  "utf8"
+);
 const schema = readFileSync(
   join(projectRoot, "prisma", "schema.prisma"),
   "utf8"
@@ -52,10 +56,21 @@ describe("Unit 20 archive/delete student UI", () => {
     expect(rosterAction).toContain("[actions/roster/deleteRosterStudent]");
   });
 
-  it("does not add restore, bulk management, roster edit, export, or raw draft behavior", () => {
-    const combined = `${rosterPage}\n${rowActions}\n${rosterAction}`;
+  it("adds a focused restore path for archived students without bulk management", () => {
+    expect(rosterPage).toContain("Archived students");
+    expect(rosterPage).toContain("ArchivedRosterStudentActions");
+    expect(archivedRowActions).toContain("restoreRosterStudent({ studentId, classGroupId })");
+    expect(archivedRowActions).toContain("Restore student");
+    expect(archivedRowActions).toContain("Restore to class");
+    expect(archivedRowActions).not.toMatch(
+      /workspaceId|teacherProfileId|clerkUserId|evidenceId/
+    );
+  });
+
+  it("does not add bulk management, roster export, or raw draft behavior", () => {
+    const combined = `${rosterPage}\n${rowActions}\n${archivedRowActions}\n${rosterAction}`;
     expect(combined).not.toMatch(
-      /Restore student|Bulk delete|Bulk archive|Edit student|Export evidence|trash view|undo queue/i
+      /Bulk delete|Bulk archive|Export evidence|trash view|undo queue/i
     );
     expect(combined).not.toMatch(
       /rawNote|draftText|originalCapture|sourceText/i

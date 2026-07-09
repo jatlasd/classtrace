@@ -16,6 +16,9 @@ Update this file after every meaningful implementation change.
 - Phase 8 Unit 32 implemented and verified with automated checks - Evidence Note Review, Feed, Timeline, and Export Pass (`context/specs/32-evidence-note-review-feed-timeline-export-pass.md`).
 - Phase 9 Unit 33 implemented and verified with automated checks - Per-Student Report View and Date-Range Query (`context/specs/33-per-student-report-view-and-date-range-query.md`).
 - Phase 9 Unit 34 implemented and verified with automated checks - Printable Student Report (`context/specs/34-printable-student-report.md`).
+- UIP-05 implemented and verified with automated checks - class-page continue-to-feed readiness now follows global class-first capture eligibility.
+- UIP-06 implemented and verified with automated checks - archived/deleted saved evidence rows are hidden from feed rendering immediately after successful action.
+- UIP-07 implemented and verified with automated checks - archived roster students can be restored into an active class without releasing identifiers or creating new student records.
 - Phase 2 complete — roster onboarding
 - Unit 02 complete and verified — Route Map and App Shell (`context/specs/02-route-map-and-app-shell.md`)
 - Unit 03 complete and verified — Public Landing Page UI (`context/specs/03-public-landing-page-ui.md`)
@@ -50,7 +53,7 @@ Update this file after every meaningful implementation change.
 
 - ClassTrace V1 is complete for the scoped teacher-first evidence capture build path.
 - Current active build path: `context/post-v1-pre-beta-build-plan.md`, starting with Phase 6.
-- Current task: UIP-01, UIP-02, UIP-03, and UIP-04 implemented and verified; next user-identified problem task should be selected separately.
+- Current task: UIP-01 through UIP-07 implemented and verified; next user-identified problem task should be selected separately.
 
 ---
 
@@ -1491,7 +1494,7 @@ Verification after refinement: `npm run lint` pass, `npm run build` pass, `npm r
 1. Manually verify the Unit 30 class-scoped import placement inside an authenticated opened class when Chrome connector access is stable.
 2. Review/approve Unit 31 and Unit 32 implementations.
 3. Review/approve Unit 34 implementation, then begin Unit 35 Pre-Beta Feature Review and Coverage Pass after approval.
-4. Review and choose the next approved user-identified problem task from `context/user-identified-problems.md` when ready; UIP-01, UIP-02, UIP-03, and UIP-04 are implemented.
+4. Review and choose the next approved user-identified problem task from `context/user-identified-problems.md` when ready; UIP-01 through UIP-07 are implemented.
 5. Commit and push completed changes when the human requests it.
 
 ---
@@ -1594,6 +1597,11 @@ Verification after refinement: `npm run lint` pass, `npm run build` pass, `npm r
 
 ## Session Notes
 
+- UIP-07 restore hardening was completed on 2026-07-09 after review: archived-student restore now performs the final active-class check and student restore inside a serializable database transaction boundary so a restore cannot proceed from a stale active-class read. Added focused coverage for class/student availability changing during restore and fixed the Archived Roster Student Actions UI registry separator formatting.
+
+- UIP-07 was implemented on 2026-07-08 after the human chose the restore path: Roster now lists archived students in a secondary section and lets the teacher restore the same student record into a selected active class. Added server-only archived-student listing and restore helpers, a workspace-resolving `restoreRosterStudent` Server Action, and a focused archived-student restore form that sends only `studentId` and `classGroupId`. The implementation preserves identifier reservation and evidence history; it does not add identifier release, bulk restore, shared identities, or admin behavior. Updated product, architecture, UI registry, and progress docs. Verification passed: focused `npm.cmd run test -- lib/students/restore-roster-student.test.ts lib/students/archived-roster-students.test.ts actions/roster.test.ts lib/archive-delete-student-ui.test.ts lib/student-roster-database-ui.test.ts` (25 tests), full `npm.cmd run test` (53 files / 291 tests), `npm.cmd run lint`, and `npm.cmd run build`. Full tests still log expected archive/delete failure-path console errors while asserting safe generic errors.
+- UIP-06 was implemented on 2026-07-08: the saved-evidence feed now filters rendered saved rows through tracked hidden evidence IDs, so successfully archived or permanently deleted records disappear immediately instead of lingering until route refresh completes. Server-side archive/delete behavior, revalidation, and inline safe error handling remain unchanged. Updated archive/delete UI coverage and the saved-evidence row UI registry note. Verification passed: focused `npm.cmd run test -- lib/archive-evidence-ui.test.ts lib/delete-evidence-ui.test.ts` (13 tests), full `npm.cmd run test` (51 files / 284 tests), `npm.cmd run lint`, and `npm.cmd run build`. Full tests still log expected archive/delete failure-path console errors while asserting safe generic errors.
+- UIP-05 was implemented on 2026-07-08: the opened class view now shows `Continue to evidence feed` only when the same global `readyForClassFirstRoster` rule used by `/app` and `/app/feed` passes. If the opened class has students but another active student elsewhere still needs an active class, the class page shows teacher-safe guidance instead of linking to a feed route that would redirect back. Updated the roster continue-action UI registry note and focused static coverage. Verification passed: focused `npm.cmd run test -- lib/student-roster-database-ui.test.ts lib/onboarding-routing.test.ts lib/classes/class-groups.test.ts` (18 tests), full `npm.cmd run test` (51 files / 282 tests), `npm.cmd run lint`, and `npm.cmd run build`. Full tests still log expected archive/delete failure-path console errors while asserting safe generic errors.
 - UIP-04 was implemented on 2026-07-08: the review panel now disables `Dismiss for now` while `isSaving` is true so a reviewed draft cannot be hidden before the save request resolves. Added focused UI/static coverage for the pending-save dismiss guard. Verification passed: focused `npm.cmd run test -- lib/save-validated-evidence-ui.test.ts lib/structured-draft-review-ui.test.ts` (11 tests), full `npm.cmd run test` (51 files / 281 tests), `npm.cmd run lint`, and `npm.cmd run build`. Full tests still log expected archive/delete failure-path console errors while asserting safe generic errors.
 - UIP-03 was implemented on 2026-07-08: student report date-only range parsing now uses local calendar-day boundaries instead of UTC-only midnights, so late-evening local observations remain included on the selected teacher calendar day. Added focused report helper coverage for local start/end boundaries and late-evening inclusion. Verification passed: focused `npm.cmd run test -- lib/evidence/student-report-records.test.ts` (9 tests), full `npm.cmd run test` (51 files / 280 tests), `npm.cmd run lint`, and `npm.cmd run build`. Full tests still log expected archive/delete failure-path console errors while asserting safe generic errors.
 - UIP-01 and UIP-02 were implemented on 2026-07-07: removed the hard-coded `Ms. Rivera` label from capture cards and changed the remaining mock teacher label to generic `Teacher`; evidence save now rejects active students with no class, stale class, archived class, or unowned class before creating the saved record. Verification passed: focused `npm.cmd run test -- lib/evidence/save-validated-evidence.test.ts` (13 tests), full `npm.cmd run test` (51 files / 278 tests), `npm.cmd run lint`, and `npm.cmd run build`. Full tests still log expected archive/delete failure-path console errors while asserting safe generic errors.

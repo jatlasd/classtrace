@@ -50,6 +50,19 @@ describe("roster server actions", () => {
     );
   });
 
+
+  it("restores roster students through current workspace resolution", () => {
+    expect(source).toContain("restoreRosterStudentForWorkspace");
+    expect(source).toContain("RestoreRosterStudentActionInput");
+    expect(source).toContain("workspace.workspaceId");
+    const restoreAction = source.match(
+      /export async function restoreRosterStudent[\s\S]*?\n\}/
+    );
+    expect(restoreAction?.[0]).toBeDefined();
+    expect(restoreAction?.[0]).not.toMatch(
+      /input\.workspaceId|input\.teacherProfileId|input\.clerkUserId|input\.evidenceId/
+    );
+  });
   it("deletes roster students through current workspace resolution", () => {
     expect(source).toContain("deleteRosterStudentForWorkspace");
     expect(source).toContain("DeleteRosterStudentActionInput");
@@ -69,6 +82,7 @@ describe("roster server actions", () => {
     expect(source).toContain("routes.student(result.studentId)");
     expect(source).toContain("[actions/roster/archiveRosterStudent]");
     expect(source).toContain("[actions/roster/deleteRosterStudent]");
+    expect(source).toContain("[actions/roster/restoreRosterStudent]");
   });
 
   it("keeps raw draft text out of the roster action contract", () => {

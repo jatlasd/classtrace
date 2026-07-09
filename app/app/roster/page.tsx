@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Archive, ArrowLeft, BookOpen, Users } from "lucide-react";
+import { ArchivedRosterStudentActions } from "@/components/roster/archived-roster-student-actions";
 import { ClassGroupActions } from "@/components/roster/class-group-actions";
 import { ClassGroupForm } from "@/components/roster/class-group-form";
 import { ManualStudentEntryForm } from "@/components/roster/manual-student-entry-form";
@@ -16,6 +17,10 @@ import {
   type ClassGroupDisplay,
   type ClassRosterStudentDisplay,
 } from "@/lib/classes/class-groups";
+import {
+  listArchivedRosterStudentsForWorkspace,
+  type ArchivedRosterStudentDisplay,
+} from "@/lib/students/archived-roster-students";
 import { listExistingRosterImportStudentsForWorkspace } from "@/lib/import/roster-import";
 import { type ExistingRosterImportStudent } from "@/lib/import/parse-roster-import";
 import { routes } from "@/lib/routes";
@@ -119,6 +124,51 @@ function StudentRow({
   );
 }
 
+function ArchivedStudentRow({
+  student,
+  activeClasses,
+}: {
+  student: ArchivedRosterStudentDisplay;
+  activeClasses: ActiveClassOption[];
+}) {
+  return (
+    <li className="border-b border-border last:border-b-0">
+      <div className="grid gap-3 px-4 py-3.5 sm:grid-cols-[minmax(0,1fr)_180px_190px] sm:items-start sm:px-5">
+        <div className="min-w-0">
+          <p className="font-medium leading-snug text-foreground">
+            {student.displayName}
+          </p>
+          <p className="mt-0.5 text-xs text-muted-foreground">
+            Archived student
+          </p>
+        </div>
+        <div className="text-sm text-muted-foreground sm:text-foreground">
+          <p>@{student.mentionHandle}</p>
+          {student.schoolLocalId ? (
+            <p className="mt-0.5 text-xs text-muted-foreground">
+              Local ID: {student.schoolLocalId}
+            </p>
+          ) : null}
+        </div>
+        <div className="text-xs text-muted-foreground">
+          <p>
+            {student.classGroupName
+              ? `Was in ${student.classGroupName}`
+              : "Needs active class"}
+          </p>
+          <ArchivedRosterStudentActions
+            studentId={student.id}
+            studentDisplayName={student.displayName}
+            activeClasses={activeClasses}
+            defaultClassGroupId={
+              student.hasActiveClass ? student.classGroupId : null
+            }
+          />
+        </div>
+      </div>
+    </li>
+  );
+}
 function ClassList({
   activeClasses,
   activeStudents,
@@ -262,12 +312,14 @@ function OpenClassView({
   activeClasses,
   existingImportStudents,
   isFirstStudent,
+  canContinueToFeed,
 }: {
   classGroup: ClassGroupDisplay;
   students: ClassRosterStudentDisplay[];
   activeClasses: ActiveClassOption[];
   existingImportStudents: ExistingRosterImportStudent[];
   isFirstStudent: boolean;
+  canContinueToFeed: boolean;
 }) {
   return (
     <section className="space-y-6">
@@ -278,10 +330,15 @@ function OpenClassView({
             Back to classes
           </Link>
         </Button>
-        {students.length > 0 ? (
+        {canContinueToFeed ? (
           <Button asChild size="sm" variant="outline">
             <Link href={routes.feed}>Continue to evidence feed</Link>
           </Button>
+        ) : students.length > 0 ? (
+          <p className="max-w-sm text-sm leading-relaxed text-muted-foreground">
+            Finish assigning every active student to an active class before opening
+            the evidence feed.
+          </p>
         ) : null}
       </div>
 
@@ -373,11 +430,13 @@ export default async function RosterPage({ searchParams }: RosterPageProps) {
     activeClasses,
     archivedClasses,
     activeStudents,
+    archivedStudents,
     classReadiness,
   ] = await Promise.all([
     listActiveClassGroupsForWorkspace(workspace.workspaceId),
     listArchivedClassGroupsForWorkspace(workspace.workspaceId),
     listActiveRosterStudentsForWorkspace(workspace.workspaceId),
+    listArchivedRosterStudentsForWorkspace(workspace.workspaceId),
     getClassRosterReadinessForWorkspace(workspace.workspaceId),
   ]);
   const activeClassOptions = activeClasses.map((classGroup) => ({
@@ -398,9 +457,17 @@ export default async function RosterPage({ searchParams }: RosterPageProps) {
     : [null, []];
   const unassignedStudents = activeStudents.filter((student) => !student.hasActiveClass);
   const selectedClassMissing = Boolean(selectedClassId && !selectedClass);
-  const readyForCapture =
-    classReadiness.activeStudentCount > 0 &&
-    classReadiness.activeStudentsWithoutActiveClassCount === 0;
+  const readyForCapture = classReadiness.readyForClassFirstRoster;
+  const readinessGuidance =
+    classReadiness.activeStudentCount === 0
+      ? "Create a class and add one student before capture."
+      : classReadiness.activeStudentsWithoutActiveClassCount > 0
+        ? `${classReadiness.activeStudentsWithoutActiveClassCount} ${
+            classReadiness.activeStudentsWithoutActiveClassCount === 1
+              ? "student needs"
+              : "students need"
+          } an active class before capture.`
+        : "Create a class and add one student before capture.";
 
   return (
     <div className="mx-auto w-full max-w-[1180px] px-4 py-7 sm:px-6 lg:px-8">
@@ -432,7 +499,7 @@ export default async function RosterPage({ searchParams }: RosterPageProps) {
               ? `${classReadiness.activeStudentCount} ${
                   classReadiness.activeStudentCount === 1 ? "student" : "students"
                 } ready for capture.`
-              : "Create a class and add one student before capture."}
+              : readinessGuidance}
           </p>
           {readyForCapture ? (
             <Button asChild size="sm" variant="outline" className="mt-3">
@@ -451,6 +518,7 @@ export default async function RosterPage({ searchParams }: RosterPageProps) {
           activeClasses={activeClassOptions}
           existingImportStudents={existingImportStudents}
           isFirstStudent={(selectedClassStudents ?? []).length === 0}
+          canContinueToFeed={readyForCapture}
         />
       ) : selectedClassMissing ? (
         <div className="border border-border bg-card/60 p-5 text-sm leading-relaxed text-muted-foreground">
@@ -473,6 +541,28 @@ export default async function RosterPage({ searchParams }: RosterPageProps) {
             </Button>
           </div>
           <ClassList activeClasses={activeClasses} activeStudents={activeStudents} />
+          {archivedStudents.length > 0 ? (
+            <section className="space-y-3">
+              <div className="border-l-4 border-border bg-card/60 px-4 py-3">
+                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Archived students
+                </p>
+                <p className="mt-1 text-sm text-foreground">
+                  Restore a student when they return to your active roster. Their saved
+                  evidence stays attached to the same student record.
+                </p>
+              </div>
+              <ul className="border border-border bg-card/60">
+                {archivedStudents.map((student) => (
+                  <ArchivedStudentRow
+                    key={student.id}
+                    student={student}
+                    activeClasses={activeClassOptions}
+                  />
+                ))}
+              </ul>
+            </section>
+          ) : null}
           {unassignedStudents.length > 0 ? (
             <section className="space-y-3">
               <div className="border-l-4 border-primary bg-card/60 px-4 py-3">

@@ -39,6 +39,16 @@ describe("Unit 18 archive evidence UI", () => {
     expect(evidenceFeed).not.toMatch(/archived evidence|restore evidence/i);
   });
 
+  it("optimistically removes archived saved evidence rows from feed rendering", () => {
+    expect(evidenceFeed).toContain("hiddenSavedEvidenceIds");
+    expect(evidenceFeed).toContain("activeEvidenceRecords");
+    expect(evidenceFeed).toContain(
+      "(record) => !hiddenSavedEvidenceIds.has(record.id)"
+    );
+    expect(evidenceFeed).toContain("visibleEvidenceRecords.map((record) =>");
+    expect(evidenceFeed).toContain("onArchived={handleSavedEvidenceHidden}");
+  });
+
   it("does not add restore, export, bulk archive, or raw draft behavior", () => {
     const combined = `${savedEvidenceRow}\n${evidenceFeed}`;
     expect(combined).not.toMatch(

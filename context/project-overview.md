@@ -4,7 +4,7 @@
 
 ClassTrace is a teacher-first student evidence capture app. Teachers set up a roster, capture student-specific observations quickly, review the system's structured interpretation, and save validated evidence to student timelines.
 
-The scoped V1 build path is complete. The current app supports a public landing page, Clerk authentication, one personal teacher workspace, guided roster setup, manual and paste-list roster entry, deterministic student-specific capture, structured draft review, teacher-validated database-backed evidence, a global evidence feed, student timelines, archive/delete behavior, individual student CSV export, and basic settings.
+The scoped V1 build path is complete. The current app supports a public landing page, Clerk authentication, one personal teacher workspace, guided roster setup, manual and paste-list roster entry, deterministic student-specific capture, structured draft review, teacher-validated database-backed evidence, a global evidence feed, student timelines, archive/delete behavior, archived-student restore, individual student CSV export, and basic settings.
 
 Post-V1/pre-beta work should preserve the core product direction while making the existing teacher-first evidence loop usable in a real classroom over time. The active feature build path is `context/post-v1-pre-beta-build-plan.md`.
 
@@ -154,6 +154,7 @@ The default authenticated destination after onboarding is the global evidence fe
 ### Archive, Delete, and Export
 
 - Teacher can archive students or evidence.
+- Teacher can restore archived students back into an active class.
 - Teacher can permanently delete students or evidence.
 - Archive should be the safer/default cleanup action.
 - Permanent delete must show strong warning.
@@ -305,6 +306,7 @@ If three teachers have the same real student, ClassTrace V1 treats those as thre
 - Raw draft note text is not permanently stored.
 - Teacher can view validated evidence on an individual student timeline.
 - Teacher can archive students and evidence.
+- Teacher can restore archived students back into an active class.
 - Teacher can permanently delete students and evidence with strong warning.
 - Deleting a student warns that connected evidence will also be deleted.
 - Teacher can export validated evidence for one student.

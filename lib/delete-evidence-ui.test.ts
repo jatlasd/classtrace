@@ -71,4 +71,12 @@ describe("Unit 19 delete evidence UI", () => {
     expect(evidenceFeed).toContain("hiddenSavedEvidenceIds.has");
     expect(evidenceFeed).toContain("onDeleted={handleSavedEvidenceHidden}");
   });
+
+  it("optimistically removes deleted saved evidence rows from feed rendering", () => {
+    expect(evidenceFeed).toContain("activeEvidenceRecords");
+    expect(evidenceFeed).toContain(
+      "(record) => !hiddenSavedEvidenceIds.has(record.id)"
+    );
+    expect(evidenceFeed).toContain("visibleEvidenceRecords.map((record) =>");
+  });
 });

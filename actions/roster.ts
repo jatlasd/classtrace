@@ -12,6 +12,10 @@ import {
   type DeleteRosterStudentResult,
 } from "@/lib/students/delete-roster-student";
 import {
+  restoreRosterStudentForWorkspace,
+  type RestoreRosterStudentResult,
+} from "@/lib/students/restore-roster-student";
+import {
   createRosterStudentForWorkspace,
   type RosterStudentDisplay,
   updateRosterStudentForWorkspace,
@@ -62,6 +66,13 @@ export type DeleteRosterStudentActionInput = {
 };
 
 export type DeleteRosterStudentActionResult = DeleteRosterStudentResult;
+
+export type RestoreRosterStudentActionInput = {
+  studentId: string;
+  classGroupId: string;
+};
+
+export type RestoreRosterStudentActionResult = RestoreRosterStudentResult;
 
 export async function createRosterStudent(
   input: CreateRosterStudentActionInput
@@ -170,6 +181,28 @@ export async function archiveRosterStudent(
   }
 }
 
+export async function restoreRosterStudent(
+  input: RestoreRosterStudentActionInput
+): Promise<RestoreRosterStudentActionResult> {
+  try {
+    const workspace = await getCurrentWorkspace();
+    const result = await restoreRosterStudentForWorkspace({
+      workspaceId: workspace.workspaceId,
+      input,
+    });
+
+    if (result.success) {
+      revalidatePath(routes.roster);
+      revalidatePath(routes.feed);
+      revalidatePath(routes.student(result.studentId));
+    }
+
+    return result;
+  } catch (error) {
+    console.error("[actions/roster/restoreRosterStudent]", error);
+    return { success: false, error: "Failed to restore student." };
+  }
+}
 export async function deleteRosterStudent(
   input: DeleteRosterStudentActionInput
 ): Promise<DeleteRosterStudentActionResult> {

@@ -450,14 +450,18 @@ export function EvidenceFeed({
       return [];
     }
 
+    const activeEvidenceRecords = initialEvidenceRecords.filter(
+      (record) => !hiddenSavedEvidenceIds.has(record.id)
+    );
+
     if (searchQuery.trim()) {
-      return initialEvidenceRecords.filter((record) =>
+      return activeEvidenceRecords.filter((record) =>
         evidenceRecordMatchesSearch(record, searchQuery)
       );
     }
 
-    return initialEvidenceRecords;
-  }, [filter, initialEvidenceRecords, searchQuery]);
+    return activeEvidenceRecords;
+  }, [filter, hiddenSavedEvidenceIds, initialEvidenceRecords, searchQuery]);
 
   const hasAnyFeedItems =
     draftItems.length > 0 || initialEvidenceRecords.length > 0;
