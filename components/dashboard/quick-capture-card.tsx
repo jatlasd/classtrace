@@ -80,7 +80,10 @@ const mentionHighlightStyle = {
 
 type QuickCaptureCardProps = {
   rosterStudents: CaptureRosterStudent[];
-  onDraft: (draft: NoteDraft) => void;
+  onDraft: (
+    draft: NoteDraft,
+    identity: { id: string; capturedAt: number }
+  ) => void;
 };
 
 function resolutionMessage(
@@ -164,7 +167,10 @@ export function QuickCaptureCard({
 
   function handlePost() {
     if (!canCapture) return;
-    onDraft(buildNoteDraft(trimmedPlainText));
+    onDraft(buildNoteDraft(trimmedPlainText), {
+      id: crypto.randomUUID(),
+      capturedAt: Date.now(),
+    });
     setPosted(true);
     setMarkupValue("");
     setPlainText("");

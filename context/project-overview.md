@@ -136,7 +136,7 @@ The default authenticated destination after onboarding is the global evidence fe
 - The app may structure the capture using deterministic parsing/rules.
 - V1 does not use generative AI.
 - V1 does not use AI interpretation.
-- V1 did not store raw draft notes permanently. In pre-beta, the original capture remains temporary and only the teacher-approved Evidence note may become durable.
+- V1 did not store raw draft notes permanently. In pre-beta, the original capture remains temporary: after Capture, an unvalidated draft may survive same-tab refresh through workspace-isolated `sessionStorage` until successful validation, explicit deletion, or the next device-local midnight. Only the teacher-approved Evidence note may become durable.
 
 ### Validation Flow
 
@@ -194,6 +194,8 @@ Expected V1 data objects:
 Completed V1 permanently stored validated structured evidence only and did not store raw draft notes.
 
 For pre-beta work, the original capture text can exist temporarily while the teacher is composing and reviewing. It must not become a hidden durable raw-capture record. New beta evidence saves require a teacher-reviewed Evidence note that is shown before save and stored permanently exactly as approved.
+
+After the teacher clicks Capture, the original capture may be held in versioned, workspace-isolated browser `sessionStorage` so the unvalidated draft survives refresh in the same tab. Composer text and review-form edits are not persisted. Session drafts are cleared after successful validation, explicit deletion, workspace mismatch, malformed storage, or the next device-local midnight. They are not database evidence, cross-tab backups, or cross-device drafts.
 
 Historical V1 structured-only records must remain honest legacy structured records. Do not fabricate teacher-authored Evidence note text for them.
 
@@ -303,7 +305,7 @@ If three teachers have the same real student, ClassTrace V1 treats those as thre
 - App structures capture data using deterministic rules only.
 - Teacher can review and validate structured evidence before save.
 - App permanently stores only validated structured evidence.
-- Raw draft note text is not permanently stored.
+- Raw draft note text is not permanently stored; captured unvalidated drafts may persist temporarily in same-tab `sessionStorage` until validation, deletion, or local midnight.
 - Teacher can view validated evidence on an individual student timeline.
 - Teacher can archive students and evidence.
 - Teacher can restore archived students back into an active class.

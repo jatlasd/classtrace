@@ -27,6 +27,7 @@ export default async function FeedPage() {
 
   return (
     <EvidenceFeed
+      workspaceId={workspace.workspaceId}
       rosterStudents={rosterStudents}
       initialEvidenceRecords={evidenceRecords}
     />

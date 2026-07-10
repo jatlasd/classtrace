@@ -220,32 +220,41 @@ Remove remaining user-facing `V1` wording from validation errors.
 
 ---
 
-## Task UIP-09 - Fix Feed Persistence Copy for Session-Only Drafts
+## Task UIP-09 - Add Same-Tab Session Draft Persistence
 
 ### Goal
 
-Correct copy that says drafts and saved evidence `will stay` in the feed when drafts are only React state and vanish on refresh.
+Let captured, unvalidated drafts survive refresh in the same tab while accurately distinguishing them from durable saved evidence.
 
 ### Scope
 
-- Update user-facing wording so it truthfully distinguishes temporary drafts from durable saved evidence.
-- Do not add session storage, local storage, or draft persistence unless the human explicitly chooses that product direction.
+- Persist captured, unvalidated raw drafts in versioned, workspace-isolated `sessionStorage`.
+- Clear session drafts after successful validation, explicit deletion, workspace mismatch, malformed storage, or the next device-local midnight.
+- Update user-facing wording so it truthfully distinguishes same-tab drafts from durable saved evidence.
+- Keep composer text and review-form edits in React state only.
+- Do not add `localStorage`, database, server-side, cross-tab, or cross-device raw-draft persistence.
 - Preserve the existing capture and save flow.
 
 ### Likely Files
 
 - Feed/capture helper copy component(s).
+- `components/dashboard/evidence-feed.tsx`
+- `app/app/feed/page.tsx`
+- `lib/evidence/session-draft-storage.ts`
 - UI/static tests that assert feed copy.
+- Focused session-draft storage tests.
 
 ### Verification
 
-- Copy no longer overpromises draft persistence.
+- Captured drafts survive same-tab refresh before local midnight.
+- Successful validation, deletion, workspace mismatch, malformed data, and local midnight clear the session draft.
+- Copy accurately describes same-tab and midnight behavior.
 - Saved evidence persistence copy remains accurate.
-- `npm run lint` and `npm run build` pass when possible.
+- Focused tests, full tests, lint, and build pass.
 
-### Product Decision Needed
+### Product Decision
 
-If the desired fix is persistent drafts rather than copy correction, create a separate product/architecture spec before implementation.
+Approved on 2026-07-10. The focused contract is `context/specs/uip-09-session-draft-persistence.md`.
 
 ---
 

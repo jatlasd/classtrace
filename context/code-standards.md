@@ -395,8 +395,12 @@ Capture rules:
 - Captures with no resolved student cannot be saved
 - Captures with multiple students cannot be saved
 - Teacher validation is required before permanent save
-- Original capture text may exist only temporarily during compose/review
+- Original capture text may exist temporarily during compose/review; captured unvalidated drafts may use the approved workspace-isolated, versioned `sessionStorage` boundary
 - Original capture text must not become a hidden durable raw-capture record
+- Raw capture drafts must not use `localStorage`, database persistence, server-side draft storage, logs, exports, timelines, or reports
+- Session draft storage must contain only the raw note, draft ID, capture time, workspace ID, version, and local-midnight expiry
+- Composer text and review-form edits remain React state only
+- Session drafts must be removed after successful validation, explicit deletion, workspace mismatch, malformed data, or the next device-local midnight
 - New pre-beta saved evidence must include the teacher-reviewed Evidence note exactly as approved
 - Structured fields remain teacher-approved metadata
 
@@ -681,6 +685,7 @@ The agent must not add any of the following without explicit human approval:
 - Generative AI
 - AI interpretation
 - Hidden durable raw-capture persistence
+- Raw-capture persistence outside the approved UIP-09 `sessionStorage` boundary
 - File uploads
 - Photo evidence
 - Audio evidence

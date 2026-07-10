@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import {
   saveValidatedEvidence,
   type SaveValidatedEvidenceActionInput,
@@ -23,6 +23,15 @@ import type {
 } from "@/lib/evidence/capture-validation";
 import { resolveCaptureDisplay } from "@/lib/evidence/capture-validation";
 import type { EvidenceFeedRecord } from "@/lib/evidence/evidence-feed-records";
+import {
+  isCurrentLocalDay,
+  loadSessionDrafts,
+  nextLocalMidnight,
+  removeSessionDraft,
+  saveSessionDrafts,
+  upsertSessionDraft,
+  type SessionDraftStorage,
+} from "@/lib/evidence/session-draft-storage";
 import { normalizeTag } from "@/lib/format-tag";
 import { buildNoteDraft } from "@/lib/note-processing";
 import type { NoteDraft } from "@/lib/note-processing/types";
@@ -45,7 +54,10 @@ type FeedItem = {
 
 type InboxFilter = "all" | "needs_review" | "validated";
 
+const EMPTY_FEED_ITEMS: FeedItem[] = [];
+
 type EvidenceFeedProps = {
+  workspaceId: string;
   rosterStudents: CaptureRosterStudent[];
   initialEvidenceRecords: EvidenceFeedRecord[];
 };
@@ -58,6 +70,28 @@ const filterOptions: { value: InboxFilter; label: string }[] = [
 
 function feedItemCountLabel(count: number): string {
   return count === 1 ? "1 item showing" : `${count} items showing`;
+}
+
+function formatSessionDraftTimestamp(timestampMs: number): string {
+  const capturedAt = new Date(timestampMs);
+  const ageMs = Date.now() - timestampMs;
+
+  if (ageMs >= 0 && ageMs < 60_000) {
+    return "Just now";
+  }
+
+  return `Today at ${capturedAt.toLocaleTimeString(undefined, {
+    hour: "numeric",
+    minute: "2-digit",
+  })}`;
+}
+
+function getBrowserSessionStorage(): SessionDraftStorage | null {
+  try {
+    return window.sessionStorage;
+  } catch {
+    return null;
+  }
 }
 
 function isValidated(item: FeedItem): boolean {
@@ -385,11 +419,16 @@ function studentResolutionErrorMessage(
 }
 
 export function EvidenceFeed({
+  workspaceId,
   rosterStudents,
   initialEvidenceRecords,
 }: EvidenceFeedProps) {
   const router = useRouter();
   const [draftItems, setDraftItems] = useState<FeedItem[]>([]);
+  const [hydratedWorkspaceId, setHydratedWorkspaceId] = useState<string | null>(
+    null
+  );
+  const sessionStorageRef = useRef<SessionDraftStorage | null>(null);
   const [filter, setFilter] = useState<InboxFilter>("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [captureEditError, setCaptureEditError] = useState("");
@@ -397,14 +436,102 @@ export function EvidenceFeed({
     Set<string>
   >(() => new Set());
   const rosterSetupNeeded = rosterStudents.length === 0;
+  const sessionDraftsReady = hydratedWorkspaceId === workspaceId;
+  const activeDraftItems = sessionDraftsReady ? draftItems : EMPTY_FEED_ITEMS;
+
+  useEffect(() => {
+    const storage = getBrowserSessionStorage();
+    sessionStorageRef.current = storage;
+    const hydrationTimer = window.setTimeout(() => {
+      const restored = loadSessionDrafts(storage, workspaceId);
+
+      setDraftItems(
+        restored.drafts
+          .map((sessionDraft) => ({
+            id: sessionDraft.id,
+            draft: buildNoteDraft(sessionDraft.rawNote),
+            timestamp: formatSessionDraftTimestamp(sessionDraft.capturedAt),
+            timestampMs: sessionDraft.capturedAt,
+          }))
+          .sort((a, b) => b.timestampMs - a.timestampMs)
+      );
+      setHydratedWorkspaceId(workspaceId);
+    }, 0);
+
+    return () => window.clearTimeout(hydrationTimer);
+  }, [workspaceId]);
+
+  useEffect(() => {
+    if (!sessionDraftsReady) {
+      return;
+    }
+
+    saveSessionDrafts(
+      sessionStorageRef.current,
+      workspaceId,
+      draftItems
+        .filter((item) => !isValidated(item))
+        .map((item) => ({
+          id: item.id,
+          rawNote: item.draft.parsed.rawNote,
+          capturedAt: item.timestampMs,
+        }))
+    );
+  }, [draftItems, sessionDraftsReady, workspaceId]);
+
+  useEffect(() => {
+    if (!sessionDraftsReady) {
+      return;
+    }
+
+    const storage = sessionStorageRef.current;
+    let midnightTimer: number | undefined;
+
+    function purgeExpiredDrafts(): void {
+      const now = Date.now();
+      loadSessionDrafts(storage, workspaceId, now);
+      setDraftItems((current) =>
+        current.filter(
+          (item) => isValidated(item) || isCurrentLocalDay(item.timestampMs, now)
+        )
+      );
+    }
+
+    function scheduleMidnightPurge(): void {
+      const now = Date.now();
+      const delay = Math.max(0, nextLocalMidnight(now) - now + 50);
+      midnightTimer = window.setTimeout(() => {
+        purgeExpiredDrafts();
+        scheduleMidnightPurge();
+      }, delay);
+    }
+
+    function handleVisibilityChange(): void {
+      if (document.visibilityState === "visible") {
+        purgeExpiredDrafts();
+      }
+    }
+
+    window.addEventListener("focus", purgeExpiredDrafts);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    scheduleMidnightPurge();
+
+    return () => {
+      if (midnightTimer !== undefined) {
+        window.clearTimeout(midnightTimer);
+      }
+      window.removeEventListener("focus", purgeExpiredDrafts);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, [sessionDraftsReady, workspaceId]);
 
   const summaryItems = useMemo(
     () =>
-      draftItems.map((item) => ({
+      activeDraftItems.map((item) => ({
         draft: item.draft,
         validation: item.validation,
       })),
-    [draftItems]
+    [activeDraftItems]
   );
 
   const savedEvidenceIds = useMemo(
@@ -413,7 +540,7 @@ export function EvidenceFeed({
   );
 
   const visibleDraftItems = useMemo(() => {
-    let result = draftItems.filter(
+    let result = activeDraftItems.filter(
       (item) =>
         !(
           item.validation?.status === "validated" &&
@@ -437,7 +564,7 @@ export function EvidenceFeed({
 
     return result;
   }, [
-    draftItems,
+    activeDraftItems,
     filter,
     searchQuery,
     rosterStudents,
@@ -464,15 +591,18 @@ export function EvidenceFeed({
   }, [filter, hiddenSavedEvidenceIds, initialEvidenceRecords, searchQuery]);
 
   const hasAnyFeedItems =
-    draftItems.length > 0 || initialEvidenceRecords.length > 0;
+    activeDraftItems.length > 0 || initialEvidenceRecords.length > 0;
   const visibleFeedItemCount =
     visibleDraftItems.length + visibleEvidenceRecords.length;
   const hasVisibleFeedItems = visibleFeedItemCount > 0;
-  const needsReviewItemCount = draftItems.filter((item) =>
+  const needsReviewItemCount = activeDraftItems.filter((item) =>
     needsReview(item, rosterStudents)
   ).length;
 
-  function handleDraft(draft: NoteDraft) {
+  function handleDraft(
+    draft: NoteDraft,
+    identity: { id: string; capturedAt: number }
+  ) {
     const resolution = resolveCaptureStudents(
       draft.parsed.mentions,
       rosterStudents
@@ -484,15 +614,18 @@ export function EvidenceFeed({
     }
 
     setCaptureEditError("");
-    setDraftItems((current) => {
-      const newItem: FeedItem = {
-        id: crypto.randomUUID(),
-        draft,
-        timestamp: "Just now",
-        timestampMs: Date.now(),
-      };
-      return [newItem, ...current];
+    const newItem: FeedItem = {
+      id: identity.id,
+      draft,
+      timestamp: "Just now",
+      timestampMs: identity.capturedAt,
+    };
+    upsertSessionDraft(sessionStorageRef.current, workspaceId, {
+      id: newItem.id,
+      rawNote: draft.parsed.rawNote,
+      capturedAt: identity.capturedAt,
     });
+    setDraftItems((current) => [newItem, ...current]);
   }
 
   function handleInvalidCaptureEdit(resolution: CaptureStudentResolution): void {
@@ -510,6 +643,8 @@ export function EvidenceFeed({
     if (!result.success) {
       return result;
     }
+
+    removeSessionDraft(sessionStorageRef.current, workspaceId, id);
 
     setDraftItems((current) =>
       current.map((item) =>
@@ -550,6 +685,14 @@ export function EvidenceFeed({
     }
 
     setCaptureEditError("");
+    const currentItem = draftItems.find((item) => item.id === id);
+    if (currentItem) {
+      upsertSessionDraft(sessionStorageRef.current, workspaceId, {
+        id,
+        rawNote: nextDraft.parsed.rawNote,
+        capturedAt: currentItem.timestampMs,
+      });
+    }
     setDraftItems((current) =>
       current.map((item) => {
         if (item.id !== id) {
@@ -570,6 +713,7 @@ export function EvidenceFeed({
 
   function handleDeleteCapture(id: string) {
     setCaptureEditError("");
+    removeSessionDraft(sessionStorageRef.current, workspaceId, id);
     setDraftItems((current) => current.filter((item) => item.id !== id));
   }
 
@@ -600,7 +744,7 @@ export function EvidenceFeed({
       return (
         <FeedEmptyState
           title="No evidence in the inbox yet"
-          body="Use the capture box above for one student-specific observation. Drafts and saved evidence will stay in this chronological feed."
+          body="Drafts stay in this tab until you save or delete them, and are cleared at midnight. Saved evidence stays in your evidence records."
         />
       );
     }

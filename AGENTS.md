@@ -112,7 +112,7 @@ The strongest early users are special education teachers, case managers, interve
 - Captures with zero resolved students must not be saved.
 - Captures with multiple students must not be saved.
 - Teacher validation is required before evidence becomes permanent.
-- Original capture text may be temporary during compose/review, but must not be stored as a hidden durable raw-capture record.
+- Original capture text may be temporary during compose/review. After the teacher clicks Capture, an unvalidated draft may use workspace-isolated, versioned `sessionStorage` until successful validation, explicit deletion, or the next device-local midnight. It must not be stored as a hidden durable raw-capture record.
 - Pre-beta evidence may permanently store only the teacher-reviewed Evidence note, exactly as approved by the teacher.
 - Deterministic parsing only; do not add generative AI.
 - Text-only evidence; do not add file, photo, audio, PDF, or attachment handling.
@@ -262,6 +262,7 @@ For code changes:
 - Do not send student notes to external AI APIs.
 - Do not add telemetry or analytics casually.
 - Do not log raw notes.
+- Do not persist raw notes in `localStorage`, the database, exports, timelines, reports, or server-side draft storage. The approved temporary browser boundary is `sessionStorage` for captured, unvalidated drafts only.
 - Do not store original capture text as a hidden durable raw-capture record.
 - Do not add demo data that looks like real student records.
 - Do not include disability labels, medical details, discipline conclusions, or sensitive family information in demo data unless explicitly provided as safe fictional content.

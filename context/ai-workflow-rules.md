@@ -405,6 +405,9 @@ The agent must preserve these evidence rules:
 - A capture with multiple students cannot be saved.
 - Evidence must be teacher-validated before permanent save.
 - Original capture text must not become a hidden durable raw-capture record.
+- Captured unvalidated drafts may use only the approved workspace-isolated, versioned `sessionStorage` boundary until successful validation, explicit deletion, or the next device-local midnight.
+- Composer text and review-form edits must remain React state only.
+- Raw drafts must not use `localStorage`, database persistence, server-side draft storage, logs, exports, timelines, or reports.
 - New pre-beta evidence saves require a teacher-reviewed Evidence note stored exactly as approved.
 - Parser output is draft-only.
 - Deterministic suggestions must not become final evidence automatically.
@@ -510,6 +513,7 @@ Before marking any unit complete, verify:
 - [ ] UI changes work on desktop and mobile sizes.
 - [ ] No obvious browser console errors exist.
 - [ ] No hidden durable raw-capture record is introduced.
+- [ ] Any captured session draft follows the approved minimal, workspace-isolated, local-midnight-expiring `sessionStorage` contract.
 - [ ] Captures still require exactly one resolved roster student.
 - [ ] Pre-beta roster/evidence changes preserve required active class assignment and teacher-approved Evidence notes where in scope.
 - [ ] Teacher validation is preserved.

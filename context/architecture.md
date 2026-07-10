@@ -39,7 +39,7 @@ Current characteristics:
 - Archive and permanent delete behavior
 - No generative AI
 - No file uploads
-- No durable raw draft note storage
+- No durable raw draft note storage; captured unvalidated drafts may use temporary, workspace-isolated `sessionStorage`
 
 Post-V1/pre-beta changes must preserve teacher-owned data boundaries and the student evidence model unless the human explicitly changes the product direction. The active feature sequence is `context/post-v1-pre-beta-build-plan.md`.
 
@@ -368,10 +368,12 @@ A saved evidence record must not permanently store the original capture as a hid
 Raw draft text may exist temporarily:
 
 - In client component state while composing
-- In a local draft before submission
+- In versioned, workspace-isolated `sessionStorage` after Capture and before successful validation
 - In server memory during a request if server-side parsing is used
 
 Raw draft text must not be written to the permanent production evidence table as original capture text. New beta saves may write only the teacher-reviewed Evidence note, exactly as shown and approved in review.
+
+The approved session-draft boundary stores only a stable draft ID, raw note, capture timestamp, workspace ID, storage version, and local-midnight expiry. Parser output, review-form edits, validation results, saved evidence IDs, auth data, and roster snapshots are not stored. Session drafts are removed after successful validation, explicit deletion, workspace mismatch, malformed data, or the next device-local midnight.
 
 Legacy V1 evidence records without an Evidence note must remain honest structured-only records. Do not fabricate note text from summaries or metadata.
 
@@ -404,7 +406,7 @@ Framework-level caching and database query optimization are acceptable, but must
 
 ---
 
-## Local Storage
+## Browser Storage
 
 `localStorage` is acceptable only for non-sensitive temporary UI state.
 
@@ -422,6 +424,8 @@ Potential acceptable localStorage uses:
 - Dismissed UI hints
 - Non-sensitive layout preferences
 - Temporary client-only draft state if it does not create a privacy problem
+
+Raw capture drafts must not use `localStorage`. UIP-09 approves `sessionStorage` only for captured, unvalidated drafts under the minimal, workspace-isolated, local-midnight-expiring contract in `context/specs/uip-09-session-draft-persistence.md`. Unfinished composer text and review-form edits remain React state only.
 
 ---
 
@@ -659,6 +663,7 @@ The codebase must never violate these rules.
 9. During pre-beta, every active student must belong to exactly one active class.
 10. New beta evidence saves must include a non-empty teacher-approved Evidence note.
 11. Legacy V1 structured-only evidence must not receive fabricated Evidence note text.
+12. Captured unvalidated raw drafts may use only the approved workspace-isolated `sessionStorage` boundary and must expire at the next device-local midnight.
 
 ### Auth and Access Invariants
 

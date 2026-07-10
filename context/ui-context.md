@@ -385,6 +385,8 @@ Composer style rules:
 - Show helpful validation errors inline.
 - Primary action should be clear and available when requirements are met.
 - For V1, disable or block save until exactly one resolved student is selected.
+- After Capture, keep an unvalidated draft recoverable across refresh in the same tab through the approved session-draft boundary. Do not persist unfinished composer text or review-form edits.
+- Persistence copy must distinguish same-tab, midnight-expiring drafts from durable saved evidence.
 
 Preferred composer card pattern:
 
@@ -641,6 +643,7 @@ Good language:
 - “Student timeline”
 - “Archive student”
 - “Export evidence”
+- “Drafts stay in this tab until you save or delete them, and are cleared at midnight. Saved evidence stays in your evidence records.”
 
 Avoid:
 

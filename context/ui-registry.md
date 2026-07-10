@@ -126,7 +126,7 @@ The composer is larger and closer to the uploaded reference. Unit 12 made the `@
 ### Unit 11 Evidence Feed Workspace
 
 File: `components/dashboard/evidence-feed.tsx`
-Last updated: 2026-07-02 (layout pass)
+Last updated: 2026-07-10 (UIP-09 session draft persistence)
 
 | Property | Class |
 |---|---|
@@ -189,7 +189,7 @@ Last updated: 2026-07-02 (layout pass)
 | Empty state body | `mx-auto mt-2 max-w-md text-sm leading-relaxed text-muted-foreground` |
 
 **Pattern notes:**
-The feed uses a visible but compact header so teachers understand the capture/review loop without turning the app into a dashboard. Inbox controls sit in the same surface as the rows, making search, filter, count, and newest-first status feel attached to the evidence ledger. Empty, filtered-empty, search-empty, and roster-required states share one composed empty-state pattern with direct teacher language and no analytics/reporting framing.
+The feed uses a visible but compact header so teachers understand the capture/review loop without turning the app into a dashboard. Inbox controls sit in the same surface as the rows, making search, filter, count, and newest-first status feel attached to the evidence ledger. Empty, filtered-empty, search-empty, and roster-required states share one composed empty-state pattern with direct teacher language and no analytics/reporting framing. UIP-09 makes captured, unvalidated drafts recoverable across refresh in the same tab through workspace-isolated `sessionStorage`; they are removed after successful validation, explicit deletion, workspace mismatch, malformed storage, or local midnight. Composer text and review-form edits remain React state only. Persistence copy must say: “Drafts stay in this tab until you save or delete them, and are cleared at midnight. Saved evidence stays in your evidence records.”
 
 ---
 ### Saved Evidence Row

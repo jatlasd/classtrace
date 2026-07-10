@@ -51,7 +51,8 @@ describe("Unit 12 deterministic student resolution wiring", () => {
     expect(evidenceFeed).toContain("QuickCaptureCard");
     expect(evidenceFeed).toContain("rosterStudents={rosterStudents}");
     expect(evidenceFeed).toContain("resolveCaptureDisplay(");
-    expect(evidenceFeed).not.toMatch(/workspaceId|teacherProfileId|clerk/i);
+    expect(evidenceFeed).toContain("loadSessionDrafts(storage, workspaceId)");
+    expect(evidenceFeed).not.toMatch(/teacherProfileId|clerk/i);
   });
 
   it("uses the database roster snapshot for capture row display", () => {

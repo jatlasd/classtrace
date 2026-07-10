@@ -20,6 +20,7 @@ Update this file after every meaningful implementation change.
 - UIP-06 implemented and verified with automated checks - archived/deleted saved evidence rows are hidden from feed rendering immediately after successful action.
 - UIP-07 implemented and verified with automated checks - archived roster students can be restored into an active class without releasing identifiers or creating new student records.
 - UIP-08 implemented and verified with automated checks - user-facing multi-student validation copy no longer says `V1`.
+- UIP-09 implemented and verified - captured unvalidated drafts use workspace-isolated `sessionStorage` until validation, deletion, or local midnight (`context/specs/uip-09-session-draft-persistence.md`).
 - Phase 2 complete — roster onboarding
 - Unit 02 complete and verified — Route Map and App Shell (`context/specs/02-route-map-and-app-shell.md`)
 - Unit 03 complete and verified — Public Landing Page UI (`context/specs/03-public-landing-page-ui.md`)
@@ -54,7 +55,37 @@ Update this file after every meaningful implementation change.
 
 - ClassTrace V1 is complete for the scoped teacher-first evidence capture build path.
 - Current active build path: `context/post-v1-pre-beta-build-plan.md`, starting with Phase 6.
-- Current task: UIP-01 through UIP-08 implemented and verified; next user-identified problem task should be selected separately.
+- Current task: UIP-01 through UIP-09 implemented and verified; select the next user-identified problem separately.
+
+---
+
+## UIP-09 - Same-Tab Session Draft Persistence (Implemented)
+
+Spec: `context/specs/uip-09-session-draft-persistence.md`
+
+### What changed
+
+- Added a minimal, versioned `sessionStorage` contract containing only workspace ID, expiry, draft ID, raw note, and capture timestamp.
+- Captured unvalidated drafts now survive refresh and same-tab navigation while composer text and review-form edits remain React state only.
+- Drafts are reconstructed through the existing deterministic parser and remain behind the existing one-student and teacher-validation boundaries.
+- Capture/edit writes and validation/delete removals happen at the interaction boundary; an effect reconciles state after hydration.
+- Workspace mismatches, malformed payloads, unsupported versions, storage failures, and local-midnight expiry fail closed without logging raw notes.
+- Added focus/visibility and scheduled local-midnight cleanup.
+- Updated feed persistence copy and the affected product, architecture, code-standard, UI, workflow, and agent contracts.
+
+### Verification
+
+- Focused tests passed: 4 files / 24 tests.
+- Full `npm.cmd run test` passed: 55 files / 309 tests. Existing archive/delete failure-path tests logged expected contextual database errors while asserting safe generic results.
+- `npm.cmd run lint` passed.
+- `npm.cmd run build` passed with Next.js 16.2.3.
+- Chrome manual UX verification passed for valid capture, immediate same-tab refresh recovery, raw-capture edit recovery, explicit deletion, deletion persistence after refresh, restored draft count, and absence of app console errors.
+- The first browser pass exposed passive-effect timing on immediate refresh; the focused correction moved capture/edit persistence to the interaction boundary before the final passing verification.
+
+### Remaining risks / follow-ups
+
+- Local-midnight behavior is covered by focused automated calendar/expiry tests; the manual browser pass did not wait through a real midnight boundary.
+- Session drafts intentionally do not synchronize across tabs or devices and disappear when the browser session ends.
 
 ---
 
