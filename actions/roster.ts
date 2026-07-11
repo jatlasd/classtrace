@@ -89,6 +89,7 @@ export async function createRosterStudent(
 
     if (result.success) {
       revalidatePath(routes.roster);
+      revalidatePath(routes.feed);
     }
 
     return result;
@@ -111,6 +112,7 @@ export async function importRosterStudents(
 
     if (result.success) {
       revalidatePath(routes.roster);
+      revalidatePath(routes.feed);
     }
 
     return result;

@@ -13,15 +13,28 @@ describe("roster server actions", () => {
     expect(source).not.toMatch(/input\.workspaceId|formData\.get\("workspaceId"\)/);
   });
 
-  it("revalidates the roster route after successful create", () => {
-    expect(source).toContain("revalidatePath");
-    expect(source).toContain("routes.roster");
+  it("revalidates roster and feed routes after successful create", () => {
+    const createAction = source.match(
+      /export async function createRosterStudent[\s\S]*?\n\}/
+    );
+
+    expect(createAction?.[0]).toContain("revalidatePath(routes.roster)");
+    expect(createAction?.[0]).toContain("revalidatePath(routes.feed)");
   });
 
   it("imports roster students through current workspace resolution", () => {
     expect(source).toContain("importRosterStudentsForWorkspace");
     expect(source).toContain("workspace.workspaceId");
     expect(source).not.toMatch(/input\.workspaceId|formData\.get\("workspaceId"\)/);
+  });
+
+  it("revalidates roster and feed routes after successful import", () => {
+    const importAction = source.match(
+      /export async function importRosterStudents[\s\S]*?\n\}/
+    );
+
+    expect(importAction?.[0]).toContain("revalidatePath(routes.roster)");
+    expect(importAction?.[0]).toContain("revalidatePath(routes.feed)");
   });
 
   it("archives roster students through current workspace resolution", () => {

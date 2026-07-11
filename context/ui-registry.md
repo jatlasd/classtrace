@@ -119,7 +119,7 @@ Last updated: 2026-06-15 (Unit 12 resolution gate)
 | Capture button | `h-11 rounded-lg px-6 text-sm font-semibold` with `variant="outline"` and `text-primary hover:text-primary` |
 
 **Pattern notes:**  
-The composer is larger and closer to the uploaded reference. Unit 12 made the `@student` suggestions database-roster-backed and added the V1 capture gate: empty notes, no-student notes, unresolved students, and multi-student notes cannot be captured. Resolution guidance appears inline above the footer; ready state uses muted text, blocking states use destructive text. It stays text-only: do not add photo, video, audio, file, attachment, or upload affordances. Mention/tag/review items in the footer are non-interactive hints until real behavior exists.
+The composer is larger and closer to the uploaded reference. Unit 12 made the `@student` suggestions database-roster-backed and added the V1 capture gate: empty notes, no-student notes, unresolved students, and multi-student notes cannot be captured. UIP-12 also derives the example placeholder from the first active roster handle, with `@student` only as an empty-roster fallback, so the composer never teaches a known-invalid hard-coded handle. Resolution guidance appears inline above the footer; ready state uses muted text, blocking states use destructive text. It stays text-only: do not add photo, video, audio, file, attachment, or upload affordances. Mention/tag/review items in the footer are non-interactive hints until real behavior exists.
 
 ---
 

@@ -5,6 +5,7 @@ import { MentionsInput, Mention } from "react-mentions";
 import type { MentionsInputStyle } from "react-mentions";
 import { Button } from "@/components/ui/button";
 import { buildNoteDraft } from "@/lib/note-processing";
+import { buildCapturePlaceholder } from "@/lib/students/build-capture-placeholder";
 import type { NoteDraft } from "@/lib/note-processing/types";
 import { parseRawNote } from "@/lib/note-processing/parse-raw-note";
 import {
@@ -137,6 +138,10 @@ export function QuickCaptureCard({
       })),
     [rosterStudents]
   );
+  const placeholder = useMemo(
+    () => buildCapturePlaceholder(rosterStudents),
+    [rosterStudents]
+  );
 
   const tagSuggestions = useMemo(() => [], []);
   const trimmedPlainText = plainText.trim();
@@ -219,7 +224,7 @@ export function QuickCaptureCard({
               value={markupValue}
               onChange={handleChange}
               onKeyDown={handleKeyDown}
-              placeholder="@Mary used a new reading strategy during small group #reading #strategy..."
+              placeholder={placeholder}
               style={quickCaptureMentionsStyle}
               allowSuggestionsAboveCursor
             >

@@ -333,6 +333,8 @@ Example: `@jeremy worked on #reading` must not default to only `worked on`.
 
 ### Task UIP-12 — Stabilize Roster-Backed Capture State
 
+**Status:** Completed on 2026-07-11.
+
 #### Goal
 
 Make valid roster handles resolve on first arrival at the feed and keep composer guidance aligned with the actual roster.
