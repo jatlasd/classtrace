@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -16,6 +17,7 @@ import {
   type InterpretationFields,
 } from "@/lib/evidence/capture-validation";
 import type { DraftDisplay } from "@/lib/note-processing/draft-to-display";
+import { routes } from "@/lib/routes";
 
 type InterpretationReviewPanelProps = {
   display: DraftDisplay;
@@ -24,6 +26,7 @@ type InterpretationReviewPanelProps = {
     saveInput: ValidatedEvidenceSaveInput
   ) => Promise<ValidatedEvidenceSaveResult>;
   onDismiss: () => void;
+  onCaptureAnother: () => void;
   onSavePendingChange?: (isPending: boolean) => void;
 };
 
@@ -40,7 +43,11 @@ type ValidatedEvidenceSaveInput = {
 };
 
 type ValidatedEvidenceSaveResult =
-  | { success: true; evidenceId: string }
+  | {
+      success: true;
+      evidenceId: string;
+      isFirstWorkspaceEvidence: boolean;
+    }
   | { success: false; error: string };
 
 type FormState = {
@@ -140,6 +147,7 @@ function InterpretationReviewPanelContent({
   display,
   onConfirm,
   onDismiss,
+  onCaptureAnother,
   onSavePendingChange,
 }: InterpretationReviewPanelProps) {
   const [isEditing, setIsEditing] = useState(false);
@@ -147,6 +155,7 @@ function InterpretationReviewPanelContent({
   const [validationError, setValidationError] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [savedEvidenceId, setSavedEvidenceId] = useState("");
+  const [isFirstWorkspaceEvidence, setIsFirstWorkspaceEvidence] = useState(false);
   const studentValidation = validateSingleStudentForInterpretation(display);
 
   function updateField<K extends keyof FormState>(key: K, value: FormState[K]) {
@@ -226,6 +235,7 @@ function InterpretationReviewPanelContent({
 
     if (result.success) {
       setSavedEvidenceId(result.evidenceId);
+      setIsFirstWorkspaceEvidence(result.isFirstWorkspaceEvidence);
       return;
     }
 
@@ -388,6 +398,33 @@ function InterpretationReviewPanelContent({
       <div aria-live="polite" className="mt-3 min-h-5">
         {validationError ? (
           <p className="text-sm text-destructive">{validationError}</p>
+        ) : savedEvidenceId && isFirstWorkspaceEvidence && studentValidation.status === "valid_one_student" ? (
+          <section className="rounded-card border border-validated/60 bg-validated/20 p-4 shadow-paper">
+            <p className="text-xs font-semibold uppercase tracking-wider text-validated-foreground">
+              Evidence trail started
+            </p>
+            <h3 className="mt-1 font-display text-lg font-semibold text-foreground">
+              Saved to {studentValidation.studentName}&apos;s timeline.
+            </h3>
+            <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">
+              This observation is now part of the record, ready when you need to look back instead of reconstructing the moment from memory.
+            </p>
+            <div className="mt-4 flex flex-wrap gap-2">
+              <Button asChild size="sm">
+                <Link href={routes.student(studentValidation.studentId)}>
+                  View {studentValidation.studentName}&apos;s timeline
+                </Link>
+              </Button>
+              <Button asChild size="sm" variant="outline">
+                <Link href={routes.studentReport(studentValidation.studentId)}>
+                  Preview report
+                </Link>
+              </Button>
+              <Button size="sm" variant="ghost" onClick={onCaptureAnother}>
+                Capture another note
+              </Button>
+            </div>
+          </section>
         ) : savedEvidenceId ? (
           <p className="text-sm text-validated-foreground">
             Validated evidence saved.
@@ -401,7 +438,7 @@ function InterpretationReviewPanelContent({
         )}
       </div>
 
-      <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-border/50 pt-3">
+      <div className={`mt-4 flex flex-wrap items-center gap-2 border-t border-border/50 pt-3 ${savedEvidenceId && isFirstWorkspaceEvidence ? "hidden" : ""}`}>
         <Button
           size="sm"
           disabled={isSaving || Boolean(savedEvidenceId)}

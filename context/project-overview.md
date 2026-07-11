@@ -14,6 +14,8 @@ The active pre-beta product loop is:
 class-first roster setup -> student-specific capture -> structured draft + teacher-approved Evidence note -> saved evidence -> student timeline -> readable student report
 ```
 
+The first-use experience should make the retrieval payoff visible after the workspace's first validated save. That success state links directly to the saved student's timeline and report, while those read surfaces use factual record counts to show how the evidence trail is accumulating. This is guidance around the existing loop, not a new onboarding state, analytics layer, or reporting product.
+
 This pre-beta loop intentionally supersedes two completed V1 assumptions: active students must belong to exactly one active class, and new saved evidence must include a durable teacher-approved Evidence note. It does not change the global capture workflow or the one-student evidence rule.
 
 ClassTrace is not a teacher notebook. It is not for general notes, classwide reflections, lesson planning, parent messaging, gradebook behavior, IEP writing, or district/admin surveillance. The purpose of every capture is student evidence.

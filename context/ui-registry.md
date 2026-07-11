@@ -929,6 +929,24 @@ Last updated: 2026-07-04 (Unit 32 Evidence note export column)
 **Pattern notes:**
 This small Client Component owns only the browser download interaction for a Server Action-generated CSV. It sends only `studentId`; no workspace, teacher, Clerk, evidence, or roster-student ownership IDs cross the client boundary. Keep it secondary and compact inside the student header evidence count panel. The zero-record state disables export with "No validated evidence to export yet." Unit 32 adds the durable Evidence note to the generated CSV as its own column while preserving the structured Summary column and one-student scope. Do not expand this component into format selection, PDF/DOCX/XLSX generation, report templates, all-student export, raw-note export, or compliance-oriented copy.
 
+### First-save payoff panel
+
+File: `components/dashboard/interpretation-review-panel.tsx`
+Last updated: 2026-07-11
+
+| Property | Class |
+| --- | --- |
+| Background | `bg-validated/20` |
+| Border | `border border-validated/60` |
+| Border radius | `rounded-card` |
+| Text — primary | `font-display text-lg font-semibold text-foreground` |
+| Text — secondary | `text-sm leading-relaxed text-muted-foreground` |
+| Spacing | `p-4`, actions `mt-4 gap-2` |
+| Shadow | `shadow-paper` |
+| Accent usage | `text-validated-foreground` |
+
+**Pattern notes:** Use this restrained panel only for a meaningful, teacher-controlled evidence milestone. Keep it inside the originating workflow context, use factual retrieval language, provide concrete next actions, and avoid confetti, gamification, inferred outcomes, or durable celebration state. Ordinary saves retain the compact success line.
+
 ---
 
 ### Student Timeline Evidence Item

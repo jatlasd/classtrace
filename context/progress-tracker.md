@@ -16,6 +16,7 @@ Update this file after every meaningful implementation change.
 - Phase 8 Unit 32 implemented and verified with automated checks - Evidence Note Review, Feed, Timeline, and Export Pass (`context/specs/32-evidence-note-review-feed-timeline-export-pass.md`).
 - Phase 9 Unit 33 implemented and verified with automated checks - Per-Student Report View and Date-Range Query (`context/specs/33-per-student-report-view-and-date-range-query.md`).
 - Phase 9 Unit 34 implemented and verified with automated checks - Printable Student Report (`context/specs/34-printable-student-report.md`).
+- First-Use Payoff Path implemented on a focused sidestep branch: first-save payoff, accumulation framing, early report guidance, and retrieval-focused landing copy (`context/specs/first-use-payoff-path.md`).
 - UIP-05 implemented and verified with automated checks - class-page continue-to-feed readiness now follows global class-first capture eligibility.
 - UIP-06 implemented and verified with automated checks - archived/deleted saved evidence rows are hidden from feed rendering immediately after successful action.
 - UIP-07 implemented and verified with automated checks - archived roster students can be restored into an active class without releasing identifiers or creating new student records.
@@ -1512,6 +1513,17 @@ Verification after refinement: `npm run lint` pass, `npm run build` pass, `npm r
 ## In Progress
 
 - No implementation unit in progress.
+
+---
+
+## First-Use Payoff Path (Implemented)
+
+- Added a server-derived first-workspace-evidence flag without schema or persistent onboarding state.
+- Added the transient saved-review payoff panel with timeline, report, and composer actions.
+- Added factual timeline accumulation copy, early report guidance, and retrieval-focused landing calls to action.
+- Added focused coverage and documented the new UI pattern through `/imprint`.
+- Full verification passed: 55 test files / 309 tests, lint, and the Next.js 16.2.3 production build.
+- Authenticated/manual browser verification remains outstanding because the in-app browser could not attach to the local development page after two attempts.
 
 ---
 

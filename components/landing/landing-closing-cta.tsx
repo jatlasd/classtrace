@@ -34,15 +34,15 @@ export function LandingClosingCta() {
             <span className="hand-underline-rust">need it later</span>.
           </h2>
           <p className="mt-4 max-w-md text-base leading-relaxed text-foreground">
-            Start with one student. Capture one moment. Let the evidence build
-            into something you can actually bring to the table.
+            Start with one student. Capture one moment. Build the record before
+            you need it, so the next conversation does not start from memory.
           </p>
           <div className="mt-5 flex justify-center">
             <Button
               asChild
               className="h-11 min-w-56 rounded-md px-7 text-[15px] font-semibold"
             >
-              <Link href={routes.signUp}>Capture your first note</Link>
+              <Link href={routes.signUp}>Start an evidence trail</Link>
             </Button>
           </div>
         </div>
