@@ -21,6 +21,8 @@ describe("Unit 18 archive evidence UI", () => {
     expect(savedEvidenceRow).toContain('"use client"');
     expect(savedEvidenceRow).toContain("archiveEvidence");
     expect(savedEvidenceRow).toContain("Archive evidence");
+    expect(savedEvidenceRow).toContain("Manage evidence");
+    expect(savedEvidenceRow).toContain("aria-expanded={isManaging}");
     expect(savedEvidenceRow).toContain("Hide this from default evidence views?");
     expect(savedEvidenceRow).toContain("variant=\"ghost\"");
     expect(savedEvidenceRow).toContain("variant=\"outline\"");

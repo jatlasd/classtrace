@@ -95,7 +95,7 @@ Last updated: 2026-06-25
 | Sign-out button | `inline-flex h-9 items-center gap-2 rounded-lg px-3 text-sm font-semibold text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground` |
 
 **Pattern notes:**  
-This is the active authenticated app shell as of Unit 11. Keep nav links limited to real routes/workflows; do not add inert "Review", "Search", or notification-style actions before those features exist. Account controls use the signed-in Clerk user for visible account name/initials and expose a real Clerk sign-out action instead of implying an unopened account menu. The old App Sidebar and Mobile Bottom Navigation entries remain historical references, not the current shell direction.
+This is the active authenticated app shell as of Unit 11. Keep nav links limited to real routes/workflows; do not add inert "Review", "Search", or notification-style actions before those features exist. UIP-14 uses the hydration-stable label `Account` and initial `A`; signed-in identity details remain on Settings. The shell still exposes a real Clerk sign-out action instead of implying an unopened account menu. The old App Sidebar and Mobile Bottom Navigation entries remain historical references, not the current shell direction.
 
 ---
 
@@ -183,6 +183,7 @@ Last updated: 2026-07-02 (layout pass)
 | Search input | `h-10 w-full rounded-lg border border-border bg-background/50 py-2 pl-9 pr-9 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:bg-card focus-visible:ring-3 focus-visible:ring-ring/20` |
 | Search clear action | `absolute right-3 top-1/2 -translate-y-1/2 rounded p-0.5 text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/30` |
 | Active filter | `rounded-lg border border-border bg-muted px-3 py-2 text-sm font-medium text-foreground shadow-sm` |
+| Capture boundary steps | `grid grid-cols-3 gap-3 text-xs`; later steps use `border-l border-border pl-3` |
 | Empty state shell | `px-6 py-10 text-center sm:px-10` |
 | Empty state icon | `mx-auto flex size-12 items-center justify-center rounded-lg border border-border bg-muted/40 text-primary` |
 | Empty state title | `mt-4 font-display text-lg font-semibold text-foreground` |
@@ -195,7 +196,7 @@ The feed uses a visible but compact header so teachers understand the capture/re
 ### Saved Evidence Row
 
 File: `components/dashboard/saved-evidence-row.tsx`
-Last updated: 2026-07-08 (UIP-06 optimistic hide after archive/delete)
+Last updated: 2026-07-11 (UIP-14 progressive evidence management)
 
 | Property | Class |
 |---|---|
@@ -213,7 +214,9 @@ Last updated: 2026-07-08 (UIP-06 optimistic hide after archive/delete)
 | Tag chip | `inline-flex items-center rounded-full border border-border bg-muted/60 px-2.5 py-0.5 text-xs font-medium text-link` |
 | Evidence chip | `inline-flex items-center rounded-full border border-primary/25 bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary` |
 | Follow-up text | `mt-3 border-t border-border/50 pt-2.5 text-xs leading-relaxed text-muted-foreground` |
-| Archive action area | `space-y-2 border-t border-border/50 pt-3` |
+| Management area | `border-t border-border/50 pt-3` |
+| Management trigger | Existing `Button` with `variant="ghost"`, `size="sm"`, `-ml-2 text-muted-foreground`, and `Ellipsis` icon `size-3.5` |
+| Expanded management shell | `mt-2 space-y-2` |
 | Archive trigger | Existing `Button` with `variant="ghost"`, `size="sm"`, `-ml-2 text-muted-foreground`, and `Archive` icon `size-3.5` |
 | Archive confirmation copy | `text-xs leading-relaxed text-muted-foreground` |
 | Archive confirm action | Existing `Button` with `variant="outline"` and `size="sm"` |
@@ -226,7 +229,7 @@ Last updated: 2026-07-08 (UIP-06 optimistic hide after archive/delete)
 | Delete error text | `text-xs leading-relaxed text-destructive` with `role="status"` |
 
 **Pattern notes:**
-Saved evidence rows are database-backed validated records, not raw draft captures. They intentionally reuse the Unit 11 row grid and chip vocabulary but use validated-state icon/status styling and a compact date chip. Unit 32 makes `EvidenceRecord.evidenceNote` the primary text when present, moves `EvidenceRecord.summary` to supporting structured detail text, and labels note-less historical rows as legacy structured records. The student name links to that student timeline. Unit 18 added a calm, non-destructive archive affordance with inline confirmation copy ("Hide this from default evidence views?") and a workspace-scoped Server Action. Unit 19 adds a destructive permanent delete affordance with inline warning copy ("Permanently delete this evidence record? This cannot be undone.") and a workspace-scoped Server Action. UIP-06 keeps successfully archived or deleted rows out of the rendered saved-evidence feed immediately by filtering the list with tracked hidden evidence IDs while preserving inline safe errors for failed actions. Keep archive visible as the safer cleanup action. Do not add edit, restore/deleted-record management, export, bulk actions, student delete, or raw-note fields to this row until those units are explicitly scoped.
+Saved evidence rows are database-backed validated records, not raw draft captures. They intentionally reuse the Unit 11 row grid and chip vocabulary but use validated-state icon/status styling and a compact date chip. Unit 32 makes `EvidenceRecord.evidenceNote` the primary text when present, moves `EvidenceRecord.summary` to supporting structured detail text, and labels note-less historical rows as legacy structured records. The student name links to that student timeline. UIP-14 places Archive and Delete behind one `Manage evidence` disclosure with `aria-expanded` and `aria-controls`, keeping destructive management subordinate to evidence reading. Once expanded, the existing calm archive path, explicit permanent-delete warning, pending states, safe errors, and immediate successful row removal remain unchanged. Do not add edit, restore/deleted-record management, export, bulk actions, student delete, or raw-note fields to this row until those units are explicitly scoped.
 
 ---
 

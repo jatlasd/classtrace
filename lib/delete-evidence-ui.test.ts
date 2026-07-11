@@ -24,6 +24,7 @@ describe("Unit 19 delete evidence UI", () => {
   it("adds destructive delete confirmation without removing archive", () => {
     expect(savedEvidenceRow).toContain("Archive evidence");
     expect(savedEvidenceRow).toContain("Delete evidence");
+    expect(savedEvidenceRow).toContain("Manage evidence");
     expect(savedEvidenceRow).toContain(
       "Permanently delete this evidence record? This cannot be undone."
     );

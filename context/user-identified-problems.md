@@ -380,6 +380,8 @@ Make class setup copy and feed navigation accurately reflect the current roster 
 
 ### Task UIP-14 — Reduce Feed Noise and Stabilize Shared-Shell Semantics
 
+**Status:** Completed on 2026-07-11.
+
 #### Goal
 
 Make explanatory, filtering, management, and account UI read consistently and accessibly.
@@ -409,3 +411,7 @@ UIP-11 Evidence-note integrity
 → UIP-13 Roster clarity
 → UIP-14 Feed and shell polish
 ```
+
+## Phase 2 Closure
+
+UIP-11 through UIP-14 are complete. Phase 2 is closed; new findings should be recorded as a separate phase or as evidence-backed regressions.

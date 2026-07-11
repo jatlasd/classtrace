@@ -1,6 +1,6 @@
 "use client";
 
-import { SignOutButton, useUser } from "@clerk/nextjs";
+import { SignOutButton } from "@clerk/nextjs";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { isStudentProfilePath, routes } from "@/lib/routes";
@@ -16,47 +16,11 @@ const navItems = [
   { label: "Students", href: routes.roster, icon: Users, match: "students" },
 ];
 
-function getInitials(name: string): string {
-  const initials = name
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0])
-    .join("")
-    .toUpperCase();
-
-  return initials || "A";
-}
-
-function getAccountDisplayName(
-  user: ReturnType<typeof useUser>["user"] | null | undefined
-): string {
-  if (!user) {
-    return "Account";
-  }
-
-  const fullName = user.fullName?.trim();
-
-  if (fullName) {
-    return fullName;
-  }
-
-  const composedName = [user.firstName?.trim(), user.lastName?.trim()]
-    .filter(Boolean)
-    .join(" ");
-
-  if (composedName) {
-    return composedName;
-  }
-
-  return user.primaryEmailAddress?.emailAddress.trim() || "Account";
-}
+const ACCOUNT_LABEL = "Account";
+const ACCOUNT_INITIAL = "A";
 
 export function AppTopNav() {
   const pathname = usePathname();
-  const { isLoaded, user } = useUser();
-  const accountDisplayName = isLoaded ? getAccountDisplayName(user) : "Account";
-  const accountInitials = getInitials(accountDisplayName);
 
   function isActive(match: string): boolean {
     if (match === "feed") {
@@ -99,7 +63,7 @@ export function AppTopNav() {
               </button>
             </SignOutButton>
             <div className="flex size-9 items-center justify-center rounded-full bg-secondary text-xs font-semibold text-foreground">
-              {accountInitials}
+              {ACCOUNT_INITIAL}
             </div>
           </div>
         </div>
@@ -136,13 +100,13 @@ export function AppTopNav() {
 
         <div className="hidden items-center gap-3 lg:flex">
           <div className="flex size-10 items-center justify-center rounded-full bg-secondary text-sm font-semibold text-foreground">
-            {accountInitials}
+            {ACCOUNT_INITIAL}
           </div>
           <Link
             href={routes.settings}
             className="inline-flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm font-semibold text-foreground transition-colors hover:bg-muted"
           >
-            <span>{accountDisplayName}</span>
+            <span>{ACCOUNT_LABEL}</span>
             <Settings className="size-4 text-muted-foreground" />
           </Link>
           <SignOutButton redirectUrl={routes.root}>
