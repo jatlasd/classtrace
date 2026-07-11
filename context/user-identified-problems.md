@@ -2,6 +2,8 @@
 
 This file converts the current user-reported problem list into focused ClassTrace tasks.
 
+**Phase 1 status:** Closed on 2026-07-10. UIP-01 through UIP-10 are implemented; the findings after the Phase 1 closure marker belong to Phase 2 UX work and are not part of the completed cleanup pass.
+
 These tasks are not implementation approval by themselves. Before coding any task, create or confirm the focused spec when needed, read the task-relevant context files from `AGENTS.md`, and keep the change to one approved unit.
 
 ---
@@ -283,19 +285,16 @@ Delete stale mock/demo code that is no longer part of the active product and inc
 
 ---
 
-## Suggested Order
+---
 
-1. UIP-01, UIP-08, and UIP-09: small user-facing copy/content fixes.
-2. UIP-04 and UIP-06: focused client-side interaction reliability fixes.
-3. UIP-05: readiness/routing bug fix.
-4. UIP-02: server-side evidence contract hardening.
-5. UIP-03: report date-range correctness.
-6. UIP-10: cleanup after the hard-coded teacher-name source is removed.
-7. UIP-07: product decision and follow-up implementation.
+## Phase 1 Closure
 
+UIP-01 through UIP-10 are complete. Phase 1 is closed; do not reopen these tasks without evidence of a regression.
 
-### Next Round of UIP to be Completed After UIP-01 through UIP-07 are finished. 
-UX Review Findings
+## Phase 2 — UX Review Findings
+
+These findings are the next UX phase. They were intentionally not implemented during the Phase 1 closure pass.
+
 Evidence note can become too thin before save.
 In /app/feed, I captured @jeremy worked on #reading. The draft review panel turned the saved Evidence note into only worked on, while reading moved into structured metadata. That is risky because the teacher could save a technically valid but low-value evidence note. The review UI says “This note will be saved exactly as shown,” which helps, but the default note should preserve enough meaning.
 

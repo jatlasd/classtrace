@@ -1,5 +1,5 @@
 import { resolveCaptureDisplay } from "@/lib/evidence/capture-validation";
-import type { Capture } from "@/lib/mock-data";
+import type { Capture } from "@/lib/evidence/capture";
 import { buildNoteDraft } from "@/lib/note-processing/build-note-draft";
 import {
   formatStoredCaptureTimestamp,

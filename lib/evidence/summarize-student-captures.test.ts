@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { Capture } from "@/lib/mock-data";
+import type { Capture } from "@/lib/evidence/capture";
 import { summarizeStudentCaptures } from "./summarize-student-captures";
 
 function makeCapture(overrides: Partial<Capture> & Pick<Capture, "id">): Capture {

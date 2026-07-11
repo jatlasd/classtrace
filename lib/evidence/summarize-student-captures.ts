@@ -1,5 +1,5 @@
 import { formatTagLabel } from "@/lib/format-tag";
-import type { Capture } from "@/lib/mock-data";
+import type { Capture } from "@/lib/evidence/capture";
 
 export type StudentCaptureSnapshot = {
   totalCaptures: number;
