@@ -64,11 +64,18 @@ type EvidenceRecordCreateResult = {
   id: string;
 };
 
+type EvidenceRecordCountArgs = {
+  where: {
+    workspaceId: string;
+  };
+};
+
 export type SaveValidatedEvidenceDatabase = {
   rosterStudent: {
     findFirst(args: RosterStudentFindFirstArgs): Promise<RosterStudentRecord | null>;
   };
   evidenceRecord: {
+    count(args: EvidenceRecordCountArgs): Promise<number>;
     create(args: EvidenceRecordCreateArgs): Promise<EvidenceRecordCreateResult>;
   };
 };
@@ -87,7 +94,11 @@ export type SaveValidatedEvidenceInput = {
 };
 
 export type SaveValidatedEvidenceResult =
-  | { success: true; evidenceId: string }
+  | {
+      success: true;
+      evidenceId: string;
+      isFirstWorkspaceEvidence: boolean;
+    }
   | { success: false; error: string };
 
 type SaveValidatedEvidenceForWorkspaceArgs = {
@@ -101,6 +112,7 @@ const evidenceDatabase: SaveValidatedEvidenceDatabase = {
     findFirst: (args) => prisma.rosterStudent.findFirst(args),
   },
   evidenceRecord: {
+    count: (args) => prisma.evidenceRecord.count(args),
     create: (args) => prisma.evidenceRecord.create(args),
   },
 };
@@ -235,6 +247,9 @@ export async function saveValidatedEvidenceForWorkspace(
   const followUpNotes = joinFollowUpNotes(args.input.followUpNotes);
 
   try {
+    const existingEvidenceCount = await database.evidenceRecord.count({
+      where: { workspaceId: args.workspaceId },
+    });
     const evidence = await database.evidenceRecord.create({
       data: {
         workspaceId: args.workspaceId,
@@ -257,7 +272,11 @@ export async function saveValidatedEvidenceForWorkspace(
       select: { id: true },
     });
 
-    return { success: true, evidenceId: evidence.id };
+    return {
+      success: true,
+      evidenceId: evidence.id,
+      isFirstWorkspaceEvidence: existingEvidenceCount === 0,
+    };
   } catch {
     return { success: false, error: "Failed to save evidence." };
   }

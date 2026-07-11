@@ -77,6 +77,25 @@ function formatTimelineDate(value: string): string {
   }).format(date);
 }
 
+export function getEvidenceTrailMessage(
+  studentName: string,
+  evidenceCount: number
+): string {
+  if (evidenceCount === 1) {
+    return `This is the start of ${studentName}'s evidence trail. Each small moment you save makes the record easier to use later.`;
+  }
+
+  if (evidenceCount >= 5) {
+    return "You are building a usable record for meetings, progress reviews, and documentation conversations.";
+  }
+
+  if (evidenceCount >= 2) {
+    return `${evidenceCount} validated evidence records saved for ${studentName}. Each observation strengthens the record you can return to later.`;
+  }
+
+  return "No validated evidence has been saved for this student yet.";
+}
+
 function Chip({
   children,
   variant = "default",
@@ -156,6 +175,11 @@ function StudentProfileHeader({
             {evidenceCount} {evidenceCount === 1 ? "record" : "records"} ready
             for this timeline.
           </p>
+          {evidenceCount > 0 ? (
+            <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+              {getEvidenceTrailMessage(student.displayName, evidenceCount)}
+            </p>
+          ) : null}
           <div className="mt-3">
             <StudentEvidenceExportAction
               studentId={student.id}

@@ -7,6 +7,7 @@ vi.mock("@/lib/db/prisma", () => ({
       findFirst: vi.fn(),
     },
     evidenceRecord: {
+      count: vi.fn(),
       create: vi.fn(),
     },
   },
@@ -58,12 +59,15 @@ function buildStudent(overrides?: {
 function buildDatabase(options?: {
   student?: ReturnType<typeof buildStudent> | null;
   throwOnCreate?: boolean;
+  existingEvidenceCount?: number;
 }) {
   const calls: {
     findFirst: unknown[];
+    count: unknown[];
     create: unknown[];
   } = {
     findFirst: [],
+    count: [],
     create: [],
   };
 
@@ -77,6 +81,10 @@ function buildDatabase(options?: {
       },
     },
     evidenceRecord: {
+      count: async (args) => {
+        calls.count.push(args);
+        return options?.existingEvidenceCount ?? 0;
+      },
       create: async (args) => {
         calls.create.push(args);
 
@@ -116,7 +124,12 @@ describe("saveValidatedEvidenceForWorkspace", () => {
       database
     );
 
-    expect(result).toEqual({ success: true, evidenceId: "evidence_1" });
+    expect(result).toEqual({
+      success: true,
+      evidenceId: "evidence_1",
+      isFirstWorkspaceEvidence: true,
+    });
+    expect(calls.count).toEqual([{ where: { workspaceId: "workspace_1" } }]);
     expect(calls.findFirst).toEqual([
       {
         where: {
@@ -162,6 +175,53 @@ describe("saveValidatedEvidenceForWorkspace", () => {
     expect(JSON.stringify(calls.create[0])).not.toMatch(
       /rawNote|draftText|originalCapture|sourceText/i
     );
+  });
+
+  it("does not repeat the first-save payoff when any workspace evidence already exists", async () => {
+    const { database } = buildDatabase({ existingEvidenceCount: 1 });
+
+    const result = await saveValidatedEvidenceForWorkspace(
+      {
+        workspaceId: "workspace_1",
+        input: {
+          rosterStudentId: "student_mary",
+          evidenceNote: "Mary worked through the reading passage.",
+          summary: "Mary - reading - Academic check-in",
+          evidenceType: "Academic check-in",
+          tags: [],
+        },
+        now,
+      },
+      database
+    );
+
+    expect(result).toEqual({
+      success: true,
+      evidenceId: "evidence_1",
+      isFirstWorkspaceEvidence: false,
+    });
+  });
+
+  it("counts archived evidence when deciding whether the workspace has saved before", async () => {
+    const { database, calls } = buildDatabase({ existingEvidenceCount: 2 });
+
+    const result = await saveValidatedEvidenceForWorkspace(
+      {
+        workspaceId: "workspace_1",
+        input: {
+          rosterStudentId: "student_mary",
+          evidenceNote: "Mary worked through the reading passage.",
+          summary: "Mary - reading - Academic check-in",
+          evidenceType: "Academic check-in",
+          tags: [],
+        },
+        now,
+      },
+      database
+    );
+
+    expect(calls.count).toEqual([{ where: { workspaceId: "workspace_1" } }]);
+    expect(result).toMatchObject({ isFirstWorkspaceEvidence: false });
   });
 
   it("rejects a missing roster student id", async () => {
@@ -499,7 +559,11 @@ describe("saveValidatedEvidenceForWorkspace", () => {
       database
     );
 
-    expect(result).toEqual({ success: true, evidenceId: "evidence_1" });
+    expect(result).toEqual({
+      success: true,
+      evidenceId: "evidence_1",
+      isFirstWorkspaceEvidence: true,
+    });
     expect(calls.create[0]).toEqual(
       expect.objectContaining({
         data: expect.objectContaining({

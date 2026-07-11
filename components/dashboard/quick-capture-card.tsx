@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { MentionsInput, Mention } from "react-mentions";
 import type { MentionsInputStyle } from "react-mentions";
 import { Button } from "@/components/ui/button";
@@ -80,6 +80,7 @@ const mentionHighlightStyle = {
 
 type QuickCaptureCardProps = {
   rosterStudents: CaptureRosterStudent[];
+  focusRequestKey?: number;
   onDraft: (
     draft: NoteDraft,
     identity: { id: string; capturedAt: number }
@@ -123,8 +124,10 @@ function resolutionMessage(
 
 export function QuickCaptureCard({
   rosterStudents,
+  focusRequestKey = 0,
   onDraft,
 }: QuickCaptureCardProps) {
+  const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement | null>(null);
   const [markupValue, setMarkupValue] = useState("");
   const [plainText, setPlainText] = useState("");
   const [posted, setPosted] = useState(false);
@@ -155,6 +158,13 @@ export function QuickCaptureCard({
   const canCapture =
     trimmedPlainText.length > 0 &&
     studentResolution.status === "resolved_one_student";
+
+  useEffect(() => {
+    if (focusRequestKey > 0) {
+      inputRef.current?.focus();
+      inputRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  }, [focusRequestKey]);
 
   function handleChange(
     _event: { target: { value: string } },
@@ -213,6 +223,9 @@ export function QuickCaptureCard({
           </p>
           <div className="quick-capture-mentions rounded-lg border border-border bg-background/45 px-4 py-3 transition-colors focus-within:border-ring focus-within:bg-card focus-within:ring-3 focus-within:ring-ring/20">
             <MentionsInput
+              inputRef={(element: HTMLInputElement | HTMLTextAreaElement | null) => {
+                inputRef.current = element;
+              }}
               id="quick-capture"
               name="quick-capture"
               autoComplete="off"

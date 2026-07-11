@@ -29,7 +29,7 @@ export function LandingHero() {
               asChild
               className="h-11 rounded-md px-7 text-[15px] font-semibold"
             >
-              <Link href={routes.signUp}>Capture your first note</Link>
+              <Link href={routes.signUp}>Start an evidence trail</Link>
             </Button>
             <p
               aria-hidden="true"
@@ -43,7 +43,7 @@ export function LandingHero() {
             href="#how-it-works"
             className="mt-6 inline-block border-b border-link pb-0.5 text-sm font-medium text-link transition-colors hover:text-foreground"
           >
-            See how one moment becomes evidence →
+            See how one moment becomes documentation memory →
           </Link>
         </div>
 

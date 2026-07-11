@@ -71,6 +71,10 @@ function getRangeLabel(dateRange: StudentReportDateRange): string {
   return "All evidence";
 }
 
+export function shouldShowEarlyReportGuidance(evidenceCount: number): boolean {
+  return evidenceCount >= 1 && evidenceCount <= 4;
+}
+
 function Chip({
   children,
   variant = "default",
@@ -365,6 +369,11 @@ export function StudentReportPage({
         dateRange={dateRange}
       />
       <ReportDateRangeForm studentId={student.id} dateRange={dateRange} />
+      {shouldShowEarlyReportGuidance(evidenceRecords.length) ? (
+        <p className="student-report-screen-only mb-5 border-l-4 border-validated bg-card/60 px-4 py-3 text-sm leading-relaxed text-foreground">
+          This report gets more useful as you capture more evidence. Each validated observation adds another moment you can return to later.
+        </p>
+      ) : null}
       <ReportEvidenceList
         records={evidenceRecords}
         dateRange={dateRange}

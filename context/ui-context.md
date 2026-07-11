@@ -474,6 +474,10 @@ Validation UI should not:
 - Use AI language in V1
 - Make the teacher feel corrected by the system
 
+### First-save payoff
+
+After the first validated evidence save in a workspace, the existing review card may replace its compact success line with one restrained validated-state payoff panel. The panel should name the student's timeline as the destination, explain the retrieval value without making outcome claims, and offer links to the timeline, existing report, and existing composer. It is transient client state, not a modal, celebration, dashboard metric, or durable onboarding flag. Later saves keep the compact success treatment.
+
 ---
 
 ## Empty States

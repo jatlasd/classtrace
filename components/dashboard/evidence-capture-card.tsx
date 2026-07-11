@@ -41,6 +41,7 @@ type EvidenceCaptureCardProps = {
   ) => Promise<ValidatedEvidenceSaveResult>;
   onEdit?: (rawNote: string) => boolean;
   onDelete?: () => void;
+  onCaptureAnother: () => void;
 };
 
 type ValidatedEvidenceSaveInput = {
@@ -56,7 +57,11 @@ type ValidatedEvidenceSaveInput = {
 };
 
 type ValidatedEvidenceSaveResult =
-  | { success: true; evidenceId: string }
+  | {
+      success: true;
+      evidenceId: string;
+      isFirstWorkspaceEvidence: boolean;
+    }
   | { success: false; error: string };
 
 const chipStyles = {
@@ -201,6 +206,7 @@ export function EvidenceCaptureCard({
   onValidate,
   onEdit,
   onDelete,
+  onCaptureAnother,
 }: EvidenceCaptureCardProps) {
   const [reviewOpen, setReviewOpen] = useState(false);
   const [isReviewSavePending, setIsReviewSavePending] = useState(false);
@@ -473,6 +479,7 @@ export function EvidenceCaptureCard({
             display={parserDisplay}
             onConfirm={handleConfirm}
             onDismiss={() => setReviewOpen(false)}
+            onCaptureAnother={onCaptureAnother}
             onSavePendingChange={setIsReviewSavePending}
           />
           </div>

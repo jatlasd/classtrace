@@ -432,6 +432,7 @@ export function EvidenceFeed({
   const [filter, setFilter] = useState<InboxFilter>("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [captureEditError, setCaptureEditError] = useState("");
+  const [composerFocusRequestKey, setComposerFocusRequestKey] = useState(0);
   const [hiddenSavedEvidenceIds, setHiddenSavedEvidenceIds] = useState<
     Set<string>
   >(() => new Set());
@@ -776,6 +777,7 @@ export function EvidenceFeed({
             }
             onEdit={(rawNote) => handleEditCapture(item.id, rawNote)}
             onDelete={() => handleDeleteCapture(item.id)}
+            onCaptureAnother={() => setComposerFocusRequestKey((current) => current + 1)}
           />
         ))}
         {visibleEvidenceRecords.map((record) => (
@@ -808,6 +810,7 @@ export function EvidenceFeed({
           ) : (
             <QuickCaptureCard
               rosterStudents={rosterStudents}
+              focusRequestKey={composerFocusRequestKey}
               onDraft={handleDraft}
             />
           )}
