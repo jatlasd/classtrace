@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import type { EvidenceFeedRecord } from "@/lib/evidence/evidence-feed-records";
 import { formatTagLabel } from "@/lib/format-tag";
 import { routes } from "@/lib/routes";
-import { Archive, CheckCircle2, Circle, Trash2 } from "lucide-react";
+import { Archive, CheckCircle2, Circle, Ellipsis, Trash2 } from "lucide-react";
 
 type SavedEvidenceRowProps = {
   record: EvidenceFeedRecord;
@@ -69,6 +69,7 @@ export function SavedEvidenceRow({
   onDeleted,
 }: SavedEvidenceRowProps) {
   const router = useRouter();
+  const [isManaging, setIsManaging] = useState(false);
   const [isConfirmingArchive, setIsConfirmingArchive] = useState(false);
   const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
   const [archiveError, setArchiveError] = useState("");
@@ -77,6 +78,19 @@ export function SavedEvidenceRow({
   const evidenceDate = formatEvidenceDate(record.evidenceDate);
   const primaryEvidenceText = record.evidenceNote ?? record.summary;
   const isLegacyStructuredEntry = !record.evidenceNote;
+  const managementId = `evidence-management-${record.id}`;
+
+  function handleManageToggle(): void {
+    const nextIsManaging = !isManaging;
+    setIsManaging(nextIsManaging);
+
+    if (!nextIsManaging) {
+      setIsConfirmingArchive(false);
+      setIsConfirmingDelete(false);
+      setArchiveError("");
+      setDeleteError("");
+    }
+  }
 
   function handleArchive(): void {
     setArchiveError("");
@@ -196,7 +210,22 @@ export function SavedEvidenceRow({
           <p className="text-xs leading-relaxed text-muted-foreground">
             {isLegacyStructuredEntry ? "Legacy structured record" : "Saved evidence note"}
           </p>
-          <div className="space-y-2 border-t border-border/50 pt-3">
+          <div className="border-t border-border/50 pt-3">
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="-ml-2 text-muted-foreground"
+              onClick={handleManageToggle}
+              aria-expanded={isManaging}
+              aria-controls={managementId}
+              aria-label={`Manage evidence for ${record.studentDisplayName}`}
+            >
+              <Ellipsis className="size-3.5" />
+              Manage evidence
+            </Button>
+            {isManaging ? (
+              <div id={managementId} className="mt-2 space-y-2">
             {isConfirmingArchive ? (
               <div className="space-y-2">
                 <p className="text-xs leading-relaxed text-muted-foreground">
@@ -302,6 +331,8 @@ export function SavedEvidenceRow({
               <p className="text-xs leading-relaxed text-destructive" role="status">
                 {deleteError}
               </p>
+            ) : null}
+              </div>
             ) : null}
           </div>
         </div>

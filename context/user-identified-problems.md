@@ -293,31 +293,125 @@ UIP-01 through UIP-10 are complete. Phase 1 is closed; do not reopen these tasks
 
 ## Phase 2 — UX Review Findings
 
-These findings are the next UX phase. They were intentionally not implemented during the Phase 1 closure pass.
+These findings are consolidated into four implementation units so related behavior can be corrected and verified together. Work through the units in order and keep each change narrow.
 
-Evidence note can become too thin before save.
-In /app/feed, I captured @jeremy worked on #reading. The draft review panel turned the saved Evidence note into only worked on, while reading moved into structured metadata. That is risky because the teacher could save a technically valid but low-value evidence note. The review UI says “This note will be saved exactly as shown,” which helps, but the default note should preserve enough meaning.
+### Task UIP-11 — Preserve Meaning in the Default Evidence Note
 
-Mention resolution behaved inconsistently before reload.
-Initially, @jeremy, @stacy, @Jeremy, and @Stacy all showed “This student is not on your roster yet,” even though the roster lists @jeremy and @stacy. After reloading /app/feed, @jeremy resolved correctly. This smells like stale or delayed roster-backed mention state.
+**Status:** Completed on 2026-07-11.
 
-Roster copy is wrong once a class already exists.
-/app/roster shows an active Reading class with 2 students, but the right panel still says “Create your first class.” That should become something like “Create another class.”
+#### Goal
 
-Opened roster class repeats the feed CTA.
-In /app/roster?classId=..., “Continue to evidence feed” appears twice near the top. It makes the class page feel a little accidental.
+Prevent deterministic cleanup from reducing a teacher's capture to a technically valid but low-value Evidence note.
 
-The feed’s right “Capture Boundary” pills look clickable.
-The “Mention / Review / Save” controls read visually like buttons, but they are explanatory. That can create a false affordance, especially because they sit beside the actual composer.
+Example: `@jeremy worked on #reading` must not default to only `worked on`.
 
-Saved row actions are noisy.
-Every saved evidence row exposes both “Archive evidence” and “Delete evidence” inline. Functionally clear, but visually it makes destructive management feel nearly as prominent as reading the evidence.
+#### Scope
 
-Filter selected state may be weak for accessibility.
-The filter buttons expose selected state through text like “All selected” / “Needs review selected,” but I did not see aria-pressed on the controls. Worth tightening so screen reader and keyboard users get a proper toggle state.
+- Build the Evidence-note prefill separately from tag extraction.
+- Remove the resolved student mention from the default note.
+- Keep every parsed tag in structured tag metadata for future filtering and search.
+- Remove a hashtag marker only when a conservative deterministic rule leaves natural wording.
+- Preserve the authored hashtag in the note when removing it would be uncertain or awkward.
+- Do not invent, rewrite, summarize, professionalize, or strengthen teacher wording.
+- Keep the final review field editable and save its approved value exactly as shown.
+- Update source-of-truth documentation that currently requires every parsed tag to be removed from the prefill.
 
-Placeholder example can conflict with the actual roster.
-The composer placeholder uses @Mary, but this workspace has Jeremy and Stacy. Since the app blocks non-roster handles, a roster-aware placeholder or generic @student example would reduce confusion.
+#### Likely Files
 
-Account label is inconsistent across routes.
-On the feed, the account link showed Jatlas; on roster/timeline/report it showed Account. That feels like a hydration or data-display inconsistency.
+- `lib/note-processing/`
+- `components/dashboard/interpretation-review-panel.tsx` only if a narrow bridge is needed
+- Relevant note-processing and validation tests
+- `context/post-v1-pre-beta-build-plan.md`
+- `context/progress-tracker.md`
+
+#### Verification
+
+- A grammatical inline tag can remain meaningful note wording while also remaining structured metadata.
+- Ambiguous or trailing hashtags are preserved rather than destructively removed.
+- Mention removal and tag extraction remain deterministic.
+- Focused parser/display tests, full tests, lint, and build pass.
+
+### Task UIP-12 — Stabilize Roster-Backed Capture State
+
+**Status:** Completed on 2026-07-11.
+
+#### Goal
+
+Make valid roster handles resolve on first arrival at the feed and keep composer guidance aligned with the actual roster.
+
+#### Scope
+
+- Reproduce and correct the add-student/class-to-feed path that previously required a reload before `@jeremy` or `@stacy` resolved.
+- Keep the server-provided active roster as the single capture-resolution source.
+- Verify case-insensitive handle resolution before and after client navigation.
+- Ensure roster mutations refresh or invalidate the feed roster before capture begins.
+- Build the composer placeholder from an active roster handle, with a generic `@student` fallback.
+- Do not add a second client-side roster store or relax the one-resolved-student capture boundary.
+
+#### Verification
+
+- Valid handles resolve without a manual reload.
+- Case variants resolve consistently.
+- The placeholder never suggests a known-invalid hard-coded handle.
+- Focused capture and routing tests pass, followed by lint and build.
+
+### Task UIP-13 — Clarify Class Roster Actions
+
+**Status:** Completed on 2026-07-11.
+
+#### Goal
+
+Make class setup copy and feed navigation accurately reflect the current roster state.
+
+#### Scope
+
+- Show `Create your first class` only when no active class exists.
+- Show `Create another class` once an active class exists.
+- Keep one `Continue to evidence feed` action in the shared capture-readiness panel.
+- Remove the duplicate action from the opened-class surface.
+- Preserve the current global capture-readiness rule and class-first roster behavior.
+
+#### Verification
+
+- Empty and existing-class states show the correct heading.
+- An opened class shows no duplicate feed action.
+- Existing class management and readiness behavior remain unchanged.
+- Focused roster UI tests pass, followed by lint and build.
+
+### Task UIP-14 — Reduce Feed Noise and Stabilize Shared-Shell Semantics
+
+**Status:** Completed on 2026-07-11.
+
+#### Goal
+
+Make explanatory, filtering, management, and account UI read consistently and accessibly.
+
+#### Scope
+
+- Restyle `Mention / Review / Save` as explanatory steps without a button-like false affordance.
+- Add `aria-pressed` to the Evidence feed filter controls while preserving visible selected state.
+- Move Archive and Delete behind one accessible `Manage evidence` control.
+- Keep Archive as the safer management option and retain explicit permanent-delete confirmation, pending states, safe errors, and immediate row removal.
+- Use the stable label `Account` in shared navigation; keep the signed-in identity details on the Settings page.
+- Do not redesign the feed, change archive/delete server behavior, or add new dependencies.
+
+#### Verification
+
+- Explanatory steps no longer resemble controls.
+- Keyboard and screen-reader users receive programmatic filter state.
+- Destructive actions remain available without competing with evidence reading.
+- Shared navigation does not change labels during hydration or across routes.
+- Focused UI tests pass, followed by full tests, lint, build, and a manual browser pass.
+
+### Recommended Phase 2 Order
+
+```txt
+UIP-11 Evidence-note integrity
+→ UIP-12 Capture-state reliability
+→ UIP-13 Roster clarity
+→ UIP-14 Feed and shell polish
+```
+
+## Phase 2 Closure
+
+UIP-11 through UIP-14 are complete. Phase 2 is closed; new findings should be recorded as a separate phase or as evidence-backed regressions.

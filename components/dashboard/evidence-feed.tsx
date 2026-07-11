@@ -319,6 +319,7 @@ function InboxFilterControl({
           key={option.value}
           type="button"
           onClick={() => onFilterChange(option.value)}
+          aria-pressed={filter === option.value}
           className={`rounded-lg border px-3 py-2 text-sm font-medium transition-colors ${
             filter === option.value
               ? "border-border bg-muted text-foreground shadow-sm"
@@ -825,17 +826,20 @@ export function EvidenceFeed({
               Every saved record starts with one resolved roster student and a
               teacher review.
             </p>
-            <div className="grid grid-cols-3 gap-2 text-center text-xs">
-              <span className="rounded-lg border border-border bg-muted/30 px-2 py-2 font-medium text-foreground">
-                Mention
-              </span>
-              <span className="rounded-lg border border-border bg-muted/30 px-2 py-2 font-medium text-foreground">
-                Review
-              </span>
-              <span className="rounded-lg border border-border bg-muted/30 px-2 py-2 font-medium text-foreground">
-                Save
-              </span>
-            </div>
+            <ol className="grid grid-cols-3 gap-3 text-xs" aria-label="Capture steps">
+              <li>
+                <span className="block font-semibold text-foreground">Mention</span>
+                <span className="mt-0.5 block text-muted-foreground">one student</span>
+              </li>
+              <li className="border-l border-border pl-3">
+                <span className="block font-semibold text-foreground">Review</span>
+                <span className="mt-0.5 block text-muted-foreground">the draft</span>
+              </li>
+              <li className="border-l border-border pl-3">
+                <span className="block font-semibold text-foreground">Save</span>
+                <span className="mt-0.5 block text-muted-foreground">approved evidence</span>
+              </li>
+            </ol>
           </div>
         </aside>
       </section>

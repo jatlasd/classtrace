@@ -41,6 +41,8 @@ describe("Unit 12 deterministic student resolution wiring", () => {
     expect(quickCaptureCard).toContain("This student is not on your roster yet.");
     expect(quickCaptureCard).toContain("Choose one student for this capture.");
     expect(quickCaptureCard).toContain("Ready to capture for");
+    expect(quickCaptureCard).toContain("buildCapturePlaceholder(rosterStudents)");
+    expect(quickCaptureCard).not.toContain("placeholder=\"@Mary");
     expect(quickCaptureCard).not.toContain("getAllStudents");
   });
 
