@@ -714,7 +714,7 @@ Last updated: 2026-07-02 (Unit 30 class-scoped roster import)
 | Class import panel | `border border-border bg-card/55 p-4 sm:p-5` |
 
 **Pattern notes:**  
-Unit 29 replaces the temporary Unit 28 bridge with the active class-first roster. The default roster view is a ledger-like active class list plus a restrained create-class panel. Opening a class keeps the teacher inside Roster and shows that class's student list, class-scoped manual entry, class rename/archive actions, and the working class-scoped paste-list import form. Empty classes are valid. Archived classes are hidden from the default list and appear only in a secondary archived-classes view with no add/import actions. Keep class language teacher-facing and plain; do not add a separate Classes navigation item or make capture class-scoped.
+Unit 29 replaces the temporary Unit 28 bridge with the active class-first roster. The default roster view is a ledger-like active class list plus a restrained create-class panel. That panel says `Create your first class` only when no active class exists and `Create another class` after setup has begun. Opening a class keeps the teacher inside Roster and shows that class's student list, class-scoped manual entry, class rename/archive actions, and the working class-scoped paste-list import form. Empty classes are valid. Archived classes are hidden from the default list and appear only in a secondary archived-classes view with no add/import actions. Keep class language teacher-facing and plain; do not add a separate Classes navigation item or make capture class-scoped.
 
 ---
 
@@ -799,7 +799,7 @@ This Client Component owns only row-level confirmation state for archive/delete.
 ### Roster Continue Action
 
 File: `app/app/roster/page.tsx`  
-Last updated: 2026-07-08
+Last updated: 2026-07-11 (UIP-13 single continuation action)
 
 | Property | Class |
 |---|---|
@@ -809,7 +809,7 @@ Last updated: 2026-07-08
 | Action | Existing `Button` with `variant="outline"` and `size="sm"` |
 
 **Pattern notes:**  
-The roster continue action appears only when the full workspace is globally ready for capture: at least one active student exists and every active student has one active class. It should feel like a quiet readiness note in the page header, not a completion badge, wizard, or alert card. The opened class view may repeat the feed action only when that same global readiness rule passes; if another active student elsewhere still needs a class, show plain guidance instead of linking to a feed route that will redirect back. The primary-colored left rule is the only accent. Keep the copy plain: show the active student count or class-assignment blocker and offer a low-emphasis path back to the evidence feed only when capture is actually available. This pattern does not hide the roster page, remove manual entry/import controls, or make capture class-scoped.
+The roster continue action appears only when the full workspace is globally ready for capture: at least one active student exists and every active student has one active class. It should feel like a quiet readiness note in the page header, not a completion badge, wizard, or alert card. This header panel is the single canonical feed continuation location on both the class list and opened-class views. If another active student still needs a class, the opened class shows plain guidance instead of a second action that would redirect back. The primary-colored left rule is the only accent. Keep the copy plain: show the active student count or class-assignment blocker and offer a low-emphasis path back to the evidence feed only when capture is actually available. This pattern does not hide the roster page, remove manual entry/import controls, or make capture class-scoped.
 
 ---
 

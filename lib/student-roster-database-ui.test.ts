@@ -34,13 +34,13 @@ describe("Unit 07 roster database bridge", () => {
     expect(rosterPage).toContain("readyForCapture");
     expect(rosterPage).toContain("classReadiness.readyForClassFirstRoster");
     expect(rosterPage).toContain("Continue to evidence feed");
+    expect(rosterPage.match(/Continue to evidence feed/g)).toHaveLength(1);
     expect(rosterPage).toContain("routes.feed");
     expect(rosterPage).not.toContain("Roster setup started.");
   });
   it("keeps an opened class from linking to the feed while another active student still needs a class", () => {
     expect(rosterPage).toContain("canContinueToFeed={readyForCapture}");
-    expect(rosterPage).toContain("canContinueToFeed ? (");
-    expect(rosterPage).toContain("students.length > 0 ? (");
+    expect(rosterPage).toContain("!canContinueToFeed && students.length > 0");
     expect(rosterPage).toContain(
       "Finish assigning every active student to an active class before opening"
     );

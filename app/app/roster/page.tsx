@@ -241,7 +241,9 @@ function ClassList({
             Class-first setup
           </p>
           <h2 className="mt-1 font-display text-lg font-semibold text-foreground">
-            Create your first class
+            {activeClasses.length === 0
+              ? "Create your first class"
+              : "Create another class"}
           </h2>
           <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
             Classes organize roster setup only. Capture stays global once at least one
@@ -330,11 +332,7 @@ function OpenClassView({
             Back to classes
           </Link>
         </Button>
-        {canContinueToFeed ? (
-          <Button asChild size="sm" variant="outline">
-            <Link href={routes.feed}>Continue to evidence feed</Link>
-          </Button>
-        ) : students.length > 0 ? (
+        {!canContinueToFeed && students.length > 0 ? (
           <p className="max-w-sm text-sm leading-relaxed text-muted-foreground">
             Finish assigning every active student to an active class before opening
             the evidence feed.

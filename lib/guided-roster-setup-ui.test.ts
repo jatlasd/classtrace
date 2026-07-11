@@ -20,6 +20,8 @@ describe("Unit 06 guided roster setup UI", () => {
     expect(rosterPage).toContain("Your roster is private to your ClassTrace workspace.");
     expect(rosterPage).toContain("Class-first setup");
     expect(rosterPage).toContain("Create your first class");
+    expect(rosterPage).toContain("Create another class");
+    expect(rosterPage).toContain("activeClasses.length === 0");
     expect(rosterPage).toContain("OpenClassView");
     expect(rosterPage).toContain("ManualStudentEntryForm");
     expect(rosterPage).toContain("RosterImportForm");

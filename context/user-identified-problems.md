@@ -357,6 +357,8 @@ Make valid roster handles resolve on first arrival at the feed and keep composer
 
 ### Task UIP-13 — Clarify Class Roster Actions
 
+**Status:** Completed on 2026-07-11.
+
 #### Goal
 
 Make class setup copy and feed navigation accurately reflect the current roster state.

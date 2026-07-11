@@ -44,6 +44,7 @@ describe("Unit 10 onboarding routing", () => {
     expect(rosterPage).toContain("Classes in your roster");
     expect(rosterPage).toContain("getClassRosterReadinessForWorkspace");
     expect(rosterPage).toContain("Continue to evidence feed");
+    expect(rosterPage.match(/Continue to evidence feed/g)).toHaveLength(1);
     expect(rosterPage).not.toContain("Roster setup started.");
     expect(rosterPage).not.toContain("Back to evidence feed");
     expect(rosterPage).toContain("Class setup");
