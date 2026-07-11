@@ -21,6 +21,8 @@ Update this file after every meaningful implementation change.
 - UIP-07 implemented and verified with automated checks - archived roster students can be restored into an active class without releasing identifiers or creating new student records.
 - UIP-08 implemented and verified with automated checks - user-facing multi-student validation copy no longer says `V1`.
 - UIP-09 implemented and verified - captured unvalidated drafts use workspace-isolated `sessionStorage` until validation, deletion, or local midnight (`context/specs/uip-09-session-draft-persistence.md`).
+- UIP-10 implemented - obsolete mock teacher/sidebar code and the unused wide-demo localStorage loader, fixture, and test were removed; the remaining legacy capture utilities now own their neutral type outside mock data.
+- User-identified problems Phase 1 is closed: UIP-01 through UIP-10 are complete. The remaining inventory is Phase 2 UX work.
 - Phase 2 complete — roster onboarding
 - Unit 02 complete and verified — Route Map and App Shell (`context/specs/02-route-map-and-app-shell.md`)
 - Unit 03 complete and verified — Public Landing Page UI (`context/specs/03-public-landing-page-ui.md`)
@@ -55,7 +57,7 @@ Update this file after every meaningful implementation change.
 
 - ClassTrace V1 is complete for the scoped teacher-first evidence capture build path.
 - Current active build path: `context/post-v1-pre-beta-build-plan.md`, starting with Phase 6.
-- Current task: UIP-01 through UIP-09 implemented and verified; select the next user-identified problem separately.
+- Current task: Phase 1 is closed with UIP-01 through UIP-10 implemented and verified; Phase 2 UX findings remain intentionally untouched.
 
 ---
 
@@ -1523,11 +1525,10 @@ Verification after refinement: `npm run lint` pass, `npm run build` pass, `npm r
 
 ## Next Up
 
-1. Manually verify the Unit 30 class-scoped import placement inside an authenticated opened class when Chrome connector access is stable.
-2. Review/approve Unit 31 and Unit 32 implementations.
-3. Review/approve Unit 34 implementation, then begin Unit 35 Pre-Beta Feature Review and Coverage Pass after approval.
-4. Review and choose the next approved user-identified problem task from `context/user-identified-problems.md` when ready; UIP-01 through UIP-07 are implemented.
-5. Commit and push completed changes when the human requests it.
+1. Treat UIP-01 through UIP-10 as closed unless a concrete regression is found.
+2. Plan the Phase 2 UX findings from `context/user-identified-problems.md` as a separate approved unit before implementation.
+3. Begin Unit 35 Pre-Beta Feature Review and Coverage Pass only after approval.
+4. Commit and push completed changes when the human requests it.
 
 ---
 
@@ -1628,6 +1629,8 @@ Verification after refinement: `npm run lint` pass, `npm run build` pass, `npm r
 ---
 
 ## Session Notes
+
+- Phase 1 closure pass completed on 2026-07-10: removed the unused `AppSidebar`, `lib/mock-data.ts`, and the wide-demo localStorage loader/fixture/test. Preserved the still-tested deterministic legacy capture helpers by moving their neutral `Capture` type to `lib/evidence/capture.ts`. Removed stale mock/demo architecture and privacy-test references, and separated the remaining UX findings into Phase 2. The single end-of-pass quality gate passed: full tests (54 files / 302 tests), lint, and production build with Next.js 16.2.3. Expected archive/delete failure-path tests continued to log contextual database errors while asserting safe generic results.
 
 - UIP-08 was implemented on 2026-07-09: user-facing multi-student validation copy now uses plain teacher-facing language instead of visible `V1` wording in the quick capture card, feed edit validation, and structured draft review panel. Updated the deterministic student-resolution UI assertion and the code-standards example copy; no validation behavior, persistence logic, or product scope changed. Verification passed: focused `npm.cmd run test -- lib/deterministic-student-resolution-ui.test.ts` (5 tests), full `npm.cmd run test` (53 files / 293 tests), `npm.cmd run lint`, and `npm.cmd run build`. Full tests still log expected archive/delete failure-path console errors while asserting safe generic errors.
 - UIP-07 restore hardening was completed on 2026-07-09 after review: archived-student restore now performs the final active-class check and student restore inside a serializable database transaction boundary so a restore cannot proceed from a stale active-class read. Added focused coverage for class/student availability changing during restore and fixed the Archived Roster Student Actions UI registry separator formatting.

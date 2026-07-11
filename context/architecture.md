@@ -290,24 +290,6 @@ Rules:
 
 ---
 
-### `lib/mock-data/`
-
-Owns demo-only data.
-
-Responsibilities:
-
-- Demo roster data
-- Demo evidence data
-- Local dev seed-like content where appropriate
-
-Rules:
-
-- Mock data must not leak into production user data.
-- Demo data must be clearly separate from real authenticated teacher data.
-- Do not rely on mock data for production behavior.
-
----
-
 ## Storage Model
 
 ## Database
