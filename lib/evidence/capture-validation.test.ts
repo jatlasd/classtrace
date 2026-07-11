@@ -100,6 +100,17 @@ describe("field parsers", () => {
   });
 });
 
+describe("Evidence note prefill", () => {
+  it("keeps safe tag wording in the note and the tag in structured metadata", () => {
+    const display = resolveCaptureDisplay(
+      buildNoteDraft("@Mary worked on #reading")
+    );
+
+    expect(display.cleanText).toBe("worked on reading");
+    expect(display.tags).toEqual(["reading"]);
+  });
+});
+
 describe("validateSingleStudentForInterpretation", () => {
   it("allows exactly one resolved student", () => {
     const display = resolveCaptureDisplay(

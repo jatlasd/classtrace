@@ -42,7 +42,7 @@ These decisions are settled unless the human explicitly changes them later.
 ### Evidence notes
 
 - After capture, the existing structured review remains.
-- A separate editable **Evidence note** field is prefilled with the capture text after deterministic removal of the resolved student mention and parsed tags.
+- A separate editable **Evidence note** field is prefilled deterministically from the capture text after removing the resolved student mention. Parsed tags always remain structured metadata. A hashtag marker may be removed when a narrow deterministic rule leaves natural wording; otherwise the authored hashtag remains visible in the prefill so cleanup does not discard meaning.
 - There is no professional rewriting, generative cleanup, or silent wording change.
 - The review UI makes it unmistakable that the evidence note will be saved exactly as shown unless the teacher edits it.
 - The final teacher-approved note is stored permanently with the evidence record.
@@ -237,7 +237,7 @@ Add the durable teacher-approved Evidence note to saved evidence without weakeni
 
 - Add a dedicated durable Evidence note field to the evidence model. Do not overload `summary`; structured summary and teacher-authored note serve different purposes.
 - For every new beta evidence record, require a non-empty teacher-approved Evidence note.
-- Use the existing deterministic clean-text output as the initial note value: the captured wording with the resolved student mention and parsed tags removed.
+- Build the initial note value deterministically from the captured wording with the resolved student mention removed. Keep parsed tags as structured metadata. Preserve an authored hashtag in the note when removing it would leave uncertain or awkward wording; do not discard meaning merely because text was also parsed as a tag.
 - Do not perform AI rewriting, professionalization, compression, rephrasing, or other wording changes.
 - Save the final reviewed note exactly as submitted from the review field. Once the teacher can see and edit it, do not silently transform it again.
 - Update the save action, server-only evidence helper, client-safe record models, and tests to carry the note.
@@ -271,7 +271,7 @@ Make the durable Evidence note understandable at review time and useful everywhe
 
 **Logic:**
 
-- Prefill the Evidence note with deterministic clean text only.
+- Prefill the Evidence note with the deterministic Evidence-note prefill only; tag extraction must not destructively thin the teacher-visible wording.
 - Ensure the final note is included in client-side feed search and any existing relevant local filters.
 - Update individual CSV export to include the durable Evidence note while preserving current one-student, workspace-scoped export behavior.
 - Preserve archive and permanent-delete behavior for evidence records.

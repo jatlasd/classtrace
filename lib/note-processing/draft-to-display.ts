@@ -6,6 +6,7 @@ import {
 import { resolveStudentMentionsFromRoster } from "@/lib/students/roster-display-bridge";
 import type { CaptureRosterStudent } from "@/lib/students/resolve-capture-students";
 import { isFieldApplicable } from "./field-applicability";
+import { buildEvidenceNotePrefill } from "./build-evidence-note-prefill";
 import type { MatchResult, NoteDraft } from "./types";
 
 export type DraftDisplay = {
@@ -132,7 +133,7 @@ export function draftToDisplay(
     performance,
     followUps: draft.suggestedFollowUps,
     needsReview: draft.needsTeacherValidation || hasUnresolved,
-    cleanText: draft.parsed.cleanText,
+    cleanText: buildEvidenceNotePrefill(draft.parsed.rawNote),
   };
 
   return {
