@@ -1,6 +1,7 @@
 import "server-only";
 
 import { prisma } from "@/lib/db/prisma";
+import { INPUT_LIMITS } from "@/lib/validation/input-limits";
 
 type EvidenceFindFirstArgs = {
   where: {
@@ -52,7 +53,9 @@ const deleteEvidenceDatabase: DeleteEvidenceDatabase = {
 };
 
 function normalizeEvidenceId(value: unknown): string {
-  return typeof value === "string" ? value.trim() : "";
+  if (typeof value !== "string") return "";
+  const normalized = value.trim();
+  return normalized.length <= INPUT_LIMITS.identifier ? normalized : "";
 }
 
 export async function deleteEvidenceForWorkspace(

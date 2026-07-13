@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   saveValidatedEvidence,
   type SaveValidatedEvidenceActionInput,
@@ -11,17 +11,28 @@ import {
 import { ClassTraceNoticedPanel } from "@/components/dashboard/classtrace-noticed-panel";
 import { EvidenceCaptureCard } from "@/components/dashboard/evidence-capture-card";
 import {
+  EvidenceSearchControl,
+  FeedEmptyState,
+  FilterEmptyMessage,
+  InboxFilterControl,
+  RosterRequiredState,
+  type InboxFilter,
+} from "@/components/dashboard/evidence-feed-controls";
+import {
   EvidenceFeedHeader,
   RecentCapturesLabel,
 } from "@/components/dashboard/evidence-feed-header";
 import { QuickCaptureCard } from "@/components/dashboard/quick-capture-card";
 import { SavedEvidenceRow } from "@/components/dashboard/saved-evidence-row";
 import { Button } from "@/components/ui/button";
-import type {
-  CaptureValidation,
-  InterpretationFields,
-} from "@/lib/evidence/capture-validation";
-import { resolveCaptureDisplay } from "@/lib/evidence/capture-validation";
+import type { InterpretationFields } from "@/lib/evidence/capture-validation";
+import {
+  captureMatchesSearch,
+  evidenceRecordMatchesSearch,
+  isValidated,
+  needsReview,
+  type FeedItem,
+} from "@/lib/evidence/evidence-feed-filtering";
 import type { EvidenceFeedRecord } from "@/lib/evidence/evidence-feed-records";
 import {
   isCurrentLocalDay,
@@ -32,27 +43,14 @@ import {
   upsertSessionDraft,
   type SessionDraftStorage,
 } from "@/lib/evidence/session-draft-storage";
-import { normalizeTag } from "@/lib/format-tag";
-import { buildNoteDraft } from "@/lib/note-processing";
-import type { NoteDraft } from "@/lib/note-processing/types";
+import { buildNoteDraft, type NoteDraft } from "@/lib/note-processing";
 import { routes } from "@/lib/routes";
-import { mentionDisplayLabel } from "@/lib/students";
 import {
   resolveCaptureStudents,
   type CaptureRosterStudent,
   type CaptureStudentResolution,
 } from "@/lib/students/resolve-capture-students";
-import { ArrowDownUp, ClipboardCheck, Search, X } from "lucide-react";
-
-type FeedItem = {
-  id: string;
-  draft: NoteDraft;
-  timestamp: string;
-  timestampMs: number;
-  validation?: CaptureValidation;
-};
-
-type InboxFilter = "all" | "needs_review" | "validated";
+import { ArrowDownUp } from "lucide-react";
 
 const EMPTY_FEED_ITEMS: FeedItem[] = [];
 
@@ -60,13 +58,16 @@ type EvidenceFeedProps = {
   workspaceId: string;
   rosterStudents: CaptureRosterStudent[];
   initialEvidenceRecords: EvidenceFeedRecord[];
+  evidencePage: number;
+  hasNewerEvidence: boolean;
+  hasOlderEvidence: boolean;
+  initialFilter: string;
+  initialSearchQuery: string;
 };
 
-const filterOptions: { value: InboxFilter; label: string }[] = [
-  { value: "all", label: "All" },
-  { value: "needs_review", label: "Needs review" },
-  { value: "validated", label: "Validated" },
-];
+function normalizeInboxFilter(value: string): InboxFilter {
+  return value === "needs_review" || value === "validated" ? value : "all";
+}
 
 function feedItemCountLabel(count: number): string {
   return count === 1 ? "1 item showing" : `${count} items showing`;
@@ -94,313 +95,6 @@ function getBrowserSessionStorage(): SessionDraftStorage | null {
   }
 }
 
-function isValidated(item: FeedItem): boolean {
-  return item.validation?.status === "validated";
-}
-
-function needsReview(
-  item: FeedItem,
-  rosterStudents: CaptureRosterStudent[]
-): boolean {
-  if (item.validation?.status === "validated") return false;
-  return resolveCaptureDisplay(item.draft, item.validation, rosterStudents)
-    .needsReview;
-}
-
-function stripMentionPrefix(mention: string): string {
-  return mention.replace(/^@/, "");
-}
-
-function buildCaptureSearchHaystacks(
-  item: FeedItem,
-  rosterStudents: CaptureRosterStudent[]
-) {
-  const display = resolveCaptureDisplay(
-    item.draft,
-    item.validation,
-    rosterStudents
-  );
-  const rawNote = item.draft.parsed.rawNote;
-
-  const studentParts: string[] = [];
-  for (const ref of display.studentMentions) {
-    studentParts.push(mentionDisplayLabel(ref));
-    if (ref.status === "resolved") {
-      studentParts.push(
-        ref.student.displayName,
-        ref.student.handle,
-        ref.student.id
-      );
-    } else {
-      studentParts.push(ref.mention);
-    }
-  }
-  for (const mention of item.draft.parsed.mentions) {
-    studentParts.push(stripMentionPrefix(mention));
-  }
-  const studentHaystack = studentParts.join(" ").toLowerCase();
-
-  const tagSet = new Set<string>();
-  for (const tag of display.tags) {
-    tagSet.add(normalizeTag(tag).toLowerCase());
-  }
-  for (const tag of item.draft.parsed.tags) {
-    tagSet.add(normalizeTag(tag).toLowerCase());
-  }
-  const tagHaystack = [...tagSet].join(" ");
-
-  const generalParts: string[] = [
-    rawNote,
-    studentHaystack,
-    tagHaystack,
-    display.evidenceType,
-    display.summaryLine,
-  ];
-  if (display.topic) {
-    generalParts.push(display.topic);
-  }
-  if (display.performance) {
-    generalParts.push(display.performance);
-  }
-  if (display.behavior) {
-    generalParts.push(...display.behavior);
-  }
-  if (display.followUps.length > 0) {
-    generalParts.push(...display.followUps);
-  }
-
-  const generalHaystack = generalParts.join(" ").toLowerCase();
-
-  return { rawNote, studentHaystack, tagHaystack, generalHaystack };
-}
-
-function captureMatchesSearch(
-  item: FeedItem,
-  rawQuery: string,
-  rosterStudents: CaptureRosterStudent[]
-): boolean {
-  const trimmed = rawQuery.trim();
-  if (!trimmed) {
-    return true;
-  }
-
-  const { rawNote, studentHaystack, tagHaystack, generalHaystack } =
-    buildCaptureSearchHaystacks(item, rosterStudents);
-
-  if (trimmed.startsWith("@")) {
-    const needle = stripMentionPrefix(trimmed).toLowerCase();
-    if (!needle) {
-      return true;
-    }
-    if (studentHaystack.includes(needle)) {
-      return true;
-    }
-    return generalHaystack.includes(needle);
-  }
-
-  if (trimmed.startsWith("#")) {
-    const needle = normalizeTag(trimmed).toLowerCase();
-    if (!needle) {
-      return true;
-    }
-    if (tagHaystack.includes(needle)) {
-      return true;
-    }
-    if (rawNote.toLowerCase().includes(`#${needle}`)) {
-      return true;
-    }
-    return generalHaystack.includes(needle);
-  }
-
-  const needle = trimmed.toLowerCase();
-  return generalHaystack.includes(needle);
-}
-
-function evidenceRecordMatchesSearch(
-  record: EvidenceFeedRecord,
-  rawQuery: string
-): boolean {
-  const trimmed = rawQuery.trim();
-
-  if (!trimmed) {
-    return true;
-  }
-
-  const tagHaystack = record.tags
-    .map((tag) => normalizeTag(tag).toLowerCase())
-    .join(" ");
-  const studentHaystack = [
-    record.studentDisplayName,
-    record.studentMentionHandle,
-    record.rosterStudentId,
-  ]
-    .join(" ")
-    .toLowerCase();
-
-  if (trimmed.startsWith("@")) {
-    const needle = stripMentionPrefix(trimmed).toLowerCase();
-    return !needle || studentHaystack.includes(needle);
-  }
-
-  if (trimmed.startsWith("#")) {
-    const needle = normalizeTag(trimmed).toLowerCase();
-    return !needle || tagHaystack.includes(needle);
-  }
-
-  const generalHaystack = [
-    record.evidenceNote,
-    record.summary,
-    record.studentDisplayName,
-    record.studentMentionHandle,
-    record.classGroupName,
-    record.evidenceType,
-    record.topic,
-    record.performance,
-    record.behavior,
-    record.followUpNotes,
-    tagHaystack,
-  ]
-    .filter(Boolean)
-    .join(" ")
-    .toLowerCase();
-
-  return generalHaystack.includes(trimmed.toLowerCase());
-}
-
-function EvidenceSearchControl({
-  query,
-  onQueryChange,
-}: {
-  query: string;
-  onQueryChange: (query: string) => void;
-}) {
-  return (
-    <div className="relative min-w-0 flex-1 sm:max-w-[300px]">
-      <input
-        type="search"
-        name="evidence-search"
-        autoComplete="off"
-        value={query}
-        onChange={(event) => onQueryChange(event.target.value)}
-        placeholder="Search evidence..."
-        aria-label="Search evidence inbox"
-        className="h-10 w-full rounded-lg border border-border bg-background/50 py-2 pl-9 pr-9 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:bg-card focus-visible:ring-3 focus-visible:ring-ring/20"
-      />
-      <Search aria-hidden="true" className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-      {query ? (
-        <button
-          type="button"
-          onClick={() => onQueryChange("")}
-          aria-label="Clear search"
-          className="absolute right-3 top-1/2 -translate-y-1/2 rounded p-0.5 text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/30"
-        >
-          <X aria-hidden="true" className="size-4" />
-        </button>
-      ) : null}
-    </div>
-  );
-}
-
-function InboxFilterControl({
-  filter,
-  onFilterChange,
-}: {
-  filter: InboxFilter;
-  onFilterChange: (filter: InboxFilter) => void;
-}) {
-  return (
-    <div
-      role="group"
-      aria-label="Filter evidence inbox"
-      className="flex flex-wrap gap-1.5"
-    >
-      {filterOptions.map((option) => (
-        <button
-          key={option.value}
-          type="button"
-          onClick={() => onFilterChange(option.value)}
-          aria-pressed={filter === option.value}
-          className={`rounded-lg border px-3 py-2 text-sm font-medium transition-colors ${
-            filter === option.value
-              ? "border-border bg-muted text-foreground shadow-sm"
-              : "border-transparent text-muted-foreground hover:bg-muted/60 hover:text-foreground"
-          }`}
-        >
-          {option.label}
-          {filter === option.value ? <span className="sr-only"> selected</span> : null}
-        </button>
-      ))}
-    </div>
-  );
-}
-
-function FeedEmptyState({
-  title,
-  body,
-  action,
-}: {
-  title: string;
-  body: string;
-  action?: ReactNode;
-}) {
-  return (
-    <div className="px-6 py-10 text-center sm:px-10">
-      <div className="mx-auto flex size-12 items-center justify-center rounded-lg border border-border bg-muted/40 text-primary">
-        <ClipboardCheck aria-hidden="true" className="size-5" strokeWidth={1.75} />
-      </div>
-      <h3 className="mt-4 font-display text-lg font-semibold text-foreground">
-        {title}
-      </h3>
-      <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-muted-foreground">
-        {body}
-      </p>
-      {action ? <div className="mt-4">{action}</div> : null}
-    </div>
-  );
-}
-
-function FilterEmptyMessage({ filter }: { filter: InboxFilter }) {
-  if (filter === "needs_review") {
-    return (
-      <FeedEmptyState
-        title="Review queue is clear"
-        body="New captures that need teacher validation will appear here before they become saved evidence."
-      />
-    );
-  }
-
-  if (filter === "validated") {
-    return (
-      <FeedEmptyState
-        title="No validated evidence yet."
-        body="Capture a student-specific note, review the draft, and saved records will collect in this view."
-      />
-    );
-  }
-
-  return null;
-}
-
-function RosterRequiredState() {
-  return (
-    <section className="rounded-card border border-border bg-card p-6 shadow-paper">
-      <p className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-        Roster needed
-      </p>
-      <h2 className="font-display text-lg font-semibold text-foreground">
-        Add one student before capturing evidence.
-      </h2>
-      <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-        Captures need one student from your roster. Start with a name and handle,
-        then come back here for your first student-specific capture. Your evidence feed will start here after roster setup.
-      </p>
-      <Button asChild className="mt-4 h-9 rounded-lg px-5 text-sm font-semibold">
-        <Link href={routes.roster}>Set up roster</Link>
-      </Button>
-    </section>
-  );
-}
-
 function studentResolutionErrorMessage(
   resolution: CaptureStudentResolution
 ): string {
@@ -423,6 +117,11 @@ export function EvidenceFeed({
   workspaceId,
   rosterStudents,
   initialEvidenceRecords,
+  evidencePage,
+  hasNewerEvidence,
+  hasOlderEvidence,
+  initialFilter,
+  initialSearchQuery,
 }: EvidenceFeedProps) {
   const router = useRouter();
   const [draftItems, setDraftItems] = useState<FeedItem[]>([]);
@@ -430,9 +129,12 @@ export function EvidenceFeed({
     null
   );
   const sessionStorageRef = useRef<SessionDraftStorage | null>(null);
-  const [filter, setFilter] = useState<InboxFilter>("all");
-  const [searchQuery, setSearchQuery] = useState("");
+  const [filter, setFilter] = useState<InboxFilter>(() =>
+    normalizeInboxFilter(initialFilter)
+  );
+  const [searchQuery, setSearchQuery] = useState(initialSearchQuery);
   const [captureEditError, setCaptureEditError] = useState("");
+  const captureEditErrorRef = useRef<HTMLParagraphElement | null>(null);
   const [composerFocusRequestKey, setComposerFocusRequestKey] = useState(0);
   const [hiddenSavedEvidenceIds, setHiddenSavedEvidenceIds] = useState<
     Set<string>
@@ -526,6 +228,23 @@ export function EvidenceFeed({
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
   }, [sessionDraftsReady, workspaceId]);
+
+  useEffect(() => {
+    function syncFeedStateFromUrl(): void {
+      const params = new URLSearchParams(window.location.search);
+      setSearchQuery(params.get("q") ?? "");
+      setFilter(normalizeInboxFilter(params.get("filter") ?? ""));
+    }
+
+    window.addEventListener("popstate", syncFeedStateFromUrl);
+    return () => window.removeEventListener("popstate", syncFeedStateFromUrl);
+  }, []);
+
+  useEffect(() => {
+    if (captureEditError) {
+      captureEditErrorRef.current?.focus();
+    }
+  }, [captureEditError]);
 
   const summaryItems = useMemo(
     () =>
@@ -727,6 +446,51 @@ export function EvidenceFeed({
     });
   }
 
+  function updateFeedUrl(
+    nextQuery: string,
+    nextFilter: InboxFilter,
+    mode: "push" | "replace"
+  ): void {
+    const params = new URLSearchParams(window.location.search);
+
+    if (nextQuery.trim()) {
+      params.set("q", nextQuery);
+    } else {
+      params.delete("q");
+    }
+
+    if (nextFilter === "all") {
+      params.delete("filter");
+    } else {
+      params.set("filter", nextFilter);
+    }
+
+    const href = `${window.location.pathname}${params.size ? `?${params}` : ""}`;
+    window.history[mode === "push" ? "pushState" : "replaceState"](
+      null,
+      "",
+      href
+    );
+  }
+
+  function handleSearchQueryChange(query: string): void {
+    setSearchQuery(query);
+    updateFeedUrl(query, filter, "replace");
+  }
+
+  function handleFilterChange(nextFilter: InboxFilter): void {
+    setFilter(nextFilter);
+    updateFeedUrl(searchQuery, nextFilter, "push");
+  }
+
+  function evidencePageHref(page: number): string {
+    const params = new URLSearchParams();
+    if (page > 1) params.set("page", String(page));
+    if (filter !== "all") params.set("filter", filter);
+    if (searchQuery.trim()) params.set("q", searchQuery);
+    return `${routes.feed}${params.size ? `?${params}` : ""}`;
+  }
+
   function renderFeedList() {
     if (rosterSetupNeeded) {
       return (
@@ -755,8 +519,8 @@ export function EvidenceFeed({
       if (searchQuery.trim()) {
         return (
           <FeedEmptyState
-            title="No evidence matches this search"
-            body="Try a student handle, tag, class name, or a word from the saved Evidence note."
+            title="No evidence on this page matches"
+            body="Try another term or move to a newer or older evidence page."
           />
         );
       }
@@ -778,7 +542,9 @@ export function EvidenceFeed({
             }
             onEdit={(rawNote) => handleEditCapture(item.id, rawNote)}
             onDelete={() => handleDeleteCapture(item.id)}
-            onCaptureAnother={() => setComposerFocusRequestKey((current) => current + 1)}
+            onCaptureAnother={() =>
+              setComposerFocusRequestKey((current) => current + 1)
+            }
           />
         ))}
         {visibleEvidenceRecords.map((record) => (
@@ -794,54 +560,23 @@ export function EvidenceFeed({
   }
 
   return (
-    <main className="mx-auto w-full max-w-[1560px] px-4 py-5 sm:px-6 lg:px-8">
+    <div className="mx-auto w-full max-w-[1560px] px-4 py-5 sm:px-6 lg:px-8">
       <EvidenceFeedHeader
         rosterCount={rosterStudents.length}
         savedCount={initialEvidenceRecords.length}
         reviewCount={needsReviewItemCount}
       />
 
-      <section
-        className="mt-5 grid gap-4 lg:grid-cols-[minmax(0,1fr)_300px] xl:grid-cols-[minmax(0,1fr)_340px]"
-        aria-label="Capture desk"
-      >
-        <div className="min-w-0">
-          {rosterSetupNeeded ? (
-            <RosterRequiredState />
-          ) : (
-            <QuickCaptureCard
-              rosterStudents={rosterStudents}
-              focusRequestKey={composerFocusRequestKey}
-              onDraft={handleDraft}
-            />
-          )}
-        </div>
-
-        <aside className="rounded-card border border-border bg-card/70 p-4 lg:mt-3">
-          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            Capture boundary
-          </p>
-          <div className="mt-3 space-y-3 text-sm leading-relaxed text-muted-foreground">
-            <p>
-              Every saved record starts with one resolved roster student and a
-              teacher review.
-            </p>
-            <ol className="grid grid-cols-3 gap-3 text-xs" aria-label="Capture steps">
-              <li>
-                <span className="block font-semibold text-foreground">Mention</span>
-                <span className="mt-0.5 block text-muted-foreground">one student</span>
-              </li>
-              <li className="border-l border-border pl-3">
-                <span className="block font-semibold text-foreground">Review</span>
-                <span className="mt-0.5 block text-muted-foreground">the draft</span>
-              </li>
-              <li className="border-l border-border pl-3">
-                <span className="block font-semibold text-foreground">Save</span>
-                <span className="mt-0.5 block text-muted-foreground">approved evidence</span>
-              </li>
-            </ol>
-          </div>
-        </aside>
+      <section className="mt-5" aria-label="Capture desk">
+        {rosterSetupNeeded ? (
+          <RosterRequiredState />
+        ) : (
+          <QuickCaptureCard
+            rosterStudents={rosterStudents}
+            focusRequestKey={composerFocusRequestKey}
+            onDraft={handleDraft}
+          />
+        )}
       </section>
 
       <section
@@ -868,20 +603,59 @@ export function EvidenceFeed({
                 </div>
                 <EvidenceSearchControl
                   query={searchQuery}
-                  onQueryChange={setSearchQuery}
+                  onQueryChange={handleSearchQueryChange}
                 />
               </div>
 
-              <InboxFilterControl filter={filter} onFilterChange={setFilter} />
+              <InboxFilterControl
+                filter={filter}
+                onFilterChange={handleFilterChange}
+              />
             </div>
 
             {captureEditError ? (
-              <p className="border-b border-border bg-muted/30 px-4 py-3 text-sm text-destructive sm:px-6">
+              <p
+                ref={captureEditErrorRef}
+                role="alert"
+                tabIndex={-1}
+                className="border-b border-border bg-muted/30 px-4 py-3 text-sm text-destructive outline-none focus-visible:ring-3 focus-visible:ring-ring/30 sm:px-6"
+              >
                 {captureEditError}
               </p>
             ) : null}
 
-            <div>{renderFeedList()}</div>
+            <div>
+              {renderFeedList()}
+              {filter !== "needs_review" &&
+              (hasNewerEvidence || hasOlderEvidence) ? (
+                <nav
+                  aria-label="Evidence pages"
+                  className="flex items-center justify-between gap-3 border-t border-border px-4 py-4 sm:px-6"
+                >
+                  <div>
+                    {hasNewerEvidence ? (
+                      <Button asChild variant="outline" size="sm">
+                        <Link href={evidencePageHref(evidencePage - 1)}>
+                          Newer evidence
+                        </Link>
+                      </Button>
+                    ) : null}
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Page {evidencePage}
+                  </p>
+                  <div>
+                    {hasOlderEvidence ? (
+                      <Button asChild variant="outline" size="sm">
+                        <Link href={evidencePageHref(evidencePage + 1)}>
+                          Older evidence
+                        </Link>
+                      </Button>
+                    ) : null}
+                  </div>
+                </nav>
+              ) : null}
+            </div>
           </div>
 
           <ClassTraceNoticedPanel
@@ -891,7 +665,7 @@ export function EvidenceFeed({
           />
         </div>
       </section>
-    </main>
+    </div>
   );
 }
 

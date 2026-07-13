@@ -3,6 +3,8 @@ import "server-only";
 import { prisma } from "@/lib/db/prisma";
 
 type EvidenceFeedFindManyArgs = {
+  skip: number;
+  take: number;
   where: {
     workspaceId: string;
     archivedAt: null;
@@ -94,6 +96,16 @@ export type EvidenceFeedRecord = {
   createdAt: string;
 };
 
+export type EvidenceFeedPage = {
+  records: EvidenceFeedRecord[];
+  page: number;
+  hasNewer: boolean;
+  hasOlder: boolean;
+};
+
+export const EVIDENCE_FEED_PAGE_SIZE = 50;
+export const MAX_EVIDENCE_FEED_PAGE = 10_000;
+
 const evidenceFeedDatabase: EvidenceFeedDatabase = {
   evidenceRecord: {
     findMany: (args) => prisma.evidenceRecord.findMany(args),
@@ -149,11 +161,18 @@ function toFeedRecord(record: EvidenceFeedRecordFromDatabase): EvidenceFeedRecor
   return feedRecord;
 }
 
-export async function listEvidenceFeedRecordsForWorkspace(
+export async function getEvidenceFeedPageForWorkspace(
   workspaceId: string,
+  page = 1,
   database: EvidenceFeedDatabase = evidenceFeedDatabase
-): Promise<EvidenceFeedRecord[]> {
+): Promise<EvidenceFeedPage> {
+  const safePage =
+    Number.isSafeInteger(page) && page > 0 && page <= MAX_EVIDENCE_FEED_PAGE
+      ? page
+      : 1;
   const records = await database.evidenceRecord.findMany({
+    skip: (safePage - 1) * EVIDENCE_FEED_PAGE_SIZE,
+    take: EVIDENCE_FEED_PAGE_SIZE + 1,
     where: {
       workspaceId,
       archivedAt: null,
@@ -192,5 +211,10 @@ export async function listEvidenceFeedRecordsForWorkspace(
     },
   });
 
-  return records.map(toFeedRecord);
+  return {
+    records: records.slice(0, EVIDENCE_FEED_PAGE_SIZE).map(toFeedRecord),
+    page: safePage,
+    hasNewer: safePage > 1,
+    hasOlder: records.length > EVIDENCE_FEED_PAGE_SIZE,
+  };
 }

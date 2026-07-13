@@ -1,7 +1,10 @@
 import "server-only";
 
+import { Prisma } from "@/lib/generated/prisma/client";
 import { normalizeTag } from "@/lib/format-tag";
 import { prisma } from "@/lib/db/prisma";
+import { withSerializableTransactionRetry } from "@/lib/db/serializable-transaction";
+import { INPUT_LIMITS } from "@/lib/validation/input-limits";
 
 type RosterStudentFindFirstArgs = {
   where: {
@@ -62,12 +65,7 @@ type RosterStudentRecord = {
 
 type EvidenceRecordCreateResult = {
   id: string;
-};
-
-type EvidenceRecordCountArgs = {
-  where: {
-    workspaceId: string;
-  };
+  isFirstWorkspaceEvidence: boolean;
 };
 
 export type SaveValidatedEvidenceDatabase = {
@@ -75,7 +73,6 @@ export type SaveValidatedEvidenceDatabase = {
     findFirst(args: RosterStudentFindFirstArgs): Promise<RosterStudentRecord | null>;
   };
   evidenceRecord: {
-    count(args: EvidenceRecordCountArgs): Promise<number>;
     create(args: EvidenceRecordCreateArgs): Promise<EvidenceRecordCreateResult>;
   };
 };
@@ -107,13 +104,48 @@ type SaveValidatedEvidenceForWorkspaceArgs = {
   now?: Date;
 };
 
+class ActiveEvidenceOwnerChangedError extends Error {}
+
 const evidenceDatabase: SaveValidatedEvidenceDatabase = {
   rosterStudent: {
     findFirst: (args) => prisma.rosterStudent.findFirst(args),
   },
   evidenceRecord: {
-    count: (args) => prisma.evidenceRecord.count(args),
-    create: (args) => prisma.evidenceRecord.create(args),
+    create: (args) =>
+      withSerializableTransactionRetry(() =>
+        prisma.$transaction(
+          async (transaction) => {
+            const student = await transaction.rosterStudent.findFirst({
+              where: {
+                id: args.data.rosterStudentId,
+                workspaceId: args.data.workspaceId,
+                classGroupId: args.data.classGroupId,
+                archivedAt: null,
+                classGroup: {
+                  workspaceId: args.data.workspaceId,
+                  archivedAt: null,
+                },
+              },
+              select: { id: true },
+            });
+
+            if (!student) {
+              throw new ActiveEvidenceOwnerChangedError();
+            }
+
+            const existingEvidenceCount = await transaction.evidenceRecord.count({
+              where: { workspaceId: args.data.workspaceId },
+            });
+            const evidence = await transaction.evidenceRecord.create(args);
+
+            return {
+              ...evidence,
+              isFirstWorkspaceEvidence: existingEvidenceCount === 0,
+            };
+          },
+          { isolationLevel: Prisma.TransactionIsolationLevel.Serializable }
+        )
+      ),
   },
 };
 
@@ -130,18 +162,56 @@ function normalizeOptionalText(value: unknown): string | undefined {
   return trimmed || undefined;
 }
 
-function normalizeOptionalList(values: unknown): string[] {
-  if (!Array.isArray(values)) {
-    return [];
+type NormalizedListResult =
+  | { success: true; values: string[] }
+  | { success: false; error: string };
+
+function normalizeBoundedList(
+  values: unknown,
+  options: {
+    label: string;
+    maxItems: number;
+    maxItemLength: number;
+  }
+): NormalizedListResult {
+  if (values === undefined) {
+    return { success: true, values: [] };
   }
 
-  return values
-    .filter((value): value is string => typeof value === "string")
-    .map((value) => value.trim())
-    .filter(Boolean);
+  if (!Array.isArray(values)) {
+    return { success: false, error: `${options.label} must be a list.` };
+  }
+
+  if (values.length > options.maxItems) {
+    return {
+      success: false,
+      error: `Use ${options.maxItems} ${options.label.toLowerCase()} or fewer.`,
+    };
+  }
+
+  const normalized: string[] = [];
+  for (const value of values) {
+    if (typeof value !== "string") {
+      return { success: false, error: `${options.label} must contain text only.` };
+    }
+
+    const item = value.trim();
+    if (item.length > options.maxItemLength) {
+      return {
+        success: false,
+        error: `Each ${options.label.toLowerCase()} item must be ${options.maxItemLength.toLocaleString()} characters or fewer.`,
+      };
+    }
+
+    if (item) {
+      normalized.push(item);
+    }
+  }
+
+  return { success: true, values: normalized };
 }
 
-function normalizeEvidenceDate(value: unknown, fallback: Date): Date {
+function normalizeEvidenceDate(value: unknown, fallback: Date): Date | null {
   if (typeof value !== "string" || !value) {
     return fallback;
   }
@@ -149,20 +219,10 @@ function normalizeEvidenceDate(value: unknown, fallback: Date): Date {
   const parsed = new Date(value);
 
   if (Number.isNaN(parsed.getTime())) {
-    return fallback;
+    return null;
   }
 
   return parsed;
-}
-
-function joinOptionalList(values: string[] | undefined): string | undefined {
-  const normalized = normalizeOptionalList(values);
-  return normalized.length > 0 ? normalized.join(", ") : undefined;
-}
-
-function joinFollowUpNotes(values: string[] | undefined): string | undefined {
-  const normalized = normalizeOptionalList(values);
-  return normalized.length > 0 ? normalized.join("\n") : undefined;
 }
 
 export async function saveValidatedEvidenceForWorkspace(
@@ -178,6 +238,13 @@ export async function saveValidatedEvidenceForWorkspace(
     };
   }
 
+  if (rosterStudentId.length > INPUT_LIMITS.identifier) {
+    return {
+      success: false,
+      error: "This student could not be found in your roster.",
+    };
+  }
+
   const evidenceNote = normalizeRequiredText(args.input.evidenceNote);
 
   if (!evidenceNote) {
@@ -187,10 +254,24 @@ export async function saveValidatedEvidenceForWorkspace(
     };
   }
 
+  if (evidenceNote.length > INPUT_LIMITS.evidenceNote) {
+    return {
+      success: false,
+      error: `Evidence note must be ${INPUT_LIMITS.evidenceNote.toLocaleString()} characters or fewer.`,
+    };
+  }
+
   const summary = normalizeRequiredText(args.input.summary);
 
   if (!summary) {
     return { success: false, error: "Add a summary before saving evidence." };
+  }
+
+  if (summary.length > INPUT_LIMITS.evidenceSummary) {
+    return {
+      success: false,
+      error: `Summary must be ${INPUT_LIMITS.evidenceSummary.toLocaleString()} characters or fewer.`,
+    };
   }
 
   const evidenceType = normalizeRequiredText(args.input.evidenceType);
@@ -200,6 +281,79 @@ export async function saveValidatedEvidenceForWorkspace(
       success: false,
       error: "Choose an evidence type before saving evidence.",
     };
+  }
+
+  if (evidenceType.length > INPUT_LIMITS.evidenceType) {
+    return {
+      success: false,
+      error: `Evidence type must be ${INPUT_LIMITS.evidenceType} characters or fewer.`,
+    };
+  }
+
+  const topic = normalizeOptionalText(args.input.topic);
+  const performance = normalizeOptionalText(args.input.performance);
+
+  if (topic && topic.length > INPUT_LIMITS.evidenceField) {
+    return {
+      success: false,
+      error: `Topic must be ${INPUT_LIMITS.evidenceField.toLocaleString()} characters or fewer.`,
+    };
+  }
+
+  if (performance && performance.length > INPUT_LIMITS.evidenceField) {
+    return {
+      success: false,
+      error: `Performance must be ${INPUT_LIMITS.evidenceField.toLocaleString()} characters or fewer.`,
+    };
+  }
+
+  if (
+    args.input.evidenceDate &&
+    args.input.evidenceDate.length > INPUT_LIMITS.evidenceDate
+  ) {
+    return { success: false, error: "Use a valid evidence date." };
+  }
+
+  const behavior = normalizeBoundedList(args.input.behavior, {
+    label: "Behavior entries",
+    maxItems: INPUT_LIMITS.behaviorItemsPerEvidence,
+    maxItemLength: INPUT_LIMITS.behaviorItem,
+  });
+  if (!behavior.success) {
+    return behavior;
+  }
+
+  const tags = normalizeBoundedList(args.input.tags, {
+    label: "Tags",
+    maxItems: INPUT_LIMITS.tagsPerEvidence,
+    maxItemLength: INPUT_LIMITS.tag,
+  });
+  if (!tags.success) {
+    return tags;
+  }
+
+  const followUps = normalizeBoundedList(args.input.followUpNotes, {
+    label: "Follow-up notes",
+    maxItems: INPUT_LIMITS.followUpItemsPerEvidence,
+    maxItemLength: INPUT_LIMITS.followUpItem,
+  });
+  if (!followUps.success) {
+    return followUps;
+  }
+
+  const followUpNotes =
+    followUps.values.length > 0 ? followUps.values.join("\n") : undefined;
+  if (followUpNotes && followUpNotes.length > INPUT_LIMITS.followUpTotal) {
+    return {
+      success: false,
+      error: `Follow-up notes must total ${INPUT_LIMITS.followUpTotal.toLocaleString()} characters or fewer.`,
+    };
+  }
+
+  const now = args.now ?? new Date();
+  const evidenceDate = normalizeEvidenceDate(args.input.evidenceDate, now);
+  if (!evidenceDate) {
+    return { success: false, error: "Use a valid evidence date." };
   }
 
   const student = await database.rosterStudent.findFirst({
@@ -243,26 +397,21 @@ export async function saveValidatedEvidenceForWorkspace(
     };
   }
 
-  const now = args.now ?? new Date();
-  const followUpNotes = joinFollowUpNotes(args.input.followUpNotes);
-
   try {
-    const existingEvidenceCount = await database.evidenceRecord.count({
-      where: { workspaceId: args.workspaceId },
-    });
     const evidence = await database.evidenceRecord.create({
       data: {
         workspaceId: args.workspaceId,
         rosterStudentId: student.id,
         classGroupId: student.classGroupId,
-        evidenceDate: normalizeEvidenceDate(args.input.evidenceDate, now),
+        evidenceDate,
         evidenceNote,
         summary,
         evidenceType,
-        topic: normalizeOptionalText(args.input.topic),
-        performance: normalizeOptionalText(args.input.performance),
-        behavior: joinOptionalList(args.input.behavior),
-        tags: normalizeOptionalList(args.input.tags)
+        topic,
+        performance,
+        behavior:
+          behavior.values.length > 0 ? behavior.values.join(", ") : undefined,
+        tags: tags.values
           .map((tag) => normalizeTag(tag).toLowerCase())
           .filter(Boolean),
         followUpNeeded: Boolean(followUpNotes),
@@ -275,9 +424,20 @@ export async function saveValidatedEvidenceForWorkspace(
     return {
       success: true,
       evidenceId: evidence.id,
-      isFirstWorkspaceEvidence: existingEvidenceCount === 0,
+      isFirstWorkspaceEvidence: evidence.isFirstWorkspaceEvidence,
     };
-  } catch {
+  } catch (error) {
+    if (error instanceof ActiveEvidenceOwnerChangedError) {
+      return {
+        success: false,
+        error: "Assign this student to an active class before saving evidence.",
+      };
+    }
+
+    console.error(
+      "[lib/evidence/saveValidatedEvidenceForWorkspace]",
+      error instanceof Error ? error.name : "UnknownError"
+    );
     return { success: false, error: "Failed to save evidence." };
   }
 }

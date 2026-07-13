@@ -12,6 +12,7 @@ vi.mock("@/lib/db/prisma", () => ({
 }));
 
 import { importRosterStudentsForWorkspace } from "@/lib/import/roster-import";
+import { INPUT_LIMITS } from "@/lib/validation/input-limits";
 
 const createdAt = new Date("2026-06-15T12:00:00.000Z");
 
@@ -184,5 +185,35 @@ describe("importRosterStudentsForWorkspace", () => {
       error:
         "One of these students now matches an existing roster record. Preview again before saving.",
     });
+  });
+
+  it("rejects an oversized import before any database call", async () => {
+    let databaseCalled = false;
+    const database = {
+      listExistingStudents: async () => {
+        databaseCalled = true;
+        return [];
+      },
+      findActiveClassGroup: async () => {
+        databaseCalled = true;
+        return classGroup;
+      },
+      createStudentsAtomically: async () => {
+        databaseCalled = true;
+        return [];
+      },
+    };
+
+    const result = await importRosterStudentsForWorkspace(
+      {
+        workspaceId: "workspace_1",
+        classGroupId: "class_reading",
+        rosterText: "x".repeat(INPUT_LIMITS.rosterImportText + 1),
+      },
+      database
+    );
+
+    expect(result).toMatchObject({ success: false });
+    expect(databaseCalled).toBe(false);
   });
 });

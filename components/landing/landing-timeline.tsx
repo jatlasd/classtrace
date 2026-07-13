@@ -26,7 +26,7 @@ export function LandingTimeline() {
     <section className="relative overflow-hidden">
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-0 opacity-35 ruled-lines"
+        className="pointer-events-none absolute inset-0 bg-card/10"
       />
       <div className="relative mx-auto grid max-w-6xl gap-12 px-4 py-16 md:px-6 lg:grid-cols-[1.05fr_0.95fr] lg:items-center lg:gap-20 lg:px-8 lg:py-24">
         <div className="relative -rotate-1 rounded-[0.7rem] border border-border bg-card pb-7 pl-[4.5rem] pr-7 pt-8 shadow-floating transition-transform duration-500 hover:rotate-0 lg:min-h-[272px]">

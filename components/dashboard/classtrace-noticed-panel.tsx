@@ -80,24 +80,36 @@ function sortCounts(counts: Map<string, number>): CountSummary[] {
     .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
 }
 
-function recordCountLabel(count: number, hasSavedRecords: boolean): string {
-  if (hasSavedRecords) {
-    return count === 1
-      ? "1 recent evidence record"
-      : `${count} recent evidence records`;
+function activityCountLabel(
+  count: number,
+  hasDrafts: boolean,
+  hasSavedRecords: boolean
+): string {
+  if (hasDrafts && hasSavedRecords) {
+    return `${count} ${count === 1 ? "item" : "items"} across saved evidence and current drafts`;
   }
 
-  return count === 1 ? "1 recent capture" : `${count} recent captures`;
+  if (hasSavedRecords) {
+    return count === 1 ? "1 saved evidence record" : `${count} saved evidence records`;
+  }
+
+  return count === 1 ? "1 current draft" : `${count} current drafts`;
 }
 
-function noteCountLabel(count: number, hasSavedRecords: boolean): string {
-  if (hasSavedRecords) {
-    return count === 1
-      ? "1 recent evidence record"
-      : `${count} recent evidence records`;
+function tagCountLabel(
+  count: number,
+  hasDrafts: boolean,
+  hasSavedRecords: boolean
+): string {
+  if (hasDrafts && hasSavedRecords) {
+    return `${count} ${count === 1 ? "use" : "uses"} across saved evidence and current drafts`;
   }
 
-  return count === 1 ? "1 recent note" : `${count} recent notes`;
+  if (hasSavedRecords) {
+    return count === 1 ? "1 saved evidence record" : `${count} saved evidence records`;
+  }
+
+  return count === 1 ? "1 current draft" : `${count} current drafts`;
 }
 
 export function ClassTraceNoticedPanel({
@@ -130,12 +142,17 @@ export function ClassTraceNoticedPanel({
 
   const topStudents = sortCounts(studentCounts);
   const topTags = sortCounts(tagCounts);
+  const hasDrafts = items.length > 0;
   const savedRecordCount = evidenceRecords.length;
   const primaryPatterns = [
     topStudents[0]
       ? {
-          title: `${topStudents[0].name} has the most recent evidence`,
-          detail: recordCountLabel(topStudents[0].count, savedRecordCount > 0),
+          title: `${topStudents[0].name} appears most often`,
+          detail: activityCountLabel(
+            topStudents[0].count,
+            hasDrafts,
+            savedRecordCount > 0
+          ),
           icon: Users,
         }
       : {
@@ -146,7 +163,11 @@ export function ClassTraceNoticedPanel({
     topTags[0]
       ? {
           title: `${formatTagLabel(topTags[0].name)} appears most often`,
-          detail: noteCountLabel(topTags[0].count, savedRecordCount > 0),
+          detail: tagCountLabel(
+            topTags[0].count,
+            hasDrafts,
+            savedRecordCount > 0
+          ),
           icon: BookOpen,
         }
       : {
@@ -161,7 +182,7 @@ export function ClassTraceNoticedPanel({
               needsReviewCount === 1 ? "capture needs" : "captures need"
             } review`
           : "Review queue is clear",
-      detail: "Teacher validation stays required",
+      detail: "Review each capture before saving",
       icon: CheckCircle2,
     },
   ];
@@ -247,8 +268,8 @@ export function ClassTraceNoticedPanel({
                   No follow-ups yet
                 </p>
                 <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                  Follow-up suggestions appear only when deterministic capture
-                  rules find one worth reviewing.
+                  Follow-up suggestions will appear here when a capture may need
+                  another step.
                 </p>
               </div>
             </div>

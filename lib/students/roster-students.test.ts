@@ -23,6 +23,7 @@ import {
   listActiveRosterStudentsForWorkspace,
   type RosterStudentDatabase,
 } from "@/lib/students/roster-students";
+import { INPUT_LIMITS } from "@/lib/validation/input-limits";
 
 const source = readFileSync(
   join(process.cwd(), "lib", "students", "roster-students.ts"),
@@ -322,6 +323,61 @@ describe("roster student database helpers", () => {
       error: "This class could not be found in your workspace.",
     });
     expect(createCalled).toBe(false);
+  });
+
+  it("rejects oversized roster fields before database access", async () => {
+    let databaseCalled = false;
+    const database = {
+      rosterStudent: {
+        findMany: async () => {
+          databaseCalled = true;
+          return [];
+        },
+        findFirst: async () => {
+          databaseCalled = true;
+          return null;
+        },
+        count: async () => {
+          databaseCalled = true;
+          return 0;
+        },
+        create: async () => {
+          databaseCalled = true;
+          return buildRecord({
+            id: "unused",
+            workspaceId: "workspace_1",
+            displayName: "Unused",
+            mentionHandle: "unused",
+          });
+        },
+        updateMany: async () => {
+          databaseCalled = true;
+          return { count: 0 };
+        },
+      },
+      classGroup: {
+        findFirst: async () => {
+          databaseCalled = true;
+          return null;
+        },
+      },
+    } satisfies RosterStudentDatabase;
+
+    const result = await createRosterStudentForWorkspace(
+      {
+        workspaceId: "workspace_1",
+        displayName: "M".repeat(INPUT_LIMITS.displayName + 1),
+        mentionHandle: "mary",
+        classGroupId: "class_reading",
+      },
+      database
+    );
+
+    expect(result).toEqual({
+      success: false,
+      error: `Display name must be ${INPUT_LIMITS.displayName} characters or fewer.`,
+    });
+    expect(databaseCalled).toBe(false);
   });
 
   it("blocks duplicate school/local IDs inside the workspace before create", async () => {

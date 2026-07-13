@@ -7,7 +7,6 @@ vi.mock("@/lib/db/prisma", () => ({
       findFirst: vi.fn(),
     },
     evidenceRecord: {
-      count: vi.fn(),
       create: vi.fn(),
     },
   },
@@ -17,6 +16,7 @@ import {
   saveValidatedEvidenceForWorkspace,
   type SaveValidatedEvidenceDatabase,
 } from "@/lib/evidence/save-validated-evidence";
+import { INPUT_LIMITS } from "@/lib/validation/input-limits";
 
 const now = new Date("2026-06-16T14:00:00.000Z");
 
@@ -63,11 +63,9 @@ function buildDatabase(options?: {
 }) {
   const calls: {
     findFirst: unknown[];
-    count: unknown[];
     create: unknown[];
   } = {
     findFirst: [],
-    count: [],
     create: [],
   };
 
@@ -81,10 +79,6 @@ function buildDatabase(options?: {
       },
     },
     evidenceRecord: {
-      count: async (args) => {
-        calls.count.push(args);
-        return options?.existingEvidenceCount ?? 0;
-      },
       create: async (args) => {
         calls.create.push(args);
 
@@ -92,7 +86,10 @@ function buildDatabase(options?: {
           throw new Error("database unavailable");
         }
 
-        return { id: "evidence_1" };
+        return {
+          id: "evidence_1",
+          isFirstWorkspaceEvidence: (options?.existingEvidenceCount ?? 0) === 0,
+        };
       },
     },
   } satisfies SaveValidatedEvidenceDatabase;
@@ -129,7 +126,6 @@ describe("saveValidatedEvidenceForWorkspace", () => {
       evidenceId: "evidence_1",
       isFirstWorkspaceEvidence: true,
     });
-    expect(calls.count).toEqual([{ where: { workspaceId: "workspace_1" } }]);
     expect(calls.findFirst).toEqual([
       {
         where: {
@@ -177,7 +173,7 @@ describe("saveValidatedEvidenceForWorkspace", () => {
     );
   });
 
-  it("does not repeat the first-save payoff when any workspace evidence already exists", async () => {
+  it("does not repeat the first-save payoff after the workspace has evidence", async () => {
     const { database } = buildDatabase({ existingEvidenceCount: 1 });
 
     const result = await saveValidatedEvidenceForWorkspace(
@@ -186,7 +182,7 @@ describe("saveValidatedEvidenceForWorkspace", () => {
         input: {
           rosterStudentId: "student_mary",
           evidenceNote: "Mary worked through the reading passage.",
-          summary: "Mary - reading - Academic check-in",
+          summary: "Mary - reading",
           evidenceType: "Academic check-in",
           tags: [],
         },
@@ -200,28 +196,6 @@ describe("saveValidatedEvidenceForWorkspace", () => {
       evidenceId: "evidence_1",
       isFirstWorkspaceEvidence: false,
     });
-  });
-
-  it("counts archived evidence when deciding whether the workspace has saved before", async () => {
-    const { database, calls } = buildDatabase({ existingEvidenceCount: 2 });
-
-    const result = await saveValidatedEvidenceForWorkspace(
-      {
-        workspaceId: "workspace_1",
-        input: {
-          rosterStudentId: "student_mary",
-          evidenceNote: "Mary worked through the reading passage.",
-          summary: "Mary - reading - Academic check-in",
-          evidenceType: "Academic check-in",
-          tags: [],
-        },
-        now,
-      },
-      database
-    );
-
-    expect(calls.count).toEqual([{ where: { workspaceId: "workspace_1" } }]);
-    expect(result).toMatchObject({ isFirstWorkspaceEvidence: false });
   });
 
   it("rejects a missing roster student id", async () => {
@@ -532,7 +506,7 @@ describe("saveValidatedEvidenceForWorkspace", () => {
     expect(calls.create).toEqual([]);
   });
 
-  it("normalizes malformed client list and optional text payloads safely", async () => {
+  it("rejects malformed client lists before database access", async () => {
     const { database, calls } = buildDatabase();
     const malformedInput = {
       rosterStudentId: "student_mary",
@@ -560,6 +534,33 @@ describe("saveValidatedEvidenceForWorkspace", () => {
     );
 
     expect(result).toEqual({
+      success: false,
+      error: "Behavior entries must contain text only.",
+    });
+    expect(calls.findFirst).toEqual([]);
+    expect(calls.create).toEqual([]);
+  });
+
+  it("normalizes valid optional text without accepting raw capture fields", async () => {
+    const { database, calls } = buildDatabase();
+    const input = {
+      rosterStudentId: "student_mary",
+      evidenceNote: "Mary worked through the reading passage.",
+      summary: "Mary - reading",
+      evidenceType: "Academic check-in",
+      rawNote: "@Mary raw draft should not persist",
+      topic: "  reading  ",
+      behavior: [" used a strategy ", " "],
+      tags: [" #Reading "],
+      followUpNotes: [" "],
+    } as unknown as Parameters<typeof saveValidatedEvidenceForWorkspace>[0]["input"];
+
+    const result = await saveValidatedEvidenceForWorkspace(
+      { workspaceId: "workspace_1", input, now },
+      database
+    );
+
+    expect(result).toEqual({
       success: true,
       evidenceId: "evidence_1",
       isFirstWorkspaceEvidence: true,
@@ -567,10 +568,10 @@ describe("saveValidatedEvidenceForWorkspace", () => {
     expect(calls.create[0]).toEqual(
       expect.objectContaining({
         data: expect.objectContaining({
-          topic: undefined,
+          topic: "reading",
           performance: undefined,
           behavior: "used a strategy",
-          tags: [],
+          tags: ["reading"],
           followUpNeeded: false,
           followUpNotes: undefined,
         }),
@@ -579,5 +580,71 @@ describe("saveValidatedEvidenceForWorkspace", () => {
     expect(JSON.stringify(calls.create[0])).not.toMatch(
       /rawNote|draftText|originalCapture|sourceText|browser draft|raw draft/i
     );
+  });
+
+  it("rejects oversized evidence fields and collections before database access", async () => {
+    const { database, calls } = buildDatabase();
+    const baseInput = {
+      rosterStudentId: "student_mary",
+      evidenceNote: "Mary worked through the reading passage.",
+      summary: "Mary - reading",
+      evidenceType: "Academic check-in",
+      tags: [],
+    };
+
+    const oversizedNote = await saveValidatedEvidenceForWorkspace(
+      {
+        workspaceId: "workspace_1",
+        input: {
+          ...baseInput,
+          evidenceNote: "x".repeat(INPUT_LIMITS.evidenceNote + 1),
+        },
+      },
+      database
+    );
+    const tooManyTags = await saveValidatedEvidenceForWorkspace(
+      {
+        workspaceId: "workspace_1",
+        input: {
+          ...baseInput,
+          tags: Array.from(
+            { length: INPUT_LIMITS.tagsPerEvidence + 1 },
+            (_, index) => `tag-${index}`
+          ),
+        },
+      },
+      database
+    );
+
+    expect(oversizedNote).toMatchObject({ success: false });
+    expect(tooManyTags).toMatchObject({ success: false });
+    expect(calls.findFirst).toEqual([]);
+    expect(calls.create).toEqual([]);
+  });
+
+  it("rejects malformed evidence dates instead of silently using the current time", async () => {
+    const { database, calls } = buildDatabase();
+
+    const result = await saveValidatedEvidenceForWorkspace(
+      {
+        workspaceId: "workspace_1",
+        input: {
+          rosterStudentId: "student_mary",
+          evidenceDate: "not-a-date",
+          evidenceNote: "Mary worked through the reading passage.",
+          summary: "Mary - reading",
+          evidenceType: "Academic check-in",
+          tags: [],
+        },
+      },
+      database
+    );
+
+    expect(result).toEqual({
+      success: false,
+      error: "Use a valid evidence date.",
+    });
+    expect(calls.findFirst).toEqual([]);
+    expect(calls.create).toEqual([]);
   });
 });

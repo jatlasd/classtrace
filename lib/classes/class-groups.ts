@@ -1,6 +1,9 @@
 import "server-only";
 
+import { Prisma } from "@/lib/generated/prisma/client";
 import { prisma } from "@/lib/db/prisma";
+import { withSerializableTransactionRetry } from "@/lib/db/serializable-transaction";
+import { INPUT_LIMITS } from "@/lib/validation/input-limits";
 
 type SortOrder = "asc" | "desc";
 
@@ -137,12 +140,39 @@ export type ArchiveClassGroupResult =
   | { success: true; classGroupId: string }
   | { success: false; error: string };
 
+class ActiveStudentsChangedError extends Error {}
+
 const classGroupsDatabase: ClassGroupsDatabase = {
   classGroup: {
     findMany: (args) => prisma.classGroup.findMany(args),
     findFirst: (args) => prisma.classGroup.findFirst(args),
     create: (args) => prisma.classGroup.create(args),
-    updateMany: (args) => prisma.classGroup.updateMany(args),
+    updateMany: (args) => {
+      if (!args.data.archivedAt) {
+        return prisma.classGroup.updateMany(args);
+      }
+
+      return withSerializableTransactionRetry(() =>
+        prisma.$transaction(
+          async (transaction) => {
+            const activeStudentCount = await transaction.rosterStudent.count({
+              where: {
+                workspaceId: args.where.workspaceId,
+                classGroupId: args.where.id,
+                archivedAt: null,
+              },
+            });
+
+            if (activeStudentCount > 0) {
+              throw new ActiveStudentsChangedError();
+            }
+
+            return transaction.classGroup.updateMany(args);
+          },
+          { isolationLevel: Prisma.TransactionIsolationLevel.Serializable }
+        )
+      );
+    },
   },
   rosterStudent: {
     count: (args) => prisma.rosterStudent.count(args),
@@ -199,6 +229,13 @@ export function normalizeClassName(
     return { success: false, error: "Class name is required." };
   }
 
+  if (name.length > INPUT_LIMITS.className) {
+    return {
+      success: false,
+      error: `Class name must be ${INPUT_LIMITS.className} characters or fewer.`,
+    };
+  }
+
   return {
     success: true,
     name,
@@ -207,7 +244,12 @@ export function normalizeClassName(
 }
 
 function normalizeId(value: unknown): string {
-  return typeof value === "string" ? value.trim() : "";
+  if (typeof value !== "string") {
+    return "";
+  }
+
+  const normalized = value.trim();
+  return normalized.length <= INPUT_LIMITS.identifier ? normalized : "";
 }
 
 async function findDuplicateClassName(
@@ -462,6 +504,13 @@ export async function archiveClassGroupForWorkspace(
 
     return { success: true, classGroupId: classGroup.id };
   } catch (error) {
+    if (error instanceof ActiveStudentsChangedError) {
+      return {
+        success: false,
+        error: "Move active students out of this class before archiving it.",
+      };
+    }
+
     console.error("[lib/classes/archiveClassGroupForWorkspace]", error);
     return { success: false, error: "Failed to archive class." };
   }

@@ -14,6 +14,13 @@ const evidenceNoteMigrationPath = join(
   "20260704000000_add_evidence_note_to_evidence_record",
   "migration.sql"
 );
+const workspaceIntegrityMigrationPath = join(
+  projectRoot,
+  "prisma",
+  "migrations",
+  "20260712000000_enforce_workspace_relation_integrity",
+  "migration.sql"
+);
 
 const schema = readFileSync(schemaPath, "utf8");
 const envExample = readFileSync(envExamplePath, "utf8");
@@ -50,18 +57,44 @@ describe("Prisma database foundation", () => {
     expect(migration).not.toMatch(/NOT NULL|UPDATE\s+"EvidenceRecord"|summary/i);
     expect(schema).not.toMatch(/\b(rawNote|draftText|originalCapture|sourceText|aiSummary)\b/i);
   });
+
+  it("enforces same-workspace database relations without rewriting drifted data", () => {
+    expect(existsSync(workspaceIntegrityMigrationPath)).toBe(true);
+
+    const migration = readFileSync(workspaceIntegrityMigrationPath, "utf8");
+
+    expect(schema).toContain("@@unique([workspaceId, id])");
+    expect(schema).toContain(
+      "@relation(fields: [workspaceId, rosterStudentId], references: [workspaceId, id], onDelete: Cascade)"
+    );
+    expect(schema).toContain(
+      "@relation(fields: [workspaceId, classGroupId], references: [workspaceId, id], onDelete: SetNull)"
+    );
+    expect(migration).toContain(
+      'FOREIGN KEY ("workspaceId", "rosterStudentId")'
+    );
+    expect(migration).toContain(
+      'FOREIGN KEY ("workspaceId", "classGroupId")'
+    );
+    expect(migration).toContain('ON DELETE SET NULL ("classGroupId")');
+    expect(migration).toContain("RAISE EXCEPTION");
+    expect(migration).not.toMatch(/UPDATE\s+"(RosterStudent|EvidenceRecord)"/i);
+  });
   it("does not add out-of-scope V1 models", () => {
     expect(schema).not.toMatch(/\b(model|enum)\s+(Organization|District|Admin|Membership|File|Attachment|Ai|AI|Embedding|Billing|Subscription|Sis|SIS)\b/);
   });
 
   it("documents database environment variables and scripts", () => {
     expect(envExample).toContain("DATABASE_URL=");
-    expect(envExample).toContain("DIRECT_URL=");
+    expect(envExample).not.toMatch(/^DIRECT_URL=/m);
     expect(packageJson.scripts?.postinstall).toBe("prisma generate");
     expect(packageJson.scripts?.prebuild).toBe("prisma generate");
     expect(packageJson.scripts?.pretest).toBe("prisma generate");
     expect(packageJson.scripts?.["db:generate"]).toBe("prisma generate");
     expect(packageJson.scripts?.["db:migrate"]).toBe("prisma migrate dev");
+    expect(packageJson.scripts?.["db:migrate:deploy"]).toBe(
+      "prisma migrate deploy"
+    );
     expect(packageJson.scripts?.["db:studio"]).toBe("prisma studio");
   });
 

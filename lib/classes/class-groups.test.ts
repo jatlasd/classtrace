@@ -26,6 +26,7 @@ import {
   renameClassGroupForWorkspace,
   type ClassGroupsDatabase,
 } from "@/lib/classes/class-groups";
+import { INPUT_LIMITS } from "@/lib/validation/input-limits";
 
 const createdAt = new Date("2026-06-30T12:00:00.000Z");
 const updatedAt = new Date("2026-06-30T12:10:00.000Z");
@@ -134,6 +135,12 @@ describe("class group domain helpers", () => {
     expect(normalizeClassName("   ")).toEqual({
       success: false,
       error: "Class name is required.",
+    });
+    expect(
+      normalizeClassName("x".repeat(INPUT_LIMITS.className + 1))
+    ).toEqual({
+      success: false,
+      error: `Class name must be ${INPUT_LIMITS.className} characters or fewer.`,
     });
   });
 

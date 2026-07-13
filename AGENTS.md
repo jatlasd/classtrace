@@ -1,385 +1,98 @@
----
-description: Instructions for AI coding agents working on ClassTrace
-globs: *
-alwaysApply: true
----
+# ClassTrace agent guide
 
-<!-- BEGIN:nextjs-agent-rules -->
+This file is the compact operating contract for coding agents. Keep the project understandable to its human maintainer: small changes, boring architecture, direct evidence, and no invented product scope.
 
-# This is NOT the Next.js you know
+## Read first
 
-This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` before writing any code. Heed deprecation notices.
+1. Read this file.
+2. Read [context/README.md](context/README.md).
+3. Load only the task-relevant source-of-truth document:
+   - Product/scope: `context/project-overview.md`
+   - Auth, database, privacy, data flow: `context/architecture.md`
+   - Implementation/testing conventions: `context/code-standards.md`
+   - UI work: `context/ui-context.md` and the relevant entry in `context/ui-registry.md`
+   - Future product direction: `context/post-v1-roadmap.md`
+4. Inspect the actual source and tests. Documentation is authoritative intent, not proof that the implementation matches it.
 
-<!-- END:nextjs-agent-rules -->
+For Next.js-specific behavior, check the versioned guides under `node_modules/next/dist/docs/` before relying on memory.
 
----
+## Product contract
 
-# AGENTS.md
+ClassTrace is a teacher-first student evidence capture system:
 
-This is the operating guide for AI coding agents working on ClassTrace.
-
-ClassTrace must stay understandable to its human owner. The goal is not impressive code. The goal is a clear product, boring architecture, small reviewable changes, and strong protection of the teacher-first student evidence model.
-
-The human remains the architect. The AI agent is the implementation engine.
-
----
-
-## Read Before Anything Else
-
-Start with this file. It is the compact operating guide.
-
-Do not read every context file by default. The context folder contains both current rules and long historical archives. Load only the files needed for the current task.
-
-Always read before coding:
-
-1. `AGENTS.md`
-2. Current focused spec in `context/specs/`, if the user explicitly names or approves one
-3. The task-relevant source-of-truth files from the routing list below
-
-Task-based routing:
-
-- Product/scope/planning task: read `context/project-overview.md`, then the relevant sections of `context/post-v1-roadmap.md` or `context/post-v1-pre-beta-build-plan.md`.
-- Architecture/auth/database/server-action task: read `context/architecture.md` and `context/code-standards.md`.
-- UI task: read `context/ui-context.md`, then search `context/ui-registry.md` for the relevant component or route section only.
-- Note-processing, student resolution, evidence validation, export, archive/delete task: read `context/architecture.md`, `context/code-standards.md`, and the relevant source/tests.
-- Workflow/documentation task: read `context/ai-workflow-rules.md` and the specific docs being changed.
-- Review task: read broader context as needed, but start with targeted sections rather than full historical files.
-- Historical question or regression archaeology: read only the relevant sections of `context/progress-tracker.md`, `context/build-plan.md`, or completed specs.
-
-Large files are not mandatory startup reading:
-
-- `context/ui-registry.md` is a component-pattern reference. Search it by heading/component instead of reading the whole file.
-- `context/progress-tracker.md` is a historical implementation archive. Use targeted sections unless the task is a broad review.
-- `context/build-plan.md` and completed numbered specs in `context/specs/` are historical V1 build records. Read them only when implementation history matters or the user asks about a completed unit.
-
-If these files conflict with each other, stop and ask for clarification before coding.
-
-Do not assume the product or architecture from the code alone. The context files are the source of truth.
-
----
-
-## Available Skills
-
-- `/architect` — before any complex feature. Think before building.
-- `/imprint` — after any new UI component. Capture patterns.
-- `/pleasereview` — before demo or when something feels off.
-- `/recover` — when something breaks after one failed correction.
-- `/remember save` — when a feature spans multiple sessions.
-- `/remember restore` — when returning after a multi-session feature.
-
----
-
-## Next.js Version Warning
-
-This project uses modern Next.js.
-
-Framework behavior, APIs, conventions, caching, routing, Server Actions, middleware/proxy behavior, and auth integration may differ from older training data.
-
-Before implementing Next.js-specific features, verify the current project patterns and check current documentation when needed.
-
-Do not guess on framework behavior.
-
----
-
-## Product Identity
-
-ClassTrace is a teacher-first student evidence capture system.
-
-The core product loop is:
-
+```text
 messy teacher capture → structured draft → teacher validation → organized student evidence
-
-ClassTrace is not:
-
-- A general teacher notebook
-- A gradebook
-- An SIS
-- An IEP-writing system
-- A parent communication tool
-- A district data warehouse
-- An admin dashboard
-- An employee surveillance tool
-- An AI system that invents teacher documentation
-
-The strongest early users are special education teachers, case managers, interventionists, resource teachers, co-teachers, and teachers with heavy documentation needs.
-
----
-
-## Rules That Never Change
-
-- ClassTrace is for student evidence, not general teacher notes.
-- Saved evidence must belong to exactly one resolved roster student.
-- Captures with zero resolved students must not be saved.
-- Captures with multiple students must not be saved.
-- Teacher validation is required before evidence becomes permanent.
-- Original capture text may be temporary during compose/review. After the teacher clicks Capture, an unvalidated draft may use workspace-isolated, versioned `sessionStorage` until successful validation, explicit deletion, or the next device-local midnight. It must not be stored as a hidden durable raw-capture record.
-- Pre-beta evidence may permanently store only the teacher-reviewed Evidence note, exactly as approved by the teacher.
-- Deterministic parsing only; do not add generative AI.
-- Text-only evidence; do not add file, photo, audio, PDF, or attachment handling.
-- Student records are isolated per teacher in V1.
-- During pre-beta, every active student must belong to exactly one active class.
-- Classes organize roster setup and student management only; capture remains global and student-specific.
-- Do not invent class assignments or fabricate Evidence note text for legacy V1 data.
-- Do not add district/admin dashboards, shared student identities, SIS sync, gradebook features, IEP writing, or parent communication tools in V1.
-- Do not add dependencies, analytics, background jobs, queues, AI SDKs, file services, billing, organization features, or new external services unless the current focused task/spec explicitly requires them.
-- Update `context/progress-tracker.md` after every meaningful implementation change.
-- If a change affects product scope, architecture, code standards, workflow, or UI rules, update the relevant context file before continuing.
-- If the same issue remains after one focused correction attempt, stop and ask for human direction.
-
----
-
-## Current Project Phase
-
-ClassTrace has moved beyond the pre-build architecture setup and completed the scoped V1 build path.
-
-The active project posture is post-V1/pre-beta stewardship:
-
-- Keep the teacher-first evidence model stable.
-- Build the pre-beta feature path in `context/post-v1-pre-beta-build-plan.md` one approved unit at a time.
-- Preserve global one-student capture while adding class-first roster organization and teacher-approved Evidence notes.
-- Prepare release/deployment decisions separately from the feature build.
-- Fix bugs and polish in small, reviewable units.
-- Treat `context/post-v1-roadmap.md` as strategic context and `context/post-v1-pre-beta-build-plan.md` as the active pre-beta sequence when working on Phase 6 and later.
-- Treat `context/build-plan.md` and completed numbered specs as historical records, not the current queue.
-
----
-
-## Working Modes
-
-Use the correct mode for the task:
-
-- Planning mode — clarify product, architecture, build order, or specs before coding.
-- Implementation mode — implement one approved focused task/spec only.
-- Review mode — inspect code against context files, invariants, and verification requirements.
-- Recovery mode — stop broad changes, identify what broke, and propose the smallest safe fix.
-
-Do not mix modes unless explicitly instructed.
-
----
-
-## Scope Discipline
-
-Make the smallest useful change.
-
-Default rules:
-
-- Work on one unit at a time.
-- Touch only the files needed for the current task.
-- Do not perform broad refactors while implementing a feature.
-- Do not redesign the app while fixing a bug.
-- Do not introduce new dependencies unless the current focused task/spec requires them.
-- Do not add analytics, background jobs, queues, AI SDKs, file services, billing, organization features, or new external services unless explicitly approved.
-- Do not change existing auth, database, Prisma, Clerk, Neon, server action, or API-route behavior unless the task specifically requires it.
-- Do not change product language, information architecture, or workflow assumptions without making that change explicit.
-
-One layer per task:
-
-- UI-only task: do not change note-processing logic.
-- Logic-only task: do not redesign UI.
-- Type-only task: do not change runtime behavior.
-- Test-only task: do not change implementation unless asked.
-- Copy/content task: do not restructure components.
-- Styling task: do not alter data flow.
-
-If the requested change crosses layers, explain why before coding and keep the implementation narrow.
-
----
-
-## Refactor Rules
-
-Refactoring is allowed only when it supports the current focused task.
-
-Allowed without asking:
-
-- Small local cleanup inside files already being changed
-- Extracting a helper from a component when the unit needs it
-- Moving domain logic into the correct `lib/` folder when directly related to the unit
-- Removing dead code made obsolete by the unit
-- Renaming local variables or functions for clarity
-
-Ask before doing:
-
-- Large folder restructures
-- Route restructures
-- Replacing major components
-- Rewriting the capture flow
-- Rewriting the roster model
-- Rewriting note-processing architecture
-- Replacing existing UI patterns
-- Changing the app’s visual language
-- Changing the chosen stack
-- Removing existing working V1 behavior before the replacement is ready
-
-Do not surprise the user with a large rewrite.
-
----
-
-## Note-Processing Rules
-
-The note-processing layer is central to ClassTrace.
-
-Use the existing deterministic pipeline unless a focused task/spec explicitly changes it.
-
-General flow:
-
-raw note → parse mentions/tags/clean text → match type/domain/fields → build structured draft → teacher validation → saved evidence
-
-Rules:
-
-- Keep parsing deterministic in V1.
-- Do not call external services from note-processing code.
-- Do not add generative AI.
-- Do not invent facts.
-- Do not turn uncertain notes into stronger claims than the note supports.
-- Parser output is draft-only until teacher validation.
-- Parser/matcher changes require tests.
-
----
-
-## Validation and Evidence Rules
-
-ClassTrace must distinguish these states:
-
-1. Raw draft input
-2. Parsed/structured draft
-3. Teacher-validated evidence
-4. Timeline/export views from validated evidence
-
-Do not collapse these states.
-
-Completed V1 permanent evidence was teacher-validated structured evidence only.
-
-For pre-beta work, original capture text may be temporary during composing/review, but must not become a hidden durable raw-capture record. The teacher-reviewed Evidence note may become durable because the teacher sees, edits, and approves it before saving.
-
----
-
-## Privacy and Compliance Boundaries
-
-Do not claim the app is FERPA-compliant, legally de-identified, audit-ready, district-approved, or production-safe unless explicitly asked for a cautious compliance document.
-
-For code changes:
-
-- Do not send student notes to external AI APIs.
-- Do not add telemetry or analytics casually.
-- Do not log raw notes.
-- Do not persist raw notes in `localStorage`, the database, exports, timelines, reports, or server-side draft storage. The approved temporary browser boundary is `sessionStorage` for captured, unvalidated drafts only.
-- Do not store original capture text as a hidden durable raw-capture record.
-- Do not add demo data that looks like real student records.
-- Do not include disability labels, medical details, discipline conclusions, or sensitive family information in demo data unless explicitly provided as safe fictional content.
-- Do not use real student names.
-
-Allowed fictional/demo names for examples and tests:
-
-- Jeremy
-- Stacy
-- Jeff
-- Mary
-
-Do not use `Jayden` in examples, tests, seed data, screenshots, or mock content.
-
----
-
-## UI and UX Rules
-
-The teacher-facing experience should feel like a calm evidence inbox, not an enterprise dashboard.
-
-Default UX priorities:
-
-1. Quick capture
-2. Readable feed
-3. Validation/editing
-4. Student timeline
-5. Export/reporting downstream
-
-The capture composer should remain prominent.
-
-Avoid designs where the teacher has to start from a student profile, roster table, analytics dashboard, or report screen.
-
-Use plain teacher language:
-
-- Capture
-- Evidence feed
-- What happened?
-- Needs review
-- Validate
-- Student
-- Tags
-- Follow-up
-- Timeline
-
-Avoid overbuilt admin language unless the task is specifically about admin/reporting surfaces.
-
----
-
-## Testing and Quality Gates
-
-Before considering a task complete, run the relevant checks when possible:
-
-    npm run lint
-    npm run test
-    npm run build
-
-At minimum:
-
-- Note-processing changes require tests.
-- Parser changes require tests for mentions, tags, and clean text.
-- Matcher changes require tests for likely match, unclear match, and false-positive prevention.
-- Validation changes require tests or a clear manual verification note.
-- UI-only changes require at least lint/build when possible.
-- Auth/database changes must verify ownership boundaries.
-- Export/delete changes must verify student scoping.
-
-Do not declare success if checks fail.
-
-Do not claim checks passed unless they were actually run.
-
----
-
-## Documentation Rules
-
-Update documentation when a change affects product behavior, architecture, code standards, UI rules, or developer workflow.
-
-Use these rules:
-
-- Product scope change → update `context/project-overview.md`
-- Architecture change → update `context/architecture.md`
-- Code pattern change → update `context/code-standards.md`
-- UI/design change → update `context/ui-context.md`
-- Workflow/process change → update `context/ai-workflow-rules.md`
-- Progress/status change → update `context/progress-tracker.md`
-
-Do not let documentation drift from implementation.
-
-Do not change documentation just to justify accidental code drift.
-
----
-
-## Coding-Agent Response Format
-
-When finishing a coding task, report:
-
-1. Files changed
-2. What changed in plain English
-3. Tests/checks run
-4. Anything not done
-5. Any risk or follow-up the human should review
-
-Do not bury important caveats.
-
-Do not claim production readiness unless the verified unit actually makes it true.
-
-Do not claim compliance readiness.
-
----
-
-## When Unsure
-
-If a requested change is ambiguous, choose the option that keeps the codebase smaller, more local, more testable, and closer to the capture-first student evidence loop.
-
-If there is a conflict between a clever technical pattern and human maintainability, choose human maintainability.
-
-If there is a conflict between dashboard/reporting features and fast teacher capture, protect fast teacher capture.
-
-If there is a conflict between automation and teacher judgment, protect teacher judgment.
-
-If the system is unclear, stop and ask one focused question.
+```
+
+Protect these invariants:
+
+- Saved evidence belongs to exactly one resolved roster student.
+- Zero-student and multi-student captures cannot be saved.
+- Teacher validation is required before permanent save.
+- New evidence stores the teacher-reviewed Evidence note exactly as approved.
+- Parsing is deterministic. Do not add generative AI.
+- Evidence is text-only. Do not add file, photo, audio, PDF, or attachment handling.
+- Every roster student and evidence record is isolated to one teacher workspace.
+- Every active student belongs to exactly one active class; capture remains global and student-specific.
+
+Do not turn ClassTrace into a notebook, gradebook, SIS, IEP writer, parent communication tool, district/admin product, analytics platform, or surveillance system.
+
+## Privacy contract
+
+- Never log raw notes.
+- Never store raw notes in the database, exports, timelines, reports, `localStorage`, analytics, or server-side draft storage.
+- The only approved post-capture draft persistence is workspace-scoped, versioned `sessionStorage` until successful validation, explicit deletion, or the next device-local midnight.
+- Do not send student notes to external AI or telemetry services.
+- Do not claim compliance, legal de-identification, district approval, or production safety.
+- Use only Jeremy, Stacy, Jeff, and Mary for fictional examples. Do not use real student names or `Jayden`.
+
+## Architecture boundaries
+
+- Client components own local interaction state only.
+- Server Actions authenticate, map failures to safe typed results, and revalidate affected routes.
+- Server/domain modules own validation, workspace predicates, transactions, and database writes.
+- Prisma is server-only. Every protected query includes the authenticated workspace boundary.
+- Same-workspace relations are enforced in both application predicates and database constraints.
+- Active-class/student checks and dependent writes use the shared serializable transaction helper with bounded `P2034` retry.
+- User-controlled inputs are bounded with `lib/validation/input-limits.ts` before database work.
+
+## Working rules
+
+- Make the smallest complete change that solves the request.
+- Do not add dependencies, services, analytics, queues, jobs, billing, organization features, or product scope without explicit approval.
+- Preserve unrelated user changes in a dirty worktree.
+- Do not perform broad refactors while fixing an unrelated bug.
+- Remove dead code made obsolete by the current change.
+- Do not create progress diaries, numbered build specs, memory files, or duplicate context documents.
+- Update a source-of-truth document only when its current behavior or rule changed.
+- If documentation and implementation disagree, verify the implementation and fix the correct side; do not document accidental drift as intended design.
+
+## Code and UI expectations
+
+- Use kebab-case filenames for components and utilities; exported React components use PascalCase.
+- Prefer direct domain modules over generic wrappers, barrels, registries, or speculative abstraction layers.
+- Keep domain logic out of components and authentication/database logic out of clients.
+- Reuse shared evidence, form, button, and route-state patterns before creating variants.
+- Use semantic tokens from `app/globals.css`, visible focus states, labeled inputs, accessible errors, reduced-motion behavior, and clear destructive confirmations.
+- Avoid generated-looking decoration, fake controls, excessive cards, broad transitions, placeholder copy, and comments that restate code.
+
+## Verification
+
+Run checks in proportion to risk. Before declaring a runtime change complete, run:
+
+```bash
+npm run lint
+npm run test
+npm run build
+```
+
+Additional requirements:
+
+- Parser/matcher changes need positive, unclear, and false-positive tests.
+- Auth/database changes must prove workspace ownership.
+- Schema/migration changes require Prisma validation and `npm run test:db` against an explicitly disposable database.
+- Export/delete/archive changes must prove student/workspace scoping.
+- UI changes need rendered interaction coverage for important behavior and a desktop/mobile accessibility check where practical.
+- Do not claim a command passed unless it was actually run.
+
+When reporting work, state files changed, behavior changed, checks run, anything not verified, and remaining risk. Do not claim production or compliance readiness.

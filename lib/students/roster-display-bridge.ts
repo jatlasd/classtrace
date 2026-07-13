@@ -1,5 +1,8 @@
-import type { Student, StudentMentionRef } from "@/lib/students";
 import type { CaptureRosterStudent } from "@/lib/students/resolve-capture-students";
+import type {
+  StudentMentionDisplay,
+  StudentMentionRef,
+} from "@/lib/students/student-mention-display";
 
 const COLOR_PALETTE = [
   "bg-sky-500",
@@ -30,7 +33,7 @@ function deriveInitials(displayName: string): string {
 function captureRosterStudentToDisplayStudent(
   student: CaptureRosterStudent,
   colorIndex: number
-): Student {
+): StudentMentionDisplay {
   return {
     id: student.id,
     displayName: student.displayName,
@@ -42,8 +45,8 @@ function captureRosterStudentToDisplayStudent(
 }
 
 function buildRosterLookups(roster: CaptureRosterStudent[]) {
-  const byHandle = new Map<string, Student>();
-  const byDisplayName = new Map<string, Student>();
+  const byHandle = new Map<string, StudentMentionDisplay>();
+  const byDisplayName = new Map<string, StudentMentionDisplay>();
 
   roster.forEach((student, index) => {
     const displayStudent = captureRosterStudentToDisplayStudent(student, index);
@@ -59,14 +62,22 @@ export function resolveStudentMentionsFromRoster(
   roster: CaptureRosterStudent[]
 ): StudentMentionRef[] {
   const { byHandle } = buildRosterLookups(roster);
+  const resolvedStudentIds = new Set<string>();
+  const refs: StudentMentionRef[] = [];
 
-  return mentions.map((mention) => {
+  for (const mention of mentions) {
     const student = byHandle.get(normalizeMention(mention));
     if (student) {
-      return { status: "resolved", student };
+      if (!resolvedStudentIds.has(student.id)) {
+        resolvedStudentIds.add(student.id);
+        refs.push({ status: "resolved", student });
+      }
+      continue;
     }
-    return { status: "unresolved", mention };
-  });
+    refs.push({ status: "unresolved", mention });
+  }
+
+  return refs;
 }
 
 export function resolveStudentNamesFromRoster(

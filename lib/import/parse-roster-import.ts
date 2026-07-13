@@ -1,5 +1,6 @@
 import { deriveMentionHandle } from "@/lib/students/derive-mention-handle";
 import { normalizeMentionHandle } from "@/lib/students/normalize-mention-handle";
+import { INPUT_LIMITS } from "@/lib/validation/input-limits";
 
 export type ExistingRosterImportStudent = {
   mentionHandle: string;
@@ -48,6 +49,17 @@ export function parseRosterImport(
   rosterText: string,
   existingStudents: ExistingRosterImportStudent[] = []
 ): RosterImportPreview {
+  if (rosterText.length > INPUT_LIMITS.rosterImportText) {
+    return {
+      rows: [],
+      validRows: [],
+      invalidRows: [],
+      totalRows: 0,
+      hasErrors: true,
+      error: `Roster import must be ${INPUT_LIMITS.rosterImportText.toLocaleString()} characters or fewer.`,
+    };
+  }
+
   const lines = rosterText
     .split(/\r?\n/)
     .map((line, index) => ({ text: line.trim(), rowNumber: index + 1 }))
@@ -61,6 +73,17 @@ export function parseRosterImport(
       totalRows: 0,
       hasErrors: true,
       error: "No students found. Paste one student per line.",
+    };
+  }
+
+  if (lines.length > INPUT_LIMITS.rosterImportRows) {
+    return {
+      rows: [],
+      validRows: [],
+      invalidRows: [],
+      totalRows: lines.length,
+      hasErrors: true,
+      error: `Import ${INPUT_LIMITS.rosterImportRows} students or fewer at a time.`,
     };
   }
 
@@ -82,16 +105,35 @@ export function parseRosterImport(
     const normalizedHandle = normalizeMentionHandle(handleInput);
     const schoolLocalId = normalizeOptionalSchoolLocalId(columns[2]);
 
+    if (line.text.length > INPUT_LIMITS.rosterImportLine) {
+      errors.push(
+        `Each import row must be ${INPUT_LIMITS.rosterImportLine.toLocaleString()} characters or fewer.`
+      );
+    }
+
     if (columns.length > 3) {
       errors.push("This row has too many columns.");
     }
 
     if (!displayName) {
       errors.push("Student name is required.");
+    } else if (displayName.length > INPUT_LIMITS.displayName) {
+      errors.push(
+        `Student name must be ${INPUT_LIMITS.displayName} characters or fewer.`
+      );
     }
 
     if (!normalizedHandle.success) {
       errors.push(normalizedHandle.error);
+    }
+
+    if (
+      schoolLocalId &&
+      schoolLocalId.length > INPUT_LIMITS.schoolLocalId
+    ) {
+      errors.push(
+        `School/local ID must be ${INPUT_LIMITS.schoolLocalId} characters or fewer.`
+      );
     }
 
     return {

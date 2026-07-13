@@ -1,4 +1,4 @@
-import { AtSign, Camera, Hash, Paperclip } from "lucide-react";
+import { AtSign, Hash } from "lucide-react";
 
 type Step = {
   number: string;
@@ -38,8 +38,6 @@ const steps: Step[] = [
         <div className="mt-3 flex items-center gap-1.5 border-t border-border/70 pt-2.5">
           <AtSign className="size-3.5 text-muted-foreground" strokeWidth={1.75} aria-hidden="true" />
           <Hash className="size-3.5 text-muted-foreground" strokeWidth={1.75} aria-hidden="true" />
-          <Paperclip className="size-3.5 text-muted-foreground" strokeWidth={1.75} aria-hidden="true" />
-          <Camera className="size-3.5 text-muted-foreground" strokeWidth={1.75} aria-hidden="true" />
           <span className="ml-auto rounded-md bg-navy px-2.5 py-1 text-[10px] font-semibold text-navy-foreground">
             Save
           </span>

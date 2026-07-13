@@ -10,7 +10,9 @@ vi.mock("@/lib/db/prisma", () => ({
 }));
 
 import {
-  listEvidenceFeedRecordsForWorkspace,
+  EVIDENCE_FEED_PAGE_SIZE,
+  getEvidenceFeedPageForWorkspace,
+  MAX_EVIDENCE_FEED_PAGE,
   type EvidenceFeedDatabase,
 } from "@/lib/evidence/evidence-feed-records";
 
@@ -60,17 +62,20 @@ function buildDatabase(records = [buildRecord()]) {
   return { database, calls };
 }
 
-describe("listEvidenceFeedRecordsForWorkspace", () => {
+describe("getEvidenceFeedPageForWorkspace", () => {
   it("queries active evidence records scoped to one workspace", async () => {
     const { database, calls } = buildDatabase();
 
-    const records = await listEvidenceFeedRecordsForWorkspace(
+    const result = await getEvidenceFeedPageForWorkspace(
       "workspace_1",
+      1,
       database
     );
 
     expect(calls).toEqual([
       {
+        skip: 0,
+        take: EVIDENCE_FEED_PAGE_SIZE + 1,
         where: {
           workspaceId: "workspace_1",
           archivedAt: null,
@@ -109,7 +114,11 @@ describe("listEvidenceFeedRecordsForWorkspace", () => {
         },
       },
     ]);
-    expect(records).toEqual([
+    expect(result).toEqual({
+      page: 1,
+      hasNewer: false,
+      hasOlder: false,
+      records: [
       {
         id: "evidence_1",
         rosterStudentId: "student_mary",
@@ -129,7 +138,8 @@ describe("listEvidenceFeedRecordsForWorkspace", () => {
         validatedAt: "2026-06-16T14:05:00.000Z",
         createdAt: "2026-06-16T14:06:00.000Z",
       },
-    ]);
+      ],
+    });
   });
 
   it("returns a client-safe model without workspace or raw draft fields", async () => {
@@ -140,8 +150,9 @@ describe("listEvidenceFeedRecordsForWorkspace", () => {
       }),
     ]);
 
-    const records = await listEvidenceFeedRecordsForWorkspace(
+    const { records } = await getEvidenceFeedPageForWorkspace(
       "workspace_1",
+      1,
       database
     );
 
@@ -172,8 +183,9 @@ describe("listEvidenceFeedRecordsForWorkspace", () => {
       },
     ]);
 
-    const records = await listEvidenceFeedRecordsForWorkspace(
+    const { records } = await getEvidenceFeedPageForWorkspace(
       "workspace_1",
+      1,
       database
     );
 
@@ -188,7 +200,7 @@ describe("listEvidenceFeedRecordsForWorkspace", () => {
   it("excludes evidence attached to archived roster students from default feed reads", async () => {
     const { database, calls } = buildDatabase();
 
-    await listEvidenceFeedRecordsForWorkspace("workspace_1", database);
+    await getEvidenceFeedPageForWorkspace("workspace_1", 1, database);
 
     expect(calls[0]).toMatchObject({
       where: {
@@ -199,5 +211,40 @@ describe("listEvidenceFeedRecordsForWorkspace", () => {
         },
       },
     });
+  });
+
+  it("bounds each read and exposes explicit older/newer navigation", async () => {
+    const records = Array.from(
+      { length: EVIDENCE_FEED_PAGE_SIZE + 1 },
+      (_, index) => buildRecord({ id: `evidence_${index}` })
+    );
+    const { database, calls } = buildDatabase(records);
+
+    const result = await getEvidenceFeedPageForWorkspace(
+      "workspace_1",
+      2,
+      database
+    );
+
+    expect(calls[0]).toMatchObject({
+      skip: EVIDENCE_FEED_PAGE_SIZE,
+      take: EVIDENCE_FEED_PAGE_SIZE + 1,
+    });
+    expect(result.records).toHaveLength(EVIDENCE_FEED_PAGE_SIZE);
+    expect(result.hasNewer).toBe(true);
+    expect(result.hasOlder).toBe(true);
+  });
+
+  it("normalizes excessive page numbers before calculating a database offset", async () => {
+    const { database, calls } = buildDatabase();
+
+    const result = await getEvidenceFeedPageForWorkspace(
+      "workspace_1",
+      MAX_EVIDENCE_FEED_PAGE + 1,
+      database
+    );
+
+    expect(calls[0]).toMatchObject({ skip: 0 });
+    expect(result.page).toBe(1);
   });
 });

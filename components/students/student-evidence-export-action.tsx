@@ -36,7 +36,7 @@ function downloadCsv(result: Extract<ExportStudentEvidenceActionResult, { succes
 
 function statusMessage(status: ExportStatus): string {
   if (status.state === "pending") {
-    return "Preparing CSV...";
+    return "Preparing CSV…";
   }
 
   if (status.state === "success") {

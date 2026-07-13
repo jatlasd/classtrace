@@ -12,7 +12,10 @@ export function LandingFooter() {
             ClassTrace
           </span>
         </div>
-        <nav className="flex flex-wrap items-center gap-x-8 gap-y-2">
+        <nav
+          aria-label="Footer"
+          className="flex flex-wrap items-center gap-x-8 gap-y-2"
+        >
           <Link
             href={routes.signIn}
             className="text-sm font-medium text-foreground/80 transition-colors hover:text-foreground"

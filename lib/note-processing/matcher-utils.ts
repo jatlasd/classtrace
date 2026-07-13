@@ -16,6 +16,7 @@ export type KeyScore = {
 };
 
 const TAG_BONUS = 10;
+const WORD_CHARACTER_PATTERN = /[a-z0-9]/;
 
 export function normalizeText(text: string): string {
   return text
@@ -30,6 +31,25 @@ export function buildSearchableText(parsed: ParsedNote): string {
   return normalizeText(parts.join(" "));
 }
 
+function containsBoundedPhrase(text: string, phrase: string): boolean {
+  let startIndex = text.indexOf(phrase);
+
+  while (startIndex !== -1) {
+    const before = text[startIndex - 1];
+    const after = text[startIndex + phrase.length];
+    const startsAtBoundary = before === undefined || !WORD_CHARACTER_PATTERN.test(before);
+    const endsAtBoundary = after === undefined || !WORD_CHARACTER_PATTERN.test(after);
+
+    if (startsAtBoundary && endsAtBoundary) {
+      return true;
+    }
+
+    startIndex = text.indexOf(phrase, startIndex + 1);
+  }
+
+  return false;
+}
+
 export function findPhraseHits(
   searchable: string,
   tags: string[],
@@ -42,10 +62,10 @@ export function findPhraseHits(
     const normalizedPhrase = normalizeText(phrase);
     if (!normalizedPhrase) continue;
 
-    if (!searchable.includes(normalizedPhrase)) continue;
+    if (!containsBoundedPhrase(searchable, normalizedPhrase)) continue;
 
     const matchingTag = normalizedTags.find(
-      (tag) => tag === normalizedPhrase || tag.includes(normalizedPhrase)
+      (tag) => tag === normalizedPhrase || containsBoundedPhrase(tag, normalizedPhrase)
     );
 
     hits.push({

@@ -1,730 +1,161 @@
 # Architecture
 
-## Architecture Summary
+## System shape
 
-ClassTrace is a Next.js application for individual teachers capturing student evidence. The scoped V1 build path is complete and uses authenticated, database-backed, teacher-owned data.
+ClassTrace is one Next.js application with server-rendered routes, focused Client Components, Clerk authentication, Prisma, and PostgreSQL.
 
-The V1 architecture is:
-
-- Next.js application
-- Clerk authentication
-- Neon Postgres database
-- Prisma ORM
-- Tailwind + shadcn/Radix-style UI
-- Deterministic note parsing only
-- No generative AI in V1
-- No file uploads in V1
-- Text-only validated evidence records
-
-The architecture must protect the core product rule: ClassTrace is a student evidence system, not a general teacher notebook.
-
----
-
-## Current State
-
-The current repo contains the completed scoped V1 app.
-
-Current characteristics:
-
-- Public landing page
-- Clerk authentication
-- Protected `/app` workspace
-- One personal teacher workspace per user
-- Prisma 7 database access backed by Neon Postgres
-- Workspace-scoped roster students
-- Workspace-scoped validated evidence records
-- Deterministic note parsing and student resolution
-- Teacher validation before durable evidence save
-- Student timelines and individual student CSV export
-- Archive and permanent delete behavior
-- No generative AI
-- No file uploads
-- No durable raw draft note storage; captured unvalidated drafts may use temporary, workspace-isolated `sessionStorage`
-
-Post-V1/pre-beta changes must preserve teacher-owned data boundaries and the student evidence model unless the human explicitly changes the product direction. The active feature sequence is `context/post-v1-pre-beta-build-plan.md`.
-
-The active pre-beta contract intentionally supersedes two completed V1 assumptions:
-
-- Every active student must belong to exactly one active class.
-- New beta evidence saves must include a durable teacher-approved Evidence note.
-
-These changes do not make capture class-scoped. The capture composer remains global and every saved evidence record still belongs to exactly one resolved roster student.
-
----
-
-## Stack Table
-
-| Layer | Technology | Role |
-|---|---|---|
-| Framework | Next.js | Main full-stack React framework for routes, server components, client components, server actions/API routes, and deployment |
-| Language | TypeScript | Type safety across UI, data models, parsing logic, validation logic, and server boundaries |
-| UI | React | Component model for the teacher-facing application |
-| Styling | Tailwind CSS | Utility-first styling system for the app’s current calm visual language |
-| UI Components | shadcn/Radix-style primitives | Accessible component foundation for dialogs, buttons, inputs, cards, menus, and forms |
-| Icons | lucide-react | Icon system consistent with the current app |
-| Auth | Clerk | Individual teacher signup, sign-in, session handling, Google sign-in, and email/password auth |
-| Database | Neon Postgres | Production relational database for teacher-owned rosters, validated evidence, and app data |
-| ORM | Prisma | Schema definition, migrations, and typed database access |
-| Forms | React form state / existing patterns unless replaced intentionally | Form handling for roster setup, capture validation, settings, and import flows |
-| Testing | Vitest | Unit tests for deterministic parsing, validation logic, student data helpers, and other pure logic |
-| Deployment | Vercel or compatible Next.js host | Production hosting for the Next.js application |
-| Analytics | None in V1 unless explicitly added later | Do not add analytics until there is a clear privacy-conscious plan |
-| File Storage | None in V1 | V1 is text-only and does not support file, photo, audio, or PDF uploads |
-| Cache | None required for V1 beyond framework/runtime defaults | Do not add Redis or external cache until a real performance need exists |
-| AI | None in V1 | V1 uses deterministic parsing/rules only, not generative AI |
-
----
-
-## System Boundaries
-
-### `app/`
-
-Owns Next.js routing, page composition, layouts, and route-level data loading.
-
-Responsibilities:
-
-- Public landing route
-- Auth routes/pages
-- Authenticated app shell
-- Roster routes
-- Evidence feed routes
-- Student profile/timeline routes
-- Settings route
-- Server actions or API route handlers where appropriate
-
-Rules:
-
-- Route files should compose features, not contain large business logic.
-- Protected routes must enforce authentication.
-- Server-side mutations must enforce ownership.
-- Do not put parsing dictionaries, evidence rules, or database utility logic directly inside page components.
-
-Expected future structure:
-
-```txt
-app/
-  page.tsx
-  sign-in/
-  sign-up/
-  app/
-    layout.tsx
-    feed/
-    roster/
-    students/
-      [studentId]/
-    settings/
+```text
+browser
+  → Next.js route or Server Action
+    → Clerk session → current teacher workspace
+      → domain validation and ownership-scoped query
+        → Prisma → PostgreSQL
 ```
 
-Exact route names can change, but the product structure should remain: public entry, authenticated app shell, roster, feed, student timeline, settings.
+There is no separate API service, job queue, analytics pipeline, file service, AI service, or shared district identity layer.
 
----
+## Ownership model
 
-### `components/`
-
-Owns reusable UI components.
-
-Responsibilities:
-
-- Shared visual primitives
-- App layout components
-- Cards, buttons, inputs, dialogs, empty states
-- Components reused across features
-
-Rules:
-
-- Keep components presentation-focused.
-- Do not place database queries inside generic UI components.
-- Do not place ownership logic inside reusable presentation components.
-- Components may receive typed data and callbacks from route/feature layers.
-
----
-
-### `components/dashboard/`
-
-Owns teacher-facing dashboard/feed UI components.
-
-Responsibilities:
-
-- Evidence feed UI
-- Capture composer UI
-- Evidence cards
-- Validation panels
-- Feed filters/search UI
-- Empty states and onboarding prompts inside the feed
-
-Rules:
-
-- Preserve fast capture as the center of the experience.
-- Do not turn the feed into a general notebook.
-- Do not allow capture UI to save without exactly one resolved student in V1.
-
-This folder may be renamed later if the app moves away from “dashboard” language, but the boundary should remain: feed/capture/evidence UI belongs together.
-
----
-
-### `lib/note-processing/`
-
-Owns deterministic parsing and interpretation.
-
-Responsibilities:
-
-- Parse raw capture draft text
-- Extract possible mentions and tags
-- Match deterministic keywords/patterns
-- Build structured draft interpretation
-- Suggest fields that the teacher can validate
-- Keep parsing logic independent of React and database code
-
-Rules:
-
-- No generative AI in V1.
-- No network calls from parsing utilities.
-- Deterministic parsing must not invent facts.
-- Parsing output is a draft only until teacher validation.
-- Parser changes require tests.
-
----
-
-### `lib/evidence/`
-
-Owns evidence validation and saved evidence shape.
-
-Responsibilities:
-
-- Evidence record types
-- Validation types
-- Validated display models
-- Evidence state transitions
-- Archive/delete helpers where appropriate
-- Rules for converting draft interpretation into validated evidence
-
-Rules:
-
-- Permanent evidence must represent teacher-approved fields.
-- Original capture text must not be stored as a hidden durable raw-capture record.
-- New pre-beta evidence records must include the teacher-approved Evidence note exactly as approved.
-- Evidence must belong to exactly one resolved roster student in V1.
-- Evidence must belong to the authenticated teacher’s workspace.
-
----
-
-### `lib/students/`
-
-Owns roster student helpers and student resolution.
-
-Responsibilities:
-
-- Student types
-- Mention handle normalization
-- Student lookup helpers
-- Student display helpers
-- Student timeline helper logic where appropriate
-
-Rules:
-
-- Students are teacher-owned roster entries in V1.
-- During pre-beta, every active student must belong to exactly one active class.
-- Students are not global identities.
-- There is no cross-teacher student matching in V1.
-- A capture cannot be saved unless the selected student resolves to an existing roster entry owned by the current teacher.
-
----
-
-### `lib/db/`
-
-Future production folder for database client and database helpers.
-
-Responsibilities:
-
-- Prisma client setup
-- Database access helpers
-- Query utilities
-- Transaction helpers
-
-Rules:
-
-- Do not expose unrestricted database access to client components.
-- All mutation helpers must support ownership checks.
-- Prefer typed server-side access patterns.
-- Keep database access out of presentational UI components.
-
----
-
-### `lib/auth/`
-
-Future production folder for auth helpers.
-
-Responsibilities:
-
-- Clerk user/session helpers
-- Current user lookup
-- Current workspace lookup
-- Auth guard helpers
-- Ownership helper utilities
-
-Rules:
-
-- Do not trust client-provided user IDs.
-- Use the authenticated Clerk user/session as the source of identity.
-- All protected data reads and writes must be scoped to the current authenticated teacher/workspace.
-
----
-
-### `lib/import/`
-
-Future production folder for roster import logic.
-
-Responsibilities:
-
-- Parse pasted rosters
-- Parse CSV uploads if supported
-- Normalize names and handles
-- Detect duplicates
-- Prepare preview rows before save
-
-Rules:
-
-- Import must preview before writing records.
-- Import must create teacher-owned roster entries only.
-- Import must not sync with SIS, Google Classroom, Clever, or ClassLink in V1.
-
----
-
-## Storage Model
-
-## Database
-
-Production V1 uses Neon Postgres.
-
-The database stores durable, authenticated, teacher-owned application data.
-
-Expected database entities:
-
-| Entity | Purpose |
-|---|---|
-| `User` / Clerk identity mapping | Connects Clerk auth identity to app-owned teacher data |
-| `TeacherProfile` | Stores teacher display/profile settings not owned by Clerk |
-| `Workspace` | One personal workspace per teacher in V1 |
-| `RosterStudent` | Teacher-owned student roster entry |
-| `ClassGroup` | Teacher-workspace-owned class record with a required name and normalized workspace-unique name key; required for active students during pre-beta |
-| `EvidenceRecord` | Permanent validated evidence with structured metadata and, for new beta saves, a teacher-approved Evidence note |
-| `EvidenceTag` or tag fields | Tags/categories attached to validated evidence |
-| `ImportBatch` or import preview data if needed | Optional temporary support for roster import workflow |
-| `Archive/Delete metadata` | Tracks archive status and timestamps where needed |
-
-Pre-beta class records store both the teacher-facing class name and a normalized class-name key used to prevent confusing duplicates within one workspace. The normalization trims surrounding whitespace, collapses internal whitespace, and compares names case-insensitively.
-
-V1 database records must be scoped to the authenticated teacher’s personal workspace.
-
----
-
-## Evidence Storage
-
-Completed V1 permanent evidence records store validated structured data only.
-
-New beta evidence records store validated structured metadata plus a teacher-approved Evidence note. The Evidence note is durable because the teacher reviews and can edit it before saving.
-
-A saved evidence record may include:
-
-- Evidence record ID
-- Workspace ID
-- Teacher/user owner ID
-- Roster student ID
-- Optional class/group ID
-- Teacher-approved Evidence note for new beta records
-- Validated evidence summary/text
-- Evidence type/category
-- Topic/skill
-- Performance/support/context fields
-- Behavior/communication fields when applicable
-- Tags
-- Follow-up flag
-- Follow-up notes
-- Validation timestamp
-- Created timestamp
-- Updated timestamp
-- Archived timestamp if archived
-
-A saved evidence record must not permanently store the original capture as a hidden raw-capture field.
-
-Raw draft text may exist temporarily:
-
-- In client component state while composing
-- In versioned, workspace-isolated `sessionStorage` after Capture and before successful validation
-- In server memory during a request if server-side parsing is used
-
-Raw draft text must not be written to the permanent production evidence table as original capture text. New beta saves may write only the teacher-reviewed Evidence note, exactly as shown and approved in review.
-
-The approved session-draft boundary stores only a stable draft ID, raw note, capture timestamp, workspace ID, storage version, and local-midnight expiry. Parser output, review-form edits, validation results, saved evidence IDs, auth data, and roster snapshots are not stored. Session drafts are removed after successful validation, explicit deletion, workspace mismatch, malformed data, or the next device-local midnight.
-
-Legacy V1 evidence records without an Evidence note must remain honest structured-only records. Do not fabricate note text from summaries or metadata.
-
----
-
-## File Storage
-
-V1 has no file storage.
-
-Out of scope for V1:
-
-- Photo uploads
-- Audio uploads
-- Voice notes
-- PDF uploads
-- File attachments
-- Student work sample uploads
-
-Do not add S3, UploadThing, Cloudinary, Supabase Storage, or other file storage tools in V1 unless the product scope changes explicitly.
-
----
-
-## Cache
-
-V1 does not require a dedicated external cache.
-
-Do not add Redis, Upstash, background queues, or caching infrastructure unless a concrete performance or workflow need appears.
-
-Framework-level caching and database query optimization are acceptable, but must not bypass ownership checks.
-
----
-
-## Browser Storage
-
-`localStorage` is acceptable only for non-sensitive temporary UI state.
-
-V1 must not use localStorage as the durable source of truth for:
-
-- Rosters
-- Student records
-- Evidence records
-- Auth state
-- Validated evidence
-- Exports
-
-Potential acceptable localStorage uses:
-
-- Dismissed UI hints
-- Non-sensitive layout preferences
-- Temporary client-only draft state if it does not create a privacy problem
-
-Raw capture drafts must not use `localStorage`. UIP-09 approves `sessionStorage` only for captured, unvalidated drafts under the minimal, workspace-isolated, local-midnight-expiring contract in `context/specs/uip-09-session-draft-persistence.md`. Unfinished composer text and review-form edits remain React state only.
-
----
-
-## Auth and Access Model
-
-## Authentication
-
-V1 uses Clerk.
-
-Supported V1 auth methods:
-
-- Google sign-in
-- Email/password
-- Verified email requirement
-
-V1 allows any verified email address.
-
-School/work email may be encouraged but must not be required. A school email does not automatically mean the district approved use of ClassTrace.
-
----
-
-## Workspace Model
-
-V1 uses one personal workspace per teacher.
-
-On first signup:
-
-1. Clerk authenticates the user.
-2. The app creates or finds an app-level teacher profile.
-3. The app creates or finds one personal workspace.
-4. The teacher is routed into guided roster setup if no roster exists.
-
-V1 does not include:
-
-- Multiple workspaces
-- Organization switching
-- District accounts
-- Admin roles
-- Shared workspaces
-- Team membership
-- Enterprise SSO
-
-The schema may include a workspace layer now so future organization support is possible later, but the V1 UI should expose only one personal teacher space.
-
----
-
-## Ownership Model
-
-Every protected production record must be owned by a teacher workspace.
-
-Ownership chain:
-
-```txt
+```text
 Clerk user
   → TeacherProfile
     → Workspace
-      → RosterStudent
       → ClassGroup
-      → EvidenceRecord
+      → RosterStudent
+        → EvidenceRecord
 ```
 
-Access rule:
+- Server entry points derive the current Clerk user; they do not accept a user or workspace ID from the client.
+- Every protected read and mutation includes the current `workspaceId`.
+- Student/class/evidence relations use composite same-workspace foreign keys where the relation crosses an ownership boundary.
+- Cross-workspace writes are rejected by both application checks and PostgreSQL constraints.
+- V1 has no global student identity and no cross-teacher sharing.
 
-A teacher can only read, create, update, archive, delete, and export records inside their own workspace.
+## Main data models
 
-Do not rely on client-provided IDs alone. Server-side reads and mutations must verify ownership through the authenticated user/session.
+- `TeacherProfile` maps Clerk identity to app-owned data.
+- `Workspace` is the personal teacher ownership boundary.
+- `ClassGroup` organizes roster setup.
+- `RosterStudent` is a teacher-owned student entry with a mention handle and one active class assignment during pre-beta.
+- `EvidenceRecord` stores the teacher-approved Evidence note plus reviewed structured fields. It never stores the raw capture.
 
----
+See `prisma/schema.prisma` and committed migrations for exact constraints.
 
-## Authorization Rules
+## Evidence lifecycle
 
-V1 has one app role: teacher owner.
+```text
+composer React state
+  → Capture
+  → sessionStorage draft (optional, temporary)
+  → deterministic parser/matchers
+  → review UI
+  → teacher-approved save input
+  → ownership and input validation
+  → durable EvidenceRecord
+  → feed / timeline / report / CSV
+```
 
-The teacher owner can:
+### Temporary raw-note boundary
 
-- Manage their own roster
-- Restore archived roster students into active classes
-- Create validated evidence for their own roster students
-- View their own student timelines
-- Archive their own records
-- Permanently delete their own records
-- Export individual student evidence from their own workspace
+Before Capture, text exists only in component state. After Capture, an unvalidated draft may be stored in `sessionStorage` with:
 
-No V1 user can:
+- schema version
+- workspace ID
+- draft ID
+- raw note
+- capture timestamp
+- device-local midnight expiry
 
-- View another teacher’s data
-- Share student records across teachers
-- Access district-level data
-- Manage other users
-- Act as an admin
-- View unowned workspace records
+The storage helper rejects malformed, mismatched, oversized, or expired data and caps draft count/size. A draft is removed after successful validation or explicit deletion. Raw notes must not use `localStorage`, PostgreSQL, server draft storage, logs, exports, timelines, reports, or analytics.
 
----
+### Permanent evidence boundary
 
-## AI Model
+The client submits only the reviewed Evidence note and structured fields. The server:
 
-V1 has no generative AI.
+1. Resolves the authenticated workspace.
+2. Enforces input length/count limits.
+3. Rechecks that the student is active and owned by the workspace.
+4. Rechecks the optional class relation in the same workspace.
+5. Writes inside the shared serializable transaction protocol.
 
-ClassTrace V1 may use deterministic parsing and rule-based structuring only.
+Legacy structured records may have a null Evidence note. The UI labels them honestly and never fabricates note text.
 
-Allowed V1 behavior:
+## Server and client responsibilities
 
-- Extract a selected/resolved student from a capture draft
-- Extract hashtags or typed tags
-- Detect deterministic patterns
-- Suggest structured fields for teacher review
-- Require teacher validation before saving
+### Server Components
 
-Disallowed V1 behavior:
+- Resolve workspace identity.
+- Load roster, evidence, timeline, report, and settings read models.
+- Redirect for auth/readiness and choose route-level empty/not-found states.
+- Pass only client-safe fields into Client Components.
 
-- Calling LLM APIs
-- Generating evidence text from scratch
-- Inventing facts
-- Summarizing unvalidated raw notes with AI
-- Making official documentation claims
-- Marketing the product as AI-powered
-- Saving system guesses as final evidence without teacher confirmation
+### Client Components
 
-If AI is added later, it must be planned as a separate architecture decision and must preserve teacher validation.
+- Own composer, review, filter, confirmation, and pending state.
+- Use `sessionStorage` only through the draft-storage helper.
+- Call Server Actions with domain input, never ownership identity.
+- Optimistically hide rows only after a successful action result and then refresh the server view.
 
----
+### Server Actions
 
-## Background Tasks
+- Authenticate first.
+- Call a domain function that validates/scopes the operation.
+- Return a typed success/error union with safe teacher-facing copy.
+- Revalidate affected routes after success.
+- Log contextual operation failures without logging raw notes or sensitive input.
 
-V1 does not require background tasks.
+## Concurrency and relational integrity
 
-No queues or scheduled jobs should be added for V1 unless a specific unit requires them and the architecture file is updated first.
+Active class/student checks that protect a dependent write run inside `withSerializableTransaction`. Prisma `P2034` serialization conflicts are retried a maximum of three times; other failures are rethrown.
 
-Out of scope for V1:
+This protocol is used for class archive, student create/update/archive/restore, roster import, and evidence save where a preflight check alone could race with another mutation.
 
-- Scheduled sync jobs
-- SIS sync jobs
-- AI background processing
-- Email notification jobs
-- Batch report generation
-- File processing jobs
+Database migrations:
 
-All V1 workflows should be request/response or direct user-triggered actions.
+- Refuse to conceal existing cross-workspace drift.
+- Enforce composite workspace relations.
+- Preserve student-delete evidence cascade.
+- Null only `classGroupId` when an optional class is deleted.
+- Avoid redundant workspace indexes already covered by leading composite keys.
 
----
+## Input boundaries
 
-## Import Model
+`lib/validation/input-limits.ts` is the central limit contract. Domain boundaries reject oversized IDs, names, notes, fields, arrays, import text, lines, and row counts before database access.
 
-Roster import is in scope for V1, but external rostering integrations are not.
+These limits protect resource usage and database hygiene; they are not substitutes for ownership or content review.
 
-Allowed V1 import:
+## Feed and reporting
 
-- Manual student entry
-- Paste list import
-- Basic CSV import if included in the planned unit
-- Preview before saving
-- Duplicate detection
-- Editable handles before confirm
+- The global evidence feed reads at most 50 records plus one lookahead row and exposes explicit newer/older page navigation.
+- Search and filter state is represented in the URL; it filters the currently loaded page and survives refresh/back navigation.
+- Student timelines and reports remain student- and workspace-scoped.
+- Report date boundaries include the browser’s offset for each boundary so daylight-saving changes and non-UTC teachers are interpreted correctly.
+- CSV export uses only validated records for the requested owned student.
 
-Out of scope for V1:
+## Failure handling
 
-- SIS sync
-- Google Classroom sync
-- Clever sync
-- ClassLink sync
-- Automatic roster updates
-- Shared district rosters
+- Auth failures redirect through Clerk-protected routes.
+- Expected validation/ownership failures return typed errors without revealing whether another workspace owns an ID.
+- Route-level `loading.tsx`, `error.tsx`, and `not-found.tsx` provide safe recovery states.
+- Destructive actions require explicit confirmation and do not disappear from the UI until the server succeeds.
+- Unexpected action/domain errors are logged with an operation prefix; raw notes are never included.
 
-Roster import must create teacher-owned roster entries only.
+## Test layers
 
----
+1. Pure domain tests for parsing, matching, normalization, limits, and read-model conversion.
+2. Mocked domain/action tests for auth, ownership predicates, failures, and revalidation.
+3. Rendered interaction tests for review, form submission, route behavior, filtering, copy, and long content.
+4. Opt-in PostgreSQL integration tests for migration replay, composite constraints, cascades/nulling, and concurrency invariants.
+5. Production build for framework/type integration.
 
-## Delete and Archive Model
+`npm run test:coverage` reports the whole selected application surface. Current global floors are intentionally conservative because untested presentational lines should not hide strong domain coverage; raise them only with real behavior tests.
 
-V1 supports both archive and permanent delete.
+## Deployment contract
 
-Archive behavior:
+- Runtime/development database variable: `DATABASE_URL`.
+- Production migration command: `npm run db:migrate:deploy`.
+- Development migration command: `npm run db:migrate`.
+- Migrations run before the new application version starts.
+- `npm run test:db` may target only an explicitly disposable database distinct from `DATABASE_URL`.
 
-- Archive is the safer default.
-- Archived records are hidden from normal active views.
-- Archived student records can be restored from Roster into an active class. Other archived records may be restorable only if a focused UI supports restore.
-
-Permanent delete behavior:
-
-- Permanent delete must require clear warning.
-- Permanent delete should be visually and verbally distinct from archive.
-- Deleting a student permanently also deletes that student’s evidence records.
-- The UI must warn the teacher before deleting a student that connected evidence will also be deleted.
-- App-level permanent delete should actually remove active database records, not merely hide them.
-
----
-
-## Export Model
-
-V1 supports individual student export only.
-
-Export includes:
-
-- Validated evidence records for one student
-- Teacher-approved structured fields
-- Tags/categories
-- Timestamps
-- Follow-up notes if present
-
-Export does not include:
-
-- Raw draft notes
-- Other students’ records
-- Full account export
-- All-student export
-- Deleted records
-- File attachments
-
----
-
-## Invariants
-
-The codebase must never violate these rules.
-
-### Product Invariants
-
-1. ClassTrace is a student evidence system, not a general teacher notebook.
-2. Every V1 saved evidence record must belong to exactly one resolved roster student.
-3. A capture with no resolved roster student must not be saved.
-4. A capture with multiple students must not be saved in V1.
-5. Teacher validation is required before evidence becomes permanent.
-6. The system must not invent student evidence.
-7. The app must not become a gradebook, SIS, IEP writer, parent messaging tool, or admin dashboard.
-
-### Data Invariants
-
-1. V1 must not use localStorage as the durable source of truth.
-2. Permanent evidence must store teacher-validated evidence only.
-3. Original capture text must not become a hidden durable raw-capture record.
-4. Every roster student must belong to exactly one teacher workspace.
-5. Every evidence record must belong to exactly one teacher workspace.
-6. Every evidence record must belong to exactly one roster student.
-7. Student records must not be shared or matched across teachers in V1.
-8. Deleted student records must not leave active orphaned evidence records.
-9. During pre-beta, every active student must belong to exactly one active class.
-10. New beta evidence saves must include a non-empty teacher-approved Evidence note.
-11. Legacy V1 structured-only evidence must not receive fabricated Evidence note text.
-12. Captured unvalidated raw drafts may use only the approved workspace-isolated `sessionStorage` boundary and must expire at the next device-local midnight.
-
-### Auth and Access Invariants
-
-1. All protected routes require authentication.
-2. All protected data reads must be scoped to the authenticated teacher’s workspace.
-3. All protected mutations must verify ownership server-side.
-4. Client-provided user IDs, workspace IDs, student IDs, or evidence IDs must never be trusted without server-side verification.
-5. No teacher can access another teacher’s roster, evidence, exports, or student timelines.
-6. V1 has no admin role and no district visibility.
-
-### AI and Interpretation Invariants
-
-1. V1 must not call LLM APIs.
-2. V1 must not use generative AI for interpretation.
-3. Deterministic parser output is always a draft until teacher validation.
-4. Parser/matcher changes require tests.
-5. The system must not save system-generated claims that the teacher did not approve.
-
-### UI and Workflow Invariants
-
-1. Fast capture must remain the core experience.
-2. Roster setup must happen before the first real capture.
-3. The global feed must not allow general classwide notes.
-4. Archive must be safer and easier to choose than permanent delete.
-5. Permanent delete must show sufficient warning.
-6. Guided onboarding should live inside the app layout, not replace the whole app with a wizard.
-7. The UI should stay calm, teacher-native, and not become an enterprise analytics dashboard.
-
-### Scope Invariants
-
-1. Do not add file uploads in V1.
-2. Do not add audio, photo, PDF, or attachment handling in V1.
-3. Do not add SIS, Clever, ClassLink, or Google Classroom sync in V1.
-4. Do not add organization accounts or district admin dashboards in V1.
-5. Do not add parent communication features in V1.
-6. Do not add full-account or all-student export in V1.
-7. Do not add new external services unless they are part of an approved focused task/spec.
-
----
-
-## Refactor Rules
-
-The completed V1 app may be refactored only when a focused post-V1 task needs it.
-
-Allowed:
-
-- Small restructuring that clarifies existing production boundaries
-- Removing obsolete POC-only code when verified unused
-- Splitting large components into feature-specific components
-- Moving logic from UI components into `lib/` modules
-- Tightening legacy behavior to match V1 rules
-
-Not allowed without explicit human approval:
-
-- Full app rewrite
-- Replacing the core stack
-- Replacing the current visual language
-- Removing the capture-first product flow
-- Adding AI
-- Adding file uploads
-- Adding organization/admin functionality
-- Changing V1 from individual-teacher-first to district-first
-
-Major restructuring must be explained before implementation. The agent must state why the refactor is necessary and what product or architecture rule it supports.
-
----
-
-## Verification Expectations
-
-Every meaningful change unit must pass verification before it is considered done.
-
-Expected checks:
-
-- TypeScript compiles
-- Relevant tests pass
-- Build passes when applicable
-- No obvious console errors
-- Protected data access is ownership-scoped
-- Parser/validation changes include tests
-- UI remains responsive at mobile and desktop sizes
-- Implementation stays inside the unit scope
-- Context files are updated if architecture, scope, or standards change
+Hosting, monitoring, backups, recovery objectives, support, retention policy, and legal/compliance review are operational decisions outside the code foundation and must be completed before calling the service production-ready.

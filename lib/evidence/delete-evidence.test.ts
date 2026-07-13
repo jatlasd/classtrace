@@ -15,6 +15,22 @@ import {
   type DeleteEvidenceDatabase,
 } from "@/lib/evidence/delete-evidence";
 
+async function withExpectedDeleteError<T>(run: () => Promise<T>): Promise<T> {
+  const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
+
+  try {
+    const result = await run();
+    expect(consoleError).toHaveBeenCalledTimes(1);
+    expect(consoleError).toHaveBeenCalledWith(
+      "[lib/evidence/deleteEvidenceForWorkspace]",
+      expect.any(Error)
+    );
+    return result;
+  } finally {
+    consoleError.mockRestore();
+  }
+}
+
 function buildEvidence() {
   return {
     id: "evidence_1",
@@ -177,12 +193,14 @@ describe("deleteEvidenceForWorkspace", () => {
   it("returns a safe generic error when the database delete fails", async () => {
     const { database } = buildDatabase({ throwOnDelete: true });
 
-    const result = await deleteEvidenceForWorkspace(
-      {
-        workspaceId: "workspace_1",
-        input: { evidenceId: "evidence_1" },
-      },
-      database
+    const result = await withExpectedDeleteError(() =>
+      deleteEvidenceForWorkspace(
+        {
+          workspaceId: "workspace_1",
+          input: { evidenceId: "evidence_1" },
+        },
+        database
+      )
     );
 
     expect(result).toEqual({
@@ -194,12 +212,14 @@ describe("deleteEvidenceForWorkspace", () => {
   it("returns a safe generic error when the database lookup fails", async () => {
     const { database } = buildDatabase({ throwOnFind: true });
 
-    const result = await deleteEvidenceForWorkspace(
-      {
-        workspaceId: "workspace_1",
-        input: { evidenceId: "evidence_1" },
-      },
-      database
+    const result = await withExpectedDeleteError(() =>
+      deleteEvidenceForWorkspace(
+        {
+          workspaceId: "workspace_1",
+          input: { evidenceId: "evidence_1" },
+        },
+        database
+      )
     );
 
     expect(result).toEqual({

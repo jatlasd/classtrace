@@ -1,104 +1,212 @@
-import { readFileSync } from "node:fs";
-import { join } from "node:path";
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const source = readFileSync(join(process.cwd(), "actions", "roster.ts"), "utf8");
+const mocks = vi.hoisted(() => ({
+  revalidatePath: vi.fn(),
+  getCurrentWorkspace: vi.fn(),
+  createRosterStudentForWorkspace: vi.fn(),
+  importRosterStudentsForWorkspace: vi.fn(),
+  updateRosterStudentForWorkspace: vi.fn(),
+  archiveRosterStudentForWorkspace: vi.fn(),
+  restoreRosterStudentForWorkspace: vi.fn(),
+  deleteRosterStudentForWorkspace: vi.fn(),
+}));
 
-describe("roster server actions", () => {
-  it("creates roster students through current workspace resolution", () => {
-    expect(source).toContain('"use server"');
-    expect(source).toContain("getCurrentWorkspace");
-    expect(source).toContain("createRosterStudentForWorkspace");
-    expect(source).toContain("workspace.workspaceId");
-    expect(source).not.toMatch(/input\.workspaceId|formData\.get\("workspaceId"\)/);
+vi.mock("next/cache", () => ({
+  revalidatePath: mocks.revalidatePath,
+}));
+vi.mock("@/lib/auth/get-current-workspace", () => ({
+  getCurrentWorkspace: mocks.getCurrentWorkspace,
+}));
+vi.mock("@/lib/students/roster-students", () => ({
+  createRosterStudentForWorkspace: mocks.createRosterStudentForWorkspace,
+  updateRosterStudentForWorkspace: mocks.updateRosterStudentForWorkspace,
+}));
+vi.mock("@/lib/import/roster-import", () => ({
+  importRosterStudentsForWorkspace: mocks.importRosterStudentsForWorkspace,
+}));
+vi.mock("@/lib/students/archive-roster-student", () => ({
+  archiveRosterStudentForWorkspace: mocks.archiveRosterStudentForWorkspace,
+}));
+vi.mock("@/lib/students/restore-roster-student", () => ({
+  restoreRosterStudentForWorkspace: mocks.restoreRosterStudentForWorkspace,
+}));
+vi.mock("@/lib/students/delete-roster-student", () => ({
+  deleteRosterStudentForWorkspace: mocks.deleteRosterStudentForWorkspace,
+}));
+
+import {
+  archiveRosterStudent,
+  createRosterStudent,
+  deleteRosterStudent,
+  importRosterStudents,
+  restoreRosterStudent,
+  updateRosterStudent,
+} from "./roster";
+
+const workspace = {
+  clerkUserId: "user_1",
+  teacherProfileId: "teacher_1",
+  workspaceId: "workspace_1",
+};
+
+const student = {
+  id: "student_mary",
+  displayName: "Mary",
+  mentionHandle: "mary",
+  classGroupId: "class_reading",
+  classGroupName: "Reading",
+  schoolLocalId: null,
+  createdAt: "2026-07-11T14:00:00.000Z",
+  updatedAt: "2026-07-11T14:00:00.000Z",
+};
+
+describe("roster Server Actions", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.getCurrentWorkspace.mockResolvedValue(workspace);
   });
 
-  it("revalidates roster and feed routes after successful create", () => {
-    const createAction = source.match(
-      /export async function createRosterStudent[\s\S]*?\n\}/
-    );
+  it("creates and imports students inside the current workspace", async () => {
+    const createInput = {
+      displayName: "Mary",
+      mentionHandle: "mary",
+      classGroupId: "class_reading",
+    };
+    mocks.createRosterStudentForWorkspace.mockResolvedValue({
+      success: true,
+      student,
+    });
+    mocks.importRosterStudentsForWorkspace.mockResolvedValue({
+      success: true,
+      createdCount: 2,
+      students: [student],
+      preview: {
+        rows: [],
+        validRows: [],
+        invalidRows: [],
+        totalRows: 2,
+        hasErrors: false,
+        error: null,
+      },
+    });
 
-    expect(createAction?.[0]).toContain("revalidatePath(routes.roster)");
-    expect(createAction?.[0]).toContain("revalidatePath(routes.feed)");
+    await expect(createRosterStudent(createInput)).resolves.toMatchObject({
+      success: true,
+    });
+    await expect(
+      importRosterStudents({
+        rosterText: "Mary\nJeremy",
+        classGroupId: "class_reading",
+      })
+    ).resolves.toMatchObject({ success: true, createdCount: 2 });
+
+    expect(mocks.createRosterStudentForWorkspace).toHaveBeenCalledWith({
+      workspaceId: "workspace_1",
+      ...createInput,
+      schoolLocalId: undefined,
+    });
+    expect(mocks.importRosterStudentsForWorkspace).toHaveBeenCalledWith({
+      workspaceId: "workspace_1",
+      rosterText: "Mary\nJeremy",
+      classGroupId: "class_reading",
+    });
+    expect(mocks.revalidatePath).toHaveBeenCalledWith("/app/roster");
+    expect(mocks.revalidatePath).toHaveBeenCalledWith("/app/feed");
   });
 
-  it("imports roster students through current workspace resolution", () => {
-    expect(source).toContain("importRosterStudentsForWorkspace");
-    expect(source).toContain("workspace.workspaceId");
-    expect(source).not.toMatch(/input\.workspaceId|formData\.get\("workspaceId"\)/);
-  });
+  it("updates an owned student and refreshes roster, feed, and timeline", async () => {
+    const input = {
+      studentId: "student_mary",
+      displayName: "Mary S.",
+      mentionHandle: "mary",
+      classGroupId: "class_reading",
+    };
+    mocks.updateRosterStudentForWorkspace.mockResolvedValue({
+      success: true,
+      student: { ...student, displayName: "Mary S." },
+    });
 
-  it("revalidates roster and feed routes after successful import", () => {
-    const importAction = source.match(
-      /export async function importRosterStudents[\s\S]*?\n\}/
-    );
-
-    expect(importAction?.[0]).toContain("revalidatePath(routes.roster)");
-    expect(importAction?.[0]).toContain("revalidatePath(routes.feed)");
-  });
-
-  it("archives roster students through current workspace resolution", () => {
-    expect(source).toContain("archiveRosterStudentForWorkspace");
-    expect(source).toContain("ArchiveRosterStudentActionInput");
-    expect(source).toContain("workspace.workspaceId");
-    const archiveAction = source.match(
-      /export async function archiveRosterStudent[\s\S]*?\n\}/
-    );
-    expect(archiveAction?.[0]).toBeDefined();
-    expect(archiveAction?.[0]).not.toMatch(
-      /input\.workspaceId|input\.teacherProfileId|input\.clerkUserId|input\.evidenceId/
-    );
-  });
-
-  it("updates roster students through current workspace resolution", () => {
-    expect(source).toContain("updateRosterStudentForWorkspace");
-    expect(source).toContain("UpdateRosterStudentActionInput");
-    expect(source).toContain("workspace.workspaceId");
-    const updateAction = source.match(
-      /export async function updateRosterStudent[\s\S]*?\n\}/
-    );
-    expect(updateAction?.[0]).toBeDefined();
-    expect(updateAction?.[0]).not.toMatch(
-      /input\.workspaceId|input\.teacherProfileId|input\.clerkUserId/
+    await expect(updateRosterStudent(input)).resolves.toMatchObject({
+      success: true,
+    });
+    expect(mocks.updateRosterStudentForWorkspace).toHaveBeenCalledWith({
+      workspaceId: "workspace_1",
+      ...input,
+      schoolLocalId: undefined,
+    });
+    expect(mocks.revalidatePath).toHaveBeenCalledWith("/app/roster");
+    expect(mocks.revalidatePath).toHaveBeenCalledWith("/app/feed");
+    expect(mocks.revalidatePath).toHaveBeenCalledWith(
+      "/app/students/student_mary"
     );
   });
 
+  it("scopes archive, restore, and delete mutations and refreshes affected routes", async () => {
+    mocks.archiveRosterStudentForWorkspace.mockResolvedValue({
+      success: true,
+      studentId: "student_mary",
+    });
+    mocks.restoreRosterStudentForWorkspace.mockResolvedValue({
+      success: true,
+      studentId: "student_mary",
+    });
+    mocks.deleteRosterStudentForWorkspace.mockResolvedValue({
+      success: true,
+      studentId: "student_mary",
+      deletedEvidenceCount: 1,
+    });
 
-  it("restores roster students through current workspace resolution", () => {
-    expect(source).toContain("restoreRosterStudentForWorkspace");
-    expect(source).toContain("RestoreRosterStudentActionInput");
-    expect(source).toContain("workspace.workspaceId");
-    const restoreAction = source.match(
-      /export async function restoreRosterStudent[\s\S]*?\n\}/
-    );
-    expect(restoreAction?.[0]).toBeDefined();
-    expect(restoreAction?.[0]).not.toMatch(
-      /input\.workspaceId|input\.teacherProfileId|input\.clerkUserId|input\.evidenceId/
+    await archiveRosterStudent({ studentId: "student_mary" });
+    await restoreRosterStudent({
+      studentId: "student_mary",
+      classGroupId: "class_reading",
+    });
+    await deleteRosterStudent({ studentId: "student_mary" });
+
+    expect(mocks.archiveRosterStudentForWorkspace).toHaveBeenCalledWith({
+      workspaceId: "workspace_1",
+      input: { studentId: "student_mary" },
+    });
+    expect(mocks.restoreRosterStudentForWorkspace).toHaveBeenCalledWith({
+      workspaceId: "workspace_1",
+      input: {
+        studentId: "student_mary",
+        classGroupId: "class_reading",
+      },
+    });
+    expect(mocks.deleteRosterStudentForWorkspace).toHaveBeenCalledWith({
+      workspaceId: "workspace_1",
+      input: { studentId: "student_mary" },
+    });
+    expect(mocks.revalidatePath).toHaveBeenCalledWith("/app/roster");
+    expect(mocks.revalidatePath).toHaveBeenCalledWith("/app/feed");
+    expect(mocks.revalidatePath).toHaveBeenCalledWith(
+      "/app/students/student_mary"
     );
   });
-  it("deletes roster students through current workspace resolution", () => {
-    expect(source).toContain("deleteRosterStudentForWorkspace");
-    expect(source).toContain("DeleteRosterStudentActionInput");
-    expect(source).toContain("workspace.workspaceId");
-    const deleteAction = source.match(
-      /export async function deleteRosterStudent[\s\S]*?\n\}/
-    );
-    expect(deleteAction?.[0]).toBeDefined();
-    expect(deleteAction?.[0]).not.toMatch(
-      /input\.workspaceId|input\.teacherProfileId|input\.clerkUserId|input\.evidenceId/
-    );
-  });
 
-  it("revalidates roster, feed, and affected student routes after student cleanup", () => {
-    expect(source).toContain("routes.roster");
-    expect(source).toContain("routes.feed");
-    expect(source).toContain("routes.student(result.studentId)");
-    expect(source).toContain("[actions/roster/archiveRosterStudent]");
-    expect(source).toContain("[actions/roster/deleteRosterStudent]");
-    expect(source).toContain("[actions/roster/restoreRosterStudent]");
-  });
+  it("returns the safe import error contract when workspace resolution fails", async () => {
+    const failure = new Error("auth unavailable");
+    const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
+    mocks.getCurrentWorkspace.mockRejectedValue(failure);
 
-  it("keeps raw draft text out of the roster action contract", () => {
-    expect(source).not.toMatch(/rawNote|draftText|originalCapture|sourceText/i);
+    try {
+      await expect(
+        importRosterStudents({
+          rosterText: "Mary",
+          classGroupId: "class_reading",
+        })
+      ).resolves.toMatchObject({
+        success: false,
+        error: "Failed to import roster.",
+        preview: { hasErrors: true, totalRows: 0 },
+      });
+      expect(consoleError).toHaveBeenCalledWith(
+        "[actions/roster/importRosterStudents]",
+        failure
+      );
+    } finally {
+      consoleError.mockRestore();
+    }
   });
 });

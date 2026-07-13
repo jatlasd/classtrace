@@ -178,7 +178,7 @@ export function RosterImportForm({
           Preview
         </Button>
         <Button type="submit" size="sm" disabled={isPending || !canSave}>
-          {isPending ? "Saving..." : "Save import"}
+          {isPending ? "Saving…" : "Save import"}
         </Button>
         <Button
           type="button"

@@ -7,7 +7,7 @@ export function LandingClosingCta() {
     <section className="relative overflow-hidden border-t border-border/70">
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-0 opacity-45 ruled-lines"
+        className="pointer-events-none absolute inset-0 bg-card/10"
       />
       <div
         aria-hidden="true"

@@ -19,6 +19,7 @@ import {
   exportStudentEvidenceForWorkspace,
   type ExportStudentEvidenceDatabase,
 } from "@/lib/evidence/export-student-evidence";
+import { INPUT_LIMITS } from "@/lib/validation/input-limits";
 
 function buildStudent() {
   return {
@@ -270,6 +271,25 @@ describe("exportStudentEvidenceForWorkspace", () => {
     expect(result).toEqual({
       success: false,
       error: "Choose a student before exporting evidence.",
+    });
+    expect(studentCalls).toEqual([]);
+    expect(evidenceCalls).toEqual([]);
+  });
+
+  it("rejects oversized student ids before querying", async () => {
+    const { database, studentCalls, evidenceCalls } = buildDatabase();
+
+    const result = await exportStudentEvidenceForWorkspace(
+      {
+        workspaceId: "workspace_1",
+        input: { studentId: "x".repeat(INPUT_LIMITS.identifier + 1) },
+      },
+      database
+    );
+
+    expect(result).toEqual({
+      success: false,
+      error: "This student is not available to export.",
     });
     expect(studentCalls).toEqual([]);
     expect(evidenceCalls).toEqual([]);

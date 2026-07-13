@@ -39,6 +39,15 @@ describe("roster display bridge", () => {
     ]);
   });
 
+  it("deduplicates repeated mentions of the same roster student", () => {
+    expect(resolveStudentMentionsFromRoster(["@Mary", "@mary"], roster)).toEqual([
+      {
+        status: "resolved",
+        student: expect.objectContaining({ id: "student_1" }),
+      },
+    ]);
+  });
+
   it("resolves validated student names by handle or display name", () => {
     expect(resolveStudentNamesFromRoster(["Mary", "Jeremy"], roster)).toEqual([
       {

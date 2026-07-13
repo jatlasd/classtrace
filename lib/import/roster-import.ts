@@ -1,12 +1,15 @@
 import "server-only";
 
+import { Prisma } from "@/lib/generated/prisma/client";
 import { prisma } from "@/lib/db/prisma";
+import { withSerializableTransactionRetry } from "@/lib/db/serializable-transaction";
 import {
   parseRosterImport,
   type ExistingRosterImportStudent,
   type RosterImportPreview,
 } from "@/lib/import/parse-roster-import";
 import { type RosterStudentDisplay } from "@/lib/students/roster-students";
+import { INPUT_LIMITS } from "@/lib/validation/input-limits";
 
 type RosterStudentImportRecord = {
   id: string;
@@ -82,23 +85,53 @@ type UniqueConstraintError = {
   meta?: unknown;
 };
 
+class ActiveImportClassChangedError extends Error {}
+
 const rosterImportDatabase: RosterImportDatabase = {
   listExistingStudents: (args) => prisma.rosterStudent.findMany(args),
   findActiveClassGroup: (args) => prisma.classGroup.findFirst(args),
-  createStudentsAtomically: async (input) =>
-    prisma.$transaction(
-      input.map((student) =>
-        prisma.rosterStudent.create({
-          data: student,
-          include: {
-            classGroup: {
-              select: {
-                name: true,
-                archivedAt: true,
-              },
+  createStudentsAtomically: (input) =>
+    withSerializableTransactionRetry(() =>
+      prisma.$transaction(
+        async (transaction) => {
+          const firstStudent = input[0];
+          if (!firstStudent) {
+            return [];
+          }
+
+          const classGroup = await transaction.classGroup.findFirst({
+            where: {
+              id: firstStudent.classGroupId,
+              workspaceId: firstStudent.workspaceId,
+              archivedAt: null,
             },
-          },
-        })
+            select: { id: true },
+          });
+
+          if (!classGroup) {
+            throw new ActiveImportClassChangedError();
+          }
+
+          const students: RosterStudentImportRecord[] = [];
+          for (const student of input) {
+            students.push(
+              await transaction.rosterStudent.create({
+                data: student,
+                include: {
+                  classGroup: {
+                    select: {
+                      name: true,
+                      archivedAt: true,
+                    },
+                  },
+                },
+              })
+            );
+          }
+
+          return students;
+        },
+        { isolationLevel: Prisma.TransactionIsolationLevel.Serializable }
       )
     ),
 };
@@ -143,8 +176,17 @@ export async function importRosterStudentsForWorkspace(
   input: ImportRosterStudentsInput,
   database: RosterImportDatabase = rosterImportDatabase
 ): Promise<ImportRosterStudentsResult> {
+  const preflight = parseRosterImport(input.rosterText, []);
+  if (preflight.hasErrors) {
+    return buildImportFailure(
+      preflight,
+      preflight.error ?? "Fix the highlighted rows before saving."
+    );
+  }
+
   const classGroupId = input.classGroupId.trim();
-  const classGroup = classGroupId
+  const classGroup =
+    classGroupId && classGroupId.length <= INPUT_LIMITS.identifier
     ? await database.findActiveClassGroup({
         where: {
           id: classGroupId,
@@ -159,10 +201,8 @@ export async function importRosterStudentsForWorkspace(
     : null;
 
   if (!classGroup) {
-    const preview = parseRosterImport(input.rosterText, []);
-
     return buildImportFailure(
-      preview,
+      preflight,
       "Choose a class before importing students."
     );
   }
@@ -197,6 +237,13 @@ export async function importRosterStudentsForWorkspace(
       importedCount: students.length,
     };
   } catch (error) {
+    if (error instanceof ActiveImportClassChangedError) {
+      return buildImportFailure(
+        preview,
+        "Choose a class before importing students."
+      );
+    }
+
     if (isUniqueConstraintError(error)) {
       return buildImportFailure(
         preview,
@@ -204,6 +251,10 @@ export async function importRosterStudentsForWorkspace(
       );
     }
 
+    console.error(
+      "[lib/import/importRosterStudentsForWorkspace]",
+      error instanceof Error ? error.name : "UnknownError"
+    );
     return buildImportFailure(preview, "Failed to import roster.");
   }
 }

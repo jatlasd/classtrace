@@ -15,6 +15,22 @@ import {
   type ArchiveEvidenceDatabase,
 } from "@/lib/evidence/archive-evidence";
 
+async function withExpectedArchiveError<T>(run: () => Promise<T>): Promise<T> {
+  const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
+
+  try {
+    const result = await run();
+    expect(consoleError).toHaveBeenCalledTimes(1);
+    expect(consoleError).toHaveBeenCalledWith(
+      "[lib/evidence/archiveEvidenceForWorkspace]",
+      expect.any(Error)
+    );
+    return result;
+  } finally {
+    consoleError.mockRestore();
+  }
+}
+
 const now = new Date("2026-06-17T16:00:00.000Z");
 
 function buildEvidence() {
@@ -192,13 +208,15 @@ describe("archiveEvidenceForWorkspace", () => {
   it("returns a safe generic error when the database update fails", async () => {
     const { database } = buildDatabase({ throwOnUpdate: true });
 
-    const result = await archiveEvidenceForWorkspace(
-      {
-        workspaceId: "workspace_1",
-        input: { evidenceId: "evidence_1" },
-        now,
-      },
-      database
+    const result = await withExpectedArchiveError(() =>
+      archiveEvidenceForWorkspace(
+        {
+          workspaceId: "workspace_1",
+          input: { evidenceId: "evidence_1" },
+          now,
+        },
+        database
+      )
     );
 
     expect(result).toEqual({
@@ -210,13 +228,15 @@ describe("archiveEvidenceForWorkspace", () => {
   it("returns a safe generic error when the database lookup fails", async () => {
     const { database } = buildDatabase({ throwOnFind: true });
 
-    const result = await archiveEvidenceForWorkspace(
-      {
-        workspaceId: "workspace_1",
-        input: { evidenceId: "evidence_1" },
-        now,
-      },
-      database
+    const result = await withExpectedArchiveError(() =>
+      archiveEvidenceForWorkspace(
+        {
+          workspaceId: "workspace_1",
+          input: { evidenceId: "evidence_1" },
+          now,
+        },
+        database
+      )
     );
 
     expect(result).toEqual({

@@ -84,7 +84,7 @@ export default async function SettingsPage() {
           </dl>
         </section>
 
-        <section className="border-l-4 border-primary bg-card/60 px-4 py-4 sm:px-5">
+        <section className="border border-border bg-card/60 px-4 py-4 sm:px-5">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-start gap-3">
               <span className="flex size-9 shrink-0 items-center justify-center rounded-md border border-border bg-muted/50 text-primary">

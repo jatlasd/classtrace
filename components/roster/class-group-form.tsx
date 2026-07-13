@@ -3,11 +3,10 @@
 import { useRouter } from "next/navigation";
 import { type FormEvent, useState, useTransition } from "react";
 import { createClassGroup } from "@/actions/classes";
+import { ROSTER_INPUT_CLASS_NAME } from "@/components/roster/form-styles";
+import { RosterFormMessage } from "@/components/roster/roster-form-message";
 import { Button } from "@/components/ui/button";
 import { routes } from "@/lib/routes";
-
-const inputClassName =
-  "h-10 w-full rounded-md border border-border bg-background/50 px-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/20 disabled:cursor-not-allowed disabled:opacity-50";
 
 export function ClassGroupForm() {
   const router = useRouter();
@@ -47,21 +46,21 @@ export function ClassGroupForm() {
             setName(event.target.value);
             setError("");
           }}
-          className={inputClassName}
+          className={ROSTER_INPUT_CLASS_NAME}
+          aria-invalid={Boolean(error)}
+          aria-describedby={error ? "class-name-error" : undefined}
           autoComplete="off"
           disabled={isPending}
         />
       </div>
-      <div aria-live="polite" className="min-h-5 text-sm">
-        {error ? <p className="text-destructive">{error}</p> : null}
-      </div>
+      <RosterFormMessage id="class-name-error" message={error} />
       <Button
         type="submit"
         size="lg"
         className="h-9 rounded-lg px-5 text-sm font-semibold"
         disabled={isPending}
       >
-        {isPending ? "Saving..." : "Create class"}
+        {isPending ? "Saving…" : "Create class"}
       </Button>
     </form>
   );

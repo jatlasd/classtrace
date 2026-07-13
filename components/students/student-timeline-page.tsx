@@ -1,9 +1,10 @@
 import Link from "next/link";
-import type { ReactElement, ReactNode } from "react";
+import type { ReactElement } from "react";
 import { BookOpenText, Circle, Clock3 } from "lucide-react";
+import { EvidenceRecordContent } from "@/components/evidence/evidence-record-content";
+import { getEvidenceTrailMessage } from "@/lib/evidence/evidence-trail-message";
 import { StudentEvidenceExportAction } from "@/components/students/student-evidence-export-action";
 import { Button } from "@/components/ui/button";
-import { formatTagLabel } from "@/lib/format-tag";
 import { routes } from "@/lib/routes";
 
 export type StudentTimelineStudent = {
@@ -77,48 +78,6 @@ function formatTimelineDate(value: string): string {
   }).format(date);
 }
 
-export function getEvidenceTrailMessage(
-  studentName: string,
-  evidenceCount: number
-): string {
-  if (evidenceCount === 1) {
-    return `This is the start of ${studentName}'s evidence trail. Each small moment you save makes the record easier to use later.`;
-  }
-
-  if (evidenceCount >= 5) {
-    return "You are building a usable record for meetings, progress reviews, and documentation conversations.";
-  }
-
-  if (evidenceCount >= 2) {
-    return `${evidenceCount} validated evidence records saved for ${studentName}. Each observation strengthens the record you can return to later.`;
-  }
-
-  return "No validated evidence has been saved for this student yet.";
-}
-
-function Chip({
-  children,
-  variant = "default",
-}: {
-  children: ReactNode;
-  variant?: "default" | "tag" | "evidence";
-}) {
-  const className =
-    variant === "tag"
-      ? "border-border bg-muted/60 text-link"
-      : variant === "evidence"
-        ? "border-primary/25 bg-primary/10 text-primary"
-        : "border-border bg-card text-foreground";
-
-  return (
-    <span
-      className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium ${className}`}
-    >
-      {children}
-    </span>
-  );
-}
-
 function StudentProfileHeader({
   student,
   evidenceCount,
@@ -167,7 +126,7 @@ function StudentProfileHeader({
           </div>
         </div>
 
-        <div className="border-l-4 border-validated bg-card/60 px-4 py-3">
+        <div className="rounded-md border border-validated/60 bg-card/60 px-4 py-3">
           <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
             Validated evidence
           </p>
@@ -196,8 +155,6 @@ function StudentProfileHeader({
 function StudentTimelineEvidenceItem({
   record,
 }: StudentTimelineEvidenceItemProps) {
-  const primaryEvidenceText = record.evidenceNote ?? record.summary;
-
   return (
     <li className="relative pl-8">
       <span
@@ -212,44 +169,13 @@ function StudentTimelineEvidenceItem({
             <p className="text-sm font-medium text-foreground">
               {formatTimelineDate(record.evidenceDate)}
             </p>
-            <p className="mt-1 text-[15px] leading-relaxed text-foreground">
-              {primaryEvidenceText}
-            </p>
-            {record.evidenceNote ? (
-              <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
-                <span className="font-medium text-foreground">Structured details:</span>{" "}
-                {record.summary}
-              </p>
-            ) : (
-              <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
-                Legacy structured entry. This record was saved before Evidence notes were added.
-              </p>
-            )}
+            <EvidenceRecordContent record={record} />
           </div>
           <span className="inline-flex w-fit items-center gap-2 rounded-lg border border-validated/60 bg-validated/35 px-2.5 py-1 text-xs font-semibold text-validated-foreground">
             <Circle className="size-2 fill-current" />
             Validated
           </span>
         </div>
-
-        <div className="mt-3 flex flex-wrap gap-1.5">
-          {record.topic ? <Chip>{record.topic}</Chip> : null}
-          {record.performance ? <Chip>{record.performance}</Chip> : null}
-          {record.behavior ? <Chip>{record.behavior}</Chip> : null}
-          <Chip variant="evidence">{record.evidenceType}</Chip>
-          {record.tags.map((tag) => (
-            <Chip key={tag} variant="tag">
-              {formatTagLabel(tag)}
-            </Chip>
-          ))}
-        </div>
-
-        {record.followUpNotes ? (
-          <p className="mt-3 border-t border-border/50 pt-2.5 text-xs leading-relaxed text-muted-foreground">
-            <span className="font-medium text-foreground">Follow-up:</span>{" "}
-            {record.followUpNotes}
-          </p>
-        ) : null}
       </article>
     </li>
   );

@@ -1,7 +1,10 @@
 import "server-only";
 
+import { Prisma } from "@/lib/generated/prisma/client";
 import { prisma } from "@/lib/db/prisma";
+import { withSerializableTransactionRetry } from "@/lib/db/serializable-transaction";
 import { normalizeMentionHandle } from "@/lib/students/normalize-mention-handle";
+import { INPUT_LIMITS } from "@/lib/validation/input-limits";
 
 type SortOrder = "asc" | "desc";
 
@@ -168,13 +171,57 @@ const classGroupInclude = {
   },
 } as const;
 
+class ActiveClassChangedError extends Error {}
+
 const rosterStudentDatabase: RosterStudentDatabase = {
   rosterStudent: {
     findMany: (args) => prisma.rosterStudent.findMany(args),
     findFirst: (args) => prisma.rosterStudent.findFirst(args),
     count: (args) => prisma.rosterStudent.count(args),
-    create: (args) => prisma.rosterStudent.create(args),
-    updateMany: (args) => prisma.rosterStudent.updateMany(args),
+    create: (args) =>
+      withSerializableTransactionRetry(() =>
+        prisma.$transaction(
+          async (transaction) => {
+            const classGroup = await transaction.classGroup.findFirst({
+              where: {
+                id: args.data.classGroupId,
+                workspaceId: args.data.workspaceId,
+                archivedAt: null,
+              },
+              select: { id: true },
+            });
+
+            if (!classGroup) {
+              throw new ActiveClassChangedError();
+            }
+
+            return transaction.rosterStudent.create(args);
+          },
+          { isolationLevel: Prisma.TransactionIsolationLevel.Serializable }
+        )
+      ),
+    updateMany: (args) =>
+      withSerializableTransactionRetry(() =>
+        prisma.$transaction(
+          async (transaction) => {
+            const classGroup = await transaction.classGroup.findFirst({
+              where: {
+                id: args.data.classGroupId,
+                workspaceId: args.where.workspaceId,
+                archivedAt: null,
+              },
+              select: { id: true },
+            });
+
+            if (!classGroup) {
+              throw new ActiveClassChangedError();
+            }
+
+            return transaction.rosterStudent.updateMany(args);
+          },
+          { isolationLevel: Prisma.TransactionIsolationLevel.Serializable }
+        )
+      ),
   },
   classGroup: {
     findFirst: (args) => prisma.classGroup.findFirst(args),
@@ -261,6 +308,10 @@ export async function getRosterStudentForWorkspace(
   studentId: string,
   database: RosterStudentDatabase = rosterStudentDatabase
 ): Promise<RosterStudentDisplay | null> {
+  if (!studentId.trim() || studentId.length > INPUT_LIMITS.identifier) {
+    return null;
+  }
+
   const student = await database.rosterStudent.findFirst({
     where: { workspaceId, id: studentId, archivedAt: null },
     include: classGroupInclude,
@@ -279,6 +330,13 @@ export async function createRosterStudentForWorkspace(
     return { success: false, error: "Display name is required." };
   }
 
+  if (displayName.length > INPUT_LIMITS.displayName) {
+    return {
+      success: false,
+      error: `Display name must be ${INPUT_LIMITS.displayName} characters or fewer.`,
+    };
+  }
+
   const normalizedHandle = normalizeMentionHandle(input.mentionHandle);
 
   if (!normalizedHandle.success) {
@@ -292,6 +350,17 @@ export async function createRosterStudentForWorkspace(
     return {
       success: false,
       error: "Choose a class before saving this student.",
+    };
+  }
+
+  if (classGroupId.length > INPUT_LIMITS.identifier) {
+    return { success: false, error: "This class could not be found in your workspace." };
+  }
+
+  if (schoolLocalId && schoolLocalId.length > INPUT_LIMITS.schoolLocalId) {
+    return {
+      success: false,
+      error: `School/local ID must be ${INPUT_LIMITS.schoolLocalId} characters or fewer.`,
     };
   }
 
@@ -354,6 +423,13 @@ export async function createRosterStudentForWorkspace(
 
     return { success: true, student: toRosterStudentDisplay(student) };
   } catch (error) {
+    if (error instanceof ActiveClassChangedError) {
+      return {
+        success: false,
+        error: "This class could not be found in your workspace.",
+      };
+    }
+
     if (uniqueConstraintIncludes(error, "schoolLocalId")) {
       return {
         success: false,
@@ -368,6 +444,10 @@ export async function createRosterStudentForWorkspace(
       };
     }
 
+    console.error(
+      "[lib/students/createRosterStudentForWorkspace]",
+      error instanceof Error ? error.name : "UnknownError"
+    );
     return { success: false, error: "Failed to save student." };
   }
 }
@@ -383,8 +463,19 @@ export async function updateRosterStudentForWorkspace(
     return { success: false, error: "Choose a student before saving." };
   }
 
+  if (studentId.length > INPUT_LIMITS.identifier) {
+    return { success: false, error: "This student could not be found in your roster." };
+  }
+
   if (!displayName) {
     return { success: false, error: "Display name is required." };
+  }
+
+  if (displayName.length > INPUT_LIMITS.displayName) {
+    return {
+      success: false,
+      error: `Display name must be ${INPUT_LIMITS.displayName} characters or fewer.`,
+    };
   }
 
   const normalizedHandle = normalizeMentionHandle(input.mentionHandle);
@@ -400,6 +491,17 @@ export async function updateRosterStudentForWorkspace(
     return {
       success: false,
       error: "Choose a class before saving this student.",
+    };
+  }
+
+  if (classGroupId.length > INPUT_LIMITS.identifier) {
+    return { success: false, error: "This class could not be found in your workspace." };
+  }
+
+  if (schoolLocalId && schoolLocalId.length > INPUT_LIMITS.schoolLocalId) {
+    return {
+      success: false,
+      error: `School/local ID must be ${INPUT_LIMITS.schoolLocalId} characters or fewer.`,
     };
   }
 
@@ -507,6 +609,13 @@ export async function updateRosterStudentForWorkspace(
 
     return { success: true, student: toRosterStudentDisplay(updatedStudent) };
   } catch (error) {
+    if (error instanceof ActiveClassChangedError) {
+      return {
+        success: false,
+        error: "This class could not be found in your workspace.",
+      };
+    }
+
     if (uniqueConstraintIncludes(error, "schoolLocalId")) {
       return {
         success: false,

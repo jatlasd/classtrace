@@ -77,7 +77,7 @@ export function ArchivedRosterStudentActions({
             aria-label={`Restore student ${studentDisplayName}`}
           >
             <RotateCcw className="size-3.5" />
-            {isPending ? "Restoring..." : "Restore student"}
+            {isPending ? "Restoring…" : "Restore student"}
           </Button>
         </>
       ) : (

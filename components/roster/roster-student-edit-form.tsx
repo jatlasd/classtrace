@@ -4,11 +4,10 @@ import { useRouter } from "next/navigation";
 import { Pencil } from "lucide-react";
 import { type FormEvent, useState, useTransition } from "react";
 import { updateRosterStudent } from "@/actions/roster";
+import { ROSTER_INPUT_CLASS_NAME } from "@/components/roster/form-styles";
+import { RosterFormMessage } from "@/components/roster/roster-form-message";
 import { Button } from "@/components/ui/button";
 import { deriveMentionHandle } from "@/lib/students/derive-mention-handle";
-
-const inputClassName =
-  "h-10 w-full rounded-md border border-border bg-background/50 px-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/20 disabled:cursor-not-allowed disabled:opacity-50";
 
 type ActiveClassOption = {
   id: string;
@@ -110,7 +109,9 @@ export function RosterStudentEditForm({
                 id={`student-name-${student.id}`}
                 value={displayName}
                 onChange={(event) => handleDisplayNameChange(event.target.value)}
-                className={inputClassName}
+                className={ROSTER_INPUT_CLASS_NAME}
+                aria-invalid={Boolean(error)}
+                aria-describedby={error ? `student-edit-error-${student.id}` : undefined}
                 disabled={isPending}
               />
             </div>
@@ -131,6 +132,8 @@ export function RosterStudentEditForm({
                     setError("");
                   }}
                   className="min-w-0 flex-1 bg-transparent px-3 text-sm text-foreground outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
+                  aria-invalid={Boolean(error)}
+                  aria-describedby={error ? `student-edit-error-${student.id}` : undefined}
                   disabled={isPending}
                 />
               </div>
@@ -146,7 +149,9 @@ export function RosterStudentEditForm({
                   setClassGroupId(event.target.value);
                   setError("");
                 }}
-                className={inputClassName}
+                className={ROSTER_INPUT_CLASS_NAME}
+                aria-invalid={Boolean(error)}
+                aria-describedby={error ? `student-edit-error-${student.id}` : undefined}
                 disabled={isPending}
               >
                 <option value="">Choose class</option>
@@ -168,19 +173,22 @@ export function RosterStudentEditForm({
                   setSchoolLocalId(event.target.value);
                   setError("");
                 }}
-                className={inputClassName}
+                className={ROSTER_INPUT_CLASS_NAME}
+                aria-invalid={Boolean(error)}
+                aria-describedby={error ? `student-edit-error-${student.id}` : undefined}
                 disabled={isPending}
               />
             </div>
           </div>
 
-          <div aria-live="polite" className="min-h-5 text-sm">
-            {error ? <p className="text-destructive">{error}</p> : null}
-          </div>
+          <RosterFormMessage
+            id={`student-edit-error-${student.id}`}
+            message={error}
+          />
 
           <div className="flex flex-wrap gap-2">
             <Button type="submit" variant="outline" size="sm" disabled={isPending}>
-              {isPending ? "Saving..." : "Save student"}
+              {isPending ? "Saving…" : "Save student"}
             </Button>
             <Button
               type="button"

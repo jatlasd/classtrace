@@ -46,7 +46,7 @@ function topEntries(
 
 export function summarizeCaptures(
   items: CaptureItem[],
-  roster?: CaptureRosterStudent[]
+  roster: CaptureRosterStudent[]
 ): CaptureSummary {
   if (items.length === 0) {
     return { insights: [], topStudents: [], topTags: [] };

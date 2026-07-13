@@ -2,6 +2,8 @@ import "server-only";
 
 import { Prisma } from "@/lib/generated/prisma/client";
 import { prisma } from "@/lib/db/prisma";
+import { withSerializableTransactionRetry } from "@/lib/db/serializable-transaction";
+import { INPUT_LIMITS } from "@/lib/validation/input-limits";
 
 type RosterStudentFindFirstArgs = {
   where: {
@@ -91,47 +93,51 @@ const restoreRosterStudentDatabase: RestoreRosterStudentDatabase = {
     findFirst: (args) => prisma.classGroup.findFirst(args),
   },
   restoreArchivedStudent: ({ workspaceId, studentId, classGroupId }) =>
-    prisma.$transaction(
-      async (transaction) => {
-        const classGroup = await transaction.classGroup.findFirst({
-          where: {
-            id: classGroupId,
-            workspaceId,
-            archivedAt: null,
-          },
-          select: {
-            id: true,
-          },
-        });
+    withSerializableTransactionRetry(() =>
+      prisma.$transaction(
+        async (transaction) => {
+          const classGroup = await transaction.classGroup.findFirst({
+            where: {
+              id: classGroupId,
+              workspaceId,
+              archivedAt: null,
+            },
+            select: {
+              id: true,
+            },
+          });
 
-        if (!classGroup) {
-          return { status: "class-unavailable" };
-        }
+          if (!classGroup) {
+            return { status: "class-unavailable" };
+          }
 
-        const result = await transaction.rosterStudent.updateMany({
-          where: {
-            id: studentId,
-            workspaceId,
-            archivedAt: { not: null },
-          },
-          data: {
-            archivedAt: null,
-            classGroupId: classGroup.id,
-          },
-        });
+          const result = await transaction.rosterStudent.updateMany({
+            where: {
+              id: studentId,
+              workspaceId,
+              archivedAt: { not: null },
+            },
+            data: {
+              archivedAt: null,
+              classGroupId: classGroup.id,
+            },
+          });
 
-        if (result.count !== 1) {
-          return { status: "student-unavailable" };
-        }
+          if (result.count !== 1) {
+            return { status: "student-unavailable" };
+          }
 
-        return { status: "restored", studentId };
-      },
-      { isolationLevel: Prisma.TransactionIsolationLevel.Serializable }
+          return { status: "restored", studentId };
+        },
+        { isolationLevel: Prisma.TransactionIsolationLevel.Serializable }
+      )
     ),
 };
 
 function normalizeId(value: unknown): string {
-  return typeof value === "string" ? value.trim() : "";
+  if (typeof value !== "string") return "";
+  const normalized = value.trim();
+  return normalized.length <= INPUT_LIMITS.identifier ? normalized : "";
 }
 
 export async function restoreRosterStudentForWorkspace(

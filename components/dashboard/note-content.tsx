@@ -4,7 +4,7 @@ export function NoteContent({ text }: { text: string }) {
   const parts = text.split(tokenPattern);
 
   return (
-    <p className="text-[15px] leading-relaxed text-foreground">
+    <p className="break-words text-[15px] leading-relaxed text-foreground [overflow-wrap:anywhere]">
       {parts.map((part, index) =>
         part.startsWith("@") || part.startsWith("#") ? (
           <span key={index} className="font-semibold text-link">

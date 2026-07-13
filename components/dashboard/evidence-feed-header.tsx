@@ -39,7 +39,7 @@ export function EvidenceFeedHeader({
         </div>
         <div className="min-w-0 border-r border-border px-3 py-2">
           <p className="text-[11px] font-semibold text-muted-foreground">
-            Saved
+            Loaded
           </p>
           <p className="mt-0.5 truncate font-medium text-foreground">
             {countLabel(savedCount, "record", "records")}

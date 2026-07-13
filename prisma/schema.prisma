@@ -42,7 +42,7 @@ model ClassGroup {
 
   @@unique([workspaceId, name])
   @@unique([workspaceId, nameKey])
-  @@index([workspaceId])
+  @@unique([workspaceId, id])
 }
 
 model RosterStudent {
@@ -56,12 +56,12 @@ model RosterStudent {
   updatedAt       DateTime         @updatedAt
   archivedAt      DateTime?
   workspace       Workspace        @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  classGroup      ClassGroup?      @relation(fields: [classGroupId], references: [id], onDelete: SetNull)
+  classGroup      ClassGroup?      @relation(fields: [workspaceId, classGroupId], references: [workspaceId, id], onDelete: SetNull)
   evidenceRecords EvidenceRecord[]
 
   @@unique([workspaceId, mentionHandle])
   @@unique([workspaceId, schoolLocalId])
-  @@index([workspaceId])
+  @@unique([workspaceId, id])
   @@index([classGroupId])
 }
 
@@ -88,8 +88,8 @@ model EvidenceRecord {
   updatedAt       DateTime       @updatedAt
   archivedAt      DateTime?
   workspace       Workspace      @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  rosterStudent   RosterStudent  @relation(fields: [rosterStudentId], references: [id], onDelete: Cascade)
-  classGroup      ClassGroup?    @relation(fields: [classGroupId], references: [id], onDelete: SetNull)
+  rosterStudent   RosterStudent  @relation(fields: [workspaceId, rosterStudentId], references: [workspaceId, id], onDelete: Cascade)
+  classGroup      ClassGroup?    @relation(fields: [workspaceId, classGroupId], references: [workspaceId, id], onDelete: SetNull)
 
   @@index([workspaceId, createdAt])
   @@index([workspaceId, rosterStudentId])

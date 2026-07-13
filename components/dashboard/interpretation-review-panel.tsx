@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { formatTagLabel } from "@/lib/format-tag";
@@ -153,9 +153,11 @@ function InterpretationReviewPanelContent({
   const [isEditing, setIsEditing] = useState(false);
   const [form, setForm] = useState<FormState>(() => displayToFormState(display));
   const [validationError, setValidationError] = useState("");
+  const validationErrorRef = useRef<HTMLParagraphElement | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [savedEvidenceId, setSavedEvidenceId] = useState("");
-  const [isFirstWorkspaceEvidence, setIsFirstWorkspaceEvidence] = useState(false);
+  const [isFirstWorkspaceEvidence, setIsFirstWorkspaceEvidence] =
+    useState(false);
   const studentValidation = validateSingleStudentForInterpretation(display);
 
   function updateField<K extends keyof FormState>(key: K, value: FormState[K]) {
@@ -178,25 +180,30 @@ function InterpretationReviewPanelContent({
     return "This student is not on your roster yet.";
   }
 
+  function showValidationError(message: string): void {
+    setValidationError(message);
+    window.requestAnimationFrame(() => validationErrorRef.current?.focus());
+  }
+
   async function handleConfirm() {
     if (isSaving || savedEvidenceId) {
       return;
     }
 
     if (studentValidation.status !== "valid_one_student") {
-      setValidationError(studentValidationMessage());
+      showValidationError(studentValidationMessage());
       return;
     }
 
     if (!form.evidenceType.trim()) {
-      setValidationError("Choose an evidence type before validating this draft.");
+      showValidationError("Choose an evidence type before validating this draft.");
       return;
     }
 
     const evidenceNote = form.evidenceNote.trim();
 
     if (!evidenceNote) {
-      setValidationError("Add an evidence note before saving evidence.");
+      showValidationError("Add an evidence note before saving evidence.");
       return;
     }
 
@@ -204,7 +211,7 @@ function InterpretationReviewPanelContent({
     const summary = buildValidatedEvidenceSummary(fields);
 
     if (!summary) {
-      setValidationError("Add a summary before saving evidence.");
+      showValidationError("Add a summary before saving evidence.");
       return;
     }
 
@@ -239,7 +246,7 @@ function InterpretationReviewPanelContent({
       return;
     }
 
-    setValidationError(result.error);
+    showValidationError(result.error);
   }
 
   return (
@@ -397,8 +404,17 @@ function InterpretationReviewPanelContent({
 
       <div aria-live="polite" className="mt-3 min-h-5">
         {validationError ? (
-          <p className="text-sm text-destructive">{validationError}</p>
-        ) : savedEvidenceId && isFirstWorkspaceEvidence && studentValidation.status === "valid_one_student" ? (
+          <p
+            ref={validationErrorRef}
+            role="alert"
+            tabIndex={-1}
+            className="text-sm text-destructive outline-none focus-visible:ring-3 focus-visible:ring-ring/30"
+          >
+            {validationError}
+          </p>
+        ) : savedEvidenceId &&
+          isFirstWorkspaceEvidence &&
+          studentValidation.status === "valid_one_student" ? (
           <section className="rounded-card border border-validated/60 bg-validated/20 p-4 shadow-paper">
             <p className="text-xs font-semibold uppercase tracking-wider text-validated-foreground">
               Evidence trail started
@@ -407,7 +423,8 @@ function InterpretationReviewPanelContent({
               Saved to {studentValidation.studentName}&apos;s timeline.
             </h3>
             <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">
-              This observation is now part of the record, ready when you need to look back instead of reconstructing the moment from memory.
+              This observation is now part of the record, ready when you need to
+              look back instead of reconstructing the moment from memory.
             </p>
             <div className="mt-4 flex flex-wrap gap-2">
               <Button asChild size="sm">
@@ -430,7 +447,7 @@ function InterpretationReviewPanelContent({
             Validated evidence saved.
           </p>
         ) : isSaving ? (
-          <p className="text-sm text-muted-foreground">Saving evidence...</p>
+          <p className="text-sm text-muted-foreground">Saving evidence…</p>
         ) : (
           <p className="text-xs leading-relaxed text-muted-foreground">
             Save validated evidence to your evidence records after review.
@@ -438,7 +455,11 @@ function InterpretationReviewPanelContent({
         )}
       </div>
 
-      <div className={`mt-4 flex flex-wrap items-center gap-2 border-t border-border/50 pt-3 ${savedEvidenceId && isFirstWorkspaceEvidence ? "hidden" : ""}`}>
+      <div
+        className={`mt-4 flex flex-wrap items-center gap-2 border-t border-border/50 pt-3 ${
+          savedEvidenceId && isFirstWorkspaceEvidence ? "hidden" : ""
+        }`}
+      >
         <Button
           size="sm"
           disabled={isSaving || Boolean(savedEvidenceId)}
@@ -447,7 +468,7 @@ function InterpretationReviewPanelContent({
           {savedEvidenceId
             ? "Evidence saved"
             : isSaving
-              ? "Saving evidence..."
+              ? "Saving evidence…"
               : "Save validated evidence"}
         </Button>
         {!isEditing && (

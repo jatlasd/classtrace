@@ -1,9 +1,10 @@
 import Link from "next/link";
-import type { ReactElement, ReactNode } from "react";
-import { BookOpenText, CalendarDays, Circle, FileText } from "lucide-react";
+import type { ReactElement } from "react";
+import { BookOpenText, Circle, FileText } from "lucide-react";
+import { EvidenceRecordContent } from "@/components/evidence/evidence-record-content";
 import { Button } from "@/components/ui/button";
+import { StudentReportDateRangeForm } from "@/components/students/student-report-date-range-form";
 import { StudentReportPrintAction } from "@/components/students/student-report-print-action";
-import { formatTagLabel } from "@/lib/format-tag";
 import { routes } from "@/lib/routes";
 import type {
   StudentReportDateRange,
@@ -20,11 +21,6 @@ type StudentReportPageProps = {
 type ReportHeaderProps = {
   student: StudentReportStudent;
   evidenceCount: number;
-  dateRange: StudentReportDateRange;
-};
-
-type ReportDateRangeFormProps = {
-  studentId: string;
   dateRange: StudentReportDateRange;
 };
 
@@ -75,29 +71,6 @@ export function shouldShowEarlyReportGuidance(evidenceCount: number): boolean {
   return evidenceCount >= 1 && evidenceCount <= 4;
 }
 
-function Chip({
-  children,
-  variant = "default",
-}: {
-  children: ReactNode;
-  variant?: "default" | "tag" | "evidence";
-}) {
-  const className =
-    variant === "tag"
-      ? "border-border bg-muted/60 text-link"
-      : variant === "evidence"
-        ? "border-primary/25 bg-primary/10 text-primary"
-        : "border-border bg-card text-foreground";
-
-  return (
-    <span
-      className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium ${className}`}
-    >
-      {children}
-    </span>
-  );
-}
-
 function ReportHeader({
   student,
   evidenceCount,
@@ -140,7 +113,7 @@ function ReportHeader({
           </div>
         </div>
 
-        <div className="border-l-4 border-validated bg-card/60 px-4 py-3">
+        <div className="rounded-md border border-validated/60 bg-card/60 px-4 py-3">
           <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
             Evidence included
           </p>
@@ -156,82 +129,7 @@ function ReportHeader({
   );
 }
 
-function ReportDateRangeForm({
-  studentId,
-  dateRange,
-}: ReportDateRangeFormProps) {
-  const start = dateRange.status === "valid" ? dateRange.start : dateRange.start;
-  const end = dateRange.status === "valid" ? dateRange.end : dateRange.end;
-
-  return (
-    <section className="student-report-screen-only mb-5 border border-border bg-card/60 p-4 sm:p-5">
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-        <div className="flex min-w-0 gap-3">
-          <div className="flex size-10 shrink-0 items-center justify-center rounded-md border border-border bg-muted/50 text-primary">
-            <CalendarDays className="size-5" strokeWidth={1.75} />
-          </div>
-          <div className="min-w-0">
-            <h2 className="font-display text-lg font-semibold text-foreground">
-              Date range
-            </h2>
-            <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-              Leave dates blank to include all stored evidence for this student.
-            </p>
-          </div>
-        </div>
-
-        <form className="grid gap-3 sm:grid-cols-[1fr_1fr_auto_auto] sm:items-end">
-          <div className="space-y-1.5">
-            <label
-              htmlFor="student-report-start"
-              className="text-sm font-medium text-foreground"
-            >
-              Start date
-            </label>
-            <input
-              id="student-report-start"
-              name="start"
-              type="date"
-              defaultValue={start}
-              className="h-10 w-full rounded-md border border-border bg-background/50 px-3 text-sm text-foreground outline-none transition-colors focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/20"
-            />
-          </div>
-          <div className="space-y-1.5">
-            <label
-              htmlFor="student-report-end"
-              className="text-sm font-medium text-foreground"
-            >
-              End date
-            </label>
-            <input
-              id="student-report-end"
-              name="end"
-              type="date"
-              defaultValue={end}
-              className="h-10 w-full rounded-md border border-border bg-background/50 px-3 text-sm text-foreground outline-none transition-colors focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/20"
-            />
-          </div>
-          <Button type="submit" size="sm" className="h-10 rounded-lg px-5">
-            Apply range
-          </Button>
-          <Button asChild variant="ghost" size="sm" className="h-10 rounded-lg px-5">
-            <Link href={routes.studentReport(studentId)}>Clear range</Link>
-          </Button>
-        </form>
-      </div>
-
-      {dateRange.status === "invalid" ? (
-        <p className="mt-3 text-sm text-destructive" role="status">
-          {dateRange.error}
-        </p>
-      ) : null}
-    </section>
-  );
-}
-
 function ReportEvidenceItem({ record }: ReportEvidenceItemProps) {
-  const primaryEvidenceText = record.evidenceNote ?? record.summary;
-
   return (
     <li>
       <article className="student-report-entry border border-border bg-card p-4 shadow-paper">
@@ -240,48 +138,17 @@ function ReportEvidenceItem({ record }: ReportEvidenceItemProps) {
             <p className="text-sm font-medium text-foreground">
               {formatReportDate(record.evidenceDate)}
             </p>
-            <p className="mt-2 text-[15px] leading-relaxed text-foreground">
-              {primaryEvidenceText}
-            </p>
-            {record.evidenceNote ? (
-              <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
-                <span className="font-medium text-foreground">
-                  Structured details:
-                </span>{" "}
-                {record.summary}
-              </p>
-            ) : (
-              <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
-                Legacy structured entry. This record was saved before Evidence
-                notes were added.
-              </p>
-            )}
+            <EvidenceRecordContent
+              record={record}
+              includeClassGroup
+              textClassName="mt-2"
+            />
           </div>
           <span className="inline-flex w-fit items-center gap-2 rounded-lg border border-validated/60 bg-validated/35 px-2.5 py-1 text-xs font-semibold text-validated-foreground">
             <Circle className="size-2 fill-current" />
             Validated
           </span>
         </div>
-
-        <div className="mt-3 flex flex-wrap gap-1.5">
-          {record.classGroupName ? <Chip>{record.classGroupName}</Chip> : null}
-          {record.topic ? <Chip>{record.topic}</Chip> : null}
-          {record.performance ? <Chip>{record.performance}</Chip> : null}
-          {record.behavior ? <Chip>{record.behavior}</Chip> : null}
-          <Chip variant="evidence">{record.evidenceType}</Chip>
-          {record.tags.map((tag) => (
-            <Chip key={tag} variant="tag">
-              {formatTagLabel(tag)}
-            </Chip>
-          ))}
-        </div>
-
-        {record.followUpNotes ? (
-          <p className="mt-3 border-t border-border/50 pt-2.5 text-xs leading-relaxed text-muted-foreground">
-            <span className="font-medium text-foreground">Follow-up:</span>{" "}
-            {record.followUpNotes}
-          </p>
-        ) : null}
       </article>
     </li>
   );
@@ -368,10 +235,16 @@ export function StudentReportPage({
         evidenceCount={evidenceRecords.length}
         dateRange={dateRange}
       />
-      <ReportDateRangeForm studentId={student.id} dateRange={dateRange} />
+      <StudentReportDateRangeForm
+        studentId={student.id}
+        start={dateRange.start}
+        end={dateRange.end}
+        error={dateRange.status === "invalid" ? dateRange.error : undefined}
+      />
       {shouldShowEarlyReportGuidance(evidenceRecords.length) ? (
         <p className="student-report-screen-only mb-5 border-l-4 border-validated bg-card/60 px-4 py-3 text-sm leading-relaxed text-foreground">
-          This report gets more useful as you capture more evidence. Each validated observation adds another moment you can return to later.
+          This report gets more useful as you capture more evidence. Each
+          validated observation adds another moment you can return to later.
         </p>
       ) : null}
       <ReportEvidenceList

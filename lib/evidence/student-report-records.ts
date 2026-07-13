@@ -1,6 +1,7 @@
 import "server-only";
 
 import { prisma } from "@/lib/db/prisma";
+import { INPUT_LIMITS } from "@/lib/validation/input-limits";
 
 type StudentReportDateWhere = {
   gte?: Date;
@@ -124,6 +125,8 @@ export type StudentReportDateRange =
       status: "valid";
       start?: string;
       end?: string;
+      startOffset?: string;
+      endOffset?: string;
       startDate?: Date;
       endExclusiveDate?: Date;
     }
@@ -131,6 +134,8 @@ export type StudentReportDateRange =
       status: "invalid";
       start?: string;
       end?: string;
+      startOffset?: string;
+      endOffset?: string;
       error: string;
     };
 
@@ -150,63 +155,127 @@ const studentReportDatabase: StudentReportDatabase = {
 };
 
 const DATE_ONLY_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
+const MIN_TIMEZONE_OFFSET_MINUTES = -14 * 60;
+const MAX_TIMEZONE_OFFSET_MINUTES = 14 * 60;
 
 function optionalText(value: string | null): string | undefined {
   const trimmed = value?.trim();
   return trimmed || undefined;
 }
 
-function parseDateOnly(value: string): Date | null {
+function parseDateOnlyParts(value: string): {
+  year: number;
+  monthIndex: number;
+  day: number;
+} | null {
   if (!DATE_ONLY_PATTERN.test(value)) {
     return null;
   }
 
   const [yearText, monthText, dayText] = value.split("-");
   const year = Number(yearText);
-  const month = Number(monthText);
+  const monthIndex = Number(monthText) - 1;
   const day = Number(dayText);
-  const date = new Date(year, month - 1, day);
+  const date = new Date(Date.UTC(year, monthIndex, day));
 
   if (
-    date.getFullYear() !== year ||
-    date.getMonth() !== month - 1 ||
-    date.getDate() !== day
+    date.getUTCFullYear() !== year ||
+    date.getUTCMonth() !== monthIndex ||
+    date.getUTCDate() !== day
   ) {
     return null;
   }
 
-  return date;
+  return { year, monthIndex, day };
 }
 
-function addLocalDays(date: Date, days: number): Date {
-  const next = new Date(date);
-  next.setDate(next.getDate() + days);
-  return next;
+function parseTimezoneOffset(value: string | undefined): number | null {
+  if (value === undefined || !/^-?\d{1,4}$/.test(value)) {
+    return null;
+  }
+
+  const offset = Number(value);
+  if (
+    !Number.isInteger(offset) ||
+    offset < MIN_TIMEZONE_OFFSET_MINUTES ||
+    offset > MAX_TIMEZONE_OFFSET_MINUTES
+  ) {
+    return null;
+  }
+
+  return offset;
+}
+
+function boundaryDate(
+  parts: { year: number; monthIndex: number; day: number },
+  offsetMinutes: number,
+  addDays: number
+): Date {
+  return new Date(
+    Date.UTC(parts.year, parts.monthIndex, parts.day + addDays) +
+      offsetMinutes * 60_000
+  );
 }
 
 export function parseStudentReportDateRange(input: {
   start?: string;
   end?: string;
+  startOffset?: string;
+  endOffset?: string;
 }): StudentReportDateRange {
   const start = input.start?.trim() || undefined;
   const end = input.end?.trim() || undefined;
+  const startOffset = input.startOffset?.trim() || undefined;
+  const endOffset = input.endOffset?.trim() || undefined;
 
   if (!start && !end) {
     return { status: "valid" };
   }
 
-  const startDate = start ? parseDateOnly(start) : undefined;
-  const endDate = end ? parseDateOnly(end) : undefined;
+  const startParts = start ? parseDateOnlyParts(start) : undefined;
+  const endParts = end ? parseDateOnlyParts(end) : undefined;
 
-  if (start && !startDate) {
+  if (start && !startParts) {
     return { status: "invalid", start, end, error: "Use a valid start date." };
   }
 
-  if (end && !endDate) {
+  if (end && !endParts) {
     return { status: "invalid", start, end, error: "Use a valid end date." };
   }
 
-  if (startDate && endDate && startDate.getTime() > endDate.getTime()) {
+  const startOffsetMinutes = start
+    ? parseTimezoneOffset(startOffset)
+    : undefined;
+  const endOffsetMinutes = end ? parseTimezoneOffset(endOffset) : undefined;
+
+  if (start && startOffsetMinutes === null) {
+    return {
+      status: "invalid",
+      start,
+      end,
+      startOffset,
+      endOffset,
+      error: "Apply the date range again so ClassTrace can use your local day.",
+    };
+  }
+
+  if (end && endOffsetMinutes === null) {
+    return {
+      status: "invalid",
+      start,
+      end,
+      startOffset,
+      endOffset,
+      error: "Apply the date range again so ClassTrace can use your local day.",
+    };
+  }
+
+  if (
+    startParts &&
+    endParts &&
+    Date.UTC(startParts.year, startParts.monthIndex, startParts.day) >
+      Date.UTC(endParts.year, endParts.monthIndex, endParts.day)
+  ) {
     return {
       status: "invalid",
       start,
@@ -225,11 +294,17 @@ export function parseStudentReportDateRange(input: {
   if (end) {
     range.end = end;
   }
-  if (startDate) {
-    range.startDate = startDate;
+  if (start && startOffset) {
+    range.startOffset = startOffset;
   }
-  if (endDate) {
-    range.endExclusiveDate = addLocalDays(endDate, 1);
+  if (end && endOffset) {
+    range.endOffset = endOffset;
+  }
+  if (startParts && startOffsetMinutes !== undefined && startOffsetMinutes !== null) {
+    range.startDate = boundaryDate(startParts, startOffsetMinutes, 0);
+  }
+  if (endParts && endOffsetMinutes !== undefined && endOffsetMinutes !== null) {
+    range.endExclusiveDate = boundaryDate(endParts, endOffsetMinutes, 1);
   }
 
   return range;
@@ -325,10 +400,18 @@ export async function getStudentReportRecordsForWorkspace(
   dateRange: StudentReportDateRange,
   database: StudentReportDatabase = studentReportDatabase
 ): Promise<StudentReportRecordsResult | null> {
+  const normalizedStudentId = studentId.trim();
+  if (
+    !normalizedStudentId ||
+    normalizedStudentId.length > INPUT_LIMITS.identifier
+  ) {
+    return null;
+  }
+
   const student = await database.rosterStudent.findFirst({
     where: {
       workspaceId,
-      id: studentId,
+      id: normalizedStudentId,
       archivedAt: null,
     },
     select: {

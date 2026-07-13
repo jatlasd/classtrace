@@ -17,7 +17,6 @@ const navItems = [
 ];
 
 const ACCOUNT_LABEL = "Account";
-const ACCOUNT_INITIAL = "A";
 
 export function AppTopNav() {
   const pathname = usePathname();
@@ -49,6 +48,7 @@ export function AppTopNav() {
             <Link
               href={routes.settings}
               aria-label="Settings"
+              aria-current={pathname === routes.settings ? "page" : undefined}
               className="flex size-9 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
             >
               <Settings className="size-4" />
@@ -62,9 +62,6 @@ export function AppTopNav() {
                 <LogOut className="size-4" strokeWidth={1.75} />
               </button>
             </SignOutButton>
-            <div className="flex size-9 items-center justify-center rounded-full bg-secondary text-xs font-semibold text-foreground">
-              {ACCOUNT_INITIAL}
-            </div>
           </div>
         </div>
 
@@ -79,6 +76,7 @@ export function AppTopNav() {
               <Link
                 key={item.label}
                 href={item.href}
+                aria-current={active ? "page" : undefined}
                 className={`group relative inline-flex h-11 shrink-0 items-center gap-2 rounded-lg px-3 text-sm font-semibold transition-colors ${
                   active
                     ? "text-foreground"
@@ -99,11 +97,9 @@ export function AppTopNav() {
         </nav>
 
         <div className="hidden items-center gap-3 lg:flex">
-          <div className="flex size-10 items-center justify-center rounded-full bg-secondary text-sm font-semibold text-foreground">
-            {ACCOUNT_INITIAL}
-          </div>
           <Link
             href={routes.settings}
+            aria-current={pathname === routes.settings ? "page" : undefined}
             className="inline-flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm font-semibold text-foreground transition-colors hover:bg-muted"
           >
             <span>{ACCOUNT_LABEL}</span>

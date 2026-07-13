@@ -14,6 +14,8 @@ type StudentReportRouteProps = {
   searchParams: Promise<{
     start?: string | string[];
     end?: string | string[];
+    startOffset?: string | string[];
+    endOffset?: string | string[];
   }>;
 };
 
@@ -35,6 +37,8 @@ export default async function StudentReportRoute({
   const dateRange = parseStudentReportDateRange({
     start: firstSearchParam(query.start),
     end: firstSearchParam(query.end),
+    startOffset: firstSearchParam(query.startOffset),
+    endOffset: firstSearchParam(query.endOffset),
   });
 
   const report = await getStudentReportRecordsForWorkspace(

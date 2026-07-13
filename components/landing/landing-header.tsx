@@ -13,7 +13,7 @@ export function LandingHeader() {
             ClassTrace
           </span>
         </Link>
-        <nav className="flex items-center gap-2 sm:gap-5">
+        <nav aria-label="Public" className="flex items-center gap-2 sm:gap-5">
           <Link
             href={routes.signIn}
             className="hidden rounded-lg px-2 py-2 text-sm font-medium text-foreground/80 transition-colors hover:text-foreground sm:block"

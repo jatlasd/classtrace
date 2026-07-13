@@ -17,16 +17,16 @@ import type { NoteDraft } from "@/lib/note-processing/types";
 import { routes } from "@/lib/routes";
 import type { CaptureRosterStudent } from "@/lib/students/resolve-capture-students";
 import {
-  type Student,
+  type StudentMentionDisplay,
   type StudentMentionRef,
-} from "@/lib/students";
+} from "@/lib/students/student-mention-display";
 import {
   BarChart3,
   CheckCircle2,
   Circle,
   MessageCircle,
-  MoreHorizontal,
   Star,
+  Trash2,
   User,
 } from "lucide-react";
 
@@ -91,7 +91,7 @@ function Chip({
   );
 }
 
-function StudentAvatar({ student }: { student: Student }) {
+function StudentAvatar({ student }: { student: StudentMentionDisplay }) {
   return (
     <span
       className={`mr-1.5 inline-flex size-4 items-center justify-center rounded-full text-[9px] font-bold text-white ${student.colorClass}`}
@@ -101,7 +101,7 @@ function StudentAvatar({ student }: { student: Student }) {
   );
 }
 
-function ResolvedStudentChip({ student }: { student: Student }) {
+function ResolvedStudentChip({ student }: { student: StudentMentionDisplay }) {
   return (
     <Link
       href={routes.student(student.id)}
@@ -441,13 +441,13 @@ export function EvidenceCaptureCard({
                   <Button
                     type="button"
                     variant="ghost"
-                    size="icon-sm"
+                    size="xs"
                     className="text-muted-foreground hover:text-destructive"
-                    aria-label="Delete capture"
                     disabled={isReviewSavePending}
                     onClick={handleDelete}
                   >
-                    <MoreHorizontal className="size-4" />
+                    <Trash2 className="size-3.5" />
+                    Delete draft
                   </Button>
                 )}
               </div>

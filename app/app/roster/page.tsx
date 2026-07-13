@@ -90,16 +90,16 @@ function StudentRow({
             {studentInitials(student.displayName)}
           </div>
           <div className="min-w-0">
-            <p className="font-medium leading-snug text-foreground">
+            <p className="break-words font-medium leading-snug text-foreground [overflow-wrap:anywhere]">
               {student.displayName}
             </p>
             <p className="mt-0.5 text-xs text-muted-foreground">Open timeline</p>
           </div>
         </Link>
-        <p className="text-sm text-muted-foreground sm:text-foreground">
+        <p className="break-words text-sm text-muted-foreground [overflow-wrap:anywhere] sm:text-foreground">
           @{student.mentionHandle}
         </p>
-        <div className="text-xs text-muted-foreground">
+        <div className="break-words text-xs text-muted-foreground [overflow-wrap:anywhere]">
           {showClassName ? <p>{classGroupName || "Needs class"}</p> : null}
           {schoolLocalId ? <p>Local ID: {schoolLocalId}</p> : null}
         </div>
@@ -135,14 +135,14 @@ function ArchivedStudentRow({
     <li className="border-b border-border last:border-b-0">
       <div className="grid gap-3 px-4 py-3.5 sm:grid-cols-[minmax(0,1fr)_180px_190px] sm:items-start sm:px-5">
         <div className="min-w-0">
-          <p className="font-medium leading-snug text-foreground">
+          <p className="break-words font-medium leading-snug text-foreground [overflow-wrap:anywhere]">
             {student.displayName}
           </p>
           <p className="mt-0.5 text-xs text-muted-foreground">
             Archived student
           </p>
         </div>
-        <div className="text-sm text-muted-foreground sm:text-foreground">
+        <div className="break-words text-sm text-muted-foreground [overflow-wrap:anywhere] sm:text-foreground">
           <p>@{student.mentionHandle}</p>
           {student.schoolLocalId ? (
             <p className="mt-0.5 text-xs text-muted-foreground">
@@ -150,7 +150,7 @@ function ArchivedStudentRow({
             </p>
           ) : null}
         </div>
-        <div className="text-xs text-muted-foreground">
+        <div className="break-words text-xs text-muted-foreground [overflow-wrap:anywhere]">
           <p>
             {student.classGroupName
               ? `Was in ${student.classGroupName}`
@@ -214,7 +214,7 @@ function ClassList({
                           <BookOpen className="size-4" />
                         </div>
                         <div className="min-w-0">
-                          <p className="font-medium leading-snug text-foreground">
+                          <p className="break-words font-medium leading-snug text-foreground [overflow-wrap:anywhere]">
                             {classGroup.name}
                           </p>
                           <p className="mt-0.5 text-xs text-muted-foreground">
@@ -296,7 +296,9 @@ function ArchivedClassesView({
         <ul className="border border-border bg-card/60">
           {archivedClasses.map((classGroup) => (
             <li key={classGroup.id} className="border-b border-border px-4 py-3.5 last:border-b-0 sm:px-5">
-              <p className="font-medium leading-snug text-foreground">{classGroup.name}</p>
+              <p className="break-words font-medium leading-snug text-foreground [overflow-wrap:anywhere]">
+                {classGroup.name}
+              </p>
               <p className="mt-0.5 text-xs text-muted-foreground">
                 Archived class
               </p>
@@ -488,7 +490,7 @@ export default async function RosterPage({ searchParams }: RosterPageProps) {
             <p>Your roster is private to your ClassTrace workspace.</p>
           </div>
         </div>
-        <div className="border-l-4 border-primary bg-card/60 px-4 py-3">
+        <div className="border border-border bg-card/60 px-4 py-3">
           <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
             {readyForCapture ? "Capture readiness" : "Class setup"}
           </p>
@@ -541,7 +543,7 @@ export default async function RosterPage({ searchParams }: RosterPageProps) {
           <ClassList activeClasses={activeClasses} activeStudents={activeStudents} />
           {archivedStudents.length > 0 ? (
             <section className="space-y-3">
-              <div className="border-l-4 border-border bg-card/60 px-4 py-3">
+              <div className="border border-border bg-card/60 px-4 py-3">
                 <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                   Archived students
                 </p>
@@ -563,7 +565,7 @@ export default async function RosterPage({ searchParams }: RosterPageProps) {
           ) : null}
           {unassignedStudents.length > 0 ? (
             <section className="space-y-3">
-              <div className="border-l-4 border-primary bg-card/60 px-4 py-3">
+              <div className="border border-border bg-card/60 px-4 py-3">
                 <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                   Needs class
                 </p>

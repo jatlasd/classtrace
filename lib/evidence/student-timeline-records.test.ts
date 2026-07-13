@@ -16,6 +16,7 @@ import {
   getStudentTimelineRecordsForWorkspace,
   type StudentTimelineDatabase,
 } from "@/lib/evidence/student-timeline-records";
+import { INPUT_LIMITS } from "@/lib/validation/input-limits";
 
 function buildStudent() {
   return {
@@ -167,6 +168,20 @@ describe("getStudentTimelineRecordsForWorkspace", () => {
     );
 
     expect(result).toBeNull();
+    expect(evidenceCalls).toEqual([]);
+  });
+
+  it("rejects oversized route ids before querying", async () => {
+    const { database, studentCalls, evidenceCalls } = buildDatabase();
+
+    const result = await getStudentTimelineRecordsForWorkspace(
+      "workspace_1",
+      "x".repeat(INPUT_LIMITS.identifier + 1),
+      database
+    );
+
+    expect(result).toBeNull();
+    expect(studentCalls).toEqual([]);
     expect(evidenceCalls).toEqual([]);
   });
 

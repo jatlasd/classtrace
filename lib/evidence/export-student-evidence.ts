@@ -1,6 +1,7 @@
 import "server-only";
 
 import { prisma } from "@/lib/db/prisma";
+import { INPUT_LIMITS } from "@/lib/validation/input-limits";
 
 const EXPORT_MIME_TYPE = "text/csv;charset=utf-8";
 
@@ -224,6 +225,10 @@ export async function exportStudentEvidenceForWorkspace(
       success: false,
       error: "Choose a student before exporting evidence.",
     };
+  }
+
+  if (studentId.length > INPUT_LIMITS.identifier) {
+    return { success: false, error: "This student is not available to export." };
   }
 
   try {

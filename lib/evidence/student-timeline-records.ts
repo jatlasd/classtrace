@@ -1,6 +1,7 @@
 import "server-only";
 
 import { prisma } from "@/lib/db/prisma";
+import { INPUT_LIMITS } from "@/lib/validation/input-limits";
 
 type RosterStudentFindFirstArgs = {
   where: {
@@ -191,10 +192,18 @@ export async function getStudentTimelineRecordsForWorkspace(
   studentId: string,
   database: StudentTimelineDatabase = studentTimelineDatabase
 ): Promise<StudentTimelineRecordsResult | null> {
+  const normalizedStudentId = studentId.trim();
+  if (
+    !normalizedStudentId ||
+    normalizedStudentId.length > INPUT_LIMITS.identifier
+  ) {
+    return null;
+  }
+
   const student = await database.rosterStudent.findFirst({
     where: {
       workspaceId,
-      id: studentId,
+      id: normalizedStudentId,
       archivedAt: null,
     },
     select: {

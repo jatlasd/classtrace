@@ -7,9 +7,8 @@ import {
 import type { NoteDraft } from "@/lib/note-processing/types";
 import {
   mentionDisplayLabel,
-  resolveStudentMentions,
   type StudentMentionRef,
-} from "@/lib/students";
+} from "@/lib/students/student-mention-display";
 import {
   resolveStudentNamesFromRoster,
 } from "@/lib/students/roster-display-bridge";
@@ -74,12 +73,9 @@ function buildSummaryLine(
 
 function studentMentionsFromNames(
   names: string[],
-  roster?: CaptureRosterStudent[]
+  roster: CaptureRosterStudent[]
 ): StudentMentionRef[] {
-  if (roster) {
-    return resolveStudentNamesFromRoster(names, roster);
-  }
-  return resolveStudentMentions(names);
+  return resolveStudentNamesFromRoster(names, roster);
 }
 
 export function displayToInterpretationFields(
@@ -113,16 +109,19 @@ export function validateSingleStudentForInterpretation(
     return { status: "unresolved_student", studentNames: unresolved };
   }
 
-  const resolvedMentions = display.studentMentions.filter(
-    (ref) => ref.status === "resolved"
+  const resolvedStudents = new Map(
+    display.studentMentions
+      .filter((ref) => ref.status === "resolved")
+      .map((ref) => [ref.student.id, ref.student])
   );
-  const resolvedNames = resolvedMentions.map((ref) => ref.student.displayName);
+  const resolvedMentions = [...resolvedStudents.values()];
+  const resolvedNames = resolvedMentions.map((student) => student.displayName);
 
   if (resolvedNames.length !== 1) {
     return { status: "multiple_students", studentNames: resolvedNames };
   }
 
-  const student = resolvedMentions[0].student;
+  const student = resolvedMentions[0];
 
   return {
     status: "valid_one_student",
@@ -192,8 +191,8 @@ export function joinFollowUpNotes(notes: string[]): string {
 
 export function resolveCaptureDisplay(
   draft: NoteDraft,
-  validation?: CaptureValidation,
-  roster?: CaptureRosterStudent[]
+  validation: CaptureValidation | undefined,
+  roster: CaptureRosterStudent[]
 ): ResolvedCaptureDisplay {
   const base = draftToDisplay(draft, roster);
 

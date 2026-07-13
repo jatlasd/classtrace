@@ -4,9 +4,9 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { archiveEvidence, deleteEvidence } from "@/actions/evidence";
+import { EvidenceRecordContent } from "@/components/evidence/evidence-record-content";
 import { Button } from "@/components/ui/button";
 import type { EvidenceFeedRecord } from "@/lib/evidence/evidence-feed-records";
-import { formatTagLabel } from "@/lib/format-tag";
 import { routes } from "@/lib/routes";
 import { Archive, CheckCircle2, Circle, Ellipsis, Trash2 } from "lucide-react";
 
@@ -40,29 +40,6 @@ function formatEvidenceDate(value: string): EvidenceDateParts {
   };
 }
 
-function Chip({
-  children,
-  variant = "default",
-}: {
-  children: React.ReactNode;
-  variant?: "default" | "tag" | "evidence";
-}) {
-  const className =
-    variant === "tag"
-      ? "border-border bg-muted/60 text-link"
-      : variant === "evidence"
-        ? "border-primary/25 bg-primary/10 text-primary"
-        : "border-border bg-card text-foreground";
-
-  return (
-    <span
-      className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium ${className}`}
-    >
-      {children}
-    </span>
-  );
-}
-
 export function SavedEvidenceRow({
   record,
   onArchived,
@@ -76,7 +53,6 @@ export function SavedEvidenceRow({
   const [deleteError, setDeleteError] = useState("");
   const [isPending, startTransition] = useTransition();
   const evidenceDate = formatEvidenceDate(record.evidenceDate);
-  const primaryEvidenceText = record.evidenceNote ?? record.summary;
   const isLegacyStructuredEntry = !record.evidenceNote;
   const managementId = `evidence-management-${record.id}`;
 
@@ -167,39 +143,8 @@ export function SavedEvidenceRow({
                 </span>
               ) : null}
             </div>
-            <p className="mt-1 text-[15px] leading-relaxed text-foreground">
-              {primaryEvidenceText}
-            </p>
-            {record.evidenceNote ? (
-              <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
-                <span className="font-medium text-foreground">Structured details:</span>{" "}
-                {record.summary}
-              </p>
-            ) : (
-              <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
-                Legacy structured entry. This record was saved before Evidence notes were added.
-              </p>
-            )}
+            <EvidenceRecordContent record={record} />
           </div>
-
-          <div className="flex flex-wrap gap-1.5">
-            {record.topic ? <Chip>{record.topic}</Chip> : null}
-            {record.performance ? <Chip>{record.performance}</Chip> : null}
-            {record.behavior ? <Chip>{record.behavior}</Chip> : null}
-            <Chip variant="evidence">{record.evidenceType}</Chip>
-            {record.tags.map((tag) => (
-              <Chip key={tag} variant="tag">
-                {formatTagLabel(tag)}
-              </Chip>
-            ))}
-          </div>
-
-          {record.followUpNotes ? (
-            <p className="mt-3 border-t border-border/50 pt-2.5 text-xs leading-relaxed text-muted-foreground">
-              <span className="font-medium text-foreground">Follow-up:</span>{" "}
-              {record.followUpNotes}
-            </p>
-          ) : null}
         </div>
 
         <div className="space-y-3 md:border-l md:border-border md:pl-6">
@@ -238,9 +183,10 @@ export function SavedEvidenceRow({
                     size="sm"
                     onClick={handleArchive}
                     disabled={isPending}
+                    autoFocus
                     aria-label={`Confirm archive evidence for ${record.studentDisplayName}`}
                   >
-                    {isPending ? "Archiving..." : "Archive"}
+                    {isPending ? "Archiving…" : "Archive"}
                   </Button>
                   <Button
                     type="button"
@@ -291,9 +237,10 @@ export function SavedEvidenceRow({
                     size="sm"
                     onClick={handleDelete}
                     disabled={isPending}
+                    autoFocus
                     aria-label={`Permanently delete evidence for ${record.studentDisplayName}`}
                   >
-                    {isPending ? "Deleting..." : "Delete evidence"}
+                    {isPending ? "Deleting…" : "Delete evidence"}
                   </Button>
                   <Button
                     type="button"

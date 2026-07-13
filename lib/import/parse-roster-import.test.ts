@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { parseRosterImport } from "@/lib/import/parse-roster-import";
+import { INPUT_LIMITS } from "@/lib/validation/input-limits";
 
 describe("parseRosterImport", () => {
   it("parses one-name-per-line input and derives handles", () => {
@@ -77,6 +78,32 @@ describe("parseRosterImport", () => {
     );
     expect(preview.rows[0].errors).toContain(
       "A student with this school/local ID already exists on your roster."
+    );
+  });
+
+  it("rejects oversized imports, row counts, lines, and fields", () => {
+    expect(
+      parseRosterImport("x".repeat(INPUT_LIMITS.rosterImportText + 1)).error
+    ).toContain("characters or fewer");
+
+    const tooManyRows = Array.from(
+      { length: INPUT_LIMITS.rosterImportRows + 1 },
+      (_, index) => `Student ${index}`
+    ).join("\n");
+    expect(parseRosterImport(tooManyRows).error).toContain("students or fewer");
+
+    const longLine = parseRosterImport(
+      `${"Mary".padEnd(INPUT_LIMITS.rosterImportLine + 1, "x")}, mary`
+    );
+    expect(longLine.rows[0].errors).toContain(
+      `Each import row must be ${INPUT_LIMITS.rosterImportLine.toLocaleString()} characters or fewer.`
+    );
+
+    const longName = parseRosterImport(
+      `${"M".repeat(INPUT_LIMITS.displayName + 1)}, mary`
+    );
+    expect(longName.rows[0].errors).toContain(
+      `Student name must be ${INPUT_LIMITS.displayName} characters or fewer.`
     );
   });
 });

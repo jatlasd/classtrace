@@ -69,9 +69,10 @@ export function RosterStudentRowActions({
               size="sm"
               onClick={handleArchive}
               disabled={isPending}
+              autoFocus
               aria-label={`Confirm archive student ${studentDisplayName}`}
             >
-              {isPending ? "Archiving..." : "Archive student"}
+              {isPending ? "Archiving…" : "Archive student"}
             </Button>
             <Button
               type="button"
@@ -125,9 +126,10 @@ export function RosterStudentRowActions({
               size="sm"
               onClick={handleDelete}
               disabled={isPending}
+              autoFocus
               aria-label={`Permanently delete student ${studentDisplayName}`}
             >
-              {isPending ? "Deleting..." : "Delete student"}
+              {isPending ? "Deleting…" : "Delete student"}
             </Button>
             <Button
               type="button"
