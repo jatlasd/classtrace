@@ -106,6 +106,28 @@ Files: `app/app/loading.tsx`, `app/app/error.tsx`, `app/app/not-found.tsx`
 - Not-found copy offers feed and roster recovery paths.
 - Reduced-motion CSS makes loading animation effectively instant when requested.
 
+## Operator console
+
+Files: `app/operator/page.tsx`, `components/operator/operator-console.tsx`
+
+Last imprinted: 2026-07-14
+
+| Property | Pattern |
+|---|---|
+| Page/work surface | `bg-background`; one `border border-border bg-card/60` work surface |
+| Account metadata | Definition-list rows divided with `border-t border-border/70` |
+| Aggregate counts | One border-y ledger with tabular numbers; columns divide at `sm` |
+| Primary/secondary text | `text-foreground`; `text-muted-foreground` |
+| Controls | Shared input focus treatment and `Button` variants |
+| Destructive actions | One divided section, explicit consequence copy, exact-email field, `destructive` button |
+| Status | Full border plus semantic token tint; accessible `status` or `alert` role |
+| Radius/shadow | Controls follow shared radius; work sections add no decorative radius or shadow |
+
+The operator surface is intentionally utilitarian and direct-URL-only. Safe
+metadata and counts use ledger rows rather than a dashboard card grid. Database
+and identity-provider deletion remain visually and behaviorally separate, and
+the second action is unavailable until app-owned data is absent.
+
 ## Update rule
 
 Update an existing entry when a reusable contract changes. Add an entry only for a genuinely new shared component type. Do not append per-feature implementation history, retired navigation, screenshots, speculative variants, or duplicate entries.

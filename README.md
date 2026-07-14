@@ -48,6 +48,7 @@ Copy `.env.example` to `.env.local` and set:
 ```env
 NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_replace_me
 CLERK_SECRET_KEY=sk_test_replace_me
+CLASSTRACE_OPERATOR_CLERK_USER_IDS=user_replace_me
 NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
 NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
 NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL=/app
@@ -90,6 +91,7 @@ Open [http://localhost:3000](http://localhost:3000).
 - `/app/students/[studentId]` — student timeline and CSV export
 - `/app/students/[studentId]/report` — printable, date-filtered student report
 - `/app/settings` — account/workspace details and sign out
+- `/operator` — direct-URL-only owner console; requires a configured Clerk user ID
 - `/students` and `/students/[studentId]` — compatibility redirects to current app routes
 
 ## Data and privacy boundaries

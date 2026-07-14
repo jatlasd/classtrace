@@ -7,6 +7,7 @@ import {
   clerkSignInUrl,
   clerkSignUpUrl,
   isProtectedAppPath,
+  protectedRoutePatterns,
 } from "@/lib/auth-routes";
 
 const projectRoot = process.cwd();
@@ -30,6 +31,11 @@ describe("auth route boundaries", () => {
     expect(clerkSignUpUrl).toBe("/sign-up");
     expect(clerkAfterSignInUrl).toBe("/app");
     expect(clerkAfterSignUpUrl).toBe("/app");
+  });
+
+  it("protects the direct-url operator console through Clerk", () => {
+    expect(protectedRoutePatterns).toContain("/operator");
+    expect(protectedRoutePatterns).toContain("/operator/(.*)");
   });
 
   it("redirects signed-in users away from auth pages", () => {

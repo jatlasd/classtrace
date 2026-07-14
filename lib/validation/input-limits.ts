@@ -1,5 +1,6 @@
 export const INPUT_LIMITS = {
   identifier: 128,
+  accountEmail: 320,
   displayName: 120,
   mentionHandle: 64,
   className: 120,

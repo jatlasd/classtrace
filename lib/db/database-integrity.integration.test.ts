@@ -147,6 +147,73 @@ describe("database ownership constraints", () => {
     ).toBeNull();
   });
 
+  it("cascades whole-account data while preserving standalone operator audit rows", async () => {
+    const teacher = await database.teacherProfile.create({
+      data: { clerkUserId: "integration_delete_target", displayName: "Teacher" },
+    });
+    const workspace = await database.workspace.create({
+      data: { teacherProfileId: teacher.id },
+    });
+    const classGroup = await database.classGroup.create({
+      data: {
+        workspaceId: workspace.id,
+        name: "Intervention",
+        nameKey: "intervention",
+      },
+    });
+    const student = await database.rosterStudent.create({
+      data: {
+        workspaceId: workspace.id,
+        classGroupId: classGroup.id,
+        displayName: "Jeff",
+        mentionHandle: "jeff-delete-target",
+      },
+    });
+    await database.evidenceRecord.create({
+      data: {
+        workspaceId: workspace.id,
+        rosterStudentId: student.id,
+        classGroupId: classGroup.id,
+        evidenceNote: "Teacher-reviewed evidence.",
+        summary: "Jeff - intervention",
+        evidenceType: "Academic check-in",
+        validatedAt: new Date(),
+      },
+    });
+    const audit = await database.operatorActionAudit.create({
+      data: {
+        operatorClerkUserId: "integration_operator",
+        targetClerkUserId: "integration_delete_target",
+        action: "WORKSPACE_DATA_DELETE",
+        outcome: "SUCCEEDED",
+        classGroupCount: 1,
+        rosterStudentCount: 1,
+        evidenceRecordCount: 1,
+        completedAt: new Date(),
+      },
+    });
+
+    await database.teacherProfile.delete({ where: { id: teacher.id } });
+
+    await expect(
+      database.workspace.findUnique({ where: { id: workspace.id } })
+    ).resolves.toBeNull();
+    await expect(
+      database.classGroup.findUnique({ where: { id: classGroup.id } })
+    ).resolves.toBeNull();
+    await expect(
+      database.rosterStudent.findUnique({ where: { id: student.id } })
+    ).resolves.toBeNull();
+    await expect(
+      database.operatorActionAudit.findUnique({ where: { id: audit.id } })
+    ).resolves.toMatchObject({
+      targetClerkUserId: "integration_delete_target",
+      classGroupCount: 1,
+      rosterStudentCount: 1,
+      evidenceRecordCount: 1,
+    });
+  });
+
   it("does not commit an active student into an archived class", async () => {
     const classGroup = await database.classGroup.create({
       data: {

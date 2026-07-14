@@ -96,3 +96,19 @@ model EvidenceRecord {
   @@index([rosterStudentId, evidenceDate])
   @@index([classGroupId])
 }
+
+model OperatorActionAudit {
+  id                  String    @id @default(cuid())
+  operatorClerkUserId String
+  targetClerkUserId   String
+  action              String
+  outcome             String
+  classGroupCount     Int       @default(0)
+  rosterStudentCount  Int       @default(0)
+  evidenceRecordCount Int       @default(0)
+  createdAt           DateTime  @default(now())
+  completedAt         DateTime?
+
+  @@index([operatorClerkUserId, createdAt])
+  @@index([targetClerkUserId, createdAt])
+}

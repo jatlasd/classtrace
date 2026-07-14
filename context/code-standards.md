@@ -69,6 +69,7 @@ Never accept or trust a client-provided user/workspace ID. Do not place domain r
 - Use same-workspace foreign keys for relational defense in depth.
 - Use `withSerializableTransaction` for active-state check/write sequences that can race.
 - Keep migrations forward-only, reviewable, and explicit. Do not silently rewrite ownership drift or fabricate evidence/class assignments.
+- Treat the standalone operator audit model as the one approved administration-related schema exception. Update the schema-shape test alongside it rather than weakening or routing around the no-admin-model guardrail.
 - Use `npm run db:migrate` only for development and `npm run db:migrate:deploy` for committed deployment migrations.
 
 ## Input and evidence rules

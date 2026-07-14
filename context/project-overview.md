@@ -63,6 +63,7 @@ These states must not be collapsed. In particular, a captured raw note must not 
 | `/app/students/[studentId]` | Student timeline and export |
 | `/app/students/[studentId]/report` | Printable date-filtered report |
 | `/app/settings` | Account/workspace details and sign out |
+| `/operator` | Direct-URL-only owner account administration |
 
 ## Explicit non-goals
 

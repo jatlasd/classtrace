@@ -21,6 +21,13 @@ const workspaceIntegrityMigrationPath = join(
   "20260712000000_enforce_workspace_relation_integrity",
   "migration.sql"
 );
+const operatorAuditMigrationPath = join(
+  projectRoot,
+  "prisma",
+  "migrations",
+  "20260714000000_add_operator_action_audit",
+  "migration.sql"
+);
 
 const schema = readFileSync(schemaPath, "utf8");
 const envExample = readFileSync(envExamplePath, "utf8");
@@ -82,6 +89,20 @@ describe("Prisma database foundation", () => {
   });
   it("does not add out-of-scope V1 models", () => {
     expect(schema).not.toMatch(/\b(model|enum)\s+(Organization|District|Admin|Membership|File|Attachment|Ai|AI|Embedding|Billing|Subscription|Sis|SIS)\b/);
+  });
+
+  it("defines the approved standalone operator audit without student data", () => {
+    expect(existsSync(operatorAuditMigrationPath)).toBe(true);
+
+    const migration = readFileSync(operatorAuditMigrationPath, "utf8");
+
+    expect(schema).toContain("model OperatorActionAudit");
+    expect(schema).toContain("operatorClerkUserId");
+    expect(schema).toContain("targetClerkUserId");
+    expect(schema).not.toMatch(/OperatorActionAudit[\s\S]*?(studentName|evidenceNote|rawNote|email)/i);
+    expect(migration).toContain('CREATE TABLE "OperatorActionAudit"');
+    expect(migration).not.toMatch(/FOREIGN KEY|REFERENCES/i);
+    expect(migration).not.toMatch(/studentName|evidenceNote|rawNote|email/i);
   });
 
   it("documents database environment variables and scripts", () => {

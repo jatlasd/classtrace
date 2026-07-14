@@ -8,6 +8,7 @@ export const routes = {
   studentReport: (studentId: string): string =>
     `/app/students/${studentId}/report`,
   settings: "/app/settings",
+  operator: "/operator",
   signIn: "/sign-in",
   signUp: "/sign-up",
 } as const;

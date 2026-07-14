@@ -31,6 +31,23 @@ Clerk user
 - Cross-workspace writes are rejected by both application checks and PostgreSQL constraints.
 - V1 has no global student identity and no cross-teacher sharing.
 
+### Sanctioned operator exception
+
+The private owner-only operator console is the sole sanctioned exception to
+the normal current-workspace resolution rule. Its server-only domain functions
+may locate one target account by an exact email after independently authorizing
+the current Clerk user against the configured operator allowlist. The exception
+is limited to safe account metadata, aggregate class/student/evidence counts,
+whole-account deletion, and destructive-action auditing. It does not expose
+evidence content, allow impersonation, or create a reusable cross-workspace
+access layer.
+
+Operator audit rows deliberately have no relation to a teacher profile or
+workspace, so they survive deletion without retaining student names, roster
+data, evidence content, or raw notes. This intentional schema model and its
+migration are asserted by the schema-shape test; the broader prohibition on
+admin, district, organization, and membership models remains in force.
+
 ## Main data models
 
 - `TeacherProfile` maps Clerk identity to app-owned data.
