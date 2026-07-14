@@ -1,4 +1,10 @@
-import { BadgeCheck, BriefcaseBusiness, UserRound } from "lucide-react";
+import {
+  BadgeCheck,
+  BriefcaseBusiness,
+  MessageCircleQuestion,
+  UserRound,
+} from "lucide-react";
+import { HelpFeedbackForm } from "@/components/settings/help-feedback-form";
 import { SettingsSignOutAction } from "@/components/settings/settings-sign-out-action";
 import { getSettingsPageData } from "@/lib/settings/settings-page-data";
 
@@ -82,6 +88,35 @@ export default async function SettingsPage() {
               value={settings.teacherDisplayName}
             />
           </dl>
+        </section>
+
+        <section
+          aria-labelledby="help-feedback-heading"
+          className="border border-border bg-card/60 p-4 sm:p-5"
+        >
+          <div className="mb-5 flex items-start gap-3">
+            <span className="flex size-10 shrink-0 items-center justify-center rounded-md border border-border bg-muted/50 text-primary">
+              <MessageCircleQuestion
+                className="size-4"
+                strokeWidth={1.75}
+                aria-hidden="true"
+              />
+            </span>
+            <div>
+              <h2
+                id="help-feedback-heading"
+                className="font-display text-lg font-semibold text-foreground"
+              >
+                Help and feedback
+              </h2>
+              <p className="mt-1 max-w-2xl text-xs leading-relaxed text-muted-foreground">
+                Tell us what broke, what felt confusing, or what would make
+                ClassTrace more useful.
+              </p>
+            </div>
+          </div>
+
+          <HelpFeedbackForm initialReplyEmail={settings.replyEmail} />
         </section>
 
         <section className="border border-border bg-card/60 px-4 py-4 sm:px-5">

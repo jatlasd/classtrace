@@ -40,6 +40,28 @@ Files: `components/ui/button.tsx`, `components/ui/textarea.tsx`
 - Errors use destructive text/border plus accessible live/focus behavior.
 - Pending labels use `…`.
 
+## Settings help and feedback form
+
+File: `components/settings/help-feedback-form.tsx`
+
+Last updated: 2026-07-14
+
+| Property | Pattern |
+|---|---|
+| Section surface | Existing Settings `border border-border bg-card/60` surface |
+| Fields | Shared 40 px roster input treatment and `Textarea`; semantic invalid border/ring |
+| Labels | `text-sm font-medium text-foreground` |
+| Guidance | Inline icon plus `text-xs leading-relaxed text-muted-foreground` |
+| Field errors | Adjacent `text-sm text-destructive` with `aria-describedby` |
+| Form status | Full border with semantic destructive/validated tint; error receives focus |
+| Submit action | Shared primary `Button`, 40 px high, pending label uses an ellipsis |
+| Spacing | `space-y-5`; paired short fields stack below `sm` |
+
+The form keeps diagnostic metadata out of editable controls. Validation and
+delivery failures preserve teacher-entered values, while success clears only
+the category and description. Use this status/focus pattern for future
+Settings forms that submit to a Server Action.
+
 ## Quick capture
 
 File: `components/dashboard/quick-capture-card.tsx`
