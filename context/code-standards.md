@@ -22,6 +22,7 @@
 | `lib/students/`, `lib/classes/` | Roster/class domain behavior and data access |
 | `lib/import/` | Roster import parsing, preview, and save |
 | `lib/feedback/` | Privacy-bounded feedback validation and outbound delivery |
+| `lib/errors/` | Opaque unexpected-error reference formatting and validation |
 | `lib/validation/` | Shared server-boundary limits |
 | `prisma/` | Schema and forward-only migrations |
 

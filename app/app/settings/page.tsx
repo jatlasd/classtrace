@@ -6,6 +6,7 @@ import {
 } from "lucide-react";
 import { HelpFeedbackForm } from "@/components/settings/help-feedback-form";
 import { SettingsSignOutAction } from "@/components/settings/settings-sign-out-action";
+import { normalizeErrorReference } from "@/lib/errors/error-reference";
 import { getSettingsPageData } from "@/lib/settings/settings-page-data";
 
 type DetailRowProps = {
@@ -24,8 +25,18 @@ function DetailRow({ label, value }: DetailRowProps) {
   );
 }
 
-export default async function SettingsPage() {
-  const settings = await getSettingsPageData();
+type SettingsPageProps = {
+  searchParams: Promise<{
+    errorReference?: string | string[];
+  }>;
+};
+
+export default async function SettingsPage({ searchParams }: SettingsPageProps) {
+  const [settings, query] = await Promise.all([
+    getSettingsPageData(),
+    searchParams,
+  ]);
+  const initialErrorReference = normalizeErrorReference(query.errorReference);
 
   return (
     <div className="mx-auto w-full max-w-[920px] px-4 py-7 sm:px-6 lg:px-8">
@@ -116,7 +127,10 @@ export default async function SettingsPage() {
             </div>
           </div>
 
-          <HelpFeedbackForm initialReplyEmail={settings.replyEmail} />
+          <HelpFeedbackForm
+            initialReplyEmail={settings.replyEmail}
+            initialErrorReference={initialErrorReference}
+          />
         </section>
 
         <section className="border border-border bg-card/60 px-4 py-4 sm:px-5">

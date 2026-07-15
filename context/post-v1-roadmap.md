@@ -11,6 +11,8 @@ This is strategic direction, not an active implementation queue. Any item still 
 - Teacher-approved Evidence notes and structured fields
 - Paged evidence feed, student timeline, printable report, and one-student CSV export
 - Archive/delete behavior with ownership checks
+- Private owner account administration with narrow destructive-action auditing
+- Privacy-bounded Help and Feedback delivery through Resend
 
 ## Sensible next priorities
 

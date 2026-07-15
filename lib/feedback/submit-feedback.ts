@@ -7,6 +7,7 @@ import {
   type FeedbackType,
   type SubmitFeedbackResult,
 } from "@/lib/feedback/feedback-contract";
+import { normalizeErrorReference } from "@/lib/errors/error-reference";
 import { INPUT_LIMITS } from "@/lib/validation/input-limits";
 
 export type FeedbackDeliveryPayload = {
@@ -20,6 +21,7 @@ export type FeedbackDeliveryPayload = {
   release: string;
   clerkUserId: string;
   workspaceId: string;
+  errorReference?: string;
 };
 
 export type FeedbackDeliveryPort = {
@@ -84,7 +86,12 @@ function validateVisibleFields(input: FeedbackFormInput): {
 }
 
 function normalizeDiagnosticMetadata(input: FeedbackFormInput):
-  | { success: true; currentRoute: string; browserAndDevice: string }
+  | {
+      success: true;
+      currentRoute: string;
+      browserAndDevice: string;
+      errorReference: string | null;
+    }
   | { success: false } {
   const currentRoute =
     typeof input.currentRoute === "string" ? input.currentRoute.trim() : "";
@@ -93,18 +100,28 @@ function normalizeDiagnosticMetadata(input: FeedbackFormInput):
       ? input.browserAndDevice.trim()
       : "";
   const browserAndDevice = rawBrowserAndDevice || "Unavailable";
+  const errorReference =
+    input.errorReference === undefined
+      ? null
+      : normalizeErrorReference(input.errorReference);
 
   if (
     !currentRoute.startsWith("/") ||
     currentRoute.includes("?") ||
     currentRoute.includes("#") ||
     currentRoute.length > INPUT_LIMITS.feedbackRoute ||
-    browserAndDevice.length > INPUT_LIMITS.feedbackBrowserAndDevice
+    browserAndDevice.length > INPUT_LIMITS.feedbackBrowserAndDevice ||
+    (input.errorReference !== undefined && !errorReference)
   ) {
     return { success: false };
   }
 
-  return { success: true, currentRoute, browserAndDevice };
+  return {
+    success: true,
+    currentRoute,
+    browserAndDevice,
+    errorReference,
+  };
 }
 
 export async function submitFeedbackForWorkspace(input: {
@@ -147,6 +164,9 @@ export async function submitFeedbackForWorkspace(input: {
     release: normalizeRelease(input.context.release),
     clerkUserId: input.context.clerkUserId.trim(),
     workspaceId: input.context.workspaceId.trim(),
+    ...(metadata.errorReference
+      ? { errorReference: metadata.errorReference }
+      : {}),
   };
 
   try {

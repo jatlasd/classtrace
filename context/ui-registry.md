@@ -54,13 +54,16 @@ Last updated: 2026-07-14
 | Guidance | Inline icon plus `text-xs leading-relaxed text-muted-foreground` |
 | Field errors | Adjacent `text-sm text-destructive` with `aria-describedby` |
 | Form status | Full border with semantic destructive/validated tint; error receives focus |
+| Attached reference | `border-y border-border/70`; selectable monospace value; non-editable |
 | Submit action | Shared primary `Button`, 40 px high, pending label uses an ellipsis |
 | Spacing | `space-y-5`; paired short fields stack below `sm` |
 
 The form keeps diagnostic metadata out of editable controls. Validation and
 delivery failures preserve teacher-entered values, while success clears only
-the category and description. Use this status/focus pattern for future
-Settings forms that submit to a Server Action.
+the category and description. Error-report entry may preselect **Something
+broke** and attach one validated reference; successful delivery removes it from
+state and the URL. Use this status/focus pattern for future Settings forms that
+submit to a Server Action.
 
 ## Quick capture
 
@@ -121,10 +124,15 @@ File: `app/app/roster/page.tsx`
 
 ## Route states
 
-Files: `app/app/loading.tsx`, `app/app/error.tsx`, `app/app/not-found.tsx`
+Files: `app/app/loading.tsx`, `app/app/error.tsx`, `app/global-error.tsx`, `app/app/not-found.tsx`, `components/errors/unexpected-error-fallback.tsx`
+
+Last updated: 2026-07-14
 
 - Loading uses simple token-colored skeleton blocks and screen-reader text.
-- Error copy avoids unsupported assurances and offers one retry.
+- Unexpected errors use one `rounded-card border border-border bg-card shadow-paper` recovery surface with restrained destructive icon tint, direct copy, and no technical details.
+- Reference IDs sit in a `border-y border-border/70` ledger row with selectable monospace text and safe wrapping.
+- Retry is the primary action; **Report this problem** is an outline action into the existing Settings feedback flow. Actions stack on mobile and align horizontally from `sm`.
+- The authenticated boundary remains inside the app shell. The global boundary owns its document wrapper and does not depend on Clerk or app navigation.
 - Not-found copy offers feed and roster recovery paths.
 - Reduced-motion CSS makes loading animation effectively instant when requested.
 

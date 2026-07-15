@@ -101,7 +101,7 @@ recipient.
 - `/app/roster` — class and roster management
 - `/app/students/[studentId]` — student timeline and CSV export
 - `/app/students/[studentId]/report` — printable, date-filtered student report
-- `/app/settings` — account/workspace details and sign out
+- `/app/settings` — account/workspace details, Help and Feedback, and sign out
 - `/operator` — direct-URL-only owner console; requires a configured Clerk user ID
 - `/students` and `/students/[studentId]` — compatibility redirects to current app routes
 

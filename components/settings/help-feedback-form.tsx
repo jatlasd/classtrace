@@ -1,7 +1,7 @@
 "use client";
 
-import { Send, ShieldCheck } from "lucide-react";
-import { usePathname } from "next/navigation";
+import { CircleAlert, Send, ShieldCheck } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
 import {
   type FormEvent,
   useEffect,
@@ -18,10 +18,12 @@ import {
   type FeedbackFieldErrors,
   type FeedbackType,
 } from "@/lib/feedback/feedback-contract";
+import { routes } from "@/lib/routes";
 import { INPUT_LIMITS } from "@/lib/validation/input-limits";
 
 type HelpFeedbackFormProps = {
   initialReplyEmail: string;
+  initialErrorReference: string | null;
 };
 
 type FormMessage = {
@@ -37,11 +39,18 @@ const FEEDBACK_INPUT_CLASS_NAME = `${ROSTER_INPUT_CLASS_NAME} aria-invalid:borde
 
 export function HelpFeedbackForm({
   initialReplyEmail,
+  initialErrorReference,
 }: HelpFeedbackFormProps) {
   const pathname = usePathname();
-  const [type, setType] = useState<FeedbackType | "">("");
+  const router = useRouter();
+  const [type, setType] = useState<FeedbackType | "">(
+    initialErrorReference ? "BROKE" : ""
+  );
   const [description, setDescription] = useState("");
   const [replyEmail, setReplyEmail] = useState(initialReplyEmail);
+  const [errorReference, setErrorReference] = useState(
+    initialErrorReference
+  );
   const [fieldErrors, setFieldErrors] = useState<FeedbackFieldErrors>({});
   const [message, setMessage] = useState<FormMessage | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -84,6 +93,7 @@ export function HelpFeedbackForm({
           replyEmail,
           currentRoute: pathname,
           browserAndDevice,
+          ...(errorReference ? { errorReference } : {}),
         });
       } catch {
         setMessage({
@@ -101,6 +111,10 @@ export function HelpFeedbackForm({
 
       setType("");
       setDescription("");
+      if (errorReference) {
+        setErrorReference(null);
+        router.replace(routes.settings, { scroll: false });
+      }
       setMessage({
         tone: "success",
         text: "Feedback sent. Thank you for helping improve ClassTrace.",
@@ -188,6 +202,22 @@ export function HelpFeedbackForm({
           ) : null}
         </div>
       </div>
+
+      {errorReference ? (
+        <div className="border-y border-border/70 py-3">
+          <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            <CircleAlert className="size-3.5 text-destructive" aria-hidden="true" />
+            Attached error reference
+          </p>
+          <code className="mt-1 block select-all break-all font-mono text-sm font-semibold text-foreground">
+            {errorReference}
+          </code>
+          <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+            This reference will be included with your report so it can be
+            matched to the server logs.
+          </p>
+        </div>
+      ) : null}
 
       <div className="space-y-1.5">
         <label

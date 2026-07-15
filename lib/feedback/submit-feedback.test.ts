@@ -114,6 +114,7 @@ describe("submitFeedbackForWorkspace", () => {
       { form: { currentRoute: "/app/settings?student=Mary" } },
       { form: { currentRoute: "/app/settings#feedback" } },
       { form: { currentRoute: "app/settings" } },
+      { form: { errorReference: "not-a-reference" } },
       { form: { currentRoute: `/${"x".repeat(INPUT_LIMITS.feedbackRoute)}` } },
       {
         form: {
@@ -142,6 +143,19 @@ describe("submitFeedbackForWorkspace", () => {
     }
 
     expect(delivery.deliver).not.toHaveBeenCalled();
+  });
+
+  it("includes an optional validated error reference", async () => {
+    const input = validInput();
+    input.form.errorReference = "CT-S-digest_123";
+
+    await expect(
+      submitFeedbackForWorkspace({ ...input, delivery })
+    ).resolves.toEqual({ success: true });
+
+    expect(delivered[0]).toMatchObject({
+      errorReference: "CT-S-digest_123",
+    });
   });
 
   it("uses safe metadata fallbacks and never logs a failed delivery payload", async () => {

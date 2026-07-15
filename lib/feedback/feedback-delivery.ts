@@ -64,6 +64,10 @@ function buildEmail(
   payload: Parameters<FeedbackDeliveryPort["deliver"]>[0],
   configuration: FeedbackEmailConfiguration
 ): CreateEmailOptions {
+  const referenceLine = payload.errorReference
+    ? [`Error reference: ${payload.errorReference}`]
+    : [];
+
   return {
     from: `ClassTrace <${configuration.fromEmail}>`,
     to: configuration.toEmail,
@@ -73,6 +77,7 @@ function buildEmail(
       "ClassTrace Help and Feedback",
       "",
       `Category: ${payload.typeLabel}`,
+      ...referenceLine,
       `Reply email: ${payload.replyEmail}`,
       `Submitted at: ${payload.submittedAt}`,
       `Route: ${payload.currentRoute}`,

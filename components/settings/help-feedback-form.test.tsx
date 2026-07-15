@@ -13,6 +13,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 const mocks = vi.hoisted(() => ({
   submitFeedbackAction: vi.fn(),
   usePathname: vi.fn(),
+  routerReplace: vi.fn(),
 }));
 
 vi.mock("@/actions/feedback", () => ({
@@ -20,6 +21,7 @@ vi.mock("@/actions/feedback", () => ({
 }));
 vi.mock("next/navigation", () => ({
   usePathname: mocks.usePathname,
+  useRouter: () => ({ replace: mocks.routerReplace }),
 }));
 
 import { HelpFeedbackForm } from "@/components/settings/help-feedback-form";
@@ -41,7 +43,12 @@ describe("HelpFeedbackForm", () => {
   });
 
   it("submits the approved fields and diagnostic context, then resets safely", async () => {
-    render(<HelpFeedbackForm initialReplyEmail="stacy@example.test" />);
+    render(
+      <HelpFeedbackForm
+        initialReplyEmail="stacy@example.test"
+        initialErrorReference={null}
+      />
+    );
 
     const type = screen.getByLabelText("What can we help with?");
     const description = screen.getByLabelText("Description");
@@ -83,7 +90,12 @@ describe("HelpFeedbackForm", () => {
         replyEmail: "Enter a valid reply email.",
       },
     });
-    render(<HelpFeedbackForm initialReplyEmail="bad-email" />);
+    render(
+      <HelpFeedbackForm
+        initialReplyEmail="bad-email"
+        initialErrorReference={null}
+      />
+    );
 
     const description = screen.getByLabelText("Description");
     fireEvent.change(description, { target: { value: "Please help." } });
@@ -105,7 +117,12 @@ describe("HelpFeedbackForm", () => {
         resolveSubmission = resolve;
       })
     );
-    render(<HelpFeedbackForm initialReplyEmail="mary@example.test" />);
+    render(
+      <HelpFeedbackForm
+        initialReplyEmail="mary@example.test"
+        initialErrorReference={null}
+      />
+    );
 
     fireEvent.change(screen.getByLabelText("What can we help with?"), {
       target: { value: "FEATURE_IDEA" },
@@ -129,7 +146,12 @@ describe("HelpFeedbackForm", () => {
 
   it("preserves the form when the action request rejects", async () => {
     mocks.submitFeedbackAction.mockRejectedValue(new Error("network failed"));
-    render(<HelpFeedbackForm initialReplyEmail="jeff@example.test" />);
+    render(
+      <HelpFeedbackForm
+        initialReplyEmail="jeff@example.test"
+        initialErrorReference={null}
+      />
+    );
 
     fireEvent.change(screen.getByLabelText("What can we help with?"), {
       target: { value: "ACCOUNT_OR_DATA" },
@@ -145,5 +167,65 @@ describe("HelpFeedbackForm", () => {
     expect((screen.getByLabelText("Description") as HTMLTextAreaElement).value).toBe(
       "I need help with my account."
     );
+  });
+
+  it("attaches a validated error reference and clears it only after success", async () => {
+    render(
+      <HelpFeedbackForm
+        initialReplyEmail="stacy@example.test"
+        initialErrorReference="CT-S-digest_123"
+      />
+    );
+
+    expect(
+      (screen.getByLabelText("What can we help with?") as HTMLSelectElement)
+        .value
+    ).toBe("BROKE");
+    expect(screen.getByText("CT-S-digest_123")).toBeTruthy();
+
+    fireEvent.change(screen.getByLabelText("Description"), {
+      target: { value: "The page stopped while I was saving." },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Send feedback" }));
+
+    await screen.findByText(
+      "Feedback sent. Thank you for helping improve ClassTrace."
+    );
+    expect(mocks.submitFeedbackAction).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: "BROKE",
+        errorReference: "CT-S-digest_123",
+      })
+    );
+    expect(screen.queryByText("CT-S-digest_123")).toBeNull();
+    expect(mocks.routerReplace).toHaveBeenCalledWith("/app/settings", {
+      scroll: false,
+    });
+  });
+
+  it("preserves an attached reference when delivery fails", async () => {
+    mocks.submitFeedbackAction.mockResolvedValue({
+      success: false,
+      error: "Feedback could not be sent. Try again.",
+    });
+    render(
+      <HelpFeedbackForm
+        initialReplyEmail="stacy@example.test"
+        initialErrorReference="CT-C-123e4567-e89b-12d3-a456-426614174000"
+      />
+    );
+
+    fireEvent.change(screen.getByLabelText("Description"), {
+      target: { value: "The page stopped while I was saving." },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Send feedback" }));
+
+    expect((await screen.findByRole("alert")).textContent).toBe(
+      "Feedback could not be sent. Try again."
+    );
+    expect(
+      screen.getByText("CT-C-123e4567-e89b-12d3-a456-426614174000")
+    ).toBeTruthy();
+    expect(mocks.routerReplace).not.toHaveBeenCalled();
   });
 });

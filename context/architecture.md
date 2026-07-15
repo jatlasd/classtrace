@@ -135,9 +135,10 @@ authenticated Settings form
 
 The form sends only the teacher-selected category, teacher-entered description
 and reply email, pathname, bounded browser/device string, release, server
-timestamp, and authenticated Clerk/workspace IDs. It does not query or attach
-roster, class, evidence, capture, cookie, IP, query-string, screenshot, or file
-data.
+timestamp, authenticated Clerk/workspace IDs, and an optional validated error
+reference supplied by the site-wide error fallback. It does not query or attach
+roster, class, evidence, capture, cookie, IP, query-string, screenshot, raw
+error detail, or file data.
 
 ClassTrace does not persist feedback or the Resend email ID in PostgreSQL,
 browser storage, analytics, or application logs. Resend and the operator mailbox
@@ -179,7 +180,9 @@ These limits protect resource usage and database hygiene; they are not substitut
 
 - Auth failures redirect through Clerk-protected routes.
 - Expected validation/ownership failures return typed errors without revealing whether another workspace owns an ID.
-- Route-level `loading.tsx`, `error.tsx`, and `not-found.tsx` provide safe recovery states.
+- Route-level `loading.tsx`, `error.tsx`, and `not-found.tsx` provide safe recovery states. A root `global-error.tsx` covers failures outside the authenticated app boundary and failures in the root layout.
+- Unexpected boundary failures display an opaque `CT-S-` server-digest reference or `CT-C-` client reference, offer Next.js retry, and link to the existing Help and Feedback form without attaching raw error details.
+- Next.js request instrumentation logs server references with only the route template and framework failure classification. A narrow registration action logs the same displayed client reference when the server remains reachable; neither path logs error messages, stacks, concrete URLs, request data, or teacher/student content.
 - Destructive actions require explicit confirmation and do not disappear from the UI until the server succeeds.
 - Unexpected action/domain errors are logged with an operation prefix; raw notes are never included.
 

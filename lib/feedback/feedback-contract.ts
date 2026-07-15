@@ -13,6 +13,7 @@ export type FeedbackFormInput = {
   replyEmail: string;
   currentRoute: string;
   browserAndDevice: string;
+  errorReference?: string;
 };
 
 export type FeedbackFieldErrors = Partial<

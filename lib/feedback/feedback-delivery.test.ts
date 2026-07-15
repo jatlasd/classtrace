@@ -80,6 +80,23 @@ describe("feedbackDelivery", () => {
     expect(logFailure).not.toHaveBeenCalled();
   });
 
+  it("places an attached error reference immediately after the category", async () => {
+    const delivery = createFeedbackDelivery({
+      env: validEnvironment(),
+      createClient,
+      logFailure,
+    });
+    const payload = validPayload();
+    payload.errorReference = "CT-S-digest_123";
+
+    await delivery.deliver(payload);
+
+    const request = sendEmail.mock.calls[0][0];
+    expect(request.text).toContain(
+      "Category: Something broke\nError reference: CT-S-digest_123\nReply email:"
+    );
+  });
+
   it.each([
     ["missing API key", { RESEND_API_KEY: undefined }],
     ["blank API key", { RESEND_API_KEY: "   " }],
