@@ -19,12 +19,6 @@ accounts. No implementation is authorized by this note.
 
 ## Remaining beta-readiness work
 
-### Trust and support pages
-
-Add truthful, simple access to privacy information, beta terms or terms of use,
-contact/support, and data-deletion requests. Do not claim FERPA compliance,
-district approval, legal de-identification, or production safety.
-
 ### Operational readiness
 
 Verify and document:

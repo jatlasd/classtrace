@@ -43,6 +43,8 @@ The strongest early users are special education teachers, case managers, interve
 - Settings includes a Help and Feedback form that sends a bounded support report
   through Resend to the configured ClassTrace operator without storing it in the
   ClassTrace database.
+- Public privacy, beta-terms, support, and account-deletion pages describe the
+  current beta boundaries and route signed-in requests through Help and Feedback.
 
 ## Evidence states
 
@@ -59,6 +61,10 @@ These states must not be collapsed. In particular, a captured raw note must not 
 | Route | Purpose |
 |---|---|
 | `/` | Public explanation and sign-up entry |
+| `/privacy` | Plain-language privacy boundaries |
+| `/terms` | Controlled-beta terms |
+| `/support` | Support path and safe-report guidance |
+| `/data-deletion` | Full-account deletion request steps and scope |
 | `/sign-in`, `/sign-up` | Authentication |
 | `/app` | Redirect based on roster readiness |
 | `/app/feed` | Capture and paged evidence inbox |

@@ -1,5 +1,9 @@
 export const routes = {
   root: "/",
+  privacy: "/privacy",
+  terms: "/terms",
+  support: "/support",
+  dataDeletion: "/data-deletion",
   app: "/app",
   feed: "/app/feed",
   roster: "/app/roster",

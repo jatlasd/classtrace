@@ -21,6 +21,10 @@ describe("auth route boundaries", () => {
 
   it("keeps the landing page and auth routes public", () => {
     expect(isProtectedAppPath("/")).toBe(false);
+    expect(isProtectedAppPath("/privacy")).toBe(false);
+    expect(isProtectedAppPath("/terms")).toBe(false);
+    expect(isProtectedAppPath("/support")).toBe(false);
+    expect(isProtectedAppPath("/data-deletion")).toBe(false);
     expect(isProtectedAppPath("/sign-in")).toBe(false);
     expect(isProtectedAppPath("/sign-up")).toBe(false);
     expect(isProtectedAppPath("/students/jeremy")).toBe(false);

@@ -94,6 +94,9 @@ recipient.
 
 ## Routes
 
+- `/privacy`, `/terms`, `/support`, and `/data-deletion` — public beta
+  trust, support, and full-account deletion information
+
 - `/` — public landing page
 - `/sign-in` and `/sign-up` — Clerk authentication
 - `/app` — authenticated entry redirect

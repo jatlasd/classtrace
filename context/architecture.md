@@ -148,6 +148,12 @@ not a claim that free-text feedback is de-identified. Provider failures return
 safe teacher-facing copy and logs contain only a fixed operation prefix and safe
 failure classification.
 
+Public support and account-deletion pages direct signed-in teachers to this
+same form. Account and deletion requests use the **Account or data request**
+category so the authenticated Clerk/workspace identifiers travel through the
+existing bounded support path. The public pages do not expose the configured
+operator mailbox or add a second unauthenticated message endpoint.
+
 ## Concurrency and relational integrity
 
 Active class/student checks that protect a dependent write run inside `withSerializableTransaction`. Prisma `P2034` serialization conflicts are retried a maximum of three times; other failures are rethrown.

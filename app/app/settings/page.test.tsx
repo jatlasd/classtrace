@@ -69,4 +69,18 @@ describe("SettingsPage error reference", () => {
 
     expect(markup).toContain('data-error-reference=""');
   });
+
+  it("links signed-in teachers to privacy, terms, support, and deletion information", async () => {
+    const markup = renderToStaticMarkup(
+      await SettingsPage({
+        searchParams: Promise.resolve({}),
+      })
+    );
+
+    expect(markup).toContain('aria-label="Privacy and account information"');
+    expect(markup).toContain('href="/privacy"');
+    expect(markup).toContain('href="/terms"');
+    expect(markup).toContain('href="/support"');
+    expect(markup).toContain('href="/data-deletion"');
+  });
 });

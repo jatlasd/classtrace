@@ -76,6 +76,28 @@ File: `components/dashboard/quick-capture-card.tsx`
 - After the workspace's first successful save, one inline success panel links to the student's timeline/report and can return focus to this composer.
 - Do not turn capture into a multi-field form.
 
+## Public trust and support pages
+
+File: `components/public/public-info-page.tsx`
+
+Last updated: 2026-07-14
+
+| Property | Pattern |
+|---|---|
+| Page background | `landing-paper-texture bg-background` |
+| Reading column | Narrow article beside a numbered in-page ledger at `lg`; naturally stacked below |
+| Dividers | `border-border` / `border-border/70`; structure uses rules rather than cards |
+| Heading text | `font-display text-foreground`; 4xl/5xl page title and 2xl section titles |
+| Body text | `text-[15px] leading-7 text-muted-foreground`; strong text returns to `text-foreground` |
+| Important note | Full-width `border-y border-border bg-card/50`, no radius or shadow |
+| Action link | `min-h-11 rounded-lg border border-border bg-card`; link-color hover and visible ring |
+| Spacing | 9–11 section padding, 12 between sections, 4 between body paragraphs |
+
+These static Server Component pages share one public header/footer and one
+`main#main-content` skip-link target. Use this editorial ledger pattern for
+future policy or support information; do not turn trust content into a card
+grid, add legal-looking decoration, or introduce client JavaScript.
+
 ## Evidence record content
 
 File: `components/evidence/evidence-record-content.tsx`
