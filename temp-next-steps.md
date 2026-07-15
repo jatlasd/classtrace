@@ -266,19 +266,286 @@ database storage.
 
 ### 3. Minimal Resend Integration
 
-Use Resend only as a basic outbound support-email path.
+#### Build specification
 
-The feedback form should email the ClassTrace operator directly.
+##### Outcome
 
-Do not build:
+Replace the fail-closed `lib/feedback/feedback-delivery.ts` stub with one
+server-only Resend adapter. After Item 2 has authenticated and validated a
+report, the adapter sends one plain-text email to the configured ClassTrace
+operator. The form reports success only when Resend accepts the send request.
 
-- A support ticket database
-- Support conversation threads
-- Automated email sequences
-- Feedback analytics
-- Automatic GitHub issue creation
+This item adds the official `resend` runtime package and the minimum production
+configuration needed for that adapter. It does not add another application
+data store, delivery queue, webhook, inbound-email path, or support workflow.
+The Resend MCP may help the operator inspect or configure the Resend account,
+but it is development/operations tooling only; it is not part of the ClassTrace
+runtime and must not receive feedback submissions from application code.
 
-Feedback should be reviewed and manually sanitized before being converted into GitHub issues.
+##### Agreed language and decisions
+
+- **Resend integration** means server-only outbound email through Resend's Email
+  API. It does not include inbound email, webhooks, broadcasts, contacts,
+  templates, analytics, or automated sequences.
+- **Accepted** means the Resend API returned a successful send result with an
+  email ID. It does not mean the message reached the operator's inbox.
+- **Operator address** is one fixed server environment value and the sole `to`
+  recipient. A teacher cannot select or add recipients.
+- **From address** is one fixed server environment value on a Resend-verified
+  ClassTrace domain. Application code supplies the fixed display name
+  `ClassTrace Feedback`.
+- **Reply-To** is the teacher-entered reply email already trimmed and validated
+  by Item 2. It is the only user-controlled email header.
+- Send a plain-text body only. Do not add HTML, React Email, a Resend-hosted
+  template, attachments, or rendering dependencies.
+- Resend stores sent-message content and API request bodies by default. Treat
+  that as an explicit outbound support-data boundary, not as ClassTrace-owned
+  persistence and not as a claim that reports are de-identified.
+
+##### Email contract
+
+Call `resend.emails.send` once with exactly:
+
+- `from`: `ClassTrace Feedback <configured-from-address>`
+- `to`: the single configured operator address
+- `replyTo`: the validated payload `replyEmail`
+- `subject`: `[ClassTrace feedback] ${payload.typeLabel}`
+- `text`: a deterministic plain-text representation of the approved delivery
+  payload
+
+The subject contains only fixed text and the allowlisted category label. Do not
+put the description, reply email, route, release, browser string, Clerk user ID,
+or workspace ID in the subject, tags, custom headers, or Resend metadata.
+
+Use this body order so messages are easy to scan and tests can assert one stable
+contract:
+
+```text
+ClassTrace Help and Feedback
+
+Category: <human-readable category label>
+Reply email: <reply email>
+Submitted at: <ISO 8601 timestamp>
+Route: <pathname>
+Release: <release identifier>
+Browser/device: <bounded browser string>
+Clerk user ID: <authenticated Clerk user ID>
+Workspace ID: <authenticated workspace ID>
+
+Description:
+<trimmed teacher description>
+```
+
+Use the values already present in `FeedbackDeliveryPayload`; do not query Clerk,
+Prisma, roster students, classes, evidence records, browser storage, or request
+headers again in the adapter. Preserve the normalized description exactly. Do
+not reinterpret, summarize, sanitize, redact, or interpolate it into another
+field.
+
+Do not add CC, BCC, tags, attachments, HTML, scheduled sending, open/click
+tracking code, or custom headers. The operator manually reviews and sanitizes a
+report before creating any GitHub issue.
+
+##### Configuration and Resend account setup
+
+Add and document these required server-only environment variables:
+
+```env
+RESEND_API_KEY=re_replace_me
+CLASSTRACE_FEEDBACK_FROM_EMAIL=feedback@example.com
+CLASSTRACE_FEEDBACK_TO_EMAIL=jeremy@example.com
+```
+
+None may use a `NEXT_PUBLIC_` prefix. Treat all three as deployment secrets or
+server configuration; never return them from a Server Action or include them in
+client bundles or logs.
+
+The adapter validates configuration before making a network call:
+
+- API key is present after trimming.
+- From and operator values are each one syntactically valid email address, no
+  more than the existing 320-character account-email limit.
+- Comma-separated or otherwise multi-recipient operator configuration is
+  rejected rather than split.
+
+For the Resend account:
+
+1. Verify the domain used by `CLASSTRACE_FEEDBACK_FROM_EMAIL` before enabling
+   the form in the beta deployment.
+2. Create a dedicated API key with **Sending access**, restricted to that
+   domain where Resend permits domain restriction. Do not use a full-access
+   key.
+3. Store the key only in the local/deployment environment. Do not commit it.
+4. Configure the one operator mailbox in
+   `CLASSTRACE_FEEDBACK_TO_EMAIL` and confirm it can receive the smoke-test
+   message.
+5. Keep Resend dashboard access limited because sent emails and request logs may
+   expose the submitted description and diagnostic metadata.
+
+Update `.env.example`, the README local/deployment setup, and the environment
+contract in `context/code-standards.md`. The Resend MCP is not required in the
+production environment.
+
+##### Adapter and failure behavior
+
+Keep `FeedbackDeliveryPort` and the authenticated action unchanged. Implement
+the production port directly in `lib/feedback/feedback-delivery.ts`; do not add
+generic provider, notification, mailer, repository, or service layers.
+
+The adapter must:
+
+1. Read and validate server-only configuration.
+2. Construct the fixed subject and plain-text body.
+3. Create/use the official Resend client with `RESEND_API_KEY`.
+4. Await one `emails.send` call.
+5. Return normally only when Resend returns no error and a non-empty email ID.
+6. Otherwise throw so `submitFeedbackForWorkspace` preserves Item 2's existing
+   safe failure result and the UI retains the teacher's values.
+
+Do not pass Resend's error object or message to the client. If the adapter logs,
+log only a fixed operation prefix and one allowlisted classification such as
+`configuration`, `provider_rejected`, or `provider_unavailable`. Never log the
+request object, Resend response body, provider error message, API key, email ID,
+recipient/from address, reply email, description, route, browser string, Clerk
+user ID, workspace ID, or assembled email.
+
+Do not add automatic retry, a queue, or scheduled redelivery. Without a stable
+submission identifier across separate Server Action requests, retrying after an
+ambiguous network timeout could send duplicates. The teacher may deliberately
+retry after the UI reports failure; a duplicate operator email in that narrow
+edge case is an accepted controlled-beta risk. Resend idempotency can be added
+later only with a stable end-to-end submission identity and an explicit need.
+
+No application-level rate-limit store is added here. The authenticated,
+controlled-beta surface, the form's pending-state duplicate guard, and Resend's
+account quota bound normal use. Scripted abuse by an authenticated beta account
+remains an operational risk to monitor; do not solve it by adding a database,
+cache service, queue, or unreliable process-local limiter in this item.
+
+##### Privacy and data boundaries
+
+The only outbound values are those already approved in
+`FeedbackDeliveryPayload`: category, description, reply email, pathname,
+browser/device string, release, timestamp, Clerk user ID, and workspace ID,
+plus the fixed configured sender and recipient.
+
+The implementation must not:
+
+- Add roster, student, class, evidence, capture, cookie, IP, screen, query-string,
+  hash, screenshot, attachment, or request-body data.
+- Store the feedback or Resend email ID in PostgreSQL, browser storage, logs,
+  analytics, or a new support model.
+- Send the message to GitHub or any provider other than the configured Resend
+  account and operator mailbox.
+- Claim that privacy guidance prevents a teacher from voluntarily typing
+  student information into the free-text field.
+- Claim delivery, production safety, legal compliance, or de-identification.
+
+After the adapter is operational, update `context/project-overview.md` to list
+Help and Feedback as current Settings behavior and `context/architecture.md` to
+show this explicit flow:
+
+```text
+authenticated Settings form
+  -> validated provider-neutral feedback payload
+    -> server-only Resend adapter
+      -> Resend email/log systems
+        -> configured ClassTrace operator mailbox
+```
+
+The architecture document must state that ClassTrace does not persist the
+report in its own database, while Resend and the operator mailbox retain/process
+the email under their own operational settings.
+
+##### Implementation shape
+
+1. Add the current supported `resend` package to `dependencies` and commit the
+   lockfile change. Do not add React Email or another email package.
+2. Replace the `feedbackDelivery` stub in
+   `lib/feedback/feedback-delivery.ts` with the server-only adapter, small
+   configuration validator, deterministic text formatter, and safe provider
+   failure classification.
+3. Keep `actions/feedback.ts`, `FeedbackDeliveryPort`,
+   `FeedbackDeliveryPayload`, and the form submission contract stable unless a
+   test exposes a concrete defect. No route revalidation is needed.
+4. Add focused adapter tests beside the module using a mocked Resend client; no
+   normal test may call the network or send a real email.
+5. Update `.env.example`, README, and the three current-state context documents
+   identified above. Do not create another completion record or integration
+   guide.
+6. Configure Resend outside the codebase, deploy with all three environment
+   values, and complete one sanitized end-to-end smoke test before inviting
+   beta teachers.
+
+##### Required tests
+
+- Configuration tests cover missing/blank API key, missing/invalid sender,
+  missing/invalid operator address, over-limit addresses, and attempted
+  multi-recipient configuration. Invalid configuration must not construct a
+  send request.
+- Formatter tests assert the fixed subject, exact field order, plain-text-only
+  body, normalized description preservation, and absence of HTML, attachments,
+  CC/BCC, tags, custom headers, or extra metadata.
+- Adapter tests assert the configured from/to values, validated reply-to value,
+  and exactly one `emails.send` call for a valid payload.
+- Success tests require a non-empty Resend email ID and no returned error.
+- Failure tests cover a returned Resend error, a thrown SDK/network error, and a
+  malformed success response. Each must reject through the delivery port so the
+  existing domain/action result remains unsuccessful.
+- Logging tests prove only the fixed prefix and safe classification may be
+  emitted. Use sentinel sensitive values and assert none appear in logged
+  arguments; do not log the provider error message.
+- Existing domain/action/component tests continue to prove authentication,
+  payload bounds, failure value preservation, duplicate-submit prevention, and
+  non-optimistic success.
+- A build/config test or direct review confirms the API key and address variables
+  are server-only and the `resend` package is absent from client output. Do not
+  use brittle source-spelling assertions when module behavior or the production
+  build proves the boundary.
+
+Before completion, run:
+
+```bash
+npm run lint
+npm run test
+npm run build
+```
+
+No Prisma migration or `npm run test:db` is required because the integration
+adds no application-owned persistence.
+
+The pre-beta operational check must then submit one sanitized report through a
+deployment configured like production and confirm:
+
+- The operator mailbox receives the expected plain-text message.
+- Reply targets the submitted reply email.
+- The form shows success only after Resend acceptance.
+- In an automated test or disposable preview deployment, deliberately invalid
+  or missing configuration shows the safe failure state and retains the entered
+  values. Do not break the beta deployment to exercise this case.
+- Resend and Vercel logs contain no application-emitted feedback payload dump.
+
+Do not run this smoke test in the normal automated suite, and never use real
+student information in it.
+
+##### Acceptance criteria
+
+- Each valid authenticated feedback action attempt produces exactly one Resend
+  send request to the configured operator with the fixed sender and teacher
+  reply-to.
+- The operator email contains the complete approved provider-neutral payload in
+  the documented plain-text format and no additional application data.
+- The UI reports success only after Resend returns an accepted email ID; config,
+  provider, network, or malformed-response failures remain safe failures.
+- No Resend secret or provider detail reaches client code, user-facing errors,
+  application logs, PostgreSQL, or browser storage.
+- Resend's message-content retention and the operator-mailbox boundary are
+  described honestly in current-state architecture documentation.
+- The Resend API key has sending-only access, the from domain is verified, and a
+  sanitized deployed smoke test reaches the operator before beta use.
+- The change adds no ticket database, support threads, inbound email, webhooks,
+  contacts, broadcasts, templates, sequences, analytics, automatic retries,
+  attachments, or automatic GitHub issue creation.
 
 ### 4. App-Wide Error Handling
 

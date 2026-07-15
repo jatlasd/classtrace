@@ -12,7 +12,9 @@ browser
         → Prisma → PostgreSQL
 ```
 
-There is no separate API service, job queue, analytics pipeline, file service, AI service, or shared district identity layer.
+There is no separate API service, job queue, analytics pipeline, file service,
+AI service, or shared district identity layer. The one narrow external delivery
+path is Settings feedback sent through Resend to the configured operator.
 
 ## Ownership model
 
@@ -121,6 +123,30 @@ Legacy structured records may have a null Evidence note. The UI labels them hone
 - Revalidate affected routes after success.
 - Log contextual operation failures without logging raw notes or sensitive input.
 
+## Outbound support feedback boundary
+
+```text
+authenticated Settings form
+  -> validated provider-neutral feedback payload
+    -> server-only Resend adapter
+      -> Resend email/log systems
+        -> configured ClassTrace operator mailbox
+```
+
+The form sends only the teacher-selected category, teacher-entered description
+and reply email, pathname, bounded browser/device string, release, server
+timestamp, and authenticated Clerk/workspace IDs. It does not query or attach
+roster, class, evidence, capture, cookie, IP, query-string, screenshot, or file
+data.
+
+ClassTrace does not persist feedback or the Resend email ID in PostgreSQL,
+browser storage, analytics, or application logs. Resend and the operator mailbox
+process and may retain the submitted email under their own operational settings.
+The UI warns teachers not to include student information, but that guidance is
+not a claim that free-text feedback is de-identified. Provider failures return
+safe teacher-facing copy and logs contain only a fixed operation prefix and safe
+failure classification.
+
 ## Concurrency and relational integrity
 
 Active class/student checks that protect a dependent write run inside `withSerializableTransaction`. Prisma `P2034` serialization conflicts are retried a maximum of three times; other failures are rethrown.
@@ -170,6 +196,8 @@ These limits protect resource usage and database hygiene; they are not substitut
 ## Deployment contract
 
 - Runtime/development database variable: `DATABASE_URL`.
+- Outbound support variables: `RESEND_API_KEY`,
+  `CLASSTRACE_FEEDBACK_FROM_EMAIL`, and `CLASSTRACE_FEEDBACK_TO_EMAIL`.
 - Production migration command: `npm run db:migrate:deploy`.
 - Development migration command: `npm run db:migrate`.
 - Migrations run before the new application version starts.

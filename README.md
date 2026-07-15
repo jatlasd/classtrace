@@ -26,6 +26,7 @@ ClassTrace is not a gradebook, SIS, IEP writer, parent communication tool, admin
 - TypeScript and Tailwind CSS
 - Clerk authentication
 - Prisma 7 with PostgreSQL (Neon in hosted environments)
+- Resend for outbound beta-support email
 - Vitest and Testing Library
 
 ## Local setup
@@ -36,6 +37,7 @@ Prerequisites:
 - npm
 - A PostgreSQL database
 - A Clerk application
+- A Resend account and API key
 
 Install dependencies:
 
@@ -49,6 +51,9 @@ Copy `.env.example` to `.env.local` and set:
 NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_replace_me
 CLERK_SECRET_KEY=sk_test_replace_me
 CLASSTRACE_OPERATOR_CLERK_USER_IDS=user_replace_me
+RESEND_API_KEY=re_replace_me
+CLASSTRACE_FEEDBACK_FROM_EMAIL=onboarding@resend.dev
+CLASSTRACE_FEEDBACK_TO_EMAIL=your-resend-account-email@example.com
 NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
 NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
 NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL=/app
@@ -64,6 +69,12 @@ npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000).
+
+This development configuration sends from
+`ClassTrace <onboarding@resend.dev>` only to the email associated with the
+Resend account. A valid contact email entered in the feedback form is used as
+the message's reply-to address; it never replaces the configured sender or
+recipient.
 
 ## Commands
 
@@ -103,6 +114,12 @@ Open [http://localhost:3000](http://localhost:3000).
 - Raw capture text is not stored in the database, exports, timelines, reports, or logs.
 - Captured but unvalidated drafts may use workspace-scoped, versioned `sessionStorage` until validation, deletion, or the next device-local midnight.
 - Parsing is deterministic and does not call an AI service.
+- A teacher can intentionally send a bounded Help and Feedback report from
+  Settings. ClassTrace does not store the report in PostgreSQL or browser
+  storage; it is sent through Resend to the configured operator mailbox.
+- Resend and the operator mailbox process and may retain that submitted report.
+  The form warns teachers not to include student information, but free-text
+  feedback is not claimed to be de-identified.
 
 These are engineering boundaries, not a claim of FERPA compliance or district approval.
 
@@ -120,7 +137,32 @@ Start with [context/README.md](context/README.md). AI coding agents should also 
 
 ## Deployment
 
-Set the same required Clerk variables and `DATABASE_URL` in the deployment environment. Apply migrations before starting the new application version:
+Add these server-only variables to Vercel for Development and Preview:
+
+```env
+RESEND_API_KEY=<your Resend API key>
+CLASSTRACE_FEEDBACK_FROM_EMAIL=onboarding@resend.dev
+CLASSTRACE_FEEDBACK_TO_EMAIL=<email associated with your Resend account>
+```
+
+The same `onboarding@resend.dev` configuration can be used in Vercel only while
+feedback is sent to the email associated with the Resend account. Do not prefix
+these variables with `NEXT_PUBLIC_`; they must remain server-only.
+
+Before enabling production delivery to arbitrary recipients:
+
+1. Own and verify a custom sending domain in Resend. No custom domain is
+   currently assumed or configured by this repository.
+2. Set `CLASSTRACE_FEEDBACK_FROM_EMAIL` in Vercel's Production environment to
+   an address on that verified domain, such as `feedback@a-custom-domain`.
+3. Use a sending-only Resend API key restricted to the verified domain and set
+   it as `RESEND_API_KEY` in Vercel's Production environment.
+4. Set `CLASSTRACE_FEEDBACK_TO_EMAIL` to the single operator mailbox that should
+   receive feedback, then send a smoke test and confirm reply-to behavior.
+
+Set the required Clerk, operator, Resend, and `DATABASE_URL` variables in each
+applicable Vercel environment. Apply migrations before starting the new
+application version:
 
 ```bash
 npm run db:migrate:deploy

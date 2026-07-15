@@ -21,6 +21,7 @@
 | `lib/evidence/` | Evidence validation, persistence, read models, export |
 | `lib/students/`, `lib/classes/` | Roster/class domain behavior and data access |
 | `lib/import/` | Roster import parsing, preview, and save |
+| `lib/feedback/` | Privacy-bounded feedback validation and outbound delivery |
 | `lib/validation/` | Shared server-boundary limits |
 | `prisma/` | Schema and forward-only migrations |
 
@@ -122,7 +123,9 @@ Use `npm run test:coverage` to find weak areas. Current global minimums are guar
 - Do not apply blind `npm audit fix --force` changes.
 - No analytics, AI, upload, queue, billing, or external integration dependencies without an approved product decision.
 
-Required runtime environment variables are documented in `.env.example` and README. `DATABASE_URL` is the only application/migration database variable currently consumed.
+Required runtime environment variables are documented in `.env.example` and
+README. Database access consumes `DATABASE_URL`; outbound support feedback uses
+the server-only Resend key, fixed sender, and fixed operator recipient variables.
 
 ## Documentation workflow
 
