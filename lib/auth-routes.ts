@@ -5,6 +5,11 @@ export const clerkSignUpUrl = routes.signUp;
 export const clerkAfterSignInUrl = routes.app;
 export const clerkAfterSignUpUrl = routes.app;
 export const protectedAppRoutePatterns = [routes.app, `${routes.app}/(.*)`] as const;
+export const protectedRoutePatterns = [
+  ...protectedAppRoutePatterns,
+  routes.operator,
+  `${routes.operator}/(.*)`,
+] as const;
 
 export function isProtectedAppPath(pathname: string): boolean {
   return pathname === routes.app || pathname.startsWith(`${routes.app}/`);

@@ -11,6 +11,7 @@ describe("routes", () => {
     expect(routes.student("jeremy")).toBe("/app/students/jeremy");
     expect(routes.studentReport("jeremy")).toBe("/app/students/jeremy/report");
     expect(routes.settings).toBe("/app/settings");
+    expect(routes.operator).toBe("/operator");
     expect(routes.signIn).toBe("/sign-in");
     expect(routes.signUp).toBe("/sign-up");
   });

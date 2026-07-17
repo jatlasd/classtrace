@@ -21,6 +21,8 @@
 | `lib/evidence/` | Evidence validation, persistence, read models, export |
 | `lib/students/`, `lib/classes/` | Roster/class domain behavior and data access |
 | `lib/import/` | Roster import parsing, preview, and save |
+| `lib/feedback/` | Privacy-bounded feedback validation and outbound delivery |
+| `lib/errors/` | Opaque unexpected-error reference formatting and validation |
 | `lib/validation/` | Shared server-boundary limits |
 | `prisma/` | Schema and forward-only migrations |
 
@@ -69,6 +71,7 @@ Never accept or trust a client-provided user/workspace ID. Do not place domain r
 - Use same-workspace foreign keys for relational defense in depth.
 - Use `withSerializableTransaction` for active-state check/write sequences that can race.
 - Keep migrations forward-only, reviewable, and explicit. Do not silently rewrite ownership drift or fabricate evidence/class assignments.
+- Treat the standalone operator audit model as the one approved administration-related schema exception. Update the schema-shape test alongside it rather than weakening or routing around the no-admin-model guardrail.
 - Use `npm run db:migrate` only for development and `npm run db:migrate:deploy` for committed deployment migrations.
 
 ## Input and evidence rules
@@ -121,7 +124,9 @@ Use `npm run test:coverage` to find weak areas. Current global minimums are guar
 - Do not apply blind `npm audit fix --force` changes.
 - No analytics, AI, upload, queue, billing, or external integration dependencies without an approved product decision.
 
-Required runtime environment variables are documented in `.env.example` and README. `DATABASE_URL` is the only application/migration database variable currently consumed.
+Required runtime environment variables are documented in `.env.example` and
+README. Database access consumes `DATABASE_URL`; outbound support feedback uses
+the server-only Resend key, fixed sender, and fixed operator recipient variables.
 
 ## Documentation workflow
 

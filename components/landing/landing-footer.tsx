@@ -14,8 +14,32 @@ export function LandingFooter() {
         </div>
         <nav
           aria-label="Footer"
-          className="flex flex-wrap items-center gap-x-8 gap-y-2"
+          className="flex max-w-2xl flex-wrap items-center gap-x-6 gap-y-2"
         >
+          <Link
+            href={routes.privacy}
+            className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+          >
+            Privacy
+          </Link>
+          <Link
+            href={routes.terms}
+            className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+          >
+            Beta terms
+          </Link>
+          <Link
+            href={routes.support}
+            className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+          >
+            Support
+          </Link>
+          <Link
+            href={routes.dataDeletion}
+            className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+          >
+            Account deletion
+          </Link>
           <Link
             href={routes.signIn}
             className="text-sm font-medium text-foreground/80 transition-colors hover:text-foreground"

@@ -63,6 +63,7 @@ type SettingsPageDependencies = {
 export type SettingsPageData = {
   accountName: string;
   accountEmail: string;
+  replyEmail: string;
   teacherDisplayName: string;
   workspaceName: string;
 };
@@ -101,6 +102,10 @@ function getAccountEmail(user: ClerkAccountUser | null): string {
   return normalizedText(user?.primaryEmailAddress?.emailAddress) || "Email unavailable";
 }
 
+function getReplyEmail(user: ClerkAccountUser | null): string {
+  return normalizedText(user?.primaryEmailAddress?.emailAddress);
+}
+
 export async function getSettingsPageData(
   dependencies: SettingsPageDependencies = {
     resolveWorkspace: getCurrentWorkspace,
@@ -136,6 +141,7 @@ export async function getSettingsPageData(
   return {
     accountName: getAccountName(user),
     accountEmail: getAccountEmail(user),
+    replyEmail: getReplyEmail(user),
     teacherDisplayName:
       normalizedText(teacherProfile?.displayName) || "Teacher",
     workspaceName:
