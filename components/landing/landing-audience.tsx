@@ -1,12 +1,13 @@
 import { Reveal } from "@/components/landing/scroll-motion";
+import Image from "next/image";
 
 const roles = [
-  { label: "Special education teachers", color: "bg-audience-blue" },
-  { label: "Case managers", color: "bg-audience-gold" },
-  { label: "Interventionists", color: "bg-validated" },
-  { label: "Resource teachers", color: "bg-audience-rose" },
-  { label: "Co-teachers", color: "bg-audience-lavender" },
-  { label: "Teachers drowning in documentation", color: "bg-audience-tan" },
+  { label: "Special education teachers", asset: "blue" },
+  { label: "Case managers", asset: "gold" },
+  { label: "Interventionists", asset: "sage" },
+  { label: "Resource teachers", asset: "rose" },
+  { label: "Co-teachers", asset: "lavender" },
+  { label: "Teachers drowning in documentation", asset: "tan" },
 ];
 
 export function LandingAudience() {
@@ -23,14 +24,22 @@ export function LandingAudience() {
               from="translate-y-5 scale-95"
               className={`relative ${index % 2 === 0 ? "-rotate-1" : "rotate-1"}`}
             >
-              <span
-                aria-hidden="true"
-                className="tape-tab absolute -top-2.5 left-1/2 h-4 w-9 -translate-x-1/2 rotate-2 rounded-[2px]"
-              />
-              <span
-                className={`font-hand inline-block rounded-sm px-5 py-2 text-lg text-foreground shadow-paper ${role.color}`}
-              >
-                {role.label}
+              <span className="font-hand relative isolate inline-flex min-h-12 items-center px-6 py-2 text-lg text-foreground">
+                <Image
+                  src={`/svg/landing/paper-label-${role.asset}.svg?v=2`}
+                  alt=""
+                  fill
+                  sizes="300px"
+                  className="-z-10 object-fill"
+                />
+                <Image
+                  src="/svg/landing/tape-strip.svg?v=2"
+                  alt=""
+                  width={48}
+                  height={17}
+                  className="absolute -top-2 left-1/2 h-4 w-12 -translate-x-1/2 rotate-2"
+                />
+                <span className="relative">{role.label}</span>
               </span>
             </Reveal>
           </li>

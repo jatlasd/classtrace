@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 230" fill="none" preserveAspectRatio="none">
+  <defs>
+    <linearGradient id="paper" x1="44" y1="10" x2="772" y2="206" gradientUnits="userSpaceOnUse"><stop stop-color="#F0D27E"/><stop offset=".48" stop-color="#E8C66F"/><stop offset="1" stop-color="#D9B45F"/></linearGradient>
+    <linearGradient id="bottomCurl" x1="410" y1="153" x2="412" y2="201" gradientUnits="userSpaceOnUse"><stop stop-color="#FFF0B4" stop-opacity="0"/><stop offset=".72" stop-color="#A47A32" stop-opacity=".055"/><stop offset="1" stop-color="#6D4B1B" stop-opacity=".09"/></linearGradient>
+    <filter id="shadow" x="0" y="0" width="820" height="230" filterUnits="userSpaceOnUse"><feDropShadow dx="1.5" dy="8" stdDeviation="6.5" flood-color="#362A1B" flood-opacity=".23"/></filter>
+    <filter id="grain"><feTurbulence type="fractalNoise" baseFrequency=".58" numOctaves="4" seed="17"/><feColorMatrix values=".2 0 0 0 .68 0 .18 0 0 .55 0 0 .12 0 .3 0 0 0 .12 0"/></filter>
+    <clipPath id="clip"><path d="M16 19C105 16 202 20 292 16C402 11 510 17 616 14C680 12 741 15 803 11L806 191C723 195 639 191 556 195C444 200 334 195 225 199C153 201 82 197 19 202L16 19Z"/></clipPath>
+  </defs>
+  <g filter="url(#shadow)">
+    <path d="M16 19C105 16 202 20 292 16C402 11 510 17 616 14C680 12 741 15 803 11L806 191C723 195 639 191 556 195C444 200 334 195 225 199C153 201 82 197 19 202L16 19Z" fill="url(#paper)"/>
+    <g clip-path="url(#clip)">
+      <rect x="10" y="7" width="802" height="201" filter="url(#grain)" opacity=".22"/>
+      <path d="M-10 67H830M-10 103H830M-10 139H830M-10 175H830" stroke="#705B38" stroke-opacity=".18"/>
+      <path d="M3 145C111 154 216 145 319 153C421 161 528 147 631 154C697 158 759 153 818 145V215H3V145Z" fill="url(#bottomCurl)"/>
+      <path d="M266 16C272 63 267 116 274 167C276 181 281 191 287 198" stroke="#765A27" stroke-opacity=".055" stroke-width="8"/>
+      <path d="M618 14C612 64 619 121 614 194" stroke="#FFF0BC" stroke-opacity=".09" stroke-width="10"/>
+    </g>
+    <path d="M16 19C105 16 202 20 292 16C402 11 510 17 616 14C680 12 741 15 803 11M19 202C82 197 153 201 225 199C334 195 444 200 556 195C639 191 723 195 806 191" stroke="#B48D47" stroke-opacity=".52"/>
+  </g>
+</svg>

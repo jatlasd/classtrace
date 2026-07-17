@@ -6,10 +6,12 @@ import {
   PenLine,
   Users,
 } from "lucide-react";
+import Image from "next/image";
 import type { ReactNode } from "react";
 import {
   ArtChip,
   EVIDENCE_NOTE_TEXT,
+  RAW_NOTE_TEXT,
   REVIEW_FIELDS,
 } from "@/components/landing/story-artifacts";
 
@@ -105,9 +107,6 @@ function TimelineEntry({
   );
 }
 
-const RULED_LINES_CLASS =
-  "pointer-events-none absolute inset-0 transition-opacity duration-700 [background-image:repeating-linear-gradient(to_bottom,transparent,transparent_31px,color-mix(in_srgb,var(--foreground)_16%,transparent)_31px,color-mix(in_srgb,var(--foreground)_16%,transparent)_32px)]";
-
 export function EvolvingCard({ phase }: { phase: number }) {
   const isNote = phase === 0;
   const isComposer = phase === 1;
@@ -178,17 +177,27 @@ export function EvolvingCard({ phase }: { phase: number }) {
       <div
         className={`relative my-0 w-full border transition-[background-color,border-color,border-radius,transform,margin] duration-700 ${EASE} ${
           isNote
-            ? "-rotate-2 rounded-sm border-accent-foreground/10 bg-accent/60 shadow-floating"
+            ? "-rotate-2 rounded-sm border-transparent bg-transparent"
             : "rotate-0 rounded-card border-border bg-card shadow-floating"
         } ${isFiled ? "my-2 scale-[0.985] border-validated/60" : ""}`}
       >
-        <span
-          className={`tape-tab absolute -top-3 left-1/2 h-6 w-20 -translate-x-1/2 rotate-1 rounded-sm transition-opacity duration-500 ${
+        <Image
+          src="/svg/landing/ruled-teacher-note.svg?v=4"
+          alt=""
+          fill
+          sizes="(max-width: 768px) 90vw, 576px"
+          className={`object-fill transition-opacity duration-500 ${
             isNote ? "opacity-100" : "opacity-0"
           }`}
         />
-        <span
-          className={`${RULED_LINES_CLASS} ${isNote ? "opacity-60" : "opacity-0"}`}
+        <Image
+          src="/svg/landing/tape-strip.svg?v=2"
+          alt=""
+          width={96}
+          height={34}
+          className={`absolute -top-3 left-1/2 h-7 w-24 -translate-x-1/2 rotate-1 transition-opacity duration-500 ${
+            isNote ? "opacity-100" : "opacity-0"
+          }`}
         />
 
         <Collapse open={isComposer}>
@@ -239,13 +248,8 @@ export function EvolvingCard({ phase }: { phase: number }) {
 
         <div className={`relative px-5 transition-[padding] duration-700 ${isNote ? "py-5" : "py-4"}`}>
           <Collapse open={isNote}>
-            <p className="font-hand text-lg leading-8 text-foreground/75">
-              Tuesday, 11:42 AM — between classes
-            </p>
-            <p className="font-hand mt-1 pb-1 text-2xl leading-8 text-foreground">
-              <span className="text-primary">@stacy</span> used her calm-down
-              strategy on her own during the math transition!! first time
-              unprompted <span className="text-link">#strategy #independence</span>
+            <p className="font-hand py-2 text-[2rem] font-medium leading-tight tracking-[0.01em] text-foreground/90">
+              {RAW_NOTE_TEXT}
             </p>
           </Collapse>
 

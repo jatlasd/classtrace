@@ -23,7 +23,7 @@ export function LandingHero() {
           depth={-34}
           className="absolute right-[4%] top-36 xl:right-[8%]"
         >
-          <StickyScrap className="relative rotate-3" color="bg-audience-blue">
+          <StickyScrap className="relative rotate-3" variant="blue">
             IEP meeting moved to Thursday
           </StickyScrap>
         </ParallaxDrift>
@@ -31,7 +31,7 @@ export function LandingHero() {
           depth={-70}
           className="absolute right-[10%] top-[26rem] xl:right-[14%]"
         >
-          <StickyScrap className="relative -rotate-2" color="bg-audience-rose">
+          <StickyScrap className="relative -rotate-2" variant="rose">
             &ldquo;can you show growth over time?&rdquo;
           </StickyScrap>
         </ParallaxDrift>

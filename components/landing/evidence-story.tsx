@@ -32,7 +32,7 @@ const phases: StoryPhase[] = [
     id: "capture",
     step: "Capture",
     title: "The note becomes a capture.",
-    body: "Same words, no form. Mention one student with @, add #tags if you want, and the moment is in before the bell finishes ringing.",
+    body: "You add the detail while it’s still fresh — no form. Mention one student with @, add #tags if you want, and the moment is in before the bell finishes ringing.",
   },
   {
     id: "review",
@@ -142,7 +142,7 @@ const scenery: SceneryItem[] = [
     visibleUntil: 0,
     className: "bottom-[18%] left-[26%]",
     node: (
-      <StickyScrap color="bg-audience-rose" className="relative -rotate-6">
+      <StickyScrap variant="rose" className="relative -rotate-6">
         where&apos;s Stacy&apos;s folder??
       </StickyScrap>
     ),
@@ -161,7 +161,7 @@ const scenery: SceneryItem[] = [
     visibleUntil: 1,
     className: "left-[28%] top-[16%]",
     node: (
-      <StickyScrap color="bg-audience-blue" className="relative rotate-2">
+      <StickyScrap variant="blue" className="relative rotate-2">
         no form. no dropdowns.
       </StickyScrap>
     ),

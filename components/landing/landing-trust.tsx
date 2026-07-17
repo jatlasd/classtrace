@@ -1,4 +1,5 @@
 import { Reveal } from "@/components/landing/scroll-motion";
+import Image from "next/image";
 
 const promises = [
   {
@@ -42,11 +43,14 @@ export function LandingTrust() {
               <Reveal
                 delay={index * 110}
                 from="translate-y-4 scale-90"
-                className={`relative ${index % 2 === 0 ? "-rotate-1" : "rotate-1"} bg-audience-tan px-5 py-2.5 shadow-paper`}
+                className={`relative isolate ${index % 2 === 0 ? "-rotate-1" : "rotate-1"} px-6 py-3`}
               >
-                <span
-                  aria-hidden="true"
-                  className="pointer-events-none absolute inset-0 [background-image:linear-gradient(to_top_right,transparent_48.75%,var(--destructive)_48.75%,var(--destructive)_51.25%,transparent_51.25%),linear-gradient(to_bottom_right,transparent_48.75%,var(--destructive)_48.75%,var(--destructive)_51.25%,transparent_51.25%)] opacity-60"
+                <Image
+                  src="/svg/landing/crossed-paper-slip.svg?v=2"
+                  alt=""
+                  fill
+                  sizes="240px"
+                  className="-z-10 object-fill"
                 />
                 <span className="font-hand relative text-lg text-foreground">
                   {item}

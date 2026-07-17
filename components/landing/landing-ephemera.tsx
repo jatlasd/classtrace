@@ -47,8 +47,16 @@ export function TapeStrip({ className = "" }: { className?: string }) {
   return (
     <span
       aria-hidden="true"
-      className={`tape-tab pointer-events-none absolute h-5 w-16 rounded-[2px] ${className}`}
-    />
+      className={`pointer-events-none absolute h-6 w-20 ${className}`}
+    >
+      <Image
+        src="/svg/landing/tape-strip.svg?v=2"
+        alt=""
+        fill
+        sizes="80px"
+        className="object-fill"
+      />
+    </span>
   );
 }
 
@@ -56,13 +64,20 @@ export function IndexCard({ className = "" }: { className?: string }) {
   return (
     <div
       aria-hidden="true"
-      className={`pointer-events-none relative w-52 rounded-sm border border-border/70 bg-card px-4 pb-4 pt-3 shadow-paper ${className}`}
+      className={`pointer-events-none relative isolate min-h-40 w-56 px-6 pb-6 pt-5 ${className}`}
     >
-      <TapeStrip className="-top-2.5 left-1/2 -translate-x-1/2 rotate-2" />
-      <p className="font-hand border-b border-destructive/25 pb-1 text-lg leading-snug text-foreground/85">
+      <Image
+        src="/svg/landing/index-card-paper.svg?v=2"
+        alt=""
+        fill
+        sizes="224px"
+        className="-z-10 object-fill"
+      />
+      <TapeStrip className="-top-3 left-1/2 -translate-x-1/2 rotate-2" />
+      <p className="font-hand border-b border-destructive/25 pb-1 pl-2 text-lg leading-snug text-foreground/85">
         before I forget —
       </p>
-      <ul className="font-hand mt-1.5 space-y-0.5 text-base leading-snug text-foreground/70">
+      <ul className="font-hand mt-1.5 space-y-0.5 pl-2 text-[15px] leading-snug text-foreground/70">
         <li>
           <span className="text-validated-foreground">✓</span> jeremy — reading
           conf.
@@ -79,19 +94,26 @@ export function IndexCard({ className = "" }: { className?: string }) {
 
 export function StickyScrap({
   className = "",
-  color = "bg-audience-gold",
+  variant = "blue",
   children,
 }: {
   className?: string;
-  color?: string;
+  variant?: "blue" | "rose";
   children: React.ReactNode;
 }) {
   return (
     <div
       aria-hidden="true"
-      className={`pointer-events-none relative w-40 px-4 pb-4 pt-3 shadow-paper ${color} ${className}`}
+      className={`pointer-events-none relative isolate min-h-32 w-44 px-5 pb-6 pt-5 ${className}`}
     >
-      <p className="font-hand text-lg leading-snug text-foreground/85">
+      <Image
+        src={`/svg/landing/sticky-${variant}-paper.svg?v=2`}
+        alt=""
+        fill
+        sizes="176px"
+        className="-z-10 object-fill"
+      />
+      <p className="font-hand relative break-words text-base leading-[1.2] text-foreground/85">
         {children}
       </p>
     </div>

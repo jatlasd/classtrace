@@ -1,11 +1,11 @@
 import { AtSign, CheckCircle2, ClipboardCheck, Hash } from "lucide-react";
+import Image from "next/image";
 import type { ReactNode } from "react";
-
-const RULED_LINES_CLASS =
-  "pointer-events-none absolute inset-0 opacity-60 [background-image:repeating-linear-gradient(to_bottom,transparent,transparent_31px,color-mix(in_srgb,var(--foreground)_16%,transparent)_31px,color-mix(in_srgb,var(--foreground)_16%,transparent)_32px)]";
 
 export const EVIDENCE_NOTE_TEXT =
   "Used her calm-down strategy independently during the math transition — first observed unprompted use.";
+
+export const RAW_NOTE_TEXT = "stacy used her calm down strategy";
 
 export function ArtChip({
   children,
@@ -35,20 +35,24 @@ export function ArtChip({
 export function RawNoteArt({ className = "" }: { className?: string }) {
   return (
     <figure
-      className={`relative -rotate-2 rounded-sm border border-accent-foreground/10 bg-accent/60 px-6 pb-7 pt-5 shadow-floating ${className}`}
+      className={`relative isolate mx-auto w-full max-w-[34rem] -rotate-2 px-9 pb-9 pt-8 sm:px-10 ${className}`}
     >
-      <span
-        aria-hidden="true"
-        className="tape-tab absolute -top-3 left-1/2 h-6 w-20 -translate-x-1/2 rotate-1 rounded-sm"
+      <Image
+        src="/svg/landing/ruled-teacher-note.svg?v=4"
+        alt=""
+        fill
+        sizes="(max-width: 768px) 90vw, 544px"
+        className="-z-10 object-fill"
       />
-      <span aria-hidden="true" className={RULED_LINES_CLASS} />
-      <p className="font-hand relative text-lg leading-8 text-foreground/75">
-        Tuesday, 11:42 AM — between classes
-      </p>
-      <p className="font-hand relative mt-1 text-2xl leading-8 text-foreground">
-        <span className="text-primary">@stacy</span> used her calm-down
-        strategy on her own during the math transition!! first time unprompted{" "}
-        <span className="text-link">#strategy #independence</span>
+      <Image
+        src="/svg/landing/tape-strip.svg?v=2"
+        alt=""
+        width={96}
+        height={34}
+        className="absolute -top-3 left-1/2 h-7 w-24 -translate-x-1/2 rotate-1"
+      />
+      <p className="font-hand relative py-1 text-[1.9rem] font-medium leading-[1.05] tracking-[0.01em] text-foreground/90 sm:text-[2.15rem]">
+        {RAW_NOTE_TEXT}
       </p>
     </figure>
   );
