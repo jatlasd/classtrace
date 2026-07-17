@@ -1,5 +1,9 @@
 export const routes = {
   root: "/",
+  privacy: "/privacy",
+  terms: "/terms",
+  support: "/support",
+  dataDeletion: "/data-deletion",
   app: "/app",
   feed: "/app/feed",
   roster: "/app/roster",
@@ -8,6 +12,7 @@ export const routes = {
   studentReport: (studentId: string): string =>
     `/app/students/${studentId}/report`,
   settings: "/app/settings",
+  operator: "/operator",
   signIn: "/sign-in",
   signUp: "/sign-up",
 } as const;

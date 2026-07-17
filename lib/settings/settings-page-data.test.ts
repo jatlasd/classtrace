@@ -91,6 +91,7 @@ describe("getSettingsPageData", () => {
     expect(result).toEqual({
       accountName: "Mary Teacher",
       accountEmail: "mary@example.test",
+      replyEmail: "mary@example.test",
       teacherDisplayName: "Reading Teacher",
       workspaceName: "Personal workspace",
     });
@@ -124,6 +125,7 @@ describe("getSettingsPageData", () => {
     expect(result).toEqual({
       accountName: "Name unavailable",
       accountEmail: "Email unavailable",
+      replyEmail: "",
       teacherDisplayName: "Teacher",
       workspaceName: "Personal workspace",
     });

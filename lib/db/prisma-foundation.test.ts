@@ -21,12 +21,44 @@ const workspaceIntegrityMigrationPath = join(
   "20260712000000_enforce_workspace_relation_integrity",
   "migration.sql"
 );
+const operatorAuditMigrationPath = join(
+  projectRoot,
+  "prisma",
+  "migrations",
+  "20260714000000_add_operator_action_audit",
+  "migration.sql"
+);
 
 const schema = readFileSync(schemaPath, "utf8");
 const envExample = readFileSync(envExamplePath, "utf8");
 const packageJson = JSON.parse(readFileSync(packageJsonPath, "utf8")) as {
   scripts?: Record<string, string>;
 };
+
+function getPrismaModelFields(modelName: string): string[] {
+  const model = schema.match(
+    new RegExp(`model ${modelName} \\{([\\s\\S]*?)\\n\\}`)
+  )?.[1];
+  if (!model) return [];
+
+  return model
+    .split("\n")
+    .map((line) => line.trim())
+    .filter((line) => line && !line.startsWith("@@"))
+    .map((line) => line.split(/\s+/).slice(0, 2).join(" "));
+}
+
+function getMigrationColumns(migration: string): string[] {
+  const table = migration.match(
+    /CREATE TABLE "OperatorActionAudit" \(([\s\S]*?)\n\);/
+  )?.[1];
+  if (!table) return [];
+
+  return table
+    .split("\n")
+    .map((line) => line.trim().replace(/,$/, ""))
+    .filter((line) => line.startsWith('"'));
+}
 
 describe("Prisma database foundation", () => {
   it("defines V1 ownership models and relations", () => {
@@ -82,6 +114,56 @@ describe("Prisma database foundation", () => {
   });
   it("does not add out-of-scope V1 models", () => {
     expect(schema).not.toMatch(/\b(model|enum)\s+(Organization|District|Admin|Membership|File|Attachment|Ai|AI|Embedding|Billing|Subscription|Sis|SIS)\b/);
+  });
+
+  it("defines the approved standalone operator audit without student data", () => {
+    expect(existsSync(operatorAuditMigrationPath)).toBe(true);
+
+    const migration = readFileSync(operatorAuditMigrationPath, "utf8");
+
+    expect(getPrismaModelFields("OperatorActionAudit")).toEqual([
+      "id String",
+      "operatorClerkUserId String",
+      "targetClerkUserId String",
+      "action OperatorAuditAction",
+      "outcome OperatorAuditOutcome",
+      "classGroupCount Int",
+      "rosterStudentCount Int",
+      "evidenceRecordCount Int",
+      "createdAt DateTime",
+      "completedAt DateTime?",
+    ]);
+    expect(schema.match(/enum OperatorAuditAction \{([\s\S]*?)\n\}/)?.[1])
+      .toMatch(/WORKSPACE_DATA_DELETE\s+CLERK_USER_DELETE/);
+    expect(schema.match(/enum OperatorAuditOutcome \{([\s\S]*?)\n\}/)?.[1])
+      .toMatch(/STARTED\s+SUCCEEDED\s+FAILED/);
+    expect(migration).toContain('CREATE TABLE "OperatorActionAudit"');
+    expect(getMigrationColumns(migration)).toEqual([
+      '"id" TEXT NOT NULL',
+      '"operatorClerkUserId" TEXT NOT NULL',
+      '"targetClerkUserId" TEXT NOT NULL',
+      '"action" "OperatorAuditAction" NOT NULL',
+      '"outcome" "OperatorAuditOutcome" NOT NULL',
+      '"classGroupCount" INTEGER NOT NULL DEFAULT 0',
+      '"rosterStudentCount" INTEGER NOT NULL DEFAULT 0',
+      '"evidenceRecordCount" INTEGER NOT NULL DEFAULT 0',
+      '"createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP',
+      '"completedAt" TIMESTAMP(3)',
+    ]);
+    expect(migration).toContain(
+      'CREATE TYPE "OperatorAuditAction" AS ENUM (\n' +
+        "    'WORKSPACE_DATA_DELETE',\n" +
+        "    'CLERK_USER_DELETE'\n" +
+        ");"
+    );
+    expect(migration).toContain(
+      'CREATE TYPE "OperatorAuditOutcome" AS ENUM (\n' +
+        "    'STARTED',\n" +
+        "    'SUCCEEDED',\n" +
+        "    'FAILED'\n" +
+        ");"
+    );
+    expect(migration).not.toMatch(/FOREIGN KEY|REFERENCES/i);
   });
 
   it("documents database environment variables and scripts", () => {

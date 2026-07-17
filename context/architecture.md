@@ -12,7 +12,9 @@ browser
         → Prisma → PostgreSQL
 ```
 
-There is no separate API service, job queue, analytics pipeline, file service, AI service, or shared district identity layer.
+There is no separate API service, job queue, analytics pipeline, file service,
+AI service, or shared district identity layer. The one narrow external delivery
+path is Settings feedback sent through Resend to the configured operator.
 
 ## Ownership model
 
@@ -30,6 +32,23 @@ Clerk user
 - Student/class/evidence relations use composite same-workspace foreign keys where the relation crosses an ownership boundary.
 - Cross-workspace writes are rejected by both application checks and PostgreSQL constraints.
 - V1 has no global student identity and no cross-teacher sharing.
+
+### Sanctioned operator exception
+
+The private owner-only operator console is the sole sanctioned exception to
+the normal current-workspace resolution rule. Its server-only domain functions
+may locate one target account by an exact email after independently authorizing
+the current Clerk user against the configured operator allowlist. The exception
+is limited to safe account metadata, aggregate class/student/evidence counts,
+whole-account deletion, and destructive-action auditing. It does not expose
+evidence content, allow impersonation, or create a reusable cross-workspace
+access layer.
+
+Operator audit rows deliberately have no relation to a teacher profile or
+workspace, so they survive deletion without retaining student names, roster
+data, evidence content, or raw notes. This intentional schema model and its
+migration are asserted by the schema-shape test; the broader prohibition on
+admin, district, organization, and membership models remains in force.
 
 ## Main data models
 
@@ -104,6 +123,37 @@ Legacy structured records may have a null Evidence note. The UI labels them hone
 - Revalidate affected routes after success.
 - Log contextual operation failures without logging raw notes or sensitive input.
 
+## Outbound support feedback boundary
+
+```text
+authenticated Settings form
+  -> validated provider-neutral feedback payload
+    -> server-only Resend adapter
+      -> Resend email/log systems
+        -> configured ClassTrace operator mailbox
+```
+
+The form sends only the teacher-selected category, teacher-entered description
+and reply email, pathname, bounded browser/device string, release, server
+timestamp, authenticated Clerk/workspace IDs, and an optional validated error
+reference supplied by the site-wide error fallback. It does not query or attach
+roster, class, evidence, capture, cookie, IP, query-string, screenshot, raw
+error detail, or file data.
+
+ClassTrace does not persist feedback or the Resend email ID in PostgreSQL,
+browser storage, analytics, or application logs. Resend and the operator mailbox
+process and may retain the submitted email under their own operational settings.
+The UI warns teachers not to include student information, but that guidance is
+not a claim that free-text feedback is de-identified. Provider failures return
+safe teacher-facing copy and logs contain only a fixed operation prefix and safe
+failure classification.
+
+Public support and account-deletion pages direct signed-in teachers to this
+same form. Account and deletion requests use the **Account or data request**
+category so the authenticated Clerk/workspace identifiers travel through the
+existing bounded support path. The public pages do not expose the configured
+operator mailbox or add a second unauthenticated message endpoint.
+
 ## Concurrency and relational integrity
 
 Active class/student checks that protect a dependent write run inside `withSerializableTransaction`. Prisma `P2034` serialization conflicts are retried a maximum of three times; other failures are rethrown.
@@ -136,7 +186,9 @@ These limits protect resource usage and database hygiene; they are not substitut
 
 - Auth failures redirect through Clerk-protected routes.
 - Expected validation/ownership failures return typed errors without revealing whether another workspace owns an ID.
-- Route-level `loading.tsx`, `error.tsx`, and `not-found.tsx` provide safe recovery states.
+- Route-level `loading.tsx`, `error.tsx`, and `not-found.tsx` provide safe recovery states. A root `global-error.tsx` covers failures outside the authenticated app boundary and failures in the root layout.
+- Unexpected boundary failures display an opaque `CT-S-` server-digest reference or `CT-C-` client reference, offer Next.js retry, and link to the existing Help and Feedback form without attaching raw error details.
+- Next.js request instrumentation logs server references with only the route template and framework failure classification. A narrow registration action logs the same displayed client reference when the server remains reachable; neither path logs error messages, stacks, concrete URLs, request data, or teacher/student content.
 - Destructive actions require explicit confirmation and do not disappear from the UI until the server succeeds.
 - Unexpected action/domain errors are logged with an operation prefix; raw notes are never included.
 
@@ -153,6 +205,8 @@ These limits protect resource usage and database hygiene; they are not substitut
 ## Deployment contract
 
 - Runtime/development database variable: `DATABASE_URL`.
+- Outbound support variables: `RESEND_API_KEY`,
+  `CLASSTRACE_FEEDBACK_FROM_EMAIL`, and `CLASSTRACE_FEEDBACK_TO_EMAIL`.
 - Production migration command: `npm run db:migrate:deploy`.
 - Development migration command: `npm run db:migrate`.
 - Migrations run before the new application version starts.

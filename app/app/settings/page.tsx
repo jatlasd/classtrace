@@ -1,5 +1,16 @@
-import { BadgeCheck, BriefcaseBusiness, UserRound } from "lucide-react";
+import {
+  BadgeCheck,
+  BriefcaseBusiness,
+  ExternalLink,
+  MessageCircleQuestion,
+  ShieldCheck,
+  UserRound,
+} from "lucide-react";
+import Link from "next/link";
+import { HelpFeedbackForm } from "@/components/settings/help-feedback-form";
 import { SettingsSignOutAction } from "@/components/settings/settings-sign-out-action";
+import { normalizeErrorReference } from "@/lib/errors/error-reference";
+import { routes } from "@/lib/routes";
 import { getSettingsPageData } from "@/lib/settings/settings-page-data";
 
 type DetailRowProps = {
@@ -18,8 +29,18 @@ function DetailRow({ label, value }: DetailRowProps) {
   );
 }
 
-export default async function SettingsPage() {
-  const settings = await getSettingsPageData();
+type SettingsPageProps = {
+  searchParams: Promise<{
+    errorReference?: string | string[];
+  }>;
+};
+
+export default async function SettingsPage({ searchParams }: SettingsPageProps) {
+  const [settings, query] = await Promise.all([
+    getSettingsPageData(),
+    searchParams,
+  ]);
+  const initialErrorReference = normalizeErrorReference(query.errorReference);
 
   return (
     <div className="mx-auto w-full max-w-[920px] px-4 py-7 sm:px-6 lg:px-8">
@@ -82,6 +103,89 @@ export default async function SettingsPage() {
               value={settings.teacherDisplayName}
             />
           </dl>
+        </section>
+
+        <section
+          aria-labelledby="help-feedback-heading"
+          className="border border-border bg-card/60 p-4 sm:p-5"
+        >
+          <div className="mb-5 flex items-start gap-3">
+            <span className="flex size-10 shrink-0 items-center justify-center rounded-md border border-border bg-muted/50 text-primary">
+              <MessageCircleQuestion
+                className="size-4"
+                strokeWidth={1.75}
+                aria-hidden="true"
+              />
+            </span>
+            <div>
+              <h2
+                id="help-feedback-heading"
+                className="font-display text-lg font-semibold text-foreground"
+              >
+                Help and feedback
+              </h2>
+              <p className="mt-1 max-w-2xl text-xs leading-relaxed text-muted-foreground">
+                Tell us what broke, what felt confusing, or what would make
+                ClassTrace more useful.
+              </p>
+            </div>
+          </div>
+
+          <HelpFeedbackForm
+            initialReplyEmail={settings.replyEmail}
+            initialErrorReference={initialErrorReference}
+          />
+        </section>
+
+        <section
+          aria-labelledby="privacy-terms-heading"
+          className="border border-border bg-card/60 p-4 sm:p-5"
+        >
+          <div className="mb-4 flex items-start gap-3">
+            <span className="flex size-10 shrink-0 items-center justify-center rounded-md border border-border bg-muted/50 text-primary">
+              <ShieldCheck
+                className="size-4"
+                strokeWidth={1.75}
+                aria-hidden="true"
+              />
+            </span>
+            <div>
+              <h2
+                id="privacy-terms-heading"
+                className="font-display text-lg font-semibold text-foreground"
+              >
+                Privacy and beta terms
+              </h2>
+              <p className="mt-1 max-w-2xl text-xs leading-relaxed text-muted-foreground">
+                Review how ClassTrace handles data, what the beta promises, and
+                how to request support or account deletion.
+              </p>
+            </div>
+          </div>
+
+          <nav aria-label="Privacy and account information">
+            <ul className="divide-y divide-border/70 border-y border-border/70">
+              {[
+                { label: "Privacy", href: routes.privacy },
+                { label: "Beta terms", href: routes.terms },
+                { label: "Support", href: routes.support },
+                { label: "Account deletion", href: routes.dataDeletion },
+              ].map((item) => (
+                <li key={item.href}>
+                  <Link
+                    href={item.href}
+                    className="flex min-h-11 items-center justify-between gap-4 py-2.5 text-sm font-medium text-foreground transition-colors hover:text-link"
+                  >
+                    <span>{item.label}</span>
+                    <ExternalLink
+                      className="size-4 shrink-0 text-muted-foreground"
+                      aria-hidden="true"
+                    />
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </nav>
         </section>
 
         <section className="border border-border bg-card/60 px-4 py-4 sm:px-5">
