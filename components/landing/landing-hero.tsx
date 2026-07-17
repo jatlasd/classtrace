@@ -35,8 +35,14 @@ export function LandingHero() {
             &ldquo;can you show growth over time?&rdquo;
           </StickyScrap>
         </ParallaxDrift>
-        <CoffeeRing className="absolute left-[13%] top-[24rem] size-24 -rotate-12" />
-        <CoffeeRing className="absolute right-[22%] top-16 size-14 rotate-6" />
+        <CoffeeRing
+          className="absolute left-[13%] top-[24rem] size-24 -rotate-12"
+          variant="full"
+        />
+        <CoffeeRing
+          className="absolute right-[22%] top-16 size-14 rotate-6"
+          variant="arc"
+        />
       </div>
 
       <div className="relative mx-auto max-w-4xl px-4 pb-10 pt-16 text-center md:px-6 lg:pt-24">

@@ -218,14 +218,21 @@ const scenery: SceneryItem[] = [
     depth: 180,
     visibleUntil: 1,
     className: "bottom-[10%] right-[12%]",
-    node: <CoffeeRing className="relative size-24 -rotate-12" />,
+    node: (
+      <CoffeeRing
+        className="relative size-24 -rotate-12"
+        variant="broken"
+      />
+    ),
   },
   {
     id: "coffee-b",
     depth: -200,
     visibleFrom: 3,
     className: "bottom-[14%] left-[27%]",
-    node: <CoffeeRing className="relative size-16 rotate-6" />,
+    node: (
+      <CoffeeRing className="relative size-16 rotate-6" variant="ghost" />
+    ),
   },
 ];
 
