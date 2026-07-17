@@ -69,6 +69,25 @@ describe("operator actions", () => {
     expect(mocks.revalidatePath).toHaveBeenCalledWith("/operator");
   });
 
+  it("does not revalidate after a rejected workspace deletion", async () => {
+    mocks.deleteOperatorWorkspaceData.mockResolvedValue({
+      success: false,
+      error: "ClassTrace data could not be deleted.",
+    });
+
+    await deleteOperatorWorkspaceDataAction({
+      targetClerkUserId: "target_1",
+      confirmationEmail: "stacy@example.com",
+    });
+
+    expect(mocks.deleteOperatorWorkspaceData).toHaveBeenCalledWith({
+      operatorClerkUserId: "owner_1",
+      targetClerkUserId: "target_1",
+      confirmationEmail: "stacy@example.com",
+    });
+    expect(mocks.revalidatePath).not.toHaveBeenCalled();
+  });
+
   it("reauthorizes Clerk deletion independently", async () => {
     mocks.deleteOperatorClerkUser.mockResolvedValue({ success: true });
 
@@ -86,8 +105,28 @@ describe("operator actions", () => {
     expect(mocks.revalidatePath).toHaveBeenCalledWith("/operator");
   });
 
+  it("does not revalidate after a rejected Clerk deletion", async () => {
+    mocks.deleteOperatorClerkUser.mockResolvedValue({
+      success: false,
+      error: "The Clerk user could not be deleted.",
+    });
+
+    await deleteOperatorClerkUserAction({
+      targetClerkUserId: "target_1",
+      confirmationEmail: "stacy@example.com",
+    });
+
+    expect(mocks.deleteOperatorClerkUser).toHaveBeenCalledWith({
+      operatorClerkUserId: "owner_1",
+      targetClerkUserId: "target_1",
+      confirmationEmail: "stacy@example.com",
+    });
+    expect(mocks.revalidatePath).not.toHaveBeenCalled();
+  });
+
   it("fails closed when action-level authorization fails", async () => {
-    mocks.requireOperator.mockRejectedValue(new Error("not authorized"));
+    const authorizationError = new Error("not authorized");
+    mocks.requireOperator.mockRejectedValue(authorizationError);
     const error = vi.spyOn(console, "error").mockImplementation(() => {});
 
     await expect(
@@ -101,7 +140,8 @@ describe("operator actions", () => {
     });
     expect(mocks.deleteOperatorClerkUser).not.toHaveBeenCalled();
     expect(error).toHaveBeenCalledWith(
-      "[actions/operator/deleteOperatorClerkUserAction] failed"
+      "[actions/operator/deleteOperatorClerkUserAction] failed",
+      authorizationError
     );
 
     error.mockRestore();

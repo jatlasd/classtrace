@@ -114,6 +114,10 @@ describe("submitFeedbackForWorkspace", () => {
       { form: { currentRoute: "/app/settings?student=Mary" } },
       { form: { currentRoute: "/app/settings#feedback" } },
       { form: { currentRoute: "app/settings" } },
+      { form: { currentRoute: "/app/settings\r\nForged: value" } },
+      { form: { browserAndDevice: "Example Browser\nForged: value" } },
+      { form: { currentRoute: "/app/settings\u2028Forged: value" } },
+      { form: { browserAndDevice: "Example Browser\u2029Forged: value" } },
       { form: { errorReference: "not-a-reference" } },
       { form: { currentRoute: `/${"x".repeat(INPUT_LIMITS.feedbackRoute)}` } },
       {

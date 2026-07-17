@@ -272,4 +272,26 @@ describe("operator destructive actions", () => {
       error: "The Clerk user could not be deleted.",
     });
   });
+
+  it("reports when Clerk deletion succeeds but the audit cannot be completed", async () => {
+    vi.mocked(
+      dependencies.database.completeClerkDeletionAudit
+    ).mockRejectedValue(new Error("database unavailable"));
+
+    const result = await deleteOperatorClerkUser(
+      {
+        operatorClerkUserId: "owner_1",
+        targetClerkUserId: "target_1",
+        confirmationEmail: "stacy@example.com",
+      },
+      dependencies
+    );
+
+    expect(dependencies.directory.deleteUser).toHaveBeenCalledWith("target_1");
+    expect(result).toEqual({
+      success: false,
+      clerkUserDeleted: true,
+      error: "The Clerk user was deleted, but the audit outcome was not updated.",
+    });
+  });
 });

@@ -129,4 +129,41 @@ describe("OperatorConsole", () => {
       "No Clerk account matches that exact email address."
     );
   });
+
+  it("clears the selected account after Clerk deletion succeeds but audit completion fails", async () => {
+    mocks.search.mockResolvedValue({
+      success: true,
+      account: { ...account, classTrace: null },
+    });
+    mocks.deleteClerkUser.mockResolvedValue({
+      success: false,
+      clerkUserDeleted: true,
+      error: "The Clerk user was deleted, but the audit outcome was not updated.",
+    });
+    render(<OperatorConsole />);
+
+    const accountEmail = screen.getByLabelText("Account email") as HTMLInputElement;
+    fireEvent.change(accountEmail, {
+      target: { value: "stacy@example.com" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Search account" }));
+    await screen.findByRole("heading", { name: "Stacy Teacher" });
+
+    const clerkConfirmation = screen.getByLabelText(
+      "Type stacy@example.com to confirm"
+    );
+    fireEvent.change(clerkConfirmation, {
+      target: { value: "stacy@example.com" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Delete Clerk user" }));
+
+    expect((await screen.findByRole("status")).textContent).toBe(
+      "The Clerk user was deleted, but the audit outcome was not updated."
+    );
+    expect(accountEmail.value).toBe("");
+    expect(screen.queryByRole("heading", { name: "Stacy Teacher" })).toBeNull();
+    expect(
+      screen.queryByLabelText("Type stacy@example.com to confirm")
+    ).toBeNull();
+  });
 });

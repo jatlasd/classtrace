@@ -21,8 +21,8 @@ export async function searchOperatorAccountAction(input: {
       operatorClerkUserId: operator.clerkUserId,
       email: input.email,
     });
-  } catch {
-    console.error("[actions/operator/searchOperatorAccountAction] failed");
+  } catch (error) {
+    console.error("[actions/operator/searchOperatorAccountAction] failed", error);
     return { success: false, error: "Account search is not available." };
   }
 }
@@ -41,8 +41,11 @@ export async function deleteOperatorWorkspaceDataAction(input: {
 
     if (result.success) revalidatePath(routes.operator);
     return result;
-  } catch {
-    console.error("[actions/operator/deleteOperatorWorkspaceDataAction] failed");
+  } catch (error) {
+    console.error(
+      "[actions/operator/deleteOperatorWorkspaceDataAction] failed",
+      error
+    );
     return { success: false, error: "ClassTrace data could not be deleted." };
   }
 }
@@ -63,8 +66,11 @@ export async function deleteOperatorClerkUserAction(input: {
       revalidatePath(routes.operator);
     }
     return result;
-  } catch {
-    console.error("[actions/operator/deleteOperatorClerkUserAction] failed");
+  } catch (error) {
+    console.error(
+      "[actions/operator/deleteOperatorClerkUserAction] failed",
+      error
+    );
     return { success: false, error: "The Clerk user could not be deleted." };
   }
 }

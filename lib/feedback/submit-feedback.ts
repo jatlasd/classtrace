@@ -36,6 +36,7 @@ type TrustedFeedbackContext = {
 };
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const LINE_BREAK_PATTERN = /[\r\n\u2028\u2029]/;
 
 function isFeedbackType(value: unknown): value is FeedbackType {
   return typeof value === "string" && Object.hasOwn(FEEDBACK_TYPE_LABELS, value);
@@ -109,6 +110,8 @@ function normalizeDiagnosticMetadata(input: FeedbackFormInput):
     !currentRoute.startsWith("/") ||
     currentRoute.includes("?") ||
     currentRoute.includes("#") ||
+    LINE_BREAK_PATTERN.test(currentRoute) ||
+    LINE_BREAK_PATTERN.test(browserAndDevice) ||
     currentRoute.length > INPUT_LIMITS.feedbackRoute ||
     browserAndDevice.length > INPUT_LIMITS.feedbackBrowserAndDevice ||
     (input.errorReference !== undefined && !errorReference)

@@ -169,7 +169,7 @@ describe("database ownership constraints", () => {
         mentionHandle: "jeff-delete-target",
       },
     });
-    await database.evidenceRecord.create({
+    const evidence = await database.evidenceRecord.create({
       data: {
         workspaceId: workspace.id,
         rosterStudentId: student.id,
@@ -203,6 +203,9 @@ describe("database ownership constraints", () => {
     ).resolves.toBeNull();
     await expect(
       database.rosterStudent.findUnique({ where: { id: student.id } })
+    ).resolves.toBeNull();
+    await expect(
+      database.evidenceRecord.findUnique({ where: { id: evidence.id } })
     ).resolves.toBeNull();
     await expect(
       database.operatorActionAudit.findUnique({ where: { id: audit.id } })

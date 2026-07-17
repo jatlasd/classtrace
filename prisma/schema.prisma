@@ -97,12 +97,23 @@ model EvidenceRecord {
   @@index([classGroupId])
 }
 
+enum OperatorAuditAction {
+  WORKSPACE_DATA_DELETE
+  CLERK_USER_DELETE
+}
+
+enum OperatorAuditOutcome {
+  STARTED
+  SUCCEEDED
+  FAILED
+}
+
 model OperatorActionAudit {
   id                  String    @id @default(cuid())
   operatorClerkUserId String
   targetClerkUserId   String
-  action              String
-  outcome             String
+  action              OperatorAuditAction
+  outcome             OperatorAuditOutcome
   classGroupCount     Int       @default(0)
   rosterStudentCount  Int       @default(0)
   evidenceRecordCount Int       @default(0)

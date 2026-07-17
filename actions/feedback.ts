@@ -21,7 +21,7 @@ export async function submitFeedbackAction(
   try {
     const workspace = await getCurrentWorkspace();
 
-    return submitFeedbackForWorkspace({
+    return await submitFeedbackForWorkspace({
       form,
       context: {
         clerkUserId: workspace.clerkUserId,

@@ -96,4 +96,21 @@ describe("submitFeedbackAction", () => {
     expect(consoleError).toHaveBeenCalledTimes(1);
     consoleError.mockRestore();
   });
+
+  it("maps asynchronous submission failures to the safe action result", async () => {
+    const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
+    mocks.submitFeedbackForWorkspace.mockRejectedValue(
+      new Error("sensitive delivery failure")
+    );
+
+    await expect(submitFeedbackAction(form)).resolves.toEqual({
+      success: false,
+      error: "Feedback is not available right now. Try again.",
+    });
+
+    expect(consoleError).toHaveBeenCalledWith(
+      "[actions/feedback/submitFeedbackAction] failed"
+    );
+    consoleError.mockRestore();
+  });
 });
