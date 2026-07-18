@@ -241,6 +241,11 @@
   }
 }
 
+.paperbackground {
+  background-color: #f1e8da;
+background-image: url("https://www.transparenttextures.com/patterns/notebook-dark.png");
+}
+
 .quick-capture-mentions textarea:focus,
 .quick-capture-mentions textarea:focus-visible {
   outline: none;
