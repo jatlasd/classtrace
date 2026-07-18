@@ -7,7 +7,11 @@ const roles = [
   { label: "Interventionists", asset: "sage" },
   { label: "Resource teachers", asset: "rose" },
   { label: "Co-teachers", asset: "lavender" },
-  { label: "Teachers drowning in documentation", asset: "tan" },
+  {
+    label: "Teachers drowning in documentation",
+    asset: "tan",
+    className: "min-h-16 w-80 justify-center px-7 text-lg",
+  },
 ];
 
 export function LandingAudience() {
@@ -24,9 +28,11 @@ export function LandingAudience() {
               from="translate-y-5 scale-95"
               className={`relative ${index % 2 === 0 ? "-rotate-1" : "rotate-1"}`}
             >
-              <span className="font-hand relative isolate inline-flex min-h-12 items-center px-6 py-2 text-lg text-foreground">
+              <span
+                className={`font-hand relative isolate inline-flex min-h-14 items-center px-6 py-2 text-foreground ${role.className ?? "text-lg"}`}
+              >
                 <Image
-                  src={`/svg/landing/paper-label-${role.asset}.svg?v=2`}
+                  src={`/svg/landing/paper-label-${role.asset}.svg?v=3`}
                   alt=""
                   fill
                   sizes="300px"
@@ -37,9 +43,13 @@ export function LandingAudience() {
                   alt=""
                   width={48}
                   height={17}
-                  className="absolute -top-2 left-1/2 h-4 w-12 -translate-x-1/2 rotate-2"
+                  className="absolute left-1/2 top-0 h-4 w-12 -translate-x-1/2 rotate-2"
                 />
-                <span className="relative">{role.label}</span>
+                <span
+                  className={role.asset === "tan" ? "relative whitespace-nowrap" : "relative"}
+                >
+                  {role.label}
+                </span>
               </span>
             </Reveal>
           </li>

@@ -140,7 +140,7 @@ const scenery: SceneryItem[] = [
     id: "hall-sticky",
     depth: 220,
     visibleUntil: 0,
-    className: "bottom-[18%] left-[26%]",
+    className: "bottom-[18%] left-[42%]",
     node: (
       <StickyScrap variant="rose" className="relative -rotate-6">
         where&apos;s Stacy&apos;s folder??
