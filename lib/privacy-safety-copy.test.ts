@@ -225,7 +225,7 @@ describe("Unit 23 privacy and safety copy guardrails", () => {
 
   it("preserves cautious landing boundaries and teacher-validation language", () => {
     const landingBoundary = readFileSync(
-      join(projectRoot, "components", "landing", "landing-not-dashboard.tsx"),
+      join(projectRoot, "components", "landing", "landing-trust.tsx"),
       "utf8"
     );
     const reviewPanel = readFileSync(

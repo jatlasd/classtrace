@@ -1,10 +1,17 @@
+import { Reveal } from "@/components/landing/scroll-motion";
+import Image from "next/image";
+
 const roles = [
-  { label: "Special education teachers", color: "bg-audience-blue" },
-  { label: "Case managers", color: "bg-audience-gold" },
-  { label: "Interventionists", color: "bg-validated" },
-  { label: "Resource teachers", color: "bg-audience-rose" },
-  { label: "Co-teachers", color: "bg-audience-lavender" },
-  { label: "Teachers drowning in documentation", color: "bg-audience-tan" },
+  { label: "Special education teachers", asset: "blue" },
+  { label: "Case managers", asset: "gold" },
+  { label: "Interventionists", asset: "sage" },
+  { label: "Resource teachers", asset: "rose" },
+  { label: "Co-teachers", asset: "lavender" },
+  {
+    label: "Teachers drowning in documentation",
+    asset: "tan",
+    className: "min-h-16 w-80 justify-center px-7 text-lg",
+  },
 ];
 
 export function LandingAudience() {
@@ -15,19 +22,36 @@ export function LandingAudience() {
       </h2>
       <ul className="mx-auto mt-10 flex max-w-3xl flex-wrap items-center justify-center gap-x-5 gap-y-6">
         {roles.map((role, index) => (
-          <li
-            key={role.label}
-            className={`relative ${index % 2 === 0 ? "-rotate-1" : "rotate-1"}`}
-          >
-            <span
-              aria-hidden="true"
-              className="tape-tab absolute -top-2.5 left-1/2 h-4 w-9 -translate-x-1/2 rotate-2 rounded-[2px]"
-            />
-            <span
-              className={`font-hand inline-block rounded-sm px-5 py-2 text-lg text-foreground shadow-paper ${role.color}`}
+          <li key={role.label}>
+            <Reveal
+              delay={index * 90}
+              from="translate-y-5 scale-95"
+              className={`relative ${index % 2 === 0 ? "-rotate-1" : "rotate-1"}`}
             >
-              {role.label}
-            </span>
+              <span
+                className={`font-hand relative isolate inline-flex min-h-14 items-center px-6 py-2 text-foreground ${role.className ?? "text-lg"}`}
+              >
+                <Image
+                  src={`/svg/landing/paper-label-${role.asset}.svg?v=3`}
+                  alt=""
+                  fill
+                  sizes="300px"
+                  className="-z-10 object-fill"
+                />
+                <Image
+                  src="/svg/landing/tape-strip.svg?v=2"
+                  alt=""
+                  width={48}
+                  height={17}
+                  className="absolute left-1/2 top-0 h-4 w-12 -translate-x-1/2 rotate-2"
+                />
+                <span
+                  className={role.asset === "tan" ? "relative whitespace-nowrap" : "relative"}
+                >
+                  {role.label}
+                </span>
+              </span>
+            </Reveal>
           </li>
         ))}
       </ul>

@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 176" fill="none">
+  <defs>
+    <linearGradient id="paper" x1="28" y1="12" x2="207" y2="160" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFFDF8"/><stop offset=".48" stop-color="#FBF7EF"/><stop offset="1" stop-color="#EEE5D8"/>
+    </linearGradient>
+    <linearGradient id="edge" x1="120" y1="132" x2="120" y2="158" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#C6B9A7" stop-opacity="0"/><stop offset="1" stop-color="#A99984" stop-opacity=".18"/>
+    </linearGradient>
+    <filter id="shadow" x="0" y="0" width="240" height="176" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="1.5" dy="5.5" stdDeviation="4.8" flood-color="#34291D" flood-opacity=".2"/>
+    </filter>
+    <filter id="grain" x="-10%" y="-10%" width="120%" height="120%">
+      <feTurbulence type="fractalNoise" baseFrequency=".72" numOctaves="3" seed="8"/>
+      <feColorMatrix values=".18 0 0 0 .72 0 .16 0 0 .68 0 0 .14 0 .6 0 0 0 .12 0"/>
+    </filter>
+    <clipPath id="clip"><path d="M16 15C46 12 74 15 105 13C138 11 176 13 219 10L224 145C198 149 169 148 140 151C103 154 65 153 21 158L16 15Z"/></clipPath>
+  </defs>
+  <g filter="url(#shadow)">
+    <path d="M16 15C46 12 74 15 105 13C138 11 176 13 219 10L224 145C198 149 169 148 140 151C103 154 65 153 21 158L16 15Z" fill="url(#paper)"/>
+    <g clip-path="url(#clip)">
+      <rect x="12" y="8" width="216" height="154" filter="url(#grain)" opacity=".22"/>
+      <path d="M8 133C54 139 91 134 129 138C164 142 196 136 229 132L230 162H8V133Z" fill="url(#edge)"/>
+      <path d="M18 62C74 58 140 57 222 53M20 91C85 88 151 85 223 83M21 121C82 118 150 115 224 113" stroke="#6D879B" stroke-opacity=".2"/>
+      <path d="M47 13L52 154" stroke="#B85A32" stroke-opacity=".2"/>
+      <path d="M151 11C158 38 158 76 162 111C164 129 168 141 173 149" stroke="#7C6B58" stroke-opacity=".055" stroke-width="5"/>
+    </g>
+    <path d="M16 15C46 12 74 15 105 13C138 11 176 13 219 10M21 158C65 153 103 154 140 151C169 148 198 149 224 145" stroke="#B9AB99" stroke-opacity=".6"/>
+  </g>
+</svg>

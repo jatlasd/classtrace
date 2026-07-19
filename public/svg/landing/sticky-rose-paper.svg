@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 146" fill="none">
+  <defs>
+    <linearGradient id="paper" x1="20" y1="15" x2="181" y2="124" gradientUnits="userSpaceOnUse"><stop stop-color="#F2DDDD"/><stop offset=".55" stop-color="#E8C6C7"/><stop offset="1" stop-color="#D7ADB0"/></linearGradient>
+    <radialGradient id="lift" cx="0" cy="0" r="1" gradientTransform="translate(30 112) rotate(-18) scale(58 26)" gradientUnits="userSpaceOnUse"><stop stop-color="#FFF3F1" stop-opacity=".48"/><stop offset="1" stop-color="#FFF3F1" stop-opacity="0"/></radialGradient>
+    <filter id="shadow" x="0" y="0" width="200" height="146" filterUnits="userSpaceOnUse"><feDropShadow dx=".5" dy="5" stdDeviation="4.4" flood-color="#362728" flood-opacity=".2"/></filter>
+    <filter id="grain"><feTurbulence type="fractalNoise" baseFrequency=".74" numOctaves="3" seed="21"/><feColorMatrix values=".18 0 0 0 .78 0 .15 0 0 .61 0 0 .15 0 .63 0 0 0 .12 0"/></filter>
+    <clipPath id="clip"><path d="M14 17C40 13 73 16 103 13C130 11 158 13 188 10L186 118C158 116 131 120 101 117C68 115 43 121 12 116L14 17Z"/></clipPath>
+  </defs>
+  <g filter="url(#shadow)">
+    <path d="M14 17C40 13 73 16 103 13C130 11 158 13 188 10L186 118C158 116 131 120 101 117C68 115 43 121 12 116L14 17Z" fill="url(#paper)"/>
+    <g clip-path="url(#clip)">
+      <rect x="9" y="7" width="184" height="116" filter="url(#grain)" opacity=".2"/>
+      <path d="M8 91C44 99 71 96 102 99C134 102 161 97 192 91V126H8V91Z" fill="#8F5D65" opacity=".07"/>
+      <ellipse cx="29" cy="111" rx="58" ry="26" fill="url(#lift)"/>
+      <path d="M125 12C127 45 124 83 130 117" stroke="#7B4E55" stroke-opacity=".055" stroke-width="5"/>
+    </g>
+    <path d="M14 17C40 13 73 16 103 13C130 11 158 13 188 10M12 116C43 121 68 115 101 117C131 120 158 116 186 118" stroke="#BE8F95" stroke-opacity=".48"/>
+  </g>
+</svg>
