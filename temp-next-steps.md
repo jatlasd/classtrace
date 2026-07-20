@@ -22,8 +22,9 @@ inviting real teachers.
   logical databases: `classtrace_dev` and disposable `classtrace_test`.
 - Production data will never be copied or branched into the non-production
   project.
-- The existing Clerk development instance will use Restricted mode and Clerk
-  invitations. No application-owned allowlist or organization model will be
+- The existing Clerk development instance uses Waitlist mode. Existing users
+  retain sign-in access; new accounts require operator approval or a Clerk
+  invitation. No application-owned allowlist or organization model will be
   added.
 - The pilot will initially use the Vercel URL without a custom domain. This is
   an accepted temporary limitation, not a production-readiness claim.
@@ -69,8 +70,8 @@ Make the deployed product truthful about its invitation-only posture and
 document the small operational process needed for the pilot.
 
 - Inventory existing Clerk users and confirm the configured operator user ID
-  before enabling Restricted mode. Existing intended users must retain sign-in
-  access; all new users must arrive through Clerk invitations.
+  before enabling Waitlist mode. Existing intended users must retain sign-in
+  access; all new accounts require operator approval or Clerk invitations.
 - Keep `/sign-up` available for invitation links, but change public calls to
   action and sign-up metadata to state that beta access is invitation-only.
 - Add rendered coverage for the invitation-only language and continued

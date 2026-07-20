@@ -21,7 +21,7 @@ export function LandingHeader() {
             Sign in
           </Link>
           <Button asChild variant="navy" className="h-9 rounded-md px-4 text-sm font-semibold">
-            <Link href={routes.signUp}>Capture your first note</Link>
+            <Link href={routes.signUp}>Invited? Complete sign-up</Link>
           </Button>
         </nav>
       </div>
