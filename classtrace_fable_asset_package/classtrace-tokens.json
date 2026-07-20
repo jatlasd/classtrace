@@ -1,0 +1,34 @@
+{
+  "source": "ClassTrace repository design tokens, normalized for portable assets",
+  "colors": {
+    "paper_background": "#f3eadc",
+    "ink": "#182536",
+    "card": "#fbf7ed",
+    "rust": "#b85a32",
+    "rust_soft": "#f3ddd2",
+    "blue": "#2c526f",
+    "blue_soft": "#dce8ef",
+    "sage": "#c7d4a6",
+    "sage_soft": "#e8eedb",
+    "gold": "#e7bd64",
+    "gold_soft": "#f5e9c8",
+    "muted": "#ebe3d6",
+    "muted_ink": "#5d554a",
+    "border": "#ddd0be",
+    "navy": "#1d2f4b",
+    "white": "#ffffff"
+  },
+  "typography": {
+    "display": "Fraunces, Georgia, serif",
+    "body": "Inter, Arial, sans-serif",
+    "hand": "Caveat, Comic Sans MS, cursive"
+  },
+  "radii": {
+    "control": 9,
+    "card": 18
+  },
+  "shadows": {
+    "paper": "0 8 20 rgba(31,25,17,.12)",
+    "floating": "0 18 32 rgba(31,25,17,.18)"
+  }
+}

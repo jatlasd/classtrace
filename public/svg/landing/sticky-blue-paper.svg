@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 146" fill="none">
+  <defs>
+    <linearGradient id="paper" x1="18" y1="10" x2="183" y2="126" gradientUnits="userSpaceOnUse"><stop stop-color="#DCEAF3"/><stop offset=".58" stop-color="#C8DAE8"/><stop offset="1" stop-color="#B5CADB"/></linearGradient>
+    <linearGradient id="curl" x1="100" y1="96" x2="104" y2="125" gradientUnits="userSpaceOnUse"><stop stop-color="#EEF5F8" stop-opacity="0"/><stop offset="1" stop-color="#7896AD" stop-opacity=".2"/></linearGradient>
+    <filter id="shadow" x="0" y="0" width="200" height="146" filterUnits="userSpaceOnUse"><feDropShadow dx="1" dy="5" stdDeviation="4.2" flood-color="#28333D" flood-opacity=".2"/></filter>
+    <filter id="grain"><feTurbulence type="fractalNoise" baseFrequency=".8" numOctaves="3" seed="13"/><feColorMatrix values=".16 0 0 0 .62 0 .17 0 0 .7 0 0 .18 0 .78 0 0 0 .12 0"/></filter>
+    <clipPath id="clip"><path d="M11 12C45 10 82 14 118 11C145 9 169 12 188 14L186 116C157 120 125 118 95 121C63 124 34 122 14 119L11 12Z"/></clipPath>
+  </defs>
+  <g filter="url(#shadow)">
+    <path d="M11 12C45 10 82 14 118 11C145 9 169 12 188 14L186 116C157 120 125 118 95 121C63 124 34 122 14 119L11 12Z" fill="url(#paper)"/>
+    <g clip-path="url(#clip)">
+      <rect x="8" y="8" width="184" height="116" filter="url(#grain)" opacity=".22"/>
+      <path d="M7 18C48 23 95 17 140 20C158 21 175 19 190 17L190 32C154 29 123 31 91 29C60 27 33 30 8 28L7 18Z" fill="#7898B0" opacity=".08"/>
+      <path d="M6 94C45 102 78 97 110 101C140 105 166 100 192 94V129H6V94Z" fill="url(#curl)"/>
+      <path d="M26 16C25 51 28 86 31 118" stroke="#F7FBFD" stroke-opacity=".14" stroke-width="4"/>
+    </g>
+    <path d="M11 12C45 10 82 14 118 11C145 9 169 12 188 14M14 119C34 122 63 124 95 121C125 118 157 120 186 116" stroke="#809DB3" stroke-opacity=".48"/>
+  </g>
+</svg>

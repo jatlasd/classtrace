@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="560" viewBox="0 0 900 560">
+<defs>
+  <filter id="paperShadow" x="-20%" y="-20%" width="140%" height="160%">
+    <feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#1f1911" flood-opacity=".14"/>
+  </filter>
+  <filter id="floatShadow" x="-30%" y="-30%" width="160%" height="180%">
+    <feDropShadow dx="0" dy="18" stdDeviation="16" flood-color="#1f1911" flood-opacity=".18"/>
+  </filter>
+  <style>
+    .display { font-family: Fraunces, Georgia, serif; fill: #182536; }
+    .body { font-family: Inter, Arial, sans-serif; fill: #182536; }
+    .hand { font-family: Caveat, "Comic Neue", "Comic Sans MS", cursive; fill: #182536; }
+    .muted { fill: #5d554a; }
+    .label { font-family: Inter, Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 1.6px; text-transform: uppercase; fill: #5d554a; }
+  </style>
+</defs>
+
+<g transform="rotate(-2 450 280)"><rect x="105" y="72" width="690" height="416" rx="8" fill="#f5e9c8" stroke="#ddd0be" stroke-width="1" filter="url(#floatShadow)"/><rect x="390" y="51" width="120" height="40" rx="5" fill="#9db3ca" opacity=".72" stroke="#809bb5" stroke-opacity=".45"/><line x1="138" y1="150" x2="758" y2="150" stroke="#2c526f" stroke-width="1" opacity="0.18"/><line x1="138" y1="194" x2="758" y2="194" stroke="#2c526f" stroke-width="1" opacity="0.18"/><line x1="138" y1="238" x2="758" y2="238" stroke="#2c526f" stroke-width="1" opacity="0.18"/><line x1="138" y1="282" x2="758" y2="282" stroke="#2c526f" stroke-width="1" opacity="0.18"/><line x1="138" y1="326" x2="758" y2="326" stroke="#2c526f" stroke-width="1" opacity="0.18"/><line x1="138" y1="370" x2="758" y2="370" stroke="#2c526f" stroke-width="1" opacity="0.18"/><line x1="138" y1="414" x2="758" y2="414" stroke="#2c526f" stroke-width="1" opacity="0.18"/><line x1="188" y1="108" x2="188" y2="458" stroke="#b85a32" stroke-width="2" opacity="0.32"/><text x="222" y="132" class="hand" font-size="25" font-weight="500" text-anchor="start">Tuesday, 11:42 AM · between classes</text><text x="222" y="205" class="hand" font-size="31" font-weight="500"><tspan x="222" dy="0">@stacy used her calm-down strategy</tspan><tspan x="222" dy="38">on her own during the math</tspan><tspan x="222" dy="38">transition!! first time</tspan><tspan x="222" dy="38">unprompted</tspan></text><text x="222" y="390" class="hand" font-size="30" font-weight="500" text-anchor="start" fill="#2c526f">#strategy   #independence</text></g></svg>
