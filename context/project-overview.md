@@ -28,6 +28,8 @@ The strongest early users are special education teachers, case managers, interve
 ## Current behavior
 
 - A signed-in teacher receives one personal workspace.
+- The controlled beta uses Clerk Waitlist mode. Existing users can sign in,
+  while a new teacher must be approved or invited before creating an account.
 - Classes organize roster setup and student management.
 - Every active student belongs to one active class.
 - Capture remains global rather than class-scoped.
@@ -60,12 +62,12 @@ These states must not be collapsed. In particular, a captured raw note must not 
 
 | Route | Purpose |
 |---|---|
-| `/` | Public explanation and sign-up entry |
+| `/` | Public explanation and invitation-only beta entry |
 | `/privacy` | Plain-language privacy boundaries |
 | `/terms` | Controlled-beta terms |
 | `/support` | Support path and safe-report guidance |
 | `/data-deletion` | Full-account deletion request steps and scope |
-| `/sign-in`, `/sign-up` | Authentication |
+| `/sign-in`, `/sign-up` | Existing-user sign-in and invited-user sign-up |
 | `/app` | Redirect based on roster readiness |
 | `/app/feed` | Capture and paged evidence inbox |
 | `/app/roster` | Class-first roster management |

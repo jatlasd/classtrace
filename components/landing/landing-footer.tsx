@@ -50,7 +50,7 @@ export function LandingFooter() {
             href={routes.signUp}
             className="text-sm text-muted-foreground transition-colors hover:text-foreground"
           >
-            Create account →
+            Invited sign-up →
           </Link>
         </nav>
       </div>

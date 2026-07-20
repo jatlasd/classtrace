@@ -172,6 +172,10 @@
 }
 
 @layer utilities {
+  .paperbackground {
+    background-color: #f1e8da;
+    background-image: url("/textures/notebook-dark.png");
+  }
   .paper-grain {
     position: relative;
     background:
@@ -239,11 +243,6 @@
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
-}
-
-.paperbackground {
-  background-color: #f1e8da;
-  background-image: url("/textures/notebook-dark.png");
 }
 
 .quick-capture-mentions textarea:focus,

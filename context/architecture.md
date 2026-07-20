@@ -33,6 +33,21 @@ Clerk user
 - Cross-workspace writes are rejected by both application checks and PostgreSQL constraints.
 - V1 has no global student identity and no cross-teacher sharing.
 
+## Controlled-beta identity access
+
+The shared Clerk development instance uses Waitlist mode for the controlled
+beta. Existing Clerk users retain sign-in access. A new address may express
+interest through Clerk, but it cannot create a ClassTrace account until the
+operator approves the waitlist entry or sends an invitation. A valid
+invitation continues through the public `/sign-up` route and Clerk's hosted
+flow; ClassTrace does not add an application-owned allowlist or organization
+model.
+
+Before changing Clerk access mode, inventory the existing users and compare
+the configured `CLASSTRACE_OPERATOR_CLERK_USER_IDS` values to real Clerk user
+IDs. Issue pilot access from Clerk only after confirming the intended email,
+and do not remove an existing user as a substitute for revoking future sign-up.
+
 ### Sanctioned operator exception
 
 The private owner-only operator console is the sole sanctioned exception to
@@ -154,6 +169,40 @@ category so the authenticated Clerk/workspace identifiers travel through the
 existing bounded support path. The public pages do not expose the configured
 operator mailbox or add a second unauthenticated message endpoint.
 
+### Controlled-beta support procedure
+
+1. Ask signed-in teachers to use **Account > Help and feedback** and to omit
+   student information. For sign-in trouble, use the invitation reply path so
+   the operator can confirm the intended email.
+2. Correlate the message using its release, route, error reference when
+   present, and authenticated Clerk/workspace identifiers. Use `/operator`
+   with an exact email only when account metadata is needed; do not inspect
+   evidence content or production database rows.
+3. Reply through the operator mailbox, record no support content in
+   ClassTrace, and request a fresh safe report if the original message lacks
+   enough detail.
+4. Treat delivery failure as unresolved: keep the teacher's form values,
+   retry after provider/configuration checks, and never copy the report into
+   logs as a workaround.
+
+### Two-stage full-account deletion
+
+1. The signed-in teacher sends **Account or data request** with the requested
+   scope and reply email, exports any records they are authorized to retain,
+   and signs out before deletion begins.
+2. The operator confirms the target by exact email in `/operator`. If the
+   request and Clerk identity do not correlate, stop and resolve the mismatch.
+3. Run **Delete ClassTrace data** first. Confirm the workspace is absent and
+   retain only the narrow deletion audit. Do not sign in as the target between
+   stages because app entry can recreate app-owned profile data.
+4. Only after ClassTrace data is absent, run **Delete Clerk user** as the
+   separate second confirmation. If this step fails, leave the workspace
+   deleted and retry only the Clerk stage; never bypass the operator flow with
+   a direct database edit.
+5. Confirm both audit outcomes and reply to the requester. A successful
+   workspace deletion is not a completed account deletion while the Clerk user
+   still exists.
+
 ## Concurrency and relational integrity
 
 Active class/student checks that protect a dependent write run inside `withSerializableTransaction`. Prisma `P2034` serialization conflicts are retried a maximum of three times; other failures are rethrown.
@@ -204,12 +253,55 @@ These limits protect resource usage and database hygiene; they are not substitut
 
 ## Deployment contract
 
-- Runtime/development database variable: `DATABASE_URL`.
-- Outbound support variables: `RESEND_API_KEY`,
-  `CLASSTRACE_FEEDBACK_FROM_EMAIL`, and `CLASSTRACE_FEEDBACK_TO_EMAIL`.
-- Production migration command: `npm run db:migrate:deploy`.
-- Development migration command: `npm run db:migrate`.
-- Migrations run before the new application version starts.
-- `npm run test:db` may target only an explicitly disposable database distinct from `DATABASE_URL`.
+### Environment matrix
+
+| Runtime | Database boundary | Identity and support variables | Test-only variables |
+|---|---|---|---|
+| Local (`.env.local`) | `DATABASE_URL` targets `classtrace_dev` in `classtrace-nonproduction` | Clerk development keys and route variables; operator user IDs; development Resend sender/recipient | `TEST_DATABASE_URL` targets only `classtrace_test`; `TEST_DATABASE_RESET_ALLOWED=0` except for the explicit test process |
+| Vercel Development | `DATABASE_URL` targets `classtrace_dev` | Applicable Clerk, operator, route, and Resend variables | Never set |
+| Vercel Preview | `DATABASE_URL` targets `classtrace_dev` | Applicable Clerk, operator, route, and Resend variables | Never set |
+| Vercel Production | `DATABASE_URL` targets the `classtrace` project, `production` branch, `neondb` database | Applicable Clerk, operator, route, and Resend variables | Never set |
+
+Production data is never copied or branched into non-production. Verify a
+database target by project, branch, and database name without printing the
+credential. Vercel environment-variable changes apply only to new deployments,
+so redeploy after changing configuration.
+
+### Production migration and release procedure
+
+1. Identify the exact release commit, review its migrations, and pass
+   `npm run lint`, `npm run test`, and `npm run build` locally.
+2. Reconfirm that the migration process receives the Vercel Production
+   `DATABASE_URL`, not the local or Preview value. Keep destructive test
+   variables out of the process.
+3. Run `npm run db:migrate:deploy` once against Production before promoting the
+   new application version. Do not use `npm run db:migrate` in Production.
+4. If migration succeeds, deploy the same checked release, then smoke-test the
+   public page, `/sign-in`, the invited `/sign-up` flow, and one authenticated
+   read path before inviting teachers.
+
+If a migration fails, stop the release. Do not deploy the new app, repeatedly
+rerun the migration, edit an already-committed migration, or mark it resolved
+without proving the database's actual state. Preserve the sanitized migration
+error, inspect the failed migration and database state, and choose a reviewed
+forward repair or restore. Resume only after `prisma migrate status` and the
+database agree on the applied state and the normal gates pass again.
+
+### Vercel rollback and redeploy procedure
+
+1. From the Vercel project, identify the current deployment and the immediately
+   previous healthy Production deployment. Record the URLs before changing
+   routing.
+2. Use **Instant Rollback** (or `vercel rollback`) to restore the known-good
+   deployment, then verify `/`, `/sign-in`, and an authenticated app read.
+   A rollback points traffic to the older build and its older environment
+   snapshot; it does not reverse a database migration.
+3. Fix and pass the local gates, create and verify a Preview deployment, then
+   produce a fresh Production deployment. Use **Undo Rollback**/promotion (or
+   `vercel promote`) to make it current and re-enable normal production-domain
+   assignment after a rollback.
+4. When configuration changed without a code change, redeploy the intended
+   healthy deployment so it rebuilds with the current environment values;
+   verify the same public and authenticated paths afterward.
 
 Hosting, monitoring, backups, recovery objectives, support, retention policy, and legal/compliance review are operational decisions outside the code foundation and must be completed before calling the service production-ready.

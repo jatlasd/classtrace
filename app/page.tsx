@@ -11,12 +11,12 @@ import { LandingFooter } from "@/components/landing/landing-footer";
 export const metadata: Metadata = {
   title: "ClassTrace — Student evidence capture for teachers",
   description:
-    "Turn quick teacher notes into organized, validated student evidence. Capture the moment now, review the structured draft, and build each student's timeline.",
+    "Invitation-only beta for turning quick teacher notes into organized, teacher-validated student evidence.",
 };
 
 export default function Home() {
   return (
-    <div className="paperbackground relative flex min-h-screen flex-col bg-background">
+    <div className="paperbackground relative flex min-h-screen flex-col">
       <LandingHeader />
       <main className="flex-1">
         <LandingHero />

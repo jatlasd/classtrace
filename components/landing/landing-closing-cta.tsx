@@ -17,15 +17,16 @@ export function LandingClosingCta() {
           <span className="hand-underline-rust">need it later</span>.
         </h2>
         <p className="mx-auto mt-6 max-w-md text-base leading-relaxed text-muted-foreground">
-          Start with one student. Capture one moment. Future-you gets the
-          receipts — and the next conversation doesn&apos;t start from memory.
+          If you received a beta invitation, complete sign-up and start with
+          one student. Capture one moment. Build the record before you need it,
+          so the next conversation does not start from memory.
         </p>
         <div className="mt-9 flex justify-center">
           <Button
             asChild
             className="h-12 min-w-60 rounded-md px-8 text-[15px] font-semibold"
           >
-            <Link href={routes.signUp}>Start an evidence trail</Link>
+            <Link href={routes.signUp}>Complete invited sign-up</Link>
           </Button>
         </div>
         <p className="mt-4 text-sm text-muted-foreground">

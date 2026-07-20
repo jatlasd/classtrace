@@ -11,8 +11,9 @@ import {
 import { routes } from "@/lib/routes";
 
 export const metadata: Metadata = {
-  title: "Sign up — ClassTrace",
-  description: "Create your private ClassTrace teacher workspace.",
+  title: "Invitation sign-up — ClassTrace",
+  description:
+    "Complete sign-up for the invitation-only ClassTrace teacher beta.",
 };
 
 export default async function SignUpPage(): Promise<ReactElement> {
@@ -24,12 +25,28 @@ export default async function SignUpPage(): Promise<ReactElement> {
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-background px-4 py-8">
-      <SignUp
-        path={clerkSignUpUrl}
-        routing="path"
-        signInUrl={clerkSignInUrl}
-        fallbackRedirectUrl={clerkAfterSignUpUrl}
-      />
+      <div className="w-full max-w-md">
+        <header className="mb-6 text-center">
+          <p className="text-sm font-semibold text-primary">
+            Invitation-only beta
+          </p>
+          <h1 className="font-display mt-2 text-3xl font-semibold tracking-tight text-foreground">
+            Complete your ClassTrace sign-up
+          </h1>
+          <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+            Use the invitation sent to your email to create your teacher
+            workspace. Already have an account? Sign in instead.
+          </p>
+        </header>
+        <div className="flex justify-center">
+          <SignUp
+            path={clerkSignUpUrl}
+            routing="path"
+            signInUrl={clerkSignInUrl}
+            fallbackRedirectUrl={clerkAfterSignUpUrl}
+          />
+        </div>
+      </div>
     </main>
   );
 }

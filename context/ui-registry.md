@@ -98,6 +98,24 @@ These static Server Component pages share one public header/footer and one
 future policy or support information; do not turn trust content into a card
 grid, add legal-looking decoration, or introduce client JavaScript.
 
+## Invitation-only public and sign-up copy
+
+Files: `components/landing/landing-header.tsx`,
+`components/landing/landing-hero.tsx`,
+`components/landing/landing-closing-cta.tsx`,
+`components/landing/landing-footer.tsx`,
+`app/sign-up/[[...sign-up]]/page.tsx`
+
+Last updated: 2026-07-20
+
+- Public calls to action name invited sign-up instead of implying open account
+  creation.
+- The landing hero states that the beta is invitation-only near its primary
+  action.
+- `/sign-up` remains available for Clerk invitation links and introduces the
+  provider flow with the same invitation-only language.
+- Existing-user sign-in stays visually secondary but always available.
+
 ## Evidence record content
 
 File: `components/evidence/evidence-record-content.tsx`

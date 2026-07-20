@@ -57,12 +57,16 @@ export function LandingHero() {
           student-specific evidence record — captured in seconds, reviewed by
           you, and filed where you can find it again.
         </p>
+        <p className="mx-auto mt-4 max-w-xl text-sm font-medium leading-relaxed text-foreground">
+          ClassTrace is currently an invitation-only beta. Sign-up is available
+          only to invited teachers.
+        </p>
         <div className="mt-9 flex animate-in fade-in slide-in-from-bottom-3 flex-wrap items-center justify-center gap-4 duration-700 [animation-delay:220ms] [animation-fill-mode:backwards]">
           <Button
             asChild
             className="h-12 rounded-md px-8 text-[15px] font-semibold"
           >
-            <Link href={routes.signUp}>Start an evidence trail</Link>
+            <Link href={routes.signUp}>Complete invited sign-up</Link>
           </Button>
           <Link
             href={routes.signIn}

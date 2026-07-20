@@ -119,7 +119,10 @@ describe("Prisma database foundation", () => {
   it("defines the approved standalone operator audit without student data", () => {
     expect(existsSync(operatorAuditMigrationPath)).toBe(true);
 
-    const migration = readFileSync(operatorAuditMigrationPath, "utf8");
+    const migration = readFileSync(operatorAuditMigrationPath, "utf8").replaceAll(
+      "\r\n",
+      "\n",
+    );
 
     expect(getPrismaModelFields("OperatorActionAudit")).toEqual([
       "id String",
