@@ -19,21 +19,29 @@ export type CurrentWorkspace = {
   workspaceId: string;
 };
 
-export async function getCurrentWorkspace(): Promise<CurrentWorkspace> {
-  const { userId } = await auth();
+type UniqueConstraintError = {
+  code: "P2002";
+};
 
-  if (!userId) {
-    throw new CurrentWorkspaceError(
-      "AUTH_REQUIRED",
-      "You must be signed in to access this workspace."
-    );
-  }
+function isUniqueConstraintError(
+  error: unknown
+): error is UniqueConstraintError {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "code" in error &&
+    error.code === "P2002"
+  );
+}
 
+async function provisionCurrentWorkspace(
+  clerkUserId: string
+): Promise<CurrentWorkspace> {
   const teacherProfile = await prisma.teacherProfile.upsert({
-    where: { clerkUserId: userId },
+    where: { clerkUserId },
     update: {},
     create: {
-      clerkUserId: userId,
+      clerkUserId,
       displayName: "Teacher",
     },
     select: { id: true },
@@ -47,8 +55,29 @@ export async function getCurrentWorkspace(): Promise<CurrentWorkspace> {
   });
 
   return {
-    clerkUserId: userId,
+    clerkUserId,
     teacherProfileId: teacherProfile.id,
     workspaceId: workspace.id,
   };
+}
+
+export async function getCurrentWorkspace(): Promise<CurrentWorkspace> {
+  const { userId } = await auth();
+
+  if (!userId) {
+    throw new CurrentWorkspaceError(
+      "AUTH_REQUIRED",
+      "You must be signed in to access this workspace."
+    );
+  }
+
+  try {
+    return await provisionCurrentWorkspace(userId);
+  } catch (error) {
+    if (!isUniqueConstraintError(error)) {
+      throw error;
+    }
+
+    return provisionCurrentWorkspace(userId);
+  }
 }

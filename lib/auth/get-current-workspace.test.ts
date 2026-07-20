@@ -67,5 +67,47 @@ describe("getCurrentWorkspace", () => {
     mocks.teacherProfileUpsert.mockRejectedValue(new Error("database unavailable"));
 
     await expect(getCurrentWorkspace()).rejects.toThrow("database unavailable");
+    expect(mocks.teacherProfileUpsert).toHaveBeenCalledTimes(1);
+  });
+
+  it("retries provisioning when another request creates the teacher profile", async () => {
+    mocks.auth.mockResolvedValue({ userId: "clerk_user_1" });
+    mocks.teacherProfileUpsert
+      .mockRejectedValueOnce({ code: "P2002" })
+      .mockResolvedValueOnce({ id: "teacher_1" });
+    mocks.workspaceUpsert.mockResolvedValue({ id: "workspace_1" });
+
+    await expect(getCurrentWorkspace()).resolves.toEqual({
+      clerkUserId: "clerk_user_1",
+      teacherProfileId: "teacher_1",
+      workspaceId: "workspace_1",
+    });
+    expect(mocks.teacherProfileUpsert).toHaveBeenCalledTimes(2);
+    expect(mocks.workspaceUpsert).toHaveBeenCalledTimes(1);
+  });
+
+  it("retries the full sequence when another request creates the workspace", async () => {
+    mocks.auth.mockResolvedValue({ userId: "clerk_user_1" });
+    mocks.teacherProfileUpsert.mockResolvedValue({ id: "teacher_1" });
+    mocks.workspaceUpsert
+      .mockRejectedValueOnce({ code: "P2002" })
+      .mockResolvedValueOnce({ id: "workspace_1" });
+
+    await expect(getCurrentWorkspace()).resolves.toEqual({
+      clerkUserId: "clerk_user_1",
+      teacherProfileId: "teacher_1",
+      workspaceId: "workspace_1",
+    });
+    expect(mocks.teacherProfileUpsert).toHaveBeenCalledTimes(2);
+    expect(mocks.workspaceUpsert).toHaveBeenCalledTimes(2);
+  });
+
+  it("stops after one retry when the unique constraint failure continues", async () => {
+    mocks.auth.mockResolvedValue({ userId: "clerk_user_1" });
+    mocks.teacherProfileUpsert.mockRejectedValue({ code: "P2002" });
+
+    await expect(getCurrentWorkspace()).rejects.toMatchObject({ code: "P2002" });
+    expect(mocks.teacherProfileUpsert).toHaveBeenCalledTimes(2);
+    expect(mocks.workspaceUpsert).not.toHaveBeenCalled();
   });
 });
