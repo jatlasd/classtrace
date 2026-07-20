@@ -155,9 +155,21 @@ File: `components/dashboard/evidence-feed-controls.tsx`
 
 ## Roster ledgers
 
-File: `app/app/roster/page.tsx`
+Files: `app/app/roster/page.tsx`,
+`components/roster/class-roster-manager.tsx`,
+`components/roster/manual-student-entry-form.tsx`,
+`components/roster/roster-student-row.tsx`
+
+Last updated: 2026-07-20
 
 - Classes and students render as bordered lists with row dividers.
+- The overview is labeled **Students by class** and every active class exposes an
+  explicit **Add/manage students** action.
+- A successful manual create inserts the returned student into the selected
+  class ledger immediately, then refreshes to reconcile server-owned counts and
+  roster state.
+- Student name is the primary manual-entry field. The derived mention handle and
+  school/local ID live under **Optional details**.
 - Forms/actions live near the row or selected class they affect.
 - Use full borders/tonal surfaces for guidance; do not use colored side stripes.
 - Long names and handles must wrap or truncate intentionally without hiding the action.

@@ -1,12 +1,12 @@
 import Link from "next/link";
-import { Archive, ArrowLeft, BookOpen, Users } from "lucide-react";
+import { Archive, ArrowLeft, BookOpen } from "lucide-react";
 import { ArchivedRosterStudentActions } from "@/components/roster/archived-roster-student-actions";
-import { ClassGroupActions } from "@/components/roster/class-group-actions";
+import { ClassRosterManager } from "@/components/roster/class-roster-manager";
 import { ClassGroupForm } from "@/components/roster/class-group-form";
-import { ManualStudentEntryForm } from "@/components/roster/manual-student-entry-form";
-import { RosterStudentEditForm } from "@/components/roster/roster-student-edit-form";
-import { RosterImportForm } from "@/components/roster/roster-import-form";
-import { RosterStudentRowActions } from "@/components/roster/roster-student-row-actions";
+import {
+  RosterStudentRow,
+  type ActiveClassOption,
+} from "@/components/roster/roster-student-row";
 import { Button } from "@/components/ui/button";
 import { getCurrentWorkspace } from "@/lib/auth/get-current-workspace";
 import {
@@ -33,25 +33,6 @@ type RosterPageProps = {
   searchParams?: Promise<{ classId?: string | string[]; view?: string | string[] }>;
 };
 
-type ActiveClassOption = {
-  id: string;
-  name: string;
-};
-
-function studentInitials(displayName: string): string {
-  const parts = displayName.trim().split(/\s+/).filter(Boolean);
-
-  if (parts.length === 0) {
-    return "??";
-  }
-
-  if (parts.length === 1) {
-    return parts[0].slice(0, 2).toUpperCase();
-  }
-
-  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
-}
-
 function getSingleParam(value: string | string[] | undefined): string | undefined {
   return Array.isArray(value) ? value[0] : value;
 }
@@ -62,66 +43,6 @@ function classHref(classGroupId: string): string {
 
 function archivedClassesHref(): string {
   return `${routes.roster}?view=archived`;
-}
-
-function StudentRow({
-  student,
-  activeClasses,
-  showClassName,
-}: {
-  student: RosterStudentDisplay | ClassRosterStudentDisplay;
-  activeClasses: ActiveClassOption[];
-  showClassName: boolean;
-}) {
-  const classGroupId = "classGroupId" in student ? student.classGroupId : null;
-  const classGroupName =
-    "classGroupName" in student ? student.classGroupName : null;
-  const schoolLocalId = student.schoolLocalId;
-
-  return (
-    <li className="border-b border-border last:border-b-0">
-      <div className="grid gap-3 px-4 py-3.5 sm:grid-cols-[minmax(0,1fr)_180px_150px] sm:items-center sm:px-5">
-        <Link
-          href={routes.student(student.id)}
-          aria-label={`Open ${student.displayName} timeline`}
-          className="-m-1 flex min-w-0 items-center gap-3 rounded-md p-1 outline-none transition-colors hover:bg-muted/50 focus-visible:ring-3 focus-visible:ring-ring/20"
-        >
-          <div className="flex size-9 shrink-0 items-center justify-center rounded-md border border-border bg-muted/50 text-[11px] font-bold text-foreground">
-            {studentInitials(student.displayName)}
-          </div>
-          <div className="min-w-0">
-            <p className="break-words font-medium leading-snug text-foreground [overflow-wrap:anywhere]">
-              {student.displayName}
-            </p>
-            <p className="mt-0.5 text-xs text-muted-foreground">Open timeline</p>
-          </div>
-        </Link>
-        <p className="break-words text-sm text-muted-foreground [overflow-wrap:anywhere] sm:text-foreground">
-          @{student.mentionHandle}
-        </p>
-        <div className="break-words text-xs text-muted-foreground [overflow-wrap:anywhere]">
-          {showClassName ? <p>{classGroupName || "Needs class"}</p> : null}
-          {schoolLocalId ? <p>Local ID: {schoolLocalId}</p> : null}
-        </div>
-        <div className="space-y-2 border-t border-border/50 pt-3 sm:col-span-3">
-          <RosterStudentEditForm
-            student={{
-              id: student.id,
-              displayName: student.displayName,
-              mentionHandle: student.mentionHandle,
-              schoolLocalId,
-              classGroupId,
-            }}
-            activeClasses={activeClasses}
-          />
-          <RosterStudentRowActions
-            studentId={student.id}
-            studentDisplayName={student.displayName}
-          />
-        </div>
-      </div>
-    </li>
-  );
 }
 
 function ArchivedStudentRow({
@@ -226,7 +147,7 @@ function ClassList({
                         {studentCount} {studentCount === 1 ? "student" : "students"}
                       </p>
                       <Button asChild size="sm" variant="outline">
-                        <Link href={classHref(classGroup.id)}>Open class</Link>
+                        <Link href={classHref(classGroup.id)}>Add/manage students</Link>
                       </Button>
                     </div>
                   </li>
@@ -315,16 +236,24 @@ function OpenClassView({
   students,
   activeClasses,
   existingImportStudents,
-  isFirstStudent,
   canContinueToFeed,
 }: {
   classGroup: ClassGroupDisplay;
   students: ClassRosterStudentDisplay[];
   activeClasses: ActiveClassOption[];
   existingImportStudents: ExistingRosterImportStudent[];
-  isFirstStudent: boolean;
   canContinueToFeed: boolean;
 }) {
+  const rosterRevision = JSON.stringify(
+    students.map((student) => ({
+      id: student.id,
+      displayName: student.displayName,
+      mentionHandle: student.mentionHandle,
+      schoolLocalId: student.schoolLocalId,
+      classGroupId: student.classGroupId,
+    }))
+  );
+
   return (
     <section className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -342,81 +271,14 @@ function OpenClassView({
         ) : null}
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
-        <div className="space-y-4">
-          <div className="border border-border bg-card/60 p-5">
-            <div className="flex items-start gap-3">
-              <div className="flex size-10 shrink-0 items-center justify-center rounded-md border border-border bg-muted/50 text-primary">
-                <Users className="size-4" />
-              </div>
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  Open class
-                </p>
-                <h2 className="font-display text-lg font-semibold text-foreground">
-                  {classGroup.name}
-                </h2>
-                <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-                  Add students here. Capture will still happen from the global evidence
-                  feed.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div>
-            <div className="mb-2 grid gap-2 border-b border-border pb-2 sm:grid-cols-[minmax(0,1fr)_180px_150px]">
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Students
-              </h3>
-              <p className="hidden text-xs font-semibold uppercase tracking-wider text-muted-foreground sm:block">
-                Handle
-              </p>
-              <p className="hidden text-xs font-semibold uppercase tracking-wider text-muted-foreground sm:block">
-                Details
-              </p>
-            </div>
-
-            {students.length === 0 ? (
-              <div className="border border-border bg-card/60 p-5 text-sm leading-relaxed text-muted-foreground">
-                <p className="font-medium text-foreground">No students in this class yet.</p>
-                <p className="mt-1">
-                  Add one student to make the evidence feed available for capture.
-                </p>
-              </div>
-            ) : (
-              <ul className="border border-border bg-card/60">
-                {students.map((student) => (
-                  <StudentRow
-                    key={student.id}
-                    student={student}
-                    activeClasses={activeClasses}
-                    showClassName={false}
-                  />
-                ))}
-              </ul>
-            )}
-          </div>
-        </div>
-
-        <div className="space-y-4">
-          <div className="border border-border bg-card/55 p-4 sm:p-5">
-            <ManualStudentEntryForm
-              isFirstStudent={isFirstStudent}
-              classGroupId={classGroup.id}
-              className={classGroup.name}
-            />
-          </div>
-          <ClassGroupActions classGroupId={classGroup.id} className={classGroup.name} />
-          <div className="border border-border bg-card/55 p-4 sm:p-5">
-            <RosterImportForm
-              existingStudents={existingImportStudents}
-              classGroupId={classGroup.id}
-              className={classGroup.name}
-            />
-          </div>
-        </div>
-      </div>
+      <ClassRosterManager
+        key={rosterRevision}
+        classGroupId={classGroup.id}
+        className={classGroup.name}
+        initialStudents={students}
+        activeClasses={activeClasses}
+        existingImportStudents={existingImportStudents}
+      />
     </section>
   );
 }
@@ -481,11 +343,12 @@ export default async function RosterPage({ searchParams }: RosterPageProps) {
               ? selectedClass.name
               : view === "archived"
                 ? "Archived classes"
-                : "Classes in your roster"}
+                : "Students by class"}
           </h1>
           <div className="mt-2 space-y-1 text-sm leading-relaxed text-muted-foreground">
             <p>
-              Classes organize roster setup. Capture remains global and student-specific.
+              Add and manage students inside each class. Capture remains global and
+              student-specific.
             </p>
             <p>Your roster is private to your ClassTrace workspace.</p>
           </div>
@@ -517,7 +380,6 @@ export default async function RosterPage({ searchParams }: RosterPageProps) {
           students={selectedClassStudents ?? []}
           activeClasses={activeClassOptions}
           existingImportStudents={existingImportStudents}
-          isFirstStudent={(selectedClassStudents ?? []).length === 0}
           canContinueToFeed={readyForCapture}
         />
       ) : selectedClassMissing ? (
@@ -534,7 +396,7 @@ export default async function RosterPage({ searchParams }: RosterPageProps) {
         <div className="space-y-6">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <p className="text-sm leading-relaxed text-muted-foreground">
-              Open a class to manage students.
+              Choose a class to add or manage students.
             </p>
             <Button asChild variant="ghost" size="sm">
               <Link href={archivedClassesHref()}>View archived classes</Link>
@@ -576,7 +438,7 @@ export default async function RosterPage({ searchParams }: RosterPageProps) {
               </div>
               <ul className="border border-border bg-card/60">
                 {unassignedStudents.map((student) => (
-                  <StudentRow
+                  <RosterStudentRow
                     key={student.id}
                     student={student}
                     activeClasses={activeClassOptions}
