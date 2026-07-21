@@ -28,6 +28,13 @@ const operatorAuditMigrationPath = join(
   "20260714000000_add_operator_action_audit",
   "migration.sql"
 );
+const operatorAuditEnumMigrationPath = join(
+  projectRoot,
+  "prisma",
+  "migrations",
+  "20260721000000_convert_operator_audit_columns_to_enums",
+  "migration.sql"
+);
 
 const schema = readFileSync(schemaPath, "utf8");
 const envExample = readFileSync(envExamplePath, "utf8");
@@ -118,11 +125,16 @@ describe("Prisma database foundation", () => {
 
   it("defines the approved standalone operator audit without student data", () => {
     expect(existsSync(operatorAuditMigrationPath)).toBe(true);
+    expect(existsSync(operatorAuditEnumMigrationPath)).toBe(true);
 
     const migration = readFileSync(operatorAuditMigrationPath, "utf8").replaceAll(
       "\r\n",
       "\n",
     );
+    const enumMigration = readFileSync(
+      operatorAuditEnumMigrationPath,
+      "utf8"
+    ).replaceAll("\r\n", "\n");
 
     expect(getPrismaModelFields("OperatorActionAudit")).toEqual([
       "id String",
@@ -145,28 +157,41 @@ describe("Prisma database foundation", () => {
       '"id" TEXT NOT NULL',
       '"operatorClerkUserId" TEXT NOT NULL',
       '"targetClerkUserId" TEXT NOT NULL',
-      '"action" "OperatorAuditAction" NOT NULL',
-      '"outcome" "OperatorAuditOutcome" NOT NULL',
+      '"action" TEXT NOT NULL',
+      '"outcome" TEXT NOT NULL',
       '"classGroupCount" INTEGER NOT NULL DEFAULT 0',
       '"rosterStudentCount" INTEGER NOT NULL DEFAULT 0',
       '"evidenceRecordCount" INTEGER NOT NULL DEFAULT 0',
       '"createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP',
       '"completedAt" TIMESTAMP(3)',
     ]);
-    expect(migration).toContain(
+    expect(enumMigration).toContain(
       'CREATE TYPE "OperatorAuditAction" AS ENUM (\n' +
         "    'WORKSPACE_DATA_DELETE',\n" +
         "    'CLERK_USER_DELETE'\n" +
         ");"
     );
-    expect(migration).toContain(
+    expect(enumMigration).toContain(
       'CREATE TYPE "OperatorAuditOutcome" AS ENUM (\n' +
         "    'STARTED',\n" +
         "    'SUCCEEDED',\n" +
         "    'FAILED'\n" +
         ");"
     );
+    expect(enumMigration).toContain(
+      'ALTER COLUMN "action" TYPE "OperatorAuditAction"'
+    );
+    expect(enumMigration).toContain(
+      'USING ("action"::"OperatorAuditAction")'
+    );
+    expect(enumMigration).toContain(
+      'ALTER COLUMN "outcome" TYPE "OperatorAuditOutcome"'
+    );
+    expect(enumMigration).toContain(
+      'USING ("outcome"::"OperatorAuditOutcome")'
+    );
     expect(migration).not.toMatch(/FOREIGN KEY|REFERENCES/i);
+    expect(enumMigration).not.toMatch(/FOREIGN KEY|REFERENCES/i);
   });
 
   it("documents database environment variables and scripts", () => {
