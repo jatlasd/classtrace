@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { ChevronRight } from "lucide-react";
 import { type FormEvent, useState, useTransition } from "react";
 import { createRosterStudent } from "@/actions/roster";
 import { ROSTER_INPUT_CLASS_NAME } from "@/components/roster/form-styles";
@@ -14,6 +15,7 @@ type ManualStudentEntryFormProps = {
   classGroupId: string;
   className: string;
   onStudentCreated: (student: RosterStudentDisplay) => void;
+  showTitle?: boolean;
 };
 
 function normalizeHandleInput(value: string): string {
@@ -25,6 +27,7 @@ export function ManualStudentEntryForm({
   classGroupId,
   className,
   onStudentCreated,
+  showTitle = true,
 }: ManualStudentEntryFormProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -91,20 +94,25 @@ export function ManualStudentEntryForm({
   }
 
   return (
-    <form className="space-y-4" onSubmit={handleSubmit}>
-      <div className="border-b border-border pb-3">
-        <h2 className="font-display text-lg font-semibold text-foreground">
-          {isFirstStudent ? "Add your first student" : "Add another student"}
-        </h2>
-        <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-          Enter a name for {className}. ClassTrace creates the mention handle
-          automatically.
-        </p>
-      </div>
+    <form className="space-y-3" onSubmit={handleSubmit}>
+      {showTitle ? (
+        <div>
+          <h2 className="font-display text-lg font-semibold text-foreground">
+            {isFirstStudent ? "Add your first student" : "Add a student"}
+          </h2>
+          <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">
+            Enter a name for {className}. ClassTrace creates the mention handle
+            automatically.
+          </p>
+        </div>
+      ) : null}
 
-      <div className="space-y-3">
-        <div className="space-y-1.5">
-          <label htmlFor="student-display-name" className="text-sm font-medium text-foreground">
+      <div className="flex flex-wrap items-end gap-2">
+        <div className="min-w-0 flex-1 basis-52 space-y-1.5">
+          <label
+            htmlFor="student-display-name"
+            className="text-sm font-medium text-foreground"
+          >
             Student name
           </label>
           <input
@@ -120,68 +128,83 @@ export function ManualStudentEntryForm({
             disabled={isPending}
           />
         </div>
+        <Button
+          type="submit"
+          size="lg"
+          className="h-10 rounded-lg px-5 text-sm font-semibold"
+          disabled={isPending}
+        >
+          {isPending ? "Saving…" : "Add student"}
+        </Button>
+      </div>
 
-        <details className="border-y border-border/70 py-1">
-          <summary className="flex min-h-10 cursor-pointer items-center justify-between gap-3 rounded-md px-1 text-sm font-medium text-foreground outline-none marker:text-muted-foreground focus-visible:ring-3 focus-visible:ring-ring/20">
-            <span>Optional details</span>
-            <span className="text-xs font-normal text-muted-foreground">
-              Handle and local ID
-            </span>
-          </summary>
-          <div className="space-y-3 pb-2 pt-3">
-            <div className="space-y-1.5">
-              <label htmlFor="student-mention-handle" className="text-sm font-medium text-foreground">
-                Mention handle
-              </label>
-              <div className="flex h-10 rounded-md border border-border bg-background/50 focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/20">
-                <span className="flex items-center border-r border-border px-3 text-sm text-muted-foreground">
-                  @
-                </span>
-                <input
-                  id="student-mention-handle"
-                  name="mentionHandle"
-                  type="text"
-                  value={mentionHandle}
-                  onChange={(event) => handleMentionHandleChange(event.target.value)}
-                  className="min-w-0 flex-1 bg-transparent px-3 text-sm text-foreground outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
-                  aria-invalid={Boolean(error)}
-                  aria-describedby={error ? "student-entry-error" : undefined}
-                  autoComplete="off"
-                  disabled={isPending}
-                />
-              </div>
-              <p className="text-xs leading-relaxed text-muted-foreground">
-                Change the handle only when the automatic one is not a good fit.
-              </p>
-            </div>
-
-            <div className="space-y-1.5">
-              <label htmlFor="student-school-id" className="text-sm font-medium text-foreground">
-                School/local ID
-              </label>
+      <details className="group">
+        <summary className="-mx-1 flex min-h-9 w-fit cursor-pointer list-none items-center gap-1 rounded-md px-1 text-xs font-medium text-muted-foreground outline-none transition-colors hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/20 [&::-webkit-details-marker]:hidden">
+          <ChevronRight
+            className="size-3.5 transition-transform group-open:rotate-90"
+            aria-hidden="true"
+          />
+          Optional details · handle and local ID
+        </summary>
+        <div className="space-y-3 pb-1 pt-2">
+          <div className="space-y-1.5">
+            <label
+              htmlFor="student-mention-handle"
+              className="text-sm font-medium text-foreground"
+            >
+              Mention handle
+            </label>
+            <div className="flex h-10 rounded-md border border-border bg-background/50 focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/20">
+              <span className="flex items-center border-r border-border px-3 text-sm text-muted-foreground">
+                @
+              </span>
               <input
-                id="student-school-id"
-                name="schoolLocalId"
+                id="student-mention-handle"
+                name="mentionHandle"
                 type="text"
-                value={schoolLocalId}
-                onChange={(event) => {
-                  setSchoolLocalId(event.target.value);
-                  setError(null);
-                  setSuccessMessage(null);
-                }}
-                className={ROSTER_INPUT_CLASS_NAME}
+                value={mentionHandle}
+                onChange={(event) => handleMentionHandleChange(event.target.value)}
+                className="min-w-0 flex-1 bg-transparent px-3 text-sm text-foreground outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
                 aria-invalid={Boolean(error)}
                 aria-describedby={error ? "student-entry-error" : undefined}
                 autoComplete="off"
                 disabled={isPending}
               />
-              <p className="text-xs leading-relaxed text-muted-foreground">
-                Leave blank if you do not use local IDs.
-              </p>
             </div>
+            <p className="text-xs leading-relaxed text-muted-foreground">
+              Change the handle only when the automatic one is not a good fit.
+            </p>
           </div>
-        </details>
-      </div>
+
+          <div className="space-y-1.5">
+            <label
+              htmlFor="student-school-id"
+              className="text-sm font-medium text-foreground"
+            >
+              School/local ID
+            </label>
+            <input
+              id="student-school-id"
+              name="schoolLocalId"
+              type="text"
+              value={schoolLocalId}
+              onChange={(event) => {
+                setSchoolLocalId(event.target.value);
+                setError(null);
+                setSuccessMessage(null);
+              }}
+              className={ROSTER_INPUT_CLASS_NAME}
+              aria-invalid={Boolean(error)}
+              aria-describedby={error ? "student-entry-error" : undefined}
+              autoComplete="off"
+              disabled={isPending}
+            />
+            <p className="text-xs leading-relaxed text-muted-foreground">
+              Leave blank if you do not use local IDs.
+            </p>
+          </div>
+        </div>
+      </details>
 
       {error ? (
         <RosterFormMessage id="student-entry-error" message={error} />
@@ -190,17 +213,9 @@ export function ManualStudentEntryForm({
           id="student-entry-status"
           message={successMessage}
           tone="status"
+          className="min-h-0 text-sm"
         />
       )}
-
-      <Button
-        type="submit"
-        size="lg"
-        className="h-9 rounded-lg px-5 text-sm font-semibold"
-        disabled={isPending}
-      >
-        {isPending ? "Saving…" : "Add student"}
-      </Button>
     </form>
   );
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { Users } from "lucide-react";
+import { ChevronRight, Plus } from "lucide-react";
 import { useState } from "react";
 import { ClassGroupActions } from "@/components/roster/class-group-actions";
 import { ManualStudentEntryForm } from "@/components/roster/manual-student-entry-form";
@@ -20,6 +20,9 @@ type ClassRosterManagerProps = {
   activeClasses: ActiveClassOption[];
   existingImportStudents: ExistingRosterImportStudent[];
 };
+
+const UTILITY_SUMMARY_CLASS_NAME =
+  "flex min-h-12 cursor-pointer list-none items-center gap-2 py-2 text-sm font-medium text-foreground outline-none transition-colors hover:text-primary focus-visible:ring-3 focus-visible:ring-ring/20 [&::-webkit-details-marker]:hidden";
 
 export function ClassRosterManager({
   classGroupId,
@@ -48,80 +51,102 @@ export function ClassRosterManager({
   }
 
   return (
-    <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
-      <div className="space-y-4">
-        <div className="border border-border bg-card/60 p-5">
-          <div className="flex items-start gap-3">
-            <div className="flex size-10 shrink-0 items-center justify-center rounded-md border border-border bg-muted/50 text-primary">
-              <Users className="size-4" aria-hidden="true" />
-            </div>
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Class roster
-              </p>
-              <h2 className="font-display text-lg font-semibold text-foreground">
-                {className}
-              </h2>
-              <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-                Add and manage students here. Capture stays global and student-specific.
-              </p>
+    <div className="space-y-7">
+      <section className="space-y-2.5">
+        <div className="flex items-baseline justify-between gap-3 px-1">
+          <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            Students
+          </h2>
+          <p className="text-xs tabular-nums text-muted-foreground">
+            {students.length} {students.length === 1 ? "student" : "students"}
+          </p>
+        </div>
+
+        {students.length === 0 ? (
+          <div className="rounded-card border border-border bg-card p-5 shadow-paper sm:p-6">
+            <p className="font-medium text-foreground">
+              No students in this class yet.
+            </p>
+            <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+              Add one student to make the evidence feed available for capture.
+            </p>
+            <div className="mt-4 max-w-xl">
+              <ManualStudentEntryForm
+                isFirstStudent
+                classGroupId={classGroupId}
+                className={className}
+                onStudentCreated={handleStudentCreated}
+                showTitle={false}
+              />
             </div>
           </div>
-        </div>
+        ) : (
+          <ul
+            className="overflow-hidden rounded-card border border-border bg-card/60"
+            aria-label={`${className} students`}
+          >
+            {students.map((student) => (
+              <RosterStudentRow
+                key={student.id}
+                student={student}
+                activeClasses={activeClasses}
+                showClassName={false}
+              />
+            ))}
+            <li>
+              <details className="group/add">
+                <summary className="flex min-h-12 cursor-pointer list-none items-center gap-2 px-4 text-sm font-medium text-primary outline-none transition-colors hover:bg-muted/40 focus-visible:ring-3 focus-visible:ring-ring/20 sm:px-5 [&::-webkit-details-marker]:hidden">
+                  <Plus className="size-4" aria-hidden="true" />
+                  Add student
+                </summary>
+                <div className="max-w-xl border-t border-border/60 bg-muted/20 px-4 py-4 sm:px-5">
+                  <ManualStudentEntryForm
+                    isFirstStudent={false}
+                    classGroupId={classGroupId}
+                    className={className}
+                    onStudentCreated={handleStudentCreated}
+                    showTitle={false}
+                  />
+                </div>
+              </details>
+            </li>
+          </ul>
+        )}
+      </section>
 
-        <div>
-          <div className="mb-2 grid gap-2 border-b border-border pb-2 sm:grid-cols-[minmax(0,1fr)_180px_150px]">
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              Students
-            </h3>
-            <p className="hidden text-xs font-semibold uppercase tracking-wider text-muted-foreground sm:block">
-              Handle
-            </p>
-            <p className="hidden text-xs font-semibold uppercase tracking-wider text-muted-foreground sm:block">
-              Details
-            </p>
+      <section className="divide-y divide-border/70 border-y border-border/70">
+        <details className="group/import">
+          <summary className={UTILITY_SUMMARY_CLASS_NAME}>
+            <ChevronRight
+              className="size-4 text-muted-foreground transition-transform group-open/import:rotate-90"
+              aria-hidden="true"
+            />
+            Paste several students
+          </summary>
+          <div className="max-w-xl pb-6 pl-6 pt-1">
+            <RosterImportForm
+              existingStudents={existingImportStudents}
+              classGroupId={classGroupId}
+              className={className}
+            />
           </div>
-
-          {students.length === 0 ? (
-            <div className="border border-border bg-card/60 p-5 text-sm leading-relaxed text-muted-foreground">
-              <p className="font-medium text-foreground">No students in this class yet.</p>
-              <p className="mt-1">
-                Add one student to make the evidence feed available for capture.
-              </p>
-            </div>
-          ) : (
-            <ul className="border border-border bg-card/60" aria-label={`${className} students`}>
-              {students.map((student) => (
-                <RosterStudentRow
-                  key={student.id}
-                  student={student}
-                  activeClasses={activeClasses}
-                  showClassName={false}
-                />
-              ))}
-            </ul>
-          )}
-        </div>
-      </div>
-
-      <div className="space-y-4">
-        <div className="border border-border bg-card/55 p-4 sm:p-5">
-          <ManualStudentEntryForm
-            isFirstStudent={students.length === 0}
-            classGroupId={classGroupId}
-            className={className}
-            onStudentCreated={handleStudentCreated}
-          />
-        </div>
-        <ClassGroupActions classGroupId={classGroupId} className={className} />
-        <div className="border border-border bg-card/55 p-4 sm:p-5">
-          <RosterImportForm
-            existingStudents={existingImportStudents}
-            classGroupId={classGroupId}
-            className={className}
-          />
-        </div>
-      </div>
+        </details>
+        <details className="group/settings">
+          <summary className={UTILITY_SUMMARY_CLASS_NAME}>
+            <ChevronRight
+              className="size-4 text-muted-foreground transition-transform group-open/settings:rotate-90"
+              aria-hidden="true"
+            />
+            Class settings
+          </summary>
+          <div className="max-w-xl pb-6 pl-6 pt-1">
+            <ClassGroupActions
+              classGroupId={classGroupId}
+              className={className}
+            />
+          </div>
+        </details>
+      </section>
     </div>
   );
 }

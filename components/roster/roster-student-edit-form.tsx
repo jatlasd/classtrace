@@ -1,7 +1,6 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { Pencil } from "lucide-react";
 import { type FormEvent, useState, useTransition } from "react";
 import { updateRosterStudent } from "@/actions/roster";
 import { ROSTER_INPUT_CLASS_NAME } from "@/components/roster/form-styles";
@@ -23,6 +22,7 @@ type RosterStudentEditFormProps = {
     classGroupId: string | null;
   };
   activeClasses: ActiveClassOption[];
+  onClose?: () => void;
 };
 
 function normalizeHandleInput(value: string): string {
@@ -32,9 +32,9 @@ function normalizeHandleInput(value: string): string {
 export function RosterStudentEditForm({
   student,
   activeClasses,
+  onClose,
 }: RosterStudentEditFormProps) {
   const router = useRouter();
-  const [isEditing, setIsEditing] = useState(false);
   const [displayName, setDisplayName] = useState(student.displayName);
   const [mentionHandle, setMentionHandle] = useState(student.mentionHandle);
   const [schoolLocalId, setSchoolLocalId] = useState(student.schoolLocalId ?? "");
@@ -42,15 +42,6 @@ export function RosterStudentEditForm({
   const [handleWasEdited, setHandleWasEdited] = useState(false);
   const [error, setError] = useState("");
   const [isPending, startTransition] = useTransition();
-
-  function resetForm(): void {
-    setDisplayName(student.displayName);
-    setMentionHandle(student.mentionHandle);
-    setSchoolLocalId(student.schoolLocalId ?? "");
-    setClassGroupId(student.classGroupId ?? "");
-    setHandleWasEdited(false);
-    setError("");
-  }
 
   function handleDisplayNameChange(value: string): void {
     setDisplayName(value);
@@ -79,132 +70,119 @@ export function RosterStudentEditForm({
         return;
       }
 
-      setIsEditing(false);
+      onClose?.();
       router.refresh();
     });
   }
 
   return (
-    <div className="space-y-2">
-      {!isEditing ? (
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          className="-ml-2 text-muted-foreground"
-          onClick={() => setIsEditing(true)}
-          aria-label={`Edit student ${student.displayName}`}
-        >
-          <Pencil className="size-3.5" />
-          Edit student
-        </Button>
-      ) : (
-        <form className="space-y-3 border-t border-border/50 pt-3" onSubmit={handleSubmit}>
-          <div className="grid gap-3 sm:grid-cols-2">
-            <div className="space-y-1.5">
-              <label htmlFor={`student-name-${student.id}`} className="text-sm font-medium text-foreground">
-                Student name
-              </label>
-              <input
-                id={`student-name-${student.id}`}
-                value={displayName}
-                onChange={(event) => handleDisplayNameChange(event.target.value)}
-                className={ROSTER_INPUT_CLASS_NAME}
-                aria-invalid={Boolean(error)}
-                aria-describedby={error ? `student-edit-error-${student.id}` : undefined}
-                disabled={isPending}
-              />
-            </div>
-            <div className="space-y-1.5">
-              <label htmlFor={`student-handle-${student.id}`} className="text-sm font-medium text-foreground">
-                Mention handle
-              </label>
-              <div className="flex h-10 rounded-md border border-border bg-background/50 focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/20">
-                <span className="flex items-center border-r border-border px-3 text-sm text-muted-foreground">
-                  @
-                </span>
-                <input
-                  id={`student-handle-${student.id}`}
-                  value={mentionHandle}
-                  onChange={(event) => {
-                    setMentionHandle(normalizeHandleInput(event.target.value));
-                    setHandleWasEdited(true);
-                    setError("");
-                  }}
-                  className="min-w-0 flex-1 bg-transparent px-3 text-sm text-foreground outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
-                  aria-invalid={Boolean(error)}
-                  aria-describedby={error ? `student-edit-error-${student.id}` : undefined}
-                  disabled={isPending}
-                />
-              </div>
-            </div>
-            <div className="space-y-1.5">
-              <label htmlFor={`student-class-${student.id}`} className="text-sm font-medium text-foreground">
-                Class
-              </label>
-              <select
-                id={`student-class-${student.id}`}
-                value={classGroupId}
-                onChange={(event) => {
-                  setClassGroupId(event.target.value);
-                  setError("");
-                }}
-                className={ROSTER_INPUT_CLASS_NAME}
-                aria-invalid={Boolean(error)}
-                aria-describedby={error ? `student-edit-error-${student.id}` : undefined}
-                disabled={isPending}
-              >
-                <option value="">Choose class</option>
-                {activeClasses.map((classGroup) => (
-                  <option key={classGroup.id} value={classGroup.id}>
-                    {classGroup.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="space-y-1.5">
-              <label htmlFor={`student-local-id-${student.id}`} className="text-sm font-medium text-foreground">
-                School/local ID
-              </label>
-              <input
-                id={`student-local-id-${student.id}`}
-                value={schoolLocalId}
-                onChange={(event) => {
-                  setSchoolLocalId(event.target.value);
-                  setError("");
-                }}
-                className={ROSTER_INPUT_CLASS_NAME}
-                aria-invalid={Boolean(error)}
-                aria-describedby={error ? `student-edit-error-${student.id}` : undefined}
-                disabled={isPending}
-              />
-            </div>
-          </div>
-
-          <RosterFormMessage
-            id={`student-edit-error-${student.id}`}
-            message={error}
+    <form
+      className="space-y-3"
+      onSubmit={handleSubmit}
+      aria-label={`Edit student ${student.displayName}`}
+    >
+      <div className="grid gap-3 sm:grid-cols-2">
+        <div className="space-y-1.5">
+          <label htmlFor={`student-name-${student.id}`} className="text-sm font-medium text-foreground">
+            Student name
+          </label>
+          <input
+            id={`student-name-${student.id}`}
+            value={displayName}
+            onChange={(event) => handleDisplayNameChange(event.target.value)}
+            className={ROSTER_INPUT_CLASS_NAME}
+            aria-invalid={Boolean(error)}
+            aria-describedby={error ? `student-edit-error-${student.id}` : undefined}
+            disabled={isPending}
           />
-
-          <div className="flex flex-wrap gap-2">
-            <Button type="submit" variant="outline" size="sm" disabled={isPending}>
-              {isPending ? "Saving…" : "Save student"}
-            </Button>
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={() => {
-                resetForm();
-                setIsEditing(false);
+        </div>
+        <div className="space-y-1.5">
+          <label htmlFor={`student-handle-${student.id}`} className="text-sm font-medium text-foreground">
+            Mention handle
+          </label>
+          <div className="flex h-10 rounded-md border border-border bg-background/50 focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/20">
+            <span className="flex items-center border-r border-border px-3 text-sm text-muted-foreground">
+              @
+            </span>
+            <input
+              id={`student-handle-${student.id}`}
+              value={mentionHandle}
+              onChange={(event) => {
+                setMentionHandle(normalizeHandleInput(event.target.value));
+                setHandleWasEdited(true);
+                setError("");
               }}
+              className="min-w-0 flex-1 bg-transparent px-3 text-sm text-foreground outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
+              aria-invalid={Boolean(error)}
+              aria-describedby={error ? `student-edit-error-${student.id}` : undefined}
               disabled={isPending}
-            >
-              Cancel
-            </Button>
+            />
           </div>
-        </form>
-      )}
-    </div>
+        </div>
+        <div className="space-y-1.5">
+          <label htmlFor={`student-class-${student.id}`} className="text-sm font-medium text-foreground">
+            Class
+          </label>
+          <select
+            id={`student-class-${student.id}`}
+            value={classGroupId}
+            onChange={(event) => {
+              setClassGroupId(event.target.value);
+              setError("");
+            }}
+            className={ROSTER_INPUT_CLASS_NAME}
+            aria-invalid={Boolean(error)}
+            aria-describedby={error ? `student-edit-error-${student.id}` : undefined}
+            disabled={isPending}
+          >
+            <option value="">Choose class</option>
+            {activeClasses.map((classGroup) => (
+              <option key={classGroup.id} value={classGroup.id}>
+                {classGroup.name}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className="space-y-1.5">
+          <label htmlFor={`student-local-id-${student.id}`} className="text-sm font-medium text-foreground">
+            School/local ID
+          </label>
+          <input
+            id={`student-local-id-${student.id}`}
+            value={schoolLocalId}
+            onChange={(event) => {
+              setSchoolLocalId(event.target.value);
+              setError("");
+            }}
+            className={ROSTER_INPUT_CLASS_NAME}
+            aria-invalid={Boolean(error)}
+            aria-describedby={error ? `student-edit-error-${student.id}` : undefined}
+            disabled={isPending}
+          />
+        </div>
+      </div>
+
+      <RosterFormMessage
+        id={`student-edit-error-${student.id}`}
+        message={error}
+      />
+
+      <div className="flex flex-wrap gap-2">
+        <Button type="submit" variant="outline" size="sm" disabled={isPending}>
+          {isPending ? "Saving…" : "Save student"}
+        </Button>
+        {onClose ? (
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={onClose}
+            disabled={isPending}
+          >
+            Close
+          </Button>
+        ) : null}
+      </div>
+    </form>
   );
 }

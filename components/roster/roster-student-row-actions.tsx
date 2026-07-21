@@ -56,7 +56,7 @@ export function RosterStudentRowActions({
   }
 
   return (
-    <div className="space-y-2 border-t border-border/50 pt-3 sm:col-span-3">
+    <div className="space-y-2 border-t border-border/60 pt-3">
       {isConfirmingArchive ? (
         <div className="space-y-2">
           <p className="text-xs leading-relaxed text-muted-foreground">

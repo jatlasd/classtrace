@@ -116,14 +116,10 @@ export function RosterImportForm({
 
   return (
     <form className="space-y-4" onSubmit={handleSubmit}>
-      <div className="border-b border-border pb-3">
-        <h2 className="font-display text-lg font-semibold text-foreground">
-          Paste several students
-        </h2>
-        <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-          These students will be added to {className}. One student per line. Add an optional handle or school/local ID after a comma.
-        </p>
-      </div>
+      <p className="text-xs leading-relaxed text-muted-foreground">
+        These students will be added to {className}. One student per line. Add
+        an optional handle or school/local ID after a comma.
+      </p>
 
       <div className="space-y-1.5">
         <label htmlFor="roster-import-text" className="text-sm font-medium text-foreground">

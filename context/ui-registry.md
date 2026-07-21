@@ -28,7 +28,7 @@ Files: `app/app/layout.tsx`, `components/dashboard/app-top-nav.tsx`
 - One `main#main-content`; child pages do not render another `main`.
 - Focus-visible skip link before navigation.
 - Primary nav is named, uses 44 px links, and sets `aria-current="page"`.
-- Content widths: feed up to `1560px`; roster/report around `1180px`; settings/timeline narrower as content requires.
+- Content widths: feed up to `1560px`; report around `1180px`; roster `880px`; settings/timeline narrower as content requires.
 
 ## Buttons and fields
 
@@ -162,15 +162,25 @@ Files: `app/app/roster/page.tsx`,
 
 Last updated: 2026-07-20
 
-- Classes and students render as bordered lists with row dividers.
-- The overview is labeled **Students by class** and every active class exposes an
-  explicit **Add/manage students** action.
+- Roster is a single ~880px column. Classes and students render as
+  `rounded-card` ledgers with row dividers; section labels are small caps with
+  a count on the trailing edge.
+- On the overview each class row is one whole-row link (name, student count,
+  Open + chevron). A quiet **+ New class** `<details>` row ends the ledger;
+  the create form is inline only when no classes exist.
+- Inside a class, student rows are one line (initials, name, meta joined with
+  `·`) plus one collapsed **Manage** toggle that reveals the edit form and
+  archive/delete actions in a tonal `bg-muted/20` panel. Do not render
+  always-open per-row actions.
+- **Add student** is a quiet `<details>` row at the end of the student ledger
+  (expanded inline only for an empty class). Import and class rename/archive
+  live under collapsed **Paste several students** / **Class settings**
+  `border-y` utility rows below the ledger.
 - A successful manual create inserts the returned student into the selected
   class ledger immediately, then refreshes to reconcile server-owned counts and
   roster state.
 - Student name is the primary manual-entry field. The derived mention handle and
   school/local ID live under **Optional details**.
-- Forms/actions live near the row or selected class they affect.
 - Use full borders/tonal surfaces for guidance; do not use colored side stripes.
 - Long names and handles must wrap or truncate intentionally without hiding the action.
 

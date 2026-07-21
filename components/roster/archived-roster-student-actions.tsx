@@ -50,7 +50,7 @@ export function ArchivedRosterStudentActions({
   }
 
   return (
-    <div className="space-y-2 border-t border-border/50 pt-3">
+    <div className="w-full space-y-2 sm:w-64">
       {hasActiveClasses ? (
         <>
           <label className="block text-xs font-medium text-foreground">
