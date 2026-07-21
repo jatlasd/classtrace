@@ -31,8 +31,12 @@ describe("public trust and support pages", () => {
 
     expect(markup).toContain("Support for the ClassTrace beta");
     expect(markup).toContain("Do not include student names");
-    expect(markup).toContain("Account or data request");
+    expect(markup).toContain("If you can sign in");
+    expect(markup).toContain("If you cannot sign in");
+    expect(markup).toContain("contact the person who invited you");
     expect(markup).toContain('href="' + routes.settings + '"');
+    expect(markup).toContain('href="' + routes.dataDeletion + '"');
+    expect(markup).not.toContain("What helps us investigate");
   });
 
   it("describes full-account deletion and the narrow surviving audit", () => {

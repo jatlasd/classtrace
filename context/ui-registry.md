@@ -72,6 +72,9 @@ File: `components/dashboard/quick-capture-card.tsx`
 - `rounded-card border border-border bg-card shadow-paper`.
 - “What happened?” is the visual anchor.
 - Mention input remains text-only and offers roster-backed suggestions.
+- The textarea and mention-highlighter layers share the same font metrics,
+  padding, border, wrapping, and box sizing. Mention emphasis uses a tonal
+  background without changing glyph weight or spacing.
 - Footer has quiet syntax hints and one clear Capture action.
 - After the workspace's first successful save, one inline success panel links to the student's timeline/report and can return focus to this composer.
 - Do not turn capture into a multi-field form.

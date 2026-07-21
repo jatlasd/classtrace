@@ -26,26 +26,42 @@ const captureHints = [
   { icon: ClipboardCheck, label: "Review before saving" },
 ];
 
+const captureTextLayerStyle = {
+  boxSizing: "border-box" as const,
+  width: "100%",
+  margin: 0,
+  padding: 0,
+  border: 0,
+  fontFamily: "var(--font-body), ui-sans-serif, system-ui, sans-serif",
+  fontSize: 15,
+  fontWeight: 400,
+  lineHeight: "22.5px",
+  letterSpacing: "normal",
+  textAlign: "start" as const,
+  whiteSpace: "pre-wrap" as const,
+  overflowWrap: "anywhere" as const,
+  wordBreak: "break-word" as const,
+};
+
 const quickCaptureMentionsStyle: MentionsInputStyle = {
   control: {
-    fontSize: 15,
-    lineHeight: 1.5,
+    ...captureTextLayerStyle,
   },
   "&multiLine": {
     control: {
       minHeight: 88,
     },
     highlighter: {
-      padding: 0,
+      ...captureTextLayerStyle,
       minHeight: 88,
-      border: "1px solid transparent",
+      overflow: "hidden",
     },
     input: {
-      padding: 0,
+      ...captureTextLayerStyle,
       outline: 0,
-      border: 0,
       minHeight: 88,
       overflow: "auto",
+      resize: "none",
     },
   },
   suggestions: {
@@ -75,8 +91,8 @@ const quickCaptureMentionsStyle: MentionsInputStyle = {
 };
 
 const mentionHighlightStyle = {
-  color: "var(--primary)",
-  fontWeight: 500,
+  backgroundColor: "color-mix(in srgb, var(--link) 13%, transparent)",
+  borderRadius: 3,
 };
 
 type QuickCaptureCardProps = {
