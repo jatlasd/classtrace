@@ -21,11 +21,9 @@ import {
   type StudentMentionRef,
 } from "@/lib/students/student-mention-display";
 import {
-  BarChart3,
   CheckCircle2,
   Circle,
-  MessageCircle,
-  Star,
+  ClipboardCheck,
   Trash2,
   User,
 } from "lucide-react";
@@ -131,36 +129,22 @@ function StudentMentionChip({ mentionRef }: { mentionRef: StudentMentionRef }) {
   return <UnresolvedStudentChip mention={mentionRef.mention} />;
 }
 
-function CaptureIcon({ evidenceType }: { evidenceType: string }) {
-  const normalizedType = evidenceType.toLowerCase();
-
-  if (normalizedType.includes("behavior")) {
+function CaptureIcon({
+  status,
+}: {
+  status: "pending" | "validated";
+}) {
+  if (status === "validated") {
     return (
-      <span className="flex size-11 items-center justify-center rounded-lg border border-accent/40 bg-accent/15 text-primary">
-        <Star className="size-5" strokeWidth={1.75} />
-      </span>
-    );
-  }
-
-  if (normalizedType.includes("academic") || normalizedType.includes("skill")) {
-    return (
-      <span className="flex size-11 items-center justify-center rounded-lg border border-link/20 bg-secondary text-link">
-        <BarChart3 className="size-5" strokeWidth={1.75} />
-      </span>
-    );
-  }
-
-  if (normalizedType.includes("communication")) {
-    return (
-      <span className="flex size-11 items-center justify-center rounded-lg border border-primary/20 bg-primary/10 text-primary">
-        <MessageCircle className="size-5" strokeWidth={1.75} />
+      <span className="flex size-11 items-center justify-center rounded-lg border border-validated/50 bg-validated/35 text-validated-foreground">
+        <CheckCircle2 className="size-5" strokeWidth={1.75} />
       </span>
     );
   }
 
   return (
-    <span className="flex size-11 items-center justify-center rounded-lg border border-validated/50 bg-validated/35 text-validated-foreground">
-      <CheckCircle2 className="size-5" strokeWidth={1.75} />
+    <span className="flex size-11 items-center justify-center rounded-lg border border-accent/40 bg-accent/15 text-primary">
+      <ClipboardCheck className="size-5" strokeWidth={1.75} />
     </span>
   );
 }
@@ -279,7 +263,7 @@ export function EvidenceCaptureCard({
     <article className="border-b border-border last:border-b-0">
       <div className="grid gap-4 px-4 py-5 md:grid-cols-[72px_88px_minmax(0,1fr)_220px] md:px-6">
         <div className="flex items-start gap-3 md:block">
-          <CaptureIcon evidenceType={display.evidenceType} />
+          <CaptureIcon status={display.validationStatus} />
           <div className="md:hidden">
             <p className="text-xs text-muted-foreground">{timestamp}</p>
             <StatusPill
@@ -409,8 +393,8 @@ export function EvidenceCaptureCard({
         </div>
 
         <div className="space-y-3 md:border-l md:border-border md:pl-6">
-          <div className="flex items-start justify-between gap-3">
-            <div className="space-y-2">
+          <div className="flex flex-col items-start justify-center gap-3">
+            {/* <div className="space-y-2 items-center justify-center">
               <StatusPill
                 status={display.validationStatus}
                 needsReview={showReviewCta}
@@ -422,7 +406,7 @@ export function EvidenceCaptureCard({
                     : "Filed after review"}
                 </p>
               )}
-            </div>
+            </div> */}
 
             {showActions && !isEditing && (
               <div className="flex items-center gap-1">
@@ -441,13 +425,13 @@ export function EvidenceCaptureCard({
                   <Button
                     type="button"
                     variant="ghost"
-                    size="xs"
+                    size="sm"
                     className="text-muted-foreground hover:text-destructive"
                     disabled={isReviewSavePending}
                     onClick={handleDelete}
                   >
                     <Trash2 className="size-3.5" />
-                    Delete draft
+                    Delete
                   </Button>
                 )}
               </div>
