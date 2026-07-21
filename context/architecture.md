@@ -287,6 +287,10 @@ error, inspect the failed migration and database state, and choose a reviewed
 forward repair or restore. Resume only after `prisma migrate status` and the
 database agree on the applied state and the normal gates pass again.
 
+For the initial one-person controlled beta, the owner accepts the current
+six-hour Neon history window. Revisit the recovery window before expanding the
+beta or describing the service as production-ready.
+
 ### Vercel rollback and redeploy procedure
 
 1. From the Vercel project, identify the current deployment and the immediately
