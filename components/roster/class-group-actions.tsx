@@ -60,7 +60,7 @@ export function ClassGroupActions({
   }
 
   return (
-    <div className="space-y-3 border border-border bg-card/60 p-4">
+    <div className="space-y-3">
       <div className="flex flex-wrap gap-2">
         <Button
           type="button"

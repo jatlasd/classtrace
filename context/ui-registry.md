@@ -28,7 +28,7 @@ Files: `app/app/layout.tsx`, `components/dashboard/app-top-nav.tsx`
 - One `main#main-content`; child pages do not render another `main`.
 - Focus-visible skip link before navigation.
 - Primary nav is named, uses 44 px links, and sets `aria-current="page"`.
-- Content widths: feed up to `1560px`; roster/report around `1180px`; settings/timeline narrower as content requires.
+- Content widths: feed up to `1560px`; report around `1180px`; roster `880px`; settings/timeline narrower as content requires.
 
 ## Buttons and fields
 
@@ -72,6 +72,9 @@ File: `components/dashboard/quick-capture-card.tsx`
 - `rounded-card border border-border bg-card shadow-paper`.
 - “What happened?” is the visual anchor.
 - Mention input remains text-only and offers roster-backed suggestions.
+- The textarea and mention-highlighter layers share the same font metrics,
+  padding, border, wrapping, and box sizing. Mention emphasis uses a tonal
+  background without changing glyph weight or spacing.
 - Footer has quiet syntax hints and one clear Capture action.
 - After the workspace's first successful save, one inline success panel links to the student's timeline/report and can return focus to this composer.
 - Do not turn capture into a multi-field form.
@@ -155,10 +158,32 @@ File: `components/dashboard/evidence-feed-controls.tsx`
 
 ## Roster ledgers
 
-File: `app/app/roster/page.tsx`
+Files: `app/app/roster/page.tsx`,
+`components/roster/class-roster-manager.tsx`,
+`components/roster/manual-student-entry-form.tsx`,
+`components/roster/roster-student-row.tsx`
 
-- Classes and students render as bordered lists with row dividers.
-- Forms/actions live near the row or selected class they affect.
+Last updated: 2026-07-20
+
+- Roster is a single ~880px column. Classes and students render as
+  `rounded-card` ledgers with row dividers; section labels are small caps with
+  a count on the trailing edge.
+- On the overview each class row is one whole-row link (name, student count,
+  Open + chevron). A quiet **+ New class** `<details>` row ends the ledger;
+  the create form is inline only when no classes exist.
+- Inside a class, student rows are one line (initials, name, meta joined with
+  `·`) plus one collapsed **Manage** toggle that reveals the edit form and
+  archive/delete actions in a tonal `bg-muted/20` panel. Do not render
+  always-open per-row actions.
+- **Add student** is a quiet `<details>` row at the end of the student ledger
+  (expanded inline only for an empty class). Import and class rename/archive
+  live under collapsed **Paste several students** / **Class settings**
+  `border-y` utility rows below the ledger.
+- A successful manual create inserts the returned student into the selected
+  class ledger immediately, then refreshes to reconcile server-owned counts and
+  roster state.
+- Student name is the primary manual-entry field. The derived mention handle and
+  school/local ID live under **Optional details**.
 - Use full borders/tonal surfaces for guidance; do not use colored side stripes.
 - Long names and handles must wrap or truncate intentionally without hiding the action.
 
