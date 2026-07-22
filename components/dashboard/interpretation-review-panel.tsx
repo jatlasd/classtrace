@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRef, useState } from "react";
+import { useId, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { formatTagLabel } from "@/lib/format-tag";
@@ -25,7 +25,7 @@ type InterpretationReviewPanelProps = {
     fields: InterpretationFields,
     saveInput: ValidatedEvidenceSaveInput
   ) => Promise<ValidatedEvidenceSaveResult>;
-  onDismiss: () => void;
+  onReviewLater: () => void;
   onCaptureAnother: () => void;
   onSavePendingChange?: (isPending: boolean) => void;
 };
@@ -102,27 +102,22 @@ const fieldInputClass =
 
 function FieldRow({
   label,
-  value,
-  isEditing,
+  htmlFor,
   children,
 }: {
   label: string;
-  value: string;
-  isEditing: boolean;
+  htmlFor: string;
   children: React.ReactNode;
 }) {
   return (
     <div className="space-y-1">
-      <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+      <label
+        htmlFor={htmlFor}
+        className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground"
+      >
         {label}
-      </p>
-      {isEditing ? (
-        children
-      ) : (
-        <p className="text-sm leading-snug text-foreground">
-          {value.trim() || "—"}
-        </p>
-      )}
+      </label>
+      {children}
     </div>
   );
 }
@@ -146,11 +141,18 @@ function draftDisplayKey(display: DraftDisplay): string {
 function InterpretationReviewPanelContent({
   display,
   onConfirm,
-  onDismiss,
+  onReviewLater,
   onCaptureAnother,
   onSavePendingChange,
 }: InterpretationReviewPanelProps) {
-  const [isEditing, setIsEditing] = useState(false);
+  const fieldIdPrefix = useId();
+  const evidenceNoteId = `${fieldIdPrefix}-evidence-note`;
+  const evidenceTypeId = `${fieldIdPrefix}-evidence-type`;
+  const topicId = `${fieldIdPrefix}-topic`;
+  const performanceId = `${fieldIdPrefix}-performance`;
+  const behaviorId = `${fieldIdPrefix}-behavior`;
+  const tagsId = `${fieldIdPrefix}-tags`;
+  const followUpsId = `${fieldIdPrefix}-follow-ups`;
   const [form, setForm] = useState<FormState>(() => displayToFormState(display));
   const [validationError, setValidationError] = useState("");
   const validationErrorRef = useRef<HTMLParagraphElement | null>(null);
@@ -250,29 +252,28 @@ function InterpretationReviewPanelContent({
   }
 
   return (
-    <div className="mt-3 rounded-card border border-border bg-card px-4 py-4 shadow-paper">
+    <div className="mt-4 border-t border-border pt-4">
       <div className="mb-4 space-y-1">
-        <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-          ClassTrace read this as
-        </p>
-        <p className="font-display text-lg font-semibold text-foreground">
+        <p className="text-xs font-semibold text-primary">Teacher review</p>
+        <h3 className="font-display text-xl font-semibold text-foreground">
           Review before saving
-        </p>
+        </h3>
         <p className="text-sm leading-relaxed text-muted-foreground">
-          The Evidence note is the saved observation. Structured details below support searching and scanning.
+          The Evidence note is the saved observation. Structured details below
+          support searching and scanning.
         </p>
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2">
         <div className="space-y-1 sm:col-span-2">
           <label
-            htmlFor="review-evidence-note"
+            htmlFor={evidenceNoteId}
             className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground"
           >
             Evidence note
           </label>
           <Textarea
-            id="review-evidence-note"
+            id={evidenceNoteId}
             value={form.evidenceNote}
             onChange={(e) => updateField("evidenceNote", e.target.value)}
             rows={3}
@@ -290,30 +291,25 @@ function InterpretationReviewPanelContent({
           </p>
         </div>
 
-        <FieldRow
-          label="Student"
-          value={
-            studentValidation.status === "valid_one_student"
+        <div className="space-y-1">
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+            Student
+          </p>
+          <p className="text-sm leading-snug text-foreground">
+            {studentValidation.status === "valid_one_student"
               ? studentValidation.studentName
               : studentValidation.status === "no_student"
-                ? ""
-                : studentValidation.studentNames.join(", ")
-          }
-          isEditing={false}
-        >
-          <span />
-        </FieldRow>
+                ? "—"
+                : studentValidation.studentNames.join(", ")}
+          </p>
+        </div>
 
-        <FieldRow
-          label="Evidence type"
-          value={form.evidenceType}
-          isEditing={isEditing}
-        >
+        <FieldRow label="Evidence type" htmlFor={evidenceTypeId}>
           <select
-            id="review-evidence-type"
-            aria-label="Evidence type"
+            id={evidenceTypeId}
             value={form.evidenceType}
             onChange={(e) => updateField("evidenceType", e.target.value)}
+            disabled={isSaving || Boolean(savedEvidenceId)}
             className={fieldInputClass}
           >
             {!NOTE_TYPE_OPTIONS.includes(form.evidenceType) && (
@@ -327,78 +323,68 @@ function InterpretationReviewPanelContent({
           </select>
         </FieldRow>
 
-        <FieldRow label="Topic / skill" value={form.topic} isEditing={isEditing}>
+        <FieldRow label="Topic / skill" htmlFor={topicId}>
           <input
-            id="review-topic"
-            aria-label="Topic or skill"
+            id={topicId}
             type="text"
             value={form.topic}
             onChange={(e) => updateField("topic", e.target.value)}
+            disabled={isSaving || Boolean(savedEvidenceId)}
             className={fieldInputClass}
           />
         </FieldRow>
 
-        <FieldRow
-          label="Performance"
-          value={form.performance}
-          isEditing={isEditing}
-        >
+        <FieldRow label="Performance" htmlFor={performanceId}>
           <input
-            id="review-performance"
-            aria-label="Performance"
+            id={performanceId}
             type="text"
             value={form.performance}
             onChange={(e) => updateField("performance", e.target.value)}
+            disabled={isSaving || Boolean(savedEvidenceId)}
             className={fieldInputClass}
           />
         </FieldRow>
 
         <FieldRow
           label="Behavior / work habit"
-          value={form.behavior}
-          isEditing={isEditing}
+          htmlFor={behaviorId}
         >
           <input
-            id="review-behavior"
-            aria-label="Behavior or work habit"
+            id={behaviorId}
             type="text"
             value={form.behavior}
             onChange={(e) => updateField("behavior", e.target.value)}
+            disabled={isSaving || Boolean(savedEvidenceId)}
             className={fieldInputClass}
           />
         </FieldRow>
 
-        <FieldRow label="Tags" value={form.tags} isEditing={isEditing}>
+        <FieldRow label="Tags" htmlFor={tagsId}>
           <input
-            id="review-tags"
-            aria-label="Tags"
+            id={tagsId}
             type="text"
             value={form.tags}
             onChange={(e) => updateField("tags", e.target.value)}
+            disabled={isSaving || Boolean(savedEvidenceId)}
             className={fieldInputClass}
           />
         </FieldRow>
 
         <div className="space-y-1 sm:col-span-2">
           <label
-            htmlFor="review-follow-ups"
+            htmlFor={followUpsId}
             className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground"
           >
             Follow-up notes
           </label>
-          {isEditing ? (
-            <Textarea
-              id="review-follow-ups"
-              value={form.followUpNotes}
-              onChange={(e) => updateField("followUpNotes", e.target.value)}
-              rows={2}
-              className="min-h-[60px] resize-none text-sm"
-            />
-          ) : (
-            <p className="whitespace-pre-line text-sm leading-snug text-foreground">
-              {form.followUpNotes.trim() || "—"}
-            </p>
-          )}
+          <Textarea
+            id={followUpsId}
+            value={form.followUpNotes}
+            onChange={(e) => updateField("followUpNotes", e.target.value)}
+            rows={2}
+            disabled={isSaving || Boolean(savedEvidenceId)}
+            className="min-h-[60px] resize-none text-sm"
+          />
         </div>
       </div>
 
@@ -471,24 +457,16 @@ function InterpretationReviewPanelContent({
               ? "Saving evidence…"
               : "Save validated evidence"}
         </Button>
-        {!isEditing && (
+        {!savedEvidenceId ? (
           <Button
             size="sm"
-            variant="outline"
-            disabled={isSaving || Boolean(savedEvidenceId)}
-            onClick={() => setIsEditing(true)}
+            variant="ghost"
+            disabled={isSaving}
+            onClick={onReviewLater}
           >
-            Edit
+            Review later
           </Button>
-        )}
-        <Button
-          size="sm"
-          variant="ghost"
-          disabled={isSaving}
-          onClick={onDismiss}
-        >
-          Dismiss for now
-        </Button>
+        ) : null}
       </div>
     </div>
   );

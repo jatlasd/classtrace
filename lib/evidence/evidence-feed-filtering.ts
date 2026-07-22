@@ -18,13 +18,8 @@ export function isValidated(item: FeedItem): boolean {
   return item.validation?.status === "validated";
 }
 
-export function needsReview(
-  item: FeedItem,
-  rosterStudents: CaptureRosterStudent[]
-): boolean {
-  if (isValidated(item)) return false;
-  return resolveCaptureDisplay(item.draft, item.validation, rosterStudents)
-    .needsReview;
+export function needsReview(item: FeedItem): boolean {
+  return !isValidated(item);
 }
 
 function stripMentionPrefix(mention: string): string {

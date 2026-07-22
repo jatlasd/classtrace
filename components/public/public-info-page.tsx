@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { ArrowRight, NotebookPen } from "lucide-react";
-import { LandingFooter } from "@/components/landing/landing-footer";
+import { SiteFooter } from "@/components/layout/site-footer";
 import { routes } from "@/lib/routes";
 
 type PageSection = {
@@ -25,7 +25,7 @@ export function PublicInfoPage({
   lastUpdated,
 }: PublicInfoPageProps) {
   return (
-    <div className="landing-paper-texture relative flex min-h-screen flex-col bg-background">
+    <div className="landing-paper-texture relative flex min-h-dvh flex-col bg-background">
       <a
         href="#main-content"
         className="fixed left-4 top-3 z-[70] -translate-y-20 rounded-md bg-foreground px-3 py-2 text-sm font-semibold text-background transition-transform focus:translate-y-0"
@@ -110,7 +110,7 @@ export function PublicInfoPage({
         </div>
       </main>
 
-      <LandingFooter />
+      <SiteFooter showAccessLinks />
     </div>
   );
 }

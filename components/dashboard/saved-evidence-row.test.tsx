@@ -48,9 +48,9 @@ describe("SavedEvidenceRow management", () => {
     const onArchived = vi.fn();
     render(<SavedEvidenceRow record={record} onArchived={onArchived} />);
 
-    fireEvent.click(screen.getByRole("button", { name: /Manage evidence/ }));
     fireEvent.click(screen.getByRole("button", { name: /Archive evidence/ }));
 
+    expect(screen.queryByRole("button", { name: /Manage evidence/ })).toBeNull();
     expect(mocks.archiveEvidence).not.toHaveBeenCalled();
     fireEvent.click(
       screen.getByRole("button", { name: /Confirm archive evidence/ })
@@ -68,7 +68,6 @@ describe("SavedEvidenceRow management", () => {
     const onDeleted = vi.fn();
     render(<SavedEvidenceRow record={record} onDeleted={onDeleted} />);
 
-    fireEvent.click(screen.getByRole("button", { name: /Manage evidence/ }));
     fireEvent.click(screen.getByRole("button", { name: /Delete evidence for/ }));
 
     expect(

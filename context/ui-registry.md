@@ -22,13 +22,40 @@ Source: `app/globals.css`
 
 ## App shell
 
-Files: `app/app/layout.tsx`, `components/dashboard/app-top-nav.tsx`
+Files: `app/app/layout.tsx`, `components/dashboard/app-top-nav.tsx`,
+`components/layout/site-footer.tsx`
 
 - Sticky `bg-card/95` top bar with bottom border.
 - One `main#main-content`; child pages do not render another `main`.
 - Focus-visible skip link before navigation.
 - Primary nav is named, uses 44 px links, and sets `aria-current="page"`.
+- Every rendered route shell ends with the shared site footer. A `min-h-dvh`
+  flex column and flexing main region keep it at the viewport bottom on short
+  pages and after the content on long pages. Public pages include access links;
+  authenticated, auth-provider, operator, and error surfaces keep only the
+  shared trust and support links.
 - Content widths: feed up to `1560px`; report around `1180px`; roster `880px`; settings/timeline narrower as content requires.
+
+## Site footer
+
+File: `components/layout/site-footer.tsx`
+
+Last updated: 2026-07-22
+
+| Property | Pattern |
+|---|---|
+| Background | Inherits the route surface; no separate fill |
+| Border | `border-t border-border/70` |
+| Radius / shadow | None |
+| Brand text | `font-display text-lg font-semibold text-foreground` |
+| Link text | `text-sm text-muted-foreground`; access link may use `font-medium text-foreground/80` |
+| Spacing | `gap-4 px-4 py-6`; link group uses `gap-x-6 gap-y-2` |
+| Interaction | `transition-colors hover:text-foreground` |
+| Accent | `text-navy` on the shared notebook icon only |
+
+The footer is a quiet final rule, not a card or call-to-action surface. Public
+pages may show sign-in and invited sign-up links; non-public shells expose only
+trust and support destinations. Print views remove the footer.
 
 ## Buttons and fields
 
@@ -39,6 +66,27 @@ Files: `components/ui/button.tsx`, `components/ui/textarea.tsx`
 - Inputs use semantic border/background tokens and a visible 3 px focus ring.
 - Errors use destructive text/border plus accessible live/focus behavior.
 - Pending labels use `…`.
+
+## Inline confirmation panel
+
+File: `components/ui/confirmation-panel.tsx`
+
+Last updated: 2026-07-22
+
+| Property | Pattern |
+|---|---|
+| Background | Default `bg-muted/20`; destructive `bg-destructive/5` |
+| Border | `border-y border-border`; destructive uses `border-destructive/30` |
+| Radius / shadow | None; stays part of its ledger row |
+| Message | `text-xs font-medium leading-relaxed`; muted or destructive semantic text |
+| Spacing | `space-y-3 px-3 py-3`; actions use `gap-2` |
+| Interaction | Shared `Button` variants; confirmation receives focus; Escape cancels |
+| Accent | Destructive tokens only when the confirmed action is destructive |
+
+Use this for compact, in-context confirmation where removing the user from the
+working row would be disruptive. Keep consequence copy explicit, provide a
+visible Cancel action, and return focus to the trigger when cancellation closes
+the panel.
 
 ## Settings help and feedback form
 
@@ -79,6 +127,26 @@ File: `components/dashboard/quick-capture-card.tsx`
 - After the workspace's first successful save, one inline success panel links to the student's timeline/report and can return focus to this composer.
 - Do not turn capture into a multi-field form.
 
+## Capture review
+
+Files: `components/dashboard/evidence-capture-card.tsx`,
+`components/dashboard/interpretation-review-panel.tsx`
+
+Last imprinted: 2026-07-22
+
+- Fresh, restored, and deferred drafts remain collapsed until the teacher
+  chooses **Review before saving**.
+- The Evidence note and structured fields are editable as soon as review opens;
+  that one action reveals the editable form with no separate generic Edit mode.
+- **Review later** collapses the review without deleting the draft. Keep the
+  mounted form state intact while the draft remains in the feed.
+- Editing the original capture is a separate, explicitly labeled action. Draft
+  deletion opens the shared inline confirmation panel, moves focus to the
+  destructive confirmation, and supports Cancel or Escape before deleting.
+- Use one ledger row: capture icon, compact status metadata, full-width source
+  or review content, then inline actions. Do not add a nested card, shadow, or
+  narrow action rail.
+
 ## Public trust and support pages
 
 File: `components/public/public-info-page.tsx`
@@ -106,7 +174,7 @@ grid, add legal-looking decoration, or introduce client JavaScript.
 Files: `components/landing/landing-header.tsx`,
 `components/landing/landing-hero.tsx`,
 `components/landing/landing-closing-cta.tsx`,
-`components/landing/landing-footer.tsx`,
+`components/layout/site-footer.tsx`,
 `app/sign-up/[[...sign-up]]/page.tsx`
 
 Last updated: 2026-07-20
@@ -141,11 +209,13 @@ This component owns Evidence note versus legacy structured-entry copy, reviewed 
 
 Files: `components/dashboard/saved-evidence-row.tsx`, `components/students/student-timeline-page.tsx`, `components/students/student-report-page.tsx`
 
-- Evidence content is primary; date and validated state are supporting metadata.
+- Evidence content is primary; student, class, date, and validated state are
+  compact supporting metadata.
 - Validated state uses a sage icon/status with the word “Validated.”
 - Feed rows are divided inside one ledger container.
+- Feed rows expose **Archive** and **Delete** as explicit footer actions with
+  inline confirmations; archive precedes permanent delete.
 - Timeline/report entries use a restrained bordered surface; report entries avoid print splitting.
-- Management is collapsed behind a clearly labeled “Manage evidence” control; archive precedes permanent delete.
 
 ## Feed controls and paging
 
@@ -155,6 +225,8 @@ File: `components/dashboard/evidence-feed-controls.tsx`
 - Filters are a named button group using `aria-pressed`.
 - Empty states include one quiet icon, heading, explanation, and optional next action.
 - Evidence paging uses a named nav with explicit Newer/Older links and current page text.
+- The feed remains one evidence ledger. Do not add pattern summaries,
+  pseudo-analytics, evidence cues, or review-prompt side panels.
 
 ## Roster ledgers
 
@@ -189,7 +261,9 @@ Last updated: 2026-07-20
 
 ## Route states
 
-Files: `app/app/loading.tsx`, `app/app/error.tsx`, `app/global-error.tsx`, `app/app/not-found.tsx`, `components/errors/unexpected-error-fallback.tsx`
+Files: `app/app/loading.tsx`, `app/app/error.tsx`, `app/global-error.tsx`,
+`app/not-found.tsx`, `app/app/not-found.tsx`,
+`components/errors/unexpected-error-fallback.tsx`
 
 Last updated: 2026-07-14
 
@@ -198,7 +272,9 @@ Last updated: 2026-07-14
 - Reference IDs sit in a `border-y border-border/70` ledger row with selectable monospace text and safe wrapping.
 - Retry is the primary action; **Report this problem** is an outline action into the existing Settings feedback flow. Actions stack on mobile and align horizontally from `sm`.
 - The authenticated boundary remains inside the app shell. The global boundary owns its document wrapper and does not depend on Clerk or app navigation.
-- Not-found copy offers feed and roster recovery paths.
+- Authenticated not-found copy offers feed and roster recovery paths. The public
+  not-found page offers home and support paths inside the public header/footer
+  shell.
 - Reduced-motion CSS makes loading animation effectively instant when requested.
 
 ## Operator console

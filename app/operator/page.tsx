@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, LockKeyhole } from "lucide-react";
 import { OperatorConsole } from "@/components/operator/operator-console";
+import { SiteFooter } from "@/components/layout/site-footer";
 import { requireOperator } from "@/lib/operator/operator-auth";
 import { routes } from "@/lib/routes";
 
@@ -13,7 +14,7 @@ export default async function OperatorPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="flex min-h-dvh flex-col bg-background text-foreground">
       <header className="border-b border-border bg-card/95">
         <div className="mx-auto flex min-h-16 max-w-[1040px] items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
           <div className="flex min-w-0 items-center gap-3">
@@ -36,7 +37,7 @@ export default async function OperatorPage() {
         </div>
       </header>
 
-      <main className="mx-auto w-full max-w-[1040px] px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
+      <main className="mx-auto w-full max-w-[1040px] flex-1 px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
         <header className="mb-8 max-w-3xl">
           <h1 className="font-display text-3xl font-semibold tracking-tight text-foreground">
             Account administration
@@ -50,6 +51,7 @@ export default async function OperatorPage() {
           <OperatorConsole />
         </div>
       </main>
+      <SiteFooter />
     </div>
   );
 }

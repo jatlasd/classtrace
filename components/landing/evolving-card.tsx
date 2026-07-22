@@ -342,11 +342,8 @@ export function EvolvingCard({ phase }: { phase: number }) {
             <span className="inline-flex h-8 items-center rounded-lg bg-primary px-3 text-[13px] font-semibold text-primary-foreground">
               Save validated evidence
             </span>
-            <span className="inline-flex h-8 items-center rounded-lg border border-border bg-card px-3 text-[13px] font-medium text-foreground">
-              Edit
-            </span>
             <span className="inline-flex h-8 items-center rounded-lg px-3 text-[13px] font-medium text-muted-foreground">
-              Dismiss for now
+              Review later
             </span>
           </div>
         </Collapse>
