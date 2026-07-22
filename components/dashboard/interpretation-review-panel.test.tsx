@@ -26,6 +26,30 @@ function buildDisplay() {
 afterEach(cleanup);
 
 describe("InterpretationReviewPanel", () => {
+  it("opens with the Evidence note and structured details already editable", () => {
+    const onReviewLater = vi.fn();
+
+    render(
+      <InterpretationReviewPanel
+        display={buildDisplay()}
+        onConfirm={vi.fn()}
+        onReviewLater={onReviewLater}
+        onCaptureAnother={vi.fn()}
+      />
+    );
+
+    expect(
+      (screen.getByLabelText("Evidence note") as HTMLTextAreaElement).disabled
+    ).toBe(false);
+    expect(
+      (screen.getByLabelText("Topic / skill") as HTMLInputElement).disabled
+    ).toBe(false);
+    expect(screen.queryByRole("button", { name: "Edit" })).toBeNull();
+
+    fireEvent.click(screen.getByRole("button", { name: "Review later" }));
+    expect(onReviewLater).toHaveBeenCalledOnce();
+  });
+
   it("submits teacher-reviewed evidence without the original capture contract", async () => {
     const onConfirm = vi.fn().mockResolvedValue({
       success: true,
@@ -37,13 +61,16 @@ describe("InterpretationReviewPanel", () => {
       <InterpretationReviewPanel
         display={buildDisplay()}
         onConfirm={onConfirm}
-        onDismiss={vi.fn()}
+        onReviewLater={vi.fn()}
         onCaptureAnother={vi.fn()}
       />
     );
 
-    expect(screen.getByText("ClassTrace read this as")).toBeTruthy();
+    expect(screen.getByText("Teacher review")).toBeTruthy();
     expect(screen.getByText("Evidence note")).toBeTruthy();
+    fireEvent.change(screen.getByLabelText("Evidence note"), {
+      target: { value: "Teacher-approved evidence note." },
+    });
     fireEvent.click(
       screen.getByRole("button", { name: "Save validated evidence" })
     );
@@ -53,7 +80,7 @@ describe("InterpretationReviewPanel", () => {
     expect(fields.students).toEqual(["Mary"]);
     expect(saveInput).toMatchObject({
       rosterStudentId: "student_mary",
-      evidenceNote: "used a reading strategy independently #reading",
+      evidenceNote: "Teacher-approved evidence note.",
       tags: ["reading"],
     });
     expect(saveInput).not.toHaveProperty("rawNote");
@@ -61,7 +88,7 @@ describe("InterpretationReviewPanel", () => {
     expect(await screen.findByText("Validated evidence saved.")).toBeTruthy();
   });
 
-  it("disables dismiss while a save request is pending", async () => {
+  it("keeps Review later available until save and disables it while pending", async () => {
     let resolveSave:
       | ((value: {
           success: true;
@@ -85,7 +112,7 @@ describe("InterpretationReviewPanel", () => {
       <InterpretationReviewPanel
         display={buildDisplay()}
         onConfirm={onConfirm}
-        onDismiss={vi.fn()}
+        onReviewLater={vi.fn()}
         onCaptureAnother={vi.fn()}
         onSavePendingChange={onPendingChange}
       />
@@ -97,7 +124,7 @@ describe("InterpretationReviewPanel", () => {
 
     await waitFor(() => expect(onConfirm).toHaveBeenCalledTimes(1));
     expect(
-      (screen.getByRole("button", { name: "Dismiss for now" }) as HTMLButtonElement)
+      (screen.getByRole("button", { name: "Review later" }) as HTMLButtonElement)
         .disabled
     ).toBe(true);
     expect(onPendingChange).toHaveBeenCalledWith(true);
@@ -123,7 +150,7 @@ describe("InterpretationReviewPanel", () => {
       <InterpretationReviewPanel
         display={unresolvedDisplay}
         onConfirm={onConfirm}
-        onDismiss={vi.fn()}
+        onReviewLater={vi.fn()}
         onCaptureAnother={vi.fn()}
       />
     );
@@ -147,7 +174,7 @@ describe("InterpretationReviewPanel", () => {
       <InterpretationReviewPanel
         display={buildDisplay()}
         onConfirm={onConfirm}
-        onDismiss={vi.fn()}
+        onReviewLater={vi.fn()}
         onCaptureAnother={onCaptureAnother}
       />
     );

@@ -8,7 +8,6 @@ import {
   type SaveValidatedEvidenceActionInput,
   type SaveValidatedEvidenceActionResult,
 } from "@/actions/evidence";
-import { ClassTraceNoticedPanel } from "@/components/dashboard/classtrace-noticed-panel";
 import { EvidenceCaptureCard } from "@/components/dashboard/evidence-capture-card";
 import {
   EvidenceSearchControl,
@@ -52,8 +51,6 @@ import {
 } from "@/lib/students/resolve-capture-students";
 import { ArrowDownUp } from "lucide-react";
 
-const EMPTY_FEED_ITEMS: FeedItem[] = [];
-
 type EvidenceFeedProps = {
   workspaceId: string;
   rosterStudents: CaptureRosterStudent[];
@@ -64,6 +61,12 @@ type EvidenceFeedProps = {
   initialFilter: string;
   initialSearchQuery: string;
 };
+
+type DraftFeedItem = FeedItem & {
+  reviewOpen: boolean;
+};
+
+const EMPTY_FEED_ITEMS: DraftFeedItem[] = [];
 
 function normalizeInboxFilter(value: string): InboxFilter {
   return value === "needs_review" || value === "validated" ? value : "all";
@@ -124,7 +127,7 @@ export function EvidenceFeed({
   initialSearchQuery,
 }: EvidenceFeedProps) {
   const router = useRouter();
-  const [draftItems, setDraftItems] = useState<FeedItem[]>([]);
+  const [draftItems, setDraftItems] = useState<DraftFeedItem[]>([]);
   const [hydratedWorkspaceId, setHydratedWorkspaceId] = useState<string | null>(
     null
   );
@@ -156,6 +159,7 @@ export function EvidenceFeed({
             draft: buildNoteDraft(sessionDraft.rawNote),
             timestamp: formatSessionDraftTimestamp(sessionDraft.capturedAt),
             timestampMs: sessionDraft.capturedAt,
+            reviewOpen: false,
           }))
           .sort((a, b) => b.timestampMs - a.timestampMs)
       );
@@ -246,15 +250,6 @@ export function EvidenceFeed({
     }
   }, [captureEditError]);
 
-  const summaryItems = useMemo(
-    () =>
-      activeDraftItems.map((item) => ({
-        draft: item.draft,
-        validation: item.validation,
-      })),
-    [activeDraftItems]
-  );
-
   const savedEvidenceIds = useMemo(
     () => new Set(initialEvidenceRecords.map((record) => record.id)),
     [initialEvidenceRecords]
@@ -274,7 +269,7 @@ export function EvidenceFeed({
     if (filter === "validated") {
       result = result.filter(isValidated);
     } else if (filter === "needs_review") {
-      result = result.filter((item) => needsReview(item, rosterStudents));
+      result = result.filter(needsReview);
     }
 
     if (searchQuery.trim()) {
@@ -316,9 +311,7 @@ export function EvidenceFeed({
   const visibleFeedItemCount =
     visibleDraftItems.length + visibleEvidenceRecords.length;
   const hasVisibleFeedItems = visibleFeedItemCount > 0;
-  const needsReviewItemCount = activeDraftItems.filter((item) =>
-    needsReview(item, rosterStudents)
-  ).length;
+  const needsReviewItemCount = activeDraftItems.filter(needsReview).length;
 
   function handleDraft(
     draft: NoteDraft,
@@ -335,11 +328,12 @@ export function EvidenceFeed({
     }
 
     setCaptureEditError("");
-    const newItem: FeedItem = {
+    const newItem: DraftFeedItem = {
       id: identity.id,
       draft,
       timestamp: "Just now",
       timestampMs: identity.capturedAt,
+      reviewOpen: false,
     };
     upsertSessionDraft(sessionStorageRef.current, workspaceId, {
       id: newItem.id,
@@ -436,6 +430,14 @@ export function EvidenceFeed({
     setCaptureEditError("");
     removeSessionDraft(sessionStorageRef.current, workspaceId, id);
     setDraftItems((current) => current.filter((item) => item.id !== id));
+  }
+
+  function handleReviewOpenChange(id: string, reviewOpen: boolean): void {
+    setDraftItems((current) =>
+      current.map((item) =>
+        item.id === id ? { ...item, reviewOpen } : item
+      )
+    );
   }
 
   function handleSavedEvidenceHidden(evidenceId: string): void {
@@ -542,6 +544,10 @@ export function EvidenceFeed({
             }
             onEdit={(rawNote) => handleEditCapture(item.id, rawNote)}
             onDelete={() => handleDeleteCapture(item.id)}
+            reviewOpen={item.reviewOpen}
+            onReviewOpenChange={(reviewOpen) =>
+              handleReviewOpenChange(item.id, reviewOpen)
+            }
             onCaptureAnother={() =>
               setComposerFocusRequestKey((current) => current + 1)
             }
@@ -583,90 +589,78 @@ export function EvidenceFeed({
         className="mt-5 overflow-hidden rounded-card border border-border bg-card shadow-paper"
         aria-labelledby="evidence-inbox-heading"
       >
-        <div className="grid lg:grid-cols-[minmax(0,1fr)_340px] xl:grid-cols-[minmax(0,1fr)_380px]">
-          <div className="min-w-0">
-            <div className="space-y-4 border-b border-border bg-card px-4 py-4 sm:px-6">
-              <div className="flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
-                <div className="min-w-0 space-y-1">
-                  <div className="flex flex-wrap items-center gap-3">
-                    <RecentCapturesLabel />
-                    <span className="inline-flex items-center gap-2 rounded-lg border border-border bg-muted/30 px-3 py-2 text-sm font-medium text-muted-foreground">
-                      <ArrowDownUp aria-hidden="true" className="size-4" />
-                      Newest first
-                    </span>
-                  </div>
-                  <p className="text-xs leading-relaxed text-muted-foreground">
-                    {hasVisibleFeedItems
-                      ? feedItemCountLabel(visibleFeedItemCount)
-                      : "Drafts and saved evidence will appear here."}
-                  </p>
-                </div>
-                <EvidenceSearchControl
-                  query={searchQuery}
-                  onQueryChange={handleSearchQueryChange}
-                />
+        <div className="space-y-4 border-b border-border bg-card px-4 py-4 sm:px-6">
+          <div className="flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
+            <div className="min-w-0 space-y-1">
+              <div className="flex flex-wrap items-center gap-3">
+                <RecentCapturesLabel />
+                <span className="inline-flex items-center gap-2 rounded-lg border border-border bg-muted/30 px-3 py-2 text-sm font-medium text-muted-foreground">
+                  <ArrowDownUp aria-hidden="true" className="size-4" />
+                  Newest first
+                </span>
               </div>
-
-              <InboxFilterControl
-                filter={filter}
-                onFilterChange={handleFilterChange}
-              />
-            </div>
-
-            {captureEditError ? (
-              <p
-                ref={captureEditErrorRef}
-                role="alert"
-                tabIndex={-1}
-                className="border-b border-border bg-muted/30 px-4 py-3 text-sm text-destructive outline-none focus-visible:ring-3 focus-visible:ring-ring/30 sm:px-6"
-              >
-                {captureEditError}
+              <p className="text-xs leading-relaxed text-muted-foreground">
+                {hasVisibleFeedItems
+                  ? feedItemCountLabel(visibleFeedItemCount)
+                  : "Drafts and saved evidence will appear here."}
               </p>
-            ) : null}
-
-            <div>
-              {renderFeedList()}
-              {filter !== "needs_review" &&
-              (hasNewerEvidence || hasOlderEvidence) ? (
-                <nav
-                  aria-label="Evidence pages"
-                  className="flex items-center justify-between gap-3 border-t border-border px-4 py-4 sm:px-6"
-                >
-                  <div>
-                    {hasNewerEvidence ? (
-                      <Button asChild variant="outline" size="sm">
-                        <Link href={evidencePageHref(evidencePage - 1)}>
-                          Newer evidence
-                        </Link>
-                      </Button>
-                    ) : null}
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    Page {evidencePage}
-                  </p>
-                  <div>
-                    {hasOlderEvidence ? (
-                      <Button asChild variant="outline" size="sm">
-                        <Link href={evidencePageHref(evidencePage + 1)}>
-                          Older evidence
-                        </Link>
-                      </Button>
-                    ) : null}
-                  </div>
-                </nav>
-              ) : null}
             </div>
+            <EvidenceSearchControl
+              query={searchQuery}
+              onQueryChange={handleSearchQueryChange}
+            />
           </div>
 
-          <ClassTraceNoticedPanel
-            items={summaryItems}
-            rosterStudents={rosterStudents}
-            evidenceRecords={initialEvidenceRecords}
+          <InboxFilterControl
+            filter={filter}
+            onFilterChange={handleFilterChange}
           />
+        </div>
+
+        {captureEditError ? (
+          <p
+            ref={captureEditErrorRef}
+            role="alert"
+            tabIndex={-1}
+            className="border-b border-border bg-muted/30 px-4 py-3 text-sm text-destructive outline-none focus-visible:ring-3 focus-visible:ring-ring/30 sm:px-6"
+          >
+            {captureEditError}
+          </p>
+        ) : null}
+
+        <div>
+          {renderFeedList()}
+          {filter !== "needs_review" &&
+          (hasNewerEvidence || hasOlderEvidence) ? (
+            <nav
+              aria-label="Evidence pages"
+              className="flex items-center justify-between gap-3 border-t border-border px-4 py-4 sm:px-6"
+            >
+              <div>
+                {hasNewerEvidence ? (
+                  <Button asChild variant="outline" size="sm">
+                    <Link href={evidencePageHref(evidencePage - 1)}>
+                      Newer evidence
+                    </Link>
+                  </Button>
+                ) : null}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Page {evidencePage}
+              </p>
+              <div>
+                {hasOlderEvidence ? (
+                  <Button asChild variant="outline" size="sm">
+                    <Link href={evidencePageHref(evidencePage + 1)}>
+                      Older evidence
+                    </Link>
+                  </Button>
+                ) : null}
+              </div>
+            </nav>
+          ) : null}
         </div>
       </section>
     </div>
   );
 }
-
-

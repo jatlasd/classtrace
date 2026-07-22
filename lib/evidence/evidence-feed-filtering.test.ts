@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   captureMatchesSearch,
   evidenceRecordMatchesSearch,
+  needsReview,
   type FeedItem,
 } from "@/lib/evidence/evidence-feed-filtering";
 import { buildNoteDraft } from "@/lib/note-processing/build-note-draft";
@@ -40,6 +41,33 @@ const savedRecord = {
 };
 
 describe("evidence feed filtering", () => {
+  it("keeps every unsaved draft in Needs review regardless of parser confidence", () => {
+    const parserConfidentDraft = {
+      ...draftItem,
+      draft: {
+        ...draftItem.draft,
+        needsTeacherValidation: false,
+      },
+    };
+
+    expect(needsReview(parserConfidentDraft)).toBe(true);
+    expect(
+      needsReview({
+        ...parserConfidentDraft,
+        validation: {
+          status: "validated",
+          fields: {
+            students: ["Mary"],
+            evidenceType: "Academic check-in",
+            tags: ["reading"],
+            followUpNotes: [],
+          },
+          validatedAt: Date.now(),
+        },
+      })
+    ).toBe(false);
+  });
+
   it("matches draft searches by roster mention, tag, and interpreted content", () => {
     expect(captureMatchesSearch(draftItem, "@mary", roster)).toBe(true);
     expect(captureMatchesSearch(draftItem, "#reading", roster)).toBe(true);

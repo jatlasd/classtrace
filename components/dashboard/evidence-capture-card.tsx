@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useId, useState } from "react";
 import { InterpretationReviewPanel } from "@/components/dashboard/interpretation-review-panel";
 import { NoteContent } from "@/components/dashboard/note-content";
 import { Button } from "@/components/ui/button";
@@ -20,13 +20,7 @@ import {
   type StudentMentionDisplay,
   type StudentMentionRef,
 } from "@/lib/students/student-mention-display";
-import {
-  CheckCircle2,
-  Circle,
-  ClipboardCheck,
-  Trash2,
-  User,
-} from "lucide-react";
+import { CheckCircle2, Circle, ClipboardCheck, Trash2 } from "lucide-react";
 
 type EvidenceCaptureCardProps = {
   draft: NoteDraft;
@@ -39,6 +33,8 @@ type EvidenceCaptureCardProps = {
   ) => Promise<ValidatedEvidenceSaveResult>;
   onEdit?: (rawNote: string) => boolean;
   onDelete?: () => void;
+  reviewOpen: boolean;
+  onReviewOpenChange: (open: boolean) => void;
   onCaptureAnother: () => void;
 };
 
@@ -190,24 +186,23 @@ export function EvidenceCaptureCard({
   onValidate,
   onEdit,
   onDelete,
+  reviewOpen,
+  onReviewOpenChange,
   onCaptureAnother,
 }: EvidenceCaptureCardProps) {
-  const [reviewOpen, setReviewOpen] = useState(false);
+  const sourceEditorId = useId();
   const [isReviewSavePending, setIsReviewSavePending] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editText, setEditText] = useState("");
+  const [reviewWasOpenBeforeEdit, setReviewWasOpenBeforeEdit] =
+    useState(false);
   const display = resolveCaptureDisplay(draft, validation, rosterStudents);
   const parserDisplay = draftToDisplay(draft, rosterStudents);
-  const showReviewCta =
-    display.needsReview && display.validationStatus !== "validated";
+  const isPending = display.validationStatus !== "validated";
   const unresolvedMentions = display.studentMentions.filter(
     (ref) => ref.status === "unresolved"
   );
   const hasUnresolvedMentions = unresolvedMentions.length > 0;
-  const showReviewPanel =
-    !isEditing &&
-    reviewOpen &&
-    (showReviewCta || display.validationStatus === "validated");
   const showActions = Boolean(onEdit || onDelete);
   const canSaveEdit = editText.trim().length > 0;
 
@@ -226,7 +221,8 @@ export function EvidenceCaptureCard({
     }
 
     setEditText(draft.parsed.rawNote);
-    setReviewOpen(false);
+    setReviewWasOpenBeforeEdit(reviewOpen);
+    onReviewOpenChange(false);
     setIsEditing(true);
   }
 
@@ -238,11 +234,13 @@ export function EvidenceCaptureCard({
     const saved = onEdit?.(trimmed) ?? true;
     if (saved) {
       setIsEditing(false);
+      onReviewOpenChange(true);
     }
   }
 
   function handleCancelEdit() {
     setIsEditing(false);
+    onReviewOpenChange(reviewWasOpenBeforeEdit);
   }
 
   function handleDelete() {
@@ -252,7 +250,7 @@ export function EvidenceCaptureCard({
 
     if (
       window.confirm(
-        "Delete this capture? It will be removed from this browser."
+        "Delete this draft? It will be removed from this browser."
       )
     ) {
       onDelete?.();
@@ -261,167 +259,33 @@ export function EvidenceCaptureCard({
 
   return (
     <article className="border-b border-border last:border-b-0">
-      <div className="grid gap-4 px-4 py-5 md:grid-cols-[72px_88px_minmax(0,1fr)_220px] md:px-6">
-        <div className="flex items-start gap-3 md:block">
-          <CaptureIcon status={display.validationStatus} />
-          <div className="md:hidden">
-            <p className="text-xs text-muted-foreground">{timestamp}</p>
-            <StatusPill
-              status={display.validationStatus}
-              needsReview={showReviewCta}
-            />
-          </div>
-        </div>
+      <div className="grid gap-4 px-4 py-5 sm:grid-cols-[48px_minmax(0,1fr)] md:px-6">
+        <CaptureIcon status={display.validationStatus} />
 
-        <div className="hidden text-sm leading-relaxed text-muted-foreground md:block">
-          <p>{timestamp.split(" ")[0] ?? timestamp}</p>
-          {timestamp.includes(" ") && <p>{timestamp.split(" ").slice(1).join(" ")}</p>}
-        </div>
-
-        <div className="min-w-0 space-y-3">
-          {isEditing ? (
-            <div className="space-y-2">
-            <Textarea
-              value={editText}
-              onChange={(event) => setEditText(event.target.value)}
-              className="min-h-[120px] text-[15px] leading-relaxed"
-              aria-label="Edit capture note"
-            />
-            <div className="flex flex-wrap gap-2">
-              <Button
-                type="button"
-                size="sm"
-                disabled={!canSaveEdit}
-                onClick={handleSaveEdit}
-              >
-                Save
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={handleCancelEdit}
-              >
-                Cancel
-              </Button>
-            </div>
-            </div>
-          ) : (
-            <NoteContent text={draft.parsed.rawNote} />
-          )}
-
-          {!isEditing && (
-          <div className="flex flex-wrap gap-1.5">
-            {display.studentMentions.map((mentionRef, index) => (
-              <StudentMentionChip
-                key={
-                  mentionRef.status === "resolved"
-                    ? mentionRef.student.id
-                    : `${mentionRef.mention}-${index}`
-                }
-                mentionRef={mentionRef}
-              />
-            ))}
-
-            {display.topic && <Chip>{display.topic}</Chip>}
-
-            {display.performance && <Chip>{display.performance}</Chip>}
-
-            {display.behavior?.map((item) => (
-              <Chip key={item}>{item}</Chip>
-            ))}
-
-            <Chip variant="evidence">{display.evidenceType}</Chip>
-
-            {display.tags.map((tag) => (
-              <Chip key={tag} variant="tag">
-                {formatTagLabel(tag)}
-              </Chip>
-            ))}
-          </div>
-          )}
-
-          {hasUnresolvedMentions && (
-            <div className="mt-3 rounded-md border border-accent/40 bg-accent/15 px-3 py-2.5">
-              <p className="text-xs leading-relaxed text-foreground">
-                {unresolvedMentions.length === 1 ? (
-                  <>
-                    <span className="font-medium">@{unresolvedMentions[0].mention}</span>{" "}
-                    isn&apos;t on your roster yet. Add them from My roster, or fix
-                    student names when you review.
-                  </>
-                ) : (
-                  <>
-                    Some @mentions aren&apos;t on your roster yet. Add students from
-                    My roster, or fix student names when you review.
-                  </>
-                )}
-              </p>
-              <div className="mt-2 flex flex-wrap items-center gap-3">
-                <Link
-                  href={routes.roster}
-                  className="text-xs font-medium text-link underline-offset-2 hover:underline"
-                >
-                  My roster
-                </Link>
-                {showReviewCta && !reviewOpen && (
-                  <button
-                    type="button"
-                    className="text-xs font-medium text-link underline-offset-2 hover:underline"
-                    onClick={() => setReviewOpen(true)}
-                  >
-                    Review before saving
-                  </button>
-                )}
-              </div>
-            </div>
-          )}
-
-          {display.followUps.length > 0 && (
-            <ul className="mt-3 space-y-1 border-t border-border/50 pt-2.5">
-              {display.followUps.map((item) => (
-                <li
-                  key={item}
-                  className="text-xs leading-relaxed text-muted-foreground"
-                >
-                  <span className="font-medium text-foreground">Follow-up:</span>{" "}
-                  {item}
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-
-        <div className="space-y-3 md:border-l md:border-border md:pl-6">
-          <div className="flex flex-col items-start justify-center gap-3">
-            {/* <div className="space-y-2 items-center justify-center">
+        <div className="min-w-0">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <div className="flex flex-wrap items-center gap-2">
               <StatusPill
                 status={display.validationStatus}
-                needsReview={showReviewCta}
+                needsReview={display.needsReview}
               />
-              {display.validationStatus === "validated" && validation?.status === "validated" && (
-                <p className="text-xs text-muted-foreground">
-                  {validation.savedEvidenceId
-                    ? "Saved to evidence records"
-                    : "Filed after review"}
-                </p>
-              )}
-            </div> */}
+              <span className="text-xs text-muted-foreground">{timestamp}</span>
+            </div>
 
-            {showActions && !isEditing && (
-              <div className="flex items-center gap-1">
-                {onEdit && (
+            {showActions && !isEditing ? (
+              <div className="flex flex-wrap items-center gap-1">
+                {onEdit ? (
                   <Button
                     type="button"
                     variant="ghost"
-                    size="xs"
+                    size="sm"
                     disabled={isReviewSavePending}
                     onClick={handleStartEdit}
                   >
-                    Edit
+                    Edit original capture
                   </Button>
-                )}
-                {onDelete && (
+                ) : null}
+                {onDelete ? (
                   <Button
                     type="button"
                     variant="ghost"
@@ -430,44 +294,151 @@ export function EvidenceCaptureCard({
                     disabled={isReviewSavePending}
                     onClick={handleDelete}
                   >
-                    <Trash2 className="size-3.5" />
-                    Delete
+                    <Trash2 aria-hidden="true" className="size-3.5" />
+                    Delete draft
                   </Button>
-                )}
+                ) : null}
               </div>
-            )}
+            ) : null}
           </div>
 
-          {!isEditing && showReviewCta && !reviewOpen && (
-            <Button
-              variant="outline"
-              size="sm"
-              className="w-full justify-start"
-              onClick={() => setReviewOpen(true)}
-            >
-              Review before saving
-            </Button>
-          )}
+          {isEditing ? (
+            <div className="mt-4 space-y-3 border-y border-border bg-muted/20 px-3 py-4 sm:px-4">
+              <div className="space-y-1">
+                <label
+                  htmlFor={sourceEditorId}
+                  className="text-sm font-medium text-foreground"
+                >
+                  Original capture
+                </label>
+                <p className="text-xs leading-relaxed text-muted-foreground">
+                  Correct the source note or student mention, then return to
+                  review.
+                </p>
+              </div>
+              <Textarea
+                id={sourceEditorId}
+                value={editText}
+                onChange={(event) => setEditText(event.target.value)}
+                className="min-h-[120px] text-[15px] leading-relaxed"
+              />
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  type="button"
+                  size="sm"
+                  disabled={!canSaveEdit}
+                  onClick={handleSaveEdit}
+                >
+                  Save original capture
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={handleCancelEdit}
+                >
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          ) : null}
 
-          {!isEditing && !showReviewCta && (
-            <p className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
-              <User className="size-3.5" />
-              Teacher-controlled draft
-            </p>
-          )}
+          {!isEditing && !reviewOpen ? (
+            <div className="mt-4 space-y-3">
+              <NoteContent text={draft.parsed.rawNote} />
+
+              <div className="flex flex-wrap gap-1.5">
+                {display.studentMentions.map((mentionRef, index) => (
+                  <StudentMentionChip
+                    key={
+                      mentionRef.status === "resolved"
+                        ? mentionRef.student.id
+                        : `${mentionRef.mention}-${index}`
+                    }
+                    mentionRef={mentionRef}
+                  />
+                ))}
+
+                {display.topic ? <Chip>{display.topic}</Chip> : null}
+                {display.performance ? <Chip>{display.performance}</Chip> : null}
+                {display.behavior?.map((item) => (
+                  <Chip key={item}>{item}</Chip>
+                ))}
+                <Chip variant="evidence">{display.evidenceType}</Chip>
+                {display.tags.map((tag) => (
+                  <Chip key={tag} variant="tag">
+                    {formatTagLabel(tag)}
+                  </Chip>
+                ))}
+              </div>
+
+              {hasUnresolvedMentions ? (
+                <div className="rounded-md border border-accent/40 bg-accent/15 px-3 py-2.5">
+                  <p className="text-xs leading-relaxed text-foreground">
+                    {unresolvedMentions.length === 1 ? (
+                      <>
+                        <span className="font-medium">
+                          @{unresolvedMentions[0].mention}
+                        </span>{" "}
+                        isn&apos;t on your roster yet. Add them from My roster, or
+                        fix student names when you review.
+                      </>
+                    ) : (
+                      <>
+                        Some @mentions aren&apos;t on your roster yet. Add students
+                        from My roster, or fix student names when you review.
+                      </>
+                    )}
+                  </p>
+                  <Link
+                    href={routes.roster}
+                    className="mt-2 inline-flex text-xs font-medium text-link underline-offset-2 hover:underline"
+                  >
+                    My roster
+                  </Link>
+                </div>
+              ) : null}
+
+              {display.followUps.length > 0 ? (
+                <ul className="space-y-1 border-t border-border/50 pt-2.5">
+                  {display.followUps.map((item) => (
+                    <li
+                      key={item}
+                      className="text-xs leading-relaxed text-muted-foreground"
+                    >
+                      <span className="font-medium text-foreground">
+                        Follow-up:
+                      </span>{" "}
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
+
+              {isPending ? (
+                <div className="border-t border-border/50 pt-3">
+                  <Button
+                    type="button"
+                    size="sm"
+                    onClick={() => onReviewOpenChange(true)}
+                  >
+                    Review before saving
+                  </Button>
+                </div>
+              ) : null}
+            </div>
+          ) : null}
+
+          <div hidden={!reviewOpen || isEditing}>
+            <InterpretationReviewPanel
+              display={parserDisplay}
+              onConfirm={handleConfirm}
+              onReviewLater={() => onReviewOpenChange(false)}
+              onCaptureAnother={onCaptureAnother}
+              onSavePendingChange={setIsReviewSavePending}
+            />
+          </div>
         </div>
-
-        {showReviewPanel && (
-          <div className="md:col-span-4">
-          <InterpretationReviewPanel
-            display={parserDisplay}
-            onConfirm={handleConfirm}
-            onDismiss={() => setReviewOpen(false)}
-            onCaptureAnother={onCaptureAnother}
-            onSavePendingChange={setIsReviewSavePending}
-          />
-          </div>
-        )}
       </div>
     </article>
   );

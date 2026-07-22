@@ -79,6 +79,25 @@ File: `components/dashboard/quick-capture-card.tsx`
 - After the workspace's first successful save, one inline success panel links to the student's timeline/report and can return focus to this composer.
 - Do not turn capture into a multi-field form.
 
+## Capture review
+
+Files: `components/dashboard/evidence-capture-card.tsx`,
+`components/dashboard/interpretation-review-panel.tsx`
+
+Last imprinted: 2026-07-22
+
+- Fresh, restored, and deferred drafts remain collapsed until the teacher
+  chooses **Review before saving**.
+- The Evidence note and structured fields are editable as soon as review opens;
+  that one action reveals the editable form with no separate generic Edit mode.
+- **Review later** collapses the review without deleting the draft. Keep the
+  mounted form state intact while the draft remains in the feed.
+- Editing the original capture is a separate, explicitly labeled action. Draft
+  deletion is also explicit and requires confirmation.
+- Use one ledger row: capture icon, compact status metadata, full-width source
+  or review content, then inline actions. Do not add a nested card, shadow, or
+  narrow action rail.
+
 ## Public trust and support pages
 
 File: `components/public/public-info-page.tsx`
@@ -141,11 +160,13 @@ This component owns Evidence note versus legacy structured-entry copy, reviewed 
 
 Files: `components/dashboard/saved-evidence-row.tsx`, `components/students/student-timeline-page.tsx`, `components/students/student-report-page.tsx`
 
-- Evidence content is primary; date and validated state are supporting metadata.
+- Evidence content is primary; student, class, date, and validated state are
+  compact supporting metadata.
 - Validated state uses a sage icon/status with the word “Validated.”
 - Feed rows are divided inside one ledger container.
+- Feed rows expose **Archive** and **Delete** as explicit footer actions with
+  inline confirmations; archive precedes permanent delete.
 - Timeline/report entries use a restrained bordered surface; report entries avoid print splitting.
-- Management is collapsed behind a clearly labeled “Manage evidence” control; archive precedes permanent delete.
 
 ## Feed controls and paging
 
@@ -155,6 +176,8 @@ File: `components/dashboard/evidence-feed-controls.tsx`
 - Filters are a named button group using `aria-pressed`.
 - Empty states include one quiet icon, heading, explanation, and optional next action.
 - Evidence paging uses a named nav with explicit Newer/Older links and current page text.
+- The feed remains one evidence ledger. Do not add pattern summaries,
+  pseudo-analytics, evidence cues, or review-prompt side panels.
 
 ## Roster ledgers
 
