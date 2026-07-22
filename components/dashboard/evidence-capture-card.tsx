@@ -1,10 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useId, useState } from "react";
+import { useId, useRef, useState } from "react";
 import { InterpretationReviewPanel } from "@/components/dashboard/interpretation-review-panel";
 import { NoteContent } from "@/components/dashboard/note-content";
 import { Button } from "@/components/ui/button";
+import { ConfirmationPanel } from "@/components/ui/confirmation-panel";
 import { Textarea } from "@/components/ui/textarea";
 import { formatTagLabel } from "@/lib/format-tag";
 import {
@@ -193,9 +194,11 @@ export function EvidenceCaptureCard({
   const sourceEditorId = useId();
   const [isReviewSavePending, setIsReviewSavePending] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
   const [editText, setEditText] = useState("");
   const [reviewWasOpenBeforeEdit, setReviewWasOpenBeforeEdit] =
     useState(false);
+  const deleteButtonRef = useRef<HTMLButtonElement>(null);
   const display = resolveCaptureDisplay(draft, validation, rosterStudents);
   const parserDisplay = draftToDisplay(draft, rosterStudents);
   const isPending = display.validationStatus !== "validated";
@@ -222,6 +225,7 @@ export function EvidenceCaptureCard({
 
     setEditText(draft.parsed.rawNote);
     setReviewWasOpenBeforeEdit(reviewOpen);
+    setIsConfirmingDelete(false);
     onReviewOpenChange(false);
     setIsEditing(true);
   }
@@ -243,18 +247,22 @@ export function EvidenceCaptureCard({
     onReviewOpenChange(reviewWasOpenBeforeEdit);
   }
 
-  function handleDelete() {
+  function handleRequestDraftDelete() {
     if (isReviewSavePending) {
       return;
     }
 
-    if (
-      window.confirm(
-        "Delete this draft? It will be removed from this browser."
-      )
-    ) {
-      onDelete?.();
-    }
+    setIsConfirmingDelete(true);
+  }
+
+  function handleCancelDraftDelete() {
+    deleteButtonRef.current?.focus();
+    setIsConfirmingDelete(false);
+  }
+
+  function handleConfirmDraftDelete() {
+    setIsConfirmingDelete(false);
+    onDelete?.();
   }
 
   return (
@@ -287,12 +295,13 @@ export function EvidenceCaptureCard({
                 ) : null}
                 {onDelete ? (
                   <Button
+                    ref={deleteButtonRef}
                     type="button"
                     variant="ghost"
                     size="sm"
                     className="text-muted-foreground hover:text-destructive"
                     disabled={isReviewSavePending}
-                    onClick={handleDelete}
+                    onClick={handleRequestDraftDelete}
                   >
                     <Trash2 aria-hidden="true" className="size-3.5" />
                     Delete draft
@@ -301,6 +310,19 @@ export function EvidenceCaptureCard({
               </div>
             ) : null}
           </div>
+
+          {isConfirmingDelete ? (
+            <ConfirmationPanel
+              ariaLabel="Confirm draft deletion"
+              description="Delete this draft? It will be removed from this browser. This cannot be undone."
+              confirmLabel="Delete this draft"
+              tone="destructive"
+              className="mt-3"
+              disabled={isReviewSavePending}
+              onConfirm={handleConfirmDraftDelete}
+              onCancel={handleCancelDraftDelete}
+            />
+          ) : null}
 
           {isEditing ? (
             <div className="mt-4 space-y-3 border-y border-border bg-muted/20 px-3 py-4 sm:px-4">

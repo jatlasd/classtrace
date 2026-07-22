@@ -6,7 +6,7 @@ import { ProductShellReveal } from "@/components/landing/product-shell-reveal";
 import { LandingTrust } from "@/components/landing/landing-trust";
 import { LandingAudience } from "@/components/landing/landing-audience";
 import { LandingClosingCta } from "@/components/landing/landing-closing-cta";
-import { LandingFooter } from "@/components/landing/landing-footer";
+import { SiteFooter } from "@/components/layout/site-footer";
 
 export const metadata: Metadata = {
   title: "ClassTrace — Student evidence capture for teachers",
@@ -16,7 +16,7 @@ export const metadata: Metadata = {
 
 export default function Home() {
   return (
-    <div className="paperbackground relative flex min-h-screen flex-col">
+    <div className="paperbackground relative flex min-h-dvh flex-col">
       <LandingHeader />
       <main className="flex-1">
         <LandingHero />
@@ -26,7 +26,7 @@ export default function Home() {
         <LandingAudience />
         <LandingClosingCta />
       </main>
-      <LandingFooter />
+      <SiteFooter showAccessLinks />
     </div>
   );
 }

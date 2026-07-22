@@ -258,6 +258,7 @@
   }
 
   body:has(.student-report-page) .app-top-nav,
+  .site-footer,
   .student-report-screen-only {
     display: none !important;
   }

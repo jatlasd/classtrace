@@ -75,5 +75,8 @@ describe("invitation-only access", () => {
     expect(clerkSignUp.getAttribute("data-sign-in-url")).toBe(routes.signIn);
     expect(signUpMetadata.title).toBe("Invitation sign-up — ClassTrace");
     expect(signUpMetadata.description).toContain("invitation-only");
+    expect(
+      screen.getByRole("navigation", { name: "Footer" })
+    ).toBeTruthy();
   });
 });

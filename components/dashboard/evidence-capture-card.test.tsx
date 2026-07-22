@@ -1,7 +1,13 @@
 // @vitest-environment jsdom
 
 import { useState } from "react";
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import {
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  within,
+} from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { buildNoteDraft } from "@/lib/note-processing/build-note-draft";
 import { EvidenceCaptureCard } from "./evidence-capture-card";
@@ -103,16 +109,39 @@ describe("EvidenceCaptureCard review flow", () => {
     expect(onEdit).toHaveBeenCalledWith("@Mary read independently #reading");
   });
 
-  it("uses an explicit confirmation before deleting a draft", () => {
+  it("uses an inline confirmation before deleting a draft", () => {
     const onDelete = vi.fn();
-    vi.spyOn(window, "confirm").mockReturnValue(true);
     render(<CaptureHarness onEdit={vi.fn(() => true)} onDelete={onDelete} />);
 
-    fireEvent.click(screen.getByRole("button", { name: "Delete draft" }));
+    const deleteButton = screen.getByRole("button", { name: "Delete draft" });
+    fireEvent.click(deleteButton);
 
-    expect(window.confirm).toHaveBeenCalledWith(
-      "Delete this draft? It will be removed from this browser."
+    const confirmation = screen.getByRole("alertdialog", {
+      name: "Confirm draft deletion",
+    });
+    expect(
+      within(confirmation).getByText(/removed from this browser/i)
+    ).toBeTruthy();
+    expect(onDelete).not.toHaveBeenCalled();
+
+    const confirmButton = within(confirmation).getByRole("button", {
+      name: "Delete this draft",
+    });
+    expect(document.activeElement).toBe(confirmButton);
+
+    fireEvent.keyDown(confirmButton, { key: "Escape" });
+    expect(
+      screen.queryByRole("alertdialog", { name: "Confirm draft deletion" })
+    ).toBeNull();
+    expect(document.activeElement).toBe(deleteButton);
+
+    fireEvent.click(deleteButton);
+    fireEvent.click(
+      within(
+        screen.getByRole("alertdialog", { name: "Confirm draft deletion" })
+      ).getByRole("button", { name: "Delete this draft" })
     );
+
     expect(onDelete).toHaveBeenCalledOnce();
   });
 });
