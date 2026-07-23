@@ -1,6 +1,6 @@
 # ClassTrace context
 
-This folder contains current-state documentation only. It does not preserve implementation diaries or completed build-unit archives.
+This folder contains the current source of truth for the invitation-only limited beta. It does not preserve implementation diaries or completed build-unit archives.
 
 | Document | Owns |
 |---|---|

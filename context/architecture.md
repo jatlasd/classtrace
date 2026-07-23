@@ -70,7 +70,7 @@ admin, district, organization, and membership models remains in force.
 - `TeacherProfile` maps Clerk identity to app-owned data.
 - `Workspace` is the personal teacher ownership boundary.
 - `ClassGroup` organizes roster setup.
-- `RosterStudent` is a teacher-owned student entry with a mention handle and one active class assignment during pre-beta.
+- `RosterStudent` is a teacher-owned student entry with a mention handle and one active class assignment during the limited beta.
 - `EvidenceRecord` stores the teacher-approved Evidence note plus reviewed structured fields. It never stores the raw capture.
 
 See `prisma/schema.prisma` and committed migrations for exact constraints.
