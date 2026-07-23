@@ -8,7 +8,13 @@ import {
   type SaveValidatedEvidenceActionInput,
   type SaveValidatedEvidenceActionResult,
 } from "@/actions/evidence";
+import { createRosterStudent } from "@/actions/roster";
 import { EvidenceCaptureCard } from "@/components/dashboard/evidence-capture-card";
+import type {
+  CreateStudentFromReviewInput,
+  CreateStudentFromReviewResult,
+  StudentResolutionClassOption,
+} from "@/components/dashboard/student-resolution-field";
 import {
   EvidenceSearchControl,
   FeedEmptyState,
@@ -54,6 +60,7 @@ import { ArrowDownUp } from "lucide-react";
 type EvidenceFeedProps = {
   workspaceId: string;
   rosterStudents: CaptureRosterStudent[];
+  classGroups: StudentResolutionClassOption[];
   initialEvidenceRecords: EvidenceFeedRecord[];
   evidencePage: number;
   hasNewerEvidence: boolean;
@@ -65,6 +72,11 @@ type EvidenceFeedProps = {
 type DraftFeedItem = FeedItem & {
   reviewOpen: boolean;
 };
+
+type BlockedCaptureStudentResolution = Extract<
+  CaptureStudentResolution,
+  { status: "no_student_mentioned" | "multiple_students" }
+>;
 
 const EMPTY_FEED_ITEMS: DraftFeedItem[] = [];
 
@@ -99,26 +111,19 @@ function getBrowserSessionStorage(): SessionDraftStorage | null {
 }
 
 function studentResolutionErrorMessage(
-  resolution: CaptureStudentResolution
+  resolution: BlockedCaptureStudentResolution
 ): string {
   if (resolution.status === "no_student_mentioned") {
-    return "Mention one student from your roster before saving this edit.";
+    return "Mention one student before saving this edit.";
   }
 
-  if (resolution.status === "multiple_students") {
-    return "Choose one student for this capture before saving this edit.";
-  }
-
-  if (resolution.status === "unresolved_student") {
-    return "This edit was not saved because a mentioned student is not on your roster yet.";
-  }
-
-  return "";
+  return "Choose one student for this capture before saving this edit.";
 }
 
 export function EvidenceFeed({
   workspaceId,
   rosterStudents,
+  classGroups,
   initialEvidenceRecords,
   evidencePage,
   hasNewerEvidence,
@@ -128,6 +133,8 @@ export function EvidenceFeed({
 }: EvidenceFeedProps) {
   const router = useRouter();
   const [draftItems, setDraftItems] = useState<DraftFeedItem[]>([]);
+  const [locallyCreatedRosterStudents, setLocallyCreatedRosterStudents] =
+    useState<CaptureRosterStudent[]>([]);
   const [hydratedWorkspaceId, setHydratedWorkspaceId] = useState<string | null>(
     null
   );
@@ -142,9 +149,21 @@ export function EvidenceFeed({
   const [hiddenSavedEvidenceIds, setHiddenSavedEvidenceIds] = useState<
     Set<string>
   >(() => new Set());
-  const rosterSetupNeeded = rosterStudents.length === 0;
   const sessionDraftsReady = hydratedWorkspaceId === workspaceId;
   const activeDraftItems = sessionDraftsReady ? draftItems : EMPTY_FEED_ITEMS;
+  const activeRosterStudents = useMemo(() => {
+    const studentsById = new Map(
+      [...rosterStudents, ...locallyCreatedRosterStudents].map((student) => [
+        student.id,
+        student,
+      ])
+    );
+
+    return [...studentsById.values()].sort((left, right) =>
+      left.displayName.localeCompare(right.displayName)
+    );
+  }, [locallyCreatedRosterStudents, rosterStudents]);
+  const rosterSetupNeeded = activeRosterStudents.length === 0;
 
   useEffect(() => {
     const storage = getBrowserSessionStorage();
@@ -274,7 +293,7 @@ export function EvidenceFeed({
 
     if (searchQuery.trim()) {
       result = result.filter((item) =>
-        captureMatchesSearch(item, searchQuery, rosterStudents)
+        captureMatchesSearch(item, searchQuery, activeRosterStudents)
       );
     }
 
@@ -283,7 +302,7 @@ export function EvidenceFeed({
     activeDraftItems,
     filter,
     searchQuery,
-    rosterStudents,
+    activeRosterStudents,
     savedEvidenceIds,
     hiddenSavedEvidenceIds,
   ]);
@@ -319,10 +338,13 @@ export function EvidenceFeed({
   ) {
     const resolution = resolveCaptureStudents(
       draft.parsed.mentions,
-      rosterStudents
+      activeRosterStudents
     );
 
-    if (resolution.status !== "resolved_one_student") {
+    if (
+      resolution.status !== "resolved_one_student" &&
+      resolution.status !== "unresolved_student"
+    ) {
       handleInvalidCaptureEdit(resolution);
       return;
     }
@@ -343,8 +365,34 @@ export function EvidenceFeed({
     setDraftItems((current) => [newItem, ...current]);
   }
 
-  function handleInvalidCaptureEdit(resolution: CaptureStudentResolution): void {
+  function handleInvalidCaptureEdit(
+    resolution: BlockedCaptureStudentResolution
+  ): void {
     setCaptureEditError(studentResolutionErrorMessage(resolution));
+  }
+
+  async function handleCreateStudent(
+    input: CreateStudentFromReviewInput
+  ): Promise<CreateStudentFromReviewResult> {
+    const result = await createRosterStudent(input);
+    if (!result.success) {
+      return result;
+    }
+
+    const student: CaptureRosterStudent = {
+      id: result.student.id,
+      displayName: result.student.displayName,
+      mentionHandle: result.student.mentionHandle,
+      classGroupName: result.student.classGroupName,
+    };
+
+    setLocallyCreatedRosterStudents((current) =>
+      current.some((candidate) => candidate.id === student.id)
+        ? current
+        : [...current, student]
+    );
+
+    return { success: true, student };
   }
 
   async function handleValidate(
@@ -391,10 +439,13 @@ export function EvidenceFeed({
     const nextDraft = buildNoteDraft(trimmed);
     const resolution = resolveCaptureStudents(
       nextDraft.parsed.mentions,
-      rosterStudents
+      activeRosterStudents
     );
 
-    if (resolution.status !== "resolved_one_student") {
+    if (
+      resolution.status !== "resolved_one_student" &&
+      resolution.status !== "unresolved_student"
+    ) {
       handleInvalidCaptureEdit(resolution);
       return false;
     }
@@ -538,10 +589,12 @@ export function EvidenceFeed({
             draft={item.draft}
             timestamp={item.timestamp}
             validation={item.validation}
-            rosterStudents={rosterStudents}
+            rosterStudents={activeRosterStudents}
+            classGroups={classGroups}
             onValidate={(fields, saveInput) =>
               handleValidate(item.id, fields, saveInput)
             }
+            onCreateStudent={handleCreateStudent}
             onEdit={(rawNote) => handleEditCapture(item.id, rawNote)}
             onDelete={() => handleDeleteCapture(item.id)}
             reviewOpen={item.reviewOpen}
@@ -568,7 +621,7 @@ export function EvidenceFeed({
   return (
     <div className="mx-auto w-full max-w-[1560px] px-4 py-5 sm:px-6 lg:px-8">
       <EvidenceFeedHeader
-        rosterCount={rosterStudents.length}
+        rosterCount={activeRosterStudents.length}
         savedCount={initialEvidenceRecords.length}
         reviewCount={needsReviewItemCount}
       />
@@ -578,7 +631,7 @@ export function EvidenceFeed({
           <RosterRequiredState />
         ) : (
           <QuickCaptureCard
-            rosterStudents={rosterStudents}
+            rosterStudents={activeRosterStudents}
             focusRequestKey={composerFocusRequestKey}
             onDraft={handleDraft}
           />

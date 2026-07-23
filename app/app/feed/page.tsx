@@ -1,7 +1,10 @@
 import { redirect } from "next/navigation";
 import { EvidenceFeed } from "@/components/dashboard/evidence-feed";
 import { getCurrentWorkspace } from "@/lib/auth/get-current-workspace";
-import { getClassRosterReadinessForWorkspace } from "@/lib/classes/class-groups";
+import {
+  getClassRosterReadinessForWorkspace,
+  listActiveClassGroupsForWorkspace,
+} from "@/lib/classes/class-groups";
 import {
   getEvidenceFeedPageForWorkspace,
   MAX_EVIDENCE_FEED_PAGE,
@@ -36,18 +39,23 @@ export default async function FeedPage({ searchParams }: FeedPageProps) {
   const requestedPage = pageNumber(singleParam(resolvedSearchParams.page));
   const initialFilter = singleParam(resolvedSearchParams.filter);
   const initialSearchQuery = singleParam(resolvedSearchParams.q);
-  const [classRosterReadiness, rosterStudents, evidencePage] = await Promise.all([
-    getClassRosterReadinessForWorkspace(workspace.workspaceId),
-    listActiveRosterStudentsForWorkspace(workspace.workspaceId).then((students) =>
-      students.map((student) => ({
-        id: student.id,
-        displayName: student.displayName,
-        mentionHandle: student.mentionHandle,
-        classGroupName: student.classGroupName,
-      }))
-    ),
-    getEvidenceFeedPageForWorkspace(workspace.workspaceId, requestedPage),
-  ]);
+  const [classRosterReadiness, classGroups, rosterStudents, evidencePage] =
+    await Promise.all([
+      getClassRosterReadinessForWorkspace(workspace.workspaceId),
+      listActiveClassGroupsForWorkspace(workspace.workspaceId).then((groups) =>
+        groups.map((group) => ({ id: group.id, name: group.name }))
+      ),
+      listActiveRosterStudentsForWorkspace(workspace.workspaceId).then(
+        (students) =>
+          students.map((student) => ({
+            id: student.id,
+            displayName: student.displayName,
+            mentionHandle: student.mentionHandle,
+            classGroupName: student.classGroupName,
+          }))
+      ),
+      getEvidenceFeedPageForWorkspace(workspace.workspaceId, requestedPage),
+    ]);
 
   if (!classRosterReadiness.readyForClassFirstRoster) {
     redirect(routes.roster);
@@ -64,6 +72,7 @@ export default async function FeedPage({ searchParams }: FeedPageProps) {
     <EvidenceFeed
       workspaceId={workspace.workspaceId}
       rosterStudents={rosterStudents}
+      classGroups={classGroups}
       initialEvidenceRecords={evidencePage.records}
       evidencePage={evidencePage.page}
       hasNewerEvidence={evidencePage.hasNewer}

@@ -24,6 +24,10 @@ vi.mock("@/actions/evidence", () => ({
   saveValidatedEvidence: vi.fn(),
 }));
 
+vi.mock("@/actions/roster", () => ({
+  createRosterStudent: vi.fn(),
+}));
+
 import { EvidenceFeed } from "@/components/dashboard/evidence-feed";
 
 const roster = [
@@ -49,6 +53,7 @@ describe("EvidenceFeed capture review", () => {
       <EvidenceFeed
         workspaceId="workspace_test"
         rosterStudents={roster}
+        classGroups={[{ id: "class_reading", name: "Reading" }]}
         initialEvidenceRecords={[]}
         evidencePage={1}
         hasNewerEvidence={false}
@@ -91,5 +96,35 @@ describe("EvidenceFeed capture review", () => {
     expect(screen.queryByText("Patterns")).toBeNull();
     expect(screen.queryByText("Evidence cues")).toBeNull();
     expect(screen.queryByText("Review prompts")).toBeNull();
+  });
+
+  it("keeps an unresolved capture as a reviewable session draft", async () => {
+    render(
+      <EvidenceFeed
+        workspaceId="workspace_test"
+        rosterStudents={roster}
+        classGroups={[{ id: "class_reading", name: "Reading" }]}
+        initialEvidenceRecords={[]}
+        evidencePage={1}
+        hasNewerEvidence={false}
+        hasOlderEvidence={false}
+        initialFilter=""
+        initialSearchQuery=""
+      />
+    );
+
+    await act(async () => {
+      await new Promise((resolve) => window.setTimeout(resolve, 0));
+    });
+    fireEvent.change(screen.getByLabelText("What happened?"), {
+      target: { value: "@Stacy completed the task independently." },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Capture Note" }));
+
+    expect((await screen.findAllByText(/@Stacy/)).length).toBeGreaterThan(0);
+    fireEvent.click(
+      screen.getByRole("button", { name: "Review before saving" })
+    );
+    expect(await screen.findByText(/Resolve @Stacy/i)).toBeTruthy();
   });
 });

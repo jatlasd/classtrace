@@ -9,6 +9,7 @@ const mocks = vi.hoisted(() => ({
   }),
   getCurrentWorkspace: vi.fn(),
   getClassRosterReadinessForWorkspace: vi.fn(),
+  listActiveClassGroupsForWorkspace: vi.fn(),
   listActiveRosterStudentsForWorkspace: vi.fn(),
   getEvidenceFeedPageForWorkspace: vi.fn(),
 }));
@@ -20,6 +21,7 @@ vi.mock("@/lib/auth/get-current-workspace", () => ({
 vi.mock("@/lib/classes/class-groups", () => ({
   getClassRosterReadinessForWorkspace:
     mocks.getClassRosterReadinessForWorkspace,
+  listActiveClassGroupsForWorkspace: mocks.listActiveClassGroupsForWorkspace,
 }));
 vi.mock("@/lib/students/roster-students", () => ({
   listActiveRosterStudentsForWorkspace:
@@ -33,6 +35,7 @@ vi.mock("@/components/dashboard/evidence-feed", () => ({
   EvidenceFeed: (props: {
     workspaceId: string;
     rosterStudents: unknown[];
+    classGroups: unknown[];
     initialEvidenceRecords: unknown[];
     evidencePage: number;
   }) => (
@@ -40,6 +43,7 @@ vi.mock("@/components/dashboard/evidence-feed", () => ({
       data-testid="evidence-feed"
       data-workspace-id={props.workspaceId}
       data-roster-count={props.rosterStudents.length}
+      data-class-count={props.classGroups.length}
       data-evidence-count={props.initialEvidenceRecords.length}
       data-page={props.evidencePage}
     />
@@ -62,6 +66,9 @@ describe("authenticated app routing", () => {
         mentionHandle: "mary",
         classGroupName: "Reading",
       },
+    ]);
+    mocks.listActiveClassGroupsForWorkspace.mockResolvedValue([
+      { id: "class_1", name: "Reading" },
     ]);
     mocks.getEvidenceFeedPageForWorkspace.mockResolvedValue({
       records: [{ id: "evidence_1" }],
@@ -113,6 +120,7 @@ describe("authenticated app routing", () => {
     const feed = screen.getByTestId("evidence-feed");
     expect(feed.getAttribute("data-workspace-id")).toBe("workspace_1");
     expect(feed.getAttribute("data-roster-count")).toBe("1");
+    expect(feed.getAttribute("data-class-count")).toBe("1");
     expect(feed.getAttribute("data-evidence-count")).toBe("1");
     expect(feed.getAttribute("data-page")).toBe("2");
     expect(mocks.getEvidenceFeedPageForWorkspace).toHaveBeenCalledWith(

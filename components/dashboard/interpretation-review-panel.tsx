@@ -2,6 +2,12 @@
 
 import Link from "next/link";
 import { useId, useRef, useState } from "react";
+import {
+  StudentResolutionField,
+  type CreateStudentFromReviewInput,
+  type CreateStudentFromReviewResult,
+  type StudentResolutionClassOption,
+} from "@/components/dashboard/student-resolution-field";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { formatTagLabel } from "@/lib/format-tag";
@@ -18,16 +24,25 @@ import {
 } from "@/lib/evidence/capture-validation";
 import type { DraftDisplay } from "@/lib/note-processing/draft-to-display";
 import { routes } from "@/lib/routes";
+import type { CaptureRosterStudent } from "@/lib/students/resolve-capture-students";
+import { CheckCircle2 } from "lucide-react";
 
 type InterpretationReviewPanelProps = {
   display: DraftDisplay;
+  resetKey?: string;
   onConfirm: (
     fields: InterpretationFields,
     saveInput: ValidatedEvidenceSaveInput
   ) => Promise<ValidatedEvidenceSaveResult>;
   onReviewLater: () => void;
   onCaptureAnother: () => void;
+  rosterStudents: CaptureRosterStudent[];
+  classGroups: StudentResolutionClassOption[];
+  onCreateStudent: (
+    input: CreateStudentFromReviewInput
+  ) => Promise<CreateStudentFromReviewResult>;
   onSavePendingChange?: (isPending: boolean) => void;
+  onResolvedStudentChange?: (student: CaptureRosterStudent | null) => void;
 };
 
 type ValidatedEvidenceSaveInput = {
@@ -143,7 +158,11 @@ function InterpretationReviewPanelContent({
   onConfirm,
   onReviewLater,
   onCaptureAnother,
+  rosterStudents,
+  classGroups,
+  onCreateStudent,
   onSavePendingChange,
+  onResolvedStudentChange,
 }: InterpretationReviewPanelProps) {
   const fieldIdPrefix = useId();
   const evidenceNoteId = `${fieldIdPrefix}-evidence-note`;
@@ -153,14 +172,33 @@ function InterpretationReviewPanelContent({
   const behaviorId = `${fieldIdPrefix}-behavior`;
   const tagsId = `${fieldIdPrefix}-tags`;
   const followUpsId = `${fieldIdPrefix}-follow-ups`;
+  const studentResolutionErrorId = `${fieldIdPrefix}-student-resolution-error`;
   const [form, setForm] = useState<FormState>(() => displayToFormState(display));
   const [validationError, setValidationError] = useState("");
   const validationErrorRef = useRef<HTMLParagraphElement | null>(null);
+  const studentResolutionRef = useRef<HTMLDivElement | null>(null);
+  const [studentResolutionError, setStudentResolutionError] = useState("");
+  const [resolvedStudentOverride, setResolvedStudentOverride] =
+    useState<CaptureRosterStudent | null>(null);
+  const [isResolvingStudent, setIsResolvingStudent] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [savedEvidenceId, setSavedEvidenceId] = useState("");
   const [isFirstWorkspaceEvidence, setIsFirstWorkspaceEvidence] =
     useState(false);
-  const studentValidation = validateSingleStudentForInterpretation(display);
+  const parsedStudentValidation = validateSingleStudentForInterpretation(display);
+  const studentValidation = resolvedStudentOverride
+    ? {
+        status: "valid_one_student" as const,
+        studentId: resolvedStudentOverride.id,
+        studentName: resolvedStudentOverride.displayName,
+      }
+    : parsedStudentValidation;
+  const unresolvedMention =
+    parsedStudentValidation.status === "unresolved_student" &&
+    parsedStudentValidation.studentNames.length === 1
+      ? parsedStudentValidation.studentNames[0]
+      : "";
+  const isBusy = isSaving || isResolvingStudent;
 
   function updateField<K extends keyof FormState>(key: K, value: FormState[K]) {
     setForm((current) => ({ ...current, [key]: value }));
@@ -179,7 +217,7 @@ function InterpretationReviewPanelContent({
       return "Choose one student for this evidence record.";
     }
 
-    return "This student is not on your roster yet.";
+    return "Resolve the student before saving validated evidence.";
   }
 
   function showValidationError(message: string): void {
@@ -187,13 +225,41 @@ function InterpretationReviewPanelContent({
     window.requestAnimationFrame(() => validationErrorRef.current?.focus());
   }
 
+  function showStudentResolutionError(message: string): void {
+    setStudentResolutionError(message);
+    if (message) {
+      window.requestAnimationFrame(() => studentResolutionRef.current?.focus());
+    }
+  }
+
+  function handleStudentResolved(student: CaptureRosterStudent): void {
+    setResolvedStudentOverride(student);
+    onResolvedStudentChange?.(student);
+    setStudentResolutionError("");
+    setValidationError("");
+  }
+
+  function handleStudentResolutionReset(): void {
+    setResolvedStudentOverride(null);
+    onResolvedStudentChange?.(null);
+  }
+
+  function handleStudentResolutionPendingChange(isPending: boolean): void {
+    setIsResolvingStudent(isPending);
+    onSavePendingChange?.(isPending);
+  }
+
   async function handleConfirm() {
-    if (isSaving || savedEvidenceId) {
+    if (isBusy || savedEvidenceId) {
       return;
     }
 
     if (studentValidation.status !== "valid_one_student") {
-      showValidationError(studentValidationMessage());
+      if (unresolvedMention) {
+        showStudentResolutionError(studentValidationMessage());
+      } else {
+        showValidationError(studentValidationMessage());
+      }
       return;
     }
 
@@ -218,6 +284,7 @@ function InterpretationReviewPanelContent({
     }
 
     setValidationError("");
+    setStudentResolutionError("");
     setIsSaving(true);
     onSavePendingChange?.(true);
 
@@ -277,7 +344,7 @@ function InterpretationReviewPanelContent({
             value={form.evidenceNote}
             onChange={(e) => updateField("evidenceNote", e.target.value)}
             rows={3}
-            disabled={isSaving || Boolean(savedEvidenceId)}
+            disabled={isBusy || Boolean(savedEvidenceId)}
             className="min-h-[84px] resize-none text-sm"
           />
           <p className="text-xs leading-relaxed text-muted-foreground">
@@ -291,25 +358,93 @@ function InterpretationReviewPanelContent({
           </p>
         </div>
 
-        <div className="space-y-1">
-          <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-            Student
-          </p>
-          <p className="text-sm leading-snug text-foreground">
-            {studentValidation.status === "valid_one_student"
-              ? studentValidation.studentName
-              : studentValidation.status === "no_student"
-                ? "—"
-                : studentValidation.studentNames.join(", ")}
-          </p>
-        </div>
+        {unresolvedMention ? (
+          <div
+            ref={studentResolutionRef}
+            tabIndex={-1}
+            className={`space-y-3 border-y px-3 py-3 outline-none focus-visible:ring-3 focus-visible:ring-ring/30 sm:col-span-2 sm:px-4 ${
+              resolvedStudentOverride
+                ? "border-validated/50 bg-validated/15"
+                : "border-accent/50 bg-accent/15"
+            }`}
+          >
+            {resolvedStudentOverride ? (
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div className="flex min-w-0 items-center gap-2.5">
+                  <CheckCircle2
+                    aria-hidden="true"
+                    className="size-4 shrink-0 text-validated-foreground"
+                  />
+                  <p className="min-w-0 text-sm text-foreground">
+                    <span className="font-medium">Student:</span>{" "}
+                    {resolvedStudentOverride.displayName}
+                  </p>
+                </div>
+                {!savedEvidenceId ? (
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="ghost"
+                    disabled={isBusy}
+                    onClick={handleStudentResolutionReset}
+                  >
+                    Change student
+                  </Button>
+                ) : null}
+              </div>
+            ) : (
+              <>
+                <p className="text-sm font-medium text-foreground">
+                  Resolve @{unresolvedMention}
+                </p>
+                <StudentResolutionField
+                  mention={unresolvedMention}
+                  rosterStudents={rosterStudents}
+                  classGroups={classGroups}
+                  disabled={isBusy || Boolean(savedEvidenceId)}
+                  errorId={
+                    studentResolutionError
+                      ? studentResolutionErrorId
+                      : undefined
+                  }
+                  onResolve={handleStudentResolved}
+                  onCreateStudent={onCreateStudent}
+                  onPendingChange={handleStudentResolutionPendingChange}
+                  onError={showStudentResolutionError}
+                />
+                {studentResolutionError ? (
+                  <p
+                    id={studentResolutionErrorId}
+                    role="alert"
+                    className="text-sm text-destructive"
+                  >
+                    {studentResolutionError}
+                  </p>
+                ) : null}
+              </>
+            )}
+          </div>
+        ) : (
+          <div className="space-y-1">
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+              Student
+            </p>
+            <p className="text-sm leading-snug text-foreground">
+              {studentValidation.status === "valid_one_student"
+                ? studentValidation.studentName
+                : studentValidation.status === "no_student"
+                  ? "—"
+                  : studentValidation.studentNames.join(", ")}
+            </p>
+          </div>
+        )}
 
         <FieldRow label="Evidence type" htmlFor={evidenceTypeId}>
           <select
             id={evidenceTypeId}
             value={form.evidenceType}
             onChange={(e) => updateField("evidenceType", e.target.value)}
-            disabled={isSaving || Boolean(savedEvidenceId)}
+            disabled={isBusy || Boolean(savedEvidenceId)}
             className={fieldInputClass}
           >
             {!NOTE_TYPE_OPTIONS.includes(form.evidenceType) && (
@@ -329,7 +464,7 @@ function InterpretationReviewPanelContent({
             type="text"
             value={form.topic}
             onChange={(e) => updateField("topic", e.target.value)}
-            disabled={isSaving || Boolean(savedEvidenceId)}
+            disabled={isBusy || Boolean(savedEvidenceId)}
             className={fieldInputClass}
           />
         </FieldRow>
@@ -340,7 +475,7 @@ function InterpretationReviewPanelContent({
             type="text"
             value={form.performance}
             onChange={(e) => updateField("performance", e.target.value)}
-            disabled={isSaving || Boolean(savedEvidenceId)}
+            disabled={isBusy || Boolean(savedEvidenceId)}
             className={fieldInputClass}
           />
         </FieldRow>
@@ -354,7 +489,7 @@ function InterpretationReviewPanelContent({
             type="text"
             value={form.behavior}
             onChange={(e) => updateField("behavior", e.target.value)}
-            disabled={isSaving || Boolean(savedEvidenceId)}
+            disabled={isBusy || Boolean(savedEvidenceId)}
             className={fieldInputClass}
           />
         </FieldRow>
@@ -365,7 +500,7 @@ function InterpretationReviewPanelContent({
             type="text"
             value={form.tags}
             onChange={(e) => updateField("tags", e.target.value)}
-            disabled={isSaving || Boolean(savedEvidenceId)}
+            disabled={isBusy || Boolean(savedEvidenceId)}
             className={fieldInputClass}
           />
         </FieldRow>
@@ -382,7 +517,7 @@ function InterpretationReviewPanelContent({
             value={form.followUpNotes}
             onChange={(e) => updateField("followUpNotes", e.target.value)}
             rows={2}
-            disabled={isSaving || Boolean(savedEvidenceId)}
+            disabled={isBusy || Boolean(savedEvidenceId)}
             className="min-h-[60px] resize-none text-sm"
           />
         </div>
@@ -448,7 +583,7 @@ function InterpretationReviewPanelContent({
       >
         <Button
           size="sm"
-          disabled={isSaving || Boolean(savedEvidenceId)}
+          disabled={isBusy || Boolean(savedEvidenceId)}
           onClick={handleConfirm}
         >
           {savedEvidenceId
@@ -461,7 +596,7 @@ function InterpretationReviewPanelContent({
           <Button
             size="sm"
             variant="ghost"
-            disabled={isSaving}
+            disabled={isBusy}
             onClick={onReviewLater}
           >
             Review later
@@ -477,7 +612,7 @@ export function InterpretationReviewPanel(
 ) {
   return (
     <InterpretationReviewPanelContent
-      key={draftDisplayKey(props.display)}
+      key={props.resetKey ?? draftDisplayKey(props.display)}
       {...props}
     />
   );
