@@ -1,12 +1,5 @@
 import type { Metadata } from "next";
-import { ClerkProvider } from "@clerk/nextjs";
 import { Caveat, Fraunces, Inter } from "next/font/google";
-import {
-  clerkAfterSignInUrl,
-  clerkAfterSignUpUrl,
-  clerkSignInUrl,
-  clerkSignUpUrl,
-} from "@/lib/auth-routes";
 import "./globals.css";
 
 const fraunces = Fraunces({
@@ -41,14 +34,7 @@ export default function RootLayout({
       className={`${fraunces.variable} ${inter.variable} ${caveat.variable} h-full antialiased`}
     >
       <body className="paper-grain min-h-full flex flex-col font-sans">
-        <ClerkProvider
-          signInUrl={clerkSignInUrl}
-          signUpUrl={clerkSignUpUrl}
-          signInFallbackRedirectUrl={clerkAfterSignInUrl}
-          signUpFallbackRedirectUrl={clerkAfterSignUpUrl}
-        >
-          {children}
-        </ClerkProvider>
+        {children}
       </body>
     </html>
   );

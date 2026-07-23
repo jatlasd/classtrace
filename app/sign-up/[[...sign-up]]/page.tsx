@@ -9,6 +9,7 @@ import {
   clerkSignUpUrl,
 } from "@/lib/auth-routes";
 import { SiteFooter } from "@/components/layout/site-footer";
+import { ClassTraceClerkProvider } from "@/components/auth/class-trace-clerk-provider";
 import { routes } from "@/lib/routes";
 
 export const metadata: Metadata = {
@@ -25,32 +26,34 @@ export default async function SignUpPage(): Promise<ReactElement> {
   }
 
   return (
-    <div className="flex min-h-dvh flex-col bg-background">
-      <main className="flex flex-1 items-center justify-center px-4 py-8">
-        <div className="w-full max-w-md">
-          <header className="mb-6 text-center">
-            <p className="text-sm font-semibold text-primary">
-              Invitation-only beta
-            </p>
-            <h1 className="font-display mt-2 text-3xl font-semibold tracking-tight text-foreground">
-              Complete your ClassTrace sign-up
-            </h1>
-            <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-              Use the invitation sent to your email to create your teacher
-              workspace. Already have an account? Sign in instead.
-            </p>
-          </header>
-          <div className="flex justify-center">
-            <SignUp
-              path={clerkSignUpUrl}
-              routing="path"
-              signInUrl={clerkSignInUrl}
-              fallbackRedirectUrl={clerkAfterSignUpUrl}
-            />
+    <ClassTraceClerkProvider>
+      <div className="flex min-h-dvh flex-col bg-background">
+        <main className="flex flex-1 items-center justify-center px-4 py-8">
+          <div className="w-full max-w-md">
+            <header className="mb-6 text-center">
+              <p className="text-sm font-semibold text-primary">
+                Invitation-only beta
+              </p>
+              <h1 className="font-display mt-2 text-3xl font-semibold tracking-tight text-foreground">
+                Complete your ClassTrace sign-up
+              </h1>
+              <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+                Use the invitation sent to your email to create your teacher
+                workspace. Already have an account? Sign in instead.
+              </p>
+            </header>
+            <div className="flex justify-center">
+              <SignUp
+                path={clerkSignUpUrl}
+                routing="path"
+                signInUrl={clerkSignInUrl}
+                fallbackRedirectUrl={clerkAfterSignUpUrl}
+              />
+            </div>
           </div>
-        </div>
-      </main>
-      <SiteFooter />
-    </div>
+        </main>
+        <SiteFooter />
+      </div>
+    </ClassTraceClerkProvider>
   );
 }

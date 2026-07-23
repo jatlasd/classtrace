@@ -66,10 +66,13 @@ export function LandingHero() {
             asChild
             className="h-12 rounded-md px-8 text-[15px] font-semibold"
           >
-            <Link href={routes.signUp}>Complete invited sign-up</Link>
+            <Link href={routes.signUp} prefetch={false}>
+              Complete invited sign-up
+            </Link>
           </Button>
           <Link
             href={routes.signIn}
+            prefetch={false}
             className="rounded-md px-2 py-2 text-sm font-medium text-link underline-offset-4 transition-colors hover:text-foreground hover:underline"
           >
             Sign in

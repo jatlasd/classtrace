@@ -16,12 +16,15 @@ export function LandingHeader() {
         <nav aria-label="Public" className="flex items-center gap-2 sm:gap-5">
           <Link
             href={routes.signIn}
+            prefetch={false}
             className="hidden rounded-lg px-2 py-2 text-sm font-medium text-foreground/80 transition-colors hover:text-foreground sm:block"
           >
             Sign in
           </Link>
           <Button asChild variant="navy" className="h-9 rounded-md px-4 text-sm font-semibold">
-            <Link href={routes.signUp}>Invited? Complete sign-up</Link>
+            <Link href={routes.signUp} prefetch={false}>
+              Invited? Complete sign-up
+            </Link>
           </Button>
         </nav>
       </div>

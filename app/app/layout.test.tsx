@@ -6,6 +6,10 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 vi.mock("@/components/dashboard/app-top-nav", () => ({
   AppTopNav: () => <header>Application navigation</header>,
 }));
+vi.mock("@/components/auth/class-trace-clerk-provider", () => ({
+  ClassTraceClerkProvider: ({ children }: { children: React.ReactNode }) =>
+    children,
+}));
 
 import AppLayout from "@/app/app/layout";
 

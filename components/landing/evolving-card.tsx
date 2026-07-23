@@ -30,7 +30,7 @@ function Collapse({
 }) {
   return (
     <div
-      className={`grid transition-[grid-template-rows,opacity] duration-700 ${EASE} ${
+      className={`grid transition-[grid-template-rows,opacity] duration-500 ${EASE} ${
         open ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
       } ${delay && open ? "delay-200" : ""} ${className}`}
     >
@@ -115,7 +115,7 @@ export function EvolvingCard({ phase }: { phase: number }) {
   const isFiled = phase >= 4;
 
   return (
-    <div aria-hidden="true" className="w-full max-w-xl">
+    <div aria-hidden="true" className="w-full max-w-xl [contain:layout]">
       <Collapse open={isFiled} className="mb-3">
         <div className="flex items-center justify-between rounded-lg border border-border bg-card/95 px-4 py-2 shadow-paper">
           <span className="flex items-center gap-2">
@@ -175,7 +175,7 @@ export function EvolvingCard({ phase }: { phase: number }) {
       />
 
       <div
-        className={`relative my-0 w-full border transition-[background-color,border-color,border-radius,transform,margin] duration-700 ${EASE} ${
+        className={`relative my-0 w-full border transition-[background-color,border-color,border-radius,transform] duration-500 ${EASE} ${
           isNote
             ? "-rotate-2 rounded-sm border-transparent bg-transparent"
             : "rotate-0 rounded-card border-border bg-card shadow-floating"
@@ -246,7 +246,7 @@ export function EvolvingCard({ phase }: { phase: number }) {
           </div>
         </Collapse>
 
-        <div className={`relative px-5 transition-[padding] duration-700 ${isNote ? "py-5" : "py-4"}`}>
+        <div className="relative px-5 py-4">
           <Collapse open={isNote}>
             <p className="font-hand py-2 text-[2rem] font-medium leading-tight tracking-[0.01em] text-foreground/90">
               {RAW_NOTE_TEXT}

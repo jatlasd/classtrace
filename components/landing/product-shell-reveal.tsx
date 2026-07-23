@@ -233,7 +233,9 @@ export function ProductShellReveal() {
             variant="outline"
             className="h-11 rounded-md px-6 text-sm font-semibold"
           >
-            <Link href={routes.signUp}>Set up your roster and capture</Link>
+            <Link href={routes.signUp} prefetch={false}>
+              Set up your roster and capture
+            </Link>
           </Button>
         </div>
       </div>

@@ -1,5 +1,6 @@
 import { AppTopNav } from "@/components/dashboard/app-top-nav";
 import { SiteFooter } from "@/components/layout/site-footer";
+import { ClassTraceClerkProvider } from "@/components/auth/class-trace-clerk-provider";
 
 export default function AppLayout({
   children,
@@ -7,22 +8,24 @@ export default function AppLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <div className="flex min-h-dvh flex-col bg-background">
-      <a
-        href="#main-content"
-        className="fixed left-4 top-3 z-[70] -translate-y-20 rounded-md bg-foreground px-3 py-2 text-sm font-semibold text-background transition-transform focus:translate-y-0"
-      >
-        Skip to main content
-      </a>
-      <AppTopNav />
-      <main
-        id="main-content"
-        tabIndex={-1}
-        className="min-w-0 flex-1 outline-none"
-      >
-        {children}
-      </main>
-      <SiteFooter />
-    </div>
+    <ClassTraceClerkProvider>
+      <div className="flex min-h-dvh flex-col bg-background">
+        <a
+          href="#main-content"
+          className="fixed left-4 top-3 z-[70] -translate-y-20 rounded-md bg-foreground px-3 py-2 text-sm font-semibold text-background transition-transform focus:translate-y-0"
+        >
+          Skip to main content
+        </a>
+        <AppTopNav />
+        <main
+          id="main-content"
+          tabIndex={-1}
+          className="min-w-0 flex-1 outline-none"
+        >
+          {children}
+        </main>
+        <SiteFooter />
+      </div>
+    </ClassTraceClerkProvider>
   );
 }
