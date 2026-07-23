@@ -4,6 +4,11 @@ import Link from "next/link";
 import { useId, useRef, useState } from "react";
 import { InterpretationReviewPanel } from "@/components/dashboard/interpretation-review-panel";
 import { NoteContent } from "@/components/dashboard/note-content";
+import type {
+  CreateStudentFromReviewInput,
+  CreateStudentFromReviewResult,
+  StudentResolutionClassOption,
+} from "@/components/dashboard/student-resolution-field";
 import { Button } from "@/components/ui/button";
 import { ConfirmationPanel } from "@/components/ui/confirmation-panel";
 import { Textarea } from "@/components/ui/textarea";
@@ -28,6 +33,7 @@ type EvidenceCaptureCardProps = {
   timestamp?: string;
   validation?: CaptureValidation;
   rosterStudents: CaptureRosterStudent[];
+  classGroups: StudentResolutionClassOption[];
   onValidate: (
     fields: InterpretationFields,
     saveInput: ValidatedEvidenceSaveInput
@@ -37,6 +43,9 @@ type EvidenceCaptureCardProps = {
   reviewOpen: boolean;
   onReviewOpenChange: (open: boolean) => void;
   onCaptureAnother: () => void;
+  onCreateStudent: (
+    input: CreateStudentFromReviewInput
+  ) => Promise<CreateStudentFromReviewResult>;
 };
 
 type ValidatedEvidenceSaveInput = {
@@ -184,23 +193,46 @@ export function EvidenceCaptureCard({
   timestamp = "Just now",
   validation,
   rosterStudents,
+  classGroups,
   onValidate,
   onEdit,
   onDelete,
   reviewOpen,
   onReviewOpenChange,
   onCaptureAnother,
+  onCreateStudent,
 }: EvidenceCaptureCardProps) {
   const sourceEditorId = useId();
   const [isReviewSavePending, setIsReviewSavePending] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
   const [editText, setEditText] = useState("");
+  const [resolvedStudentOverride, setResolvedStudentOverride] =
+    useState<CaptureRosterStudent | null>(null);
   const [reviewWasOpenBeforeEdit, setReviewWasOpenBeforeEdit] =
     useState(false);
   const deleteButtonRef = useRef<HTMLButtonElement>(null);
-  const display = resolveCaptureDisplay(draft, validation, rosterStudents);
-  const parserDisplay = draftToDisplay(draft, rosterStudents);
+  const parserDisplay = resolveCaptureDisplay(draft, validation, rosterStudents);
+  const parserUnresolvedMentions = parserDisplay.studentMentions.filter(
+    (ref) => ref.status === "unresolved"
+  );
+  const displayRosterStudents =
+    resolvedStudentOverride && parserUnresolvedMentions.length === 1
+      ? rosterStudents.map((student) =>
+          student.id === resolvedStudentOverride.id
+            ? {
+                ...student,
+                mentionHandle: parserUnresolvedMentions[0].mention,
+              }
+            : student
+        )
+      : rosterStudents;
+  const display = resolveCaptureDisplay(
+    draft,
+    validation,
+    displayRosterStudents
+  );
+  const reviewDisplay = draftToDisplay(draft, rosterStudents);
   const isPending = display.validationStatus !== "validated";
   const unresolvedMentions = display.studentMentions.filter(
     (ref) => ref.status === "unresolved"
@@ -237,6 +269,7 @@ export function EvidenceCaptureCard({
     }
     const saved = onEdit?.(trimmed) ?? true;
     if (saved) {
+      setResolvedStudentOverride(null);
       setIsEditing(false);
       onReviewOpenChange(true);
     }
@@ -402,22 +435,16 @@ export function EvidenceCaptureCard({
                         <span className="font-medium">
                           @{unresolvedMentions[0].mention}
                         </span>{" "}
-                        isn&apos;t on your roster yet. Add them from My roster, or
-                        fix student names when you review.
+                        isn&apos;t on your roster yet. Match or add the student when
+                        you review.
                       </>
                     ) : (
                       <>
-                        Some @mentions aren&apos;t on your roster yet. Add students
-                        from My roster, or fix student names when you review.
+                        Some @mentions aren&apos;t on your roster yet. Correct the
+                        original capture before saving.
                       </>
                     )}
                   </p>
-                  <Link
-                    href={routes.roster}
-                    className="mt-2 inline-flex text-xs font-medium text-link underline-offset-2 hover:underline"
-                  >
-                    My roster
-                  </Link>
                 </div>
               ) : null}
 
@@ -453,11 +480,16 @@ export function EvidenceCaptureCard({
 
           <div hidden={!reviewOpen || isEditing}>
             <InterpretationReviewPanel
-              display={parserDisplay}
+              display={reviewDisplay}
+              resetKey={draft.parsed.rawNote}
               onConfirm={handleConfirm}
               onReviewLater={() => onReviewOpenChange(false)}
               onCaptureAnother={onCaptureAnother}
+              rosterStudents={rosterStudents}
+              classGroups={classGroups}
+              onCreateStudent={onCreateStudent}
               onSavePendingChange={setIsReviewSavePending}
+              onResolvedStudentChange={setResolvedStudentOverride}
             />
           </div>
         </div>

@@ -122,7 +122,7 @@ function resolutionMessage(
   if (resolution.status === "no_student_mentioned") {
     return {
       tone: "error",
-      text: "Mention one student from your roster before capturing.",
+      text: "Mention one student before capturing.",
     };
   }
 
@@ -134,8 +134,8 @@ function resolutionMessage(
   }
 
   return {
-    tone: "error",
-    text: "This student is not on your roster yet.",
+    tone: "ready",
+    text: `Ready to capture. You'll resolve @${resolution.unresolvedMentions[0]} before saving.`,
   };
 }
 
@@ -178,7 +178,8 @@ export function QuickCaptureCard({
   );
   const canCapture =
     trimmedPlainText.length > 0 &&
-    studentResolution.status === "resolved_one_student";
+    (studentResolution.status === "resolved_one_student" ||
+      studentResolution.status === "unresolved_student");
 
   useEffect(() => {
     if (focusRequestKey > 0) {
@@ -231,8 +232,8 @@ export function QuickCaptureCard({
             What happened?
           </label>
           <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-            Write the moment first. Mention exactly one roster student before
-            capture.
+            Write the moment first. Mention exactly one student; you can resolve
+            a new handle during review.
           </p>
         </div>
 

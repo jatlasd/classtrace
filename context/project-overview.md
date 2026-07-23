@@ -33,7 +33,10 @@ The strongest early users are special education teachers, case managers, interve
 - Classes organize roster setup and student management.
 - Every active student belongs to one active class.
 - Capture remains global rather than class-scoped.
-- A capture must resolve to exactly one active roster student.
+- A capture may name one active roster student or one unmatched mention handle.
+- During review, an unmatched mention must be matched to an active roster
+  student or resolved by creating a student in an active class.
+- Permanent evidence must resolve to exactly one active roster student.
 - Deterministic rules suggest evidence type, topic, performance, behavior, tags, follow-up, and summary.
 - The teacher reviews and may edit the Evidence note and structured fields.
 - Saving creates a permanent evidence record; raw capture text is not part of that record.

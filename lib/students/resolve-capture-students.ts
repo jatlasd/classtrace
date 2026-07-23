@@ -29,26 +29,32 @@ export function resolveCaptureStudents(
       student,
     ])
   );
-  const unresolvedMentions: string[] = [];
+  const distinctMentions = new Map<string, string>();
   const resolvedStudents = new Map<string, CaptureRosterStudent>();
 
   for (const mention of mentions) {
-    const student = studentsByHandle.get(normalizeMention(mention));
+    const normalizedMention = normalizeMention(mention);
+    if (!distinctMentions.has(normalizedMention)) {
+      distinctMentions.set(normalizedMention, mention);
+    }
+    const student = studentsByHandle.get(normalizedMention);
     if (!student) {
-      unresolvedMentions.push(mention);
       continue;
     }
     resolvedStudents.set(student.id, student);
   }
 
-  if (unresolvedMentions.length > 0) {
-    return { status: "unresolved_student", unresolvedMentions };
-  }
-
   const students = [...resolvedStudents.values()];
 
-  if (students.length > 1) {
+  if (distinctMentions.size > 1) {
     return { status: "multiple_students", students };
+  }
+
+  if (students.length === 0) {
+    return {
+      status: "unresolved_student",
+      unresolvedMentions: [...distinctMentions.values()],
+    };
   }
 
   return { status: "resolved_one_student", student: students[0] };

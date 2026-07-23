@@ -29,15 +29,23 @@ const draft = {
 type CaptureHarnessProps = {
   onEdit?: (rawNote: string) => boolean;
   onDelete?: () => void;
+  captureDraft?: typeof draft;
+  captureRoster?: typeof roster;
 };
 
-function CaptureHarness({ onEdit, onDelete }: CaptureHarnessProps) {
+function CaptureHarness({
+  onEdit,
+  onDelete,
+  captureDraft = draft,
+  captureRoster = roster,
+}: CaptureHarnessProps) {
   const [reviewOpen, setReviewOpen] = useState(false);
 
   return (
     <EvidenceCaptureCard
-      draft={draft}
-      rosterStudents={roster}
+      draft={captureDraft}
+      rosterStudents={captureRoster}
+      classGroups={[{ id: "class_reading", name: "Reading" }]}
       onValidate={vi.fn().mockResolvedValue({
         success: true,
         evidenceId: "evidence_1",
@@ -48,6 +56,7 @@ function CaptureHarness({ onEdit, onDelete }: CaptureHarnessProps) {
       reviewOpen={reviewOpen}
       onReviewOpenChange={setReviewOpen}
       onCaptureAnother={vi.fn()}
+      onCreateStudent={vi.fn()}
     />
   );
 }
@@ -107,6 +116,33 @@ describe("EvidenceCaptureCard review flow", () => {
     );
 
     expect(onEdit).toHaveBeenCalledWith("@Mary read independently #reading");
+  });
+
+  it("keeps an existing-student match accurate after review is collapsed", () => {
+    const unresolvedDraft = {
+      ...buildNoteDraft("@Stacy used a reading strategy independently #reading"),
+      needsTeacherValidation: true,
+    };
+    render(
+      <CaptureHarness
+        captureDraft={unresolvedDraft}
+        onEdit={vi.fn(() => true)}
+        onDelete={vi.fn()}
+      />
+    );
+
+    fireEvent.click(
+      screen.getByRole("button", { name: "Review before saving" })
+    );
+    const rosterSearch = screen.getByRole("combobox", {
+      name: "Match roster student",
+    });
+    fireEvent.change(rosterSearch, { target: { value: "@mary" } });
+    fireEvent.keyDown(rosterSearch, { key: "Enter" });
+    fireEvent.click(screen.getByRole("button", { name: "Review later" }));
+
+    expect(screen.queryByText(/isn.t on your roster yet/i)).toBeNull();
+    expect(screen.getByRole("link", { name: /Mary/ })).toBeTruthy();
   });
 
   it("uses an inline confirmation before deleting a draft", () => {

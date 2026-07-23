@@ -130,7 +130,8 @@ File: `components/dashboard/quick-capture-card.tsx`
 ## Capture review
 
 Files: `components/dashboard/evidence-capture-card.tsx`,
-`components/dashboard/interpretation-review-panel.tsx`
+`components/dashboard/interpretation-review-panel.tsx`,
+`components/dashboard/student-resolution-field.tsx`
 
 Last imprinted: 2026-07-22
 
@@ -143,6 +144,19 @@ Last imprinted: 2026-07-22
 - Editing the original capture is a separate, explicitly labeled action. Draft
   deletion opens the shared inline confirmation panel, moves focus to the
   destructive confirmation, and supports Cancel or Escape before deleting.
+- One unmatched mention may enter review. Its Student field uses an
+  accent-tinted border-y panel with a searchable roster combobox instead of a
+  native resolution dropdown or a full roster list. The compact field exposes
+  at most five matching students, supports keyboard selection, and keeps inline
+  student creation as a quiet secondary action. The search uses the shared
+  roster input treatment; its temporary result surface uses `bg-card`,
+  `border-border`, and `rounded-md`, with `bg-muted` for the active result and
+  `text-muted-foreground` for handles. The teacher may add a student with an
+  editable name, fixed captured handle, and required class. A
+  successful match collapses to one validated-tint row and remains reflected
+  if review is deferred; resolving the student never saves the evidence.
+- Attempting to save while the Student field remains unresolved shows an
+  accessible error and moves focus to that highlighted field.
 - Use one ledger row: capture icon, compact status metadata, full-width source
   or review content, then inline actions. Do not add a nested card, shadow, or
   narrow action rail.

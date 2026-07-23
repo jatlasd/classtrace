@@ -14,6 +14,7 @@ const roster = [
     classGroupName: "Reading",
   },
 ];
+const classGroups = [{ id: "class_reading", name: "Reading" }];
 
 function buildDisplay() {
   return resolveCaptureDisplay(
@@ -35,6 +36,9 @@ describe("InterpretationReviewPanel", () => {
         onConfirm={vi.fn()}
         onReviewLater={onReviewLater}
         onCaptureAnother={vi.fn()}
+        rosterStudents={roster}
+        classGroups={classGroups}
+        onCreateStudent={vi.fn()}
       />
     );
 
@@ -63,6 +67,9 @@ describe("InterpretationReviewPanel", () => {
         onConfirm={onConfirm}
         onReviewLater={vi.fn()}
         onCaptureAnother={vi.fn()}
+        rosterStudents={roster}
+        classGroups={classGroups}
+        onCreateStudent={vi.fn()}
       />
     );
 
@@ -114,6 +121,9 @@ describe("InterpretationReviewPanel", () => {
         onConfirm={onConfirm}
         onReviewLater={vi.fn()}
         onCaptureAnother={vi.fn()}
+        rosterStudents={roster}
+        classGroups={classGroups}
+        onCreateStudent={vi.fn()}
         onSavePendingChange={onPendingChange}
       />
     );
@@ -138,10 +148,10 @@ describe("InterpretationReviewPanel", () => {
     expect(onPendingChange).toHaveBeenLastCalledWith(false);
   });
 
-  it("keeps invalid student resolution inside the review boundary", async () => {
+  it("focuses the highlighted student field when save is attempted unresolved", async () => {
     const onConfirm = vi.fn();
     const unresolvedDisplay = resolveCaptureDisplay(
-      buildNoteDraft("@Unknown used a reading strategy #reading"),
+      buildNoteDraft("@Stacy used a reading strategy #reading"),
       undefined,
       roster
     );
@@ -152,14 +162,157 @@ describe("InterpretationReviewPanel", () => {
         onConfirm={onConfirm}
         onReviewLater={vi.fn()}
         onCaptureAnother={vi.fn()}
+        rosterStudents={roster}
+        classGroups={classGroups}
+        onCreateStudent={vi.fn()}
       />
     );
     fireEvent.click(
       screen.getByRole("button", { name: "Save validated evidence" })
     );
 
-    expect(await screen.findByText("This student is not on your roster yet.")).toBeTruthy();
+    const error = await screen.findByText(
+      "Resolve the student before saving validated evidence."
+    );
+    await waitFor(() =>
+      expect(document.activeElement).toBe(
+        error.closest("div[tabindex='-1']")
+      )
+    );
     expect(onConfirm).not.toHaveBeenCalled();
+  });
+
+  it("matches an unresolved mention to an existing roster student", async () => {
+    const onConfirm = vi.fn().mockResolvedValue({
+      success: true,
+      evidenceId: "evidence_1",
+      isFirstWorkspaceEvidence: false,
+    });
+    const unresolvedDisplay = resolveCaptureDisplay(
+      buildNoteDraft("@Stacy used a reading strategy #reading"),
+      undefined,
+      roster
+    );
+
+    render(
+      <InterpretationReviewPanel
+        display={unresolvedDisplay}
+        onConfirm={onConfirm}
+        onReviewLater={vi.fn()}
+        onCaptureAnother={vi.fn()}
+        rosterStudents={roster}
+        classGroups={classGroups}
+        onCreateStudent={vi.fn()}
+      />
+    );
+
+    const rosterSearch = screen.getByRole("combobox", {
+      name: "Match roster student",
+    });
+    fireEvent.change(rosterSearch, { target: { value: "@mary" } });
+    fireEvent.keyDown(rosterSearch, { key: "Enter" });
+    expect(await screen.findByText("Student:")).toBeTruthy();
+    fireEvent.click(
+      screen.getByRole("button", { name: "Save validated evidence" })
+    );
+
+    await waitFor(() => expect(onConfirm).toHaveBeenCalledOnce());
+    expect(onConfirm.mock.calls[0][0].students).toEqual(["Mary"]);
+    expect(onConfirm.mock.calls[0][1].rosterStudentId).toBe("student_mary");
+  });
+
+  it("creates and resolves a student without saving the evidence", async () => {
+    const rawNote = "@Stacy used a reading strategy #reading";
+    const onConfirm = vi.fn().mockResolvedValue({
+      success: true,
+      evidenceId: "evidence_1",
+      isFirstWorkspaceEvidence: false,
+    });
+    const onCreateStudent = vi.fn().mockResolvedValue({
+      success: true,
+      student: {
+        id: "student_stacy",
+        displayName: "Stacy",
+        mentionHandle: "stacy",
+        classGroupName: "Reading",
+      },
+    });
+    const unresolvedDisplay = resolveCaptureDisplay(
+      buildNoteDraft(rawNote),
+      undefined,
+      roster
+    );
+
+    const { rerender } = render(
+      <InterpretationReviewPanel
+        display={unresolvedDisplay}
+        resetKey={rawNote}
+        onConfirm={onConfirm}
+        onReviewLater={vi.fn()}
+        onCaptureAnother={vi.fn()}
+        rosterStudents={roster}
+        classGroups={classGroups}
+        onCreateStudent={onCreateStudent}
+      />
+    );
+
+    fireEvent.change(screen.getByLabelText("Evidence note"), {
+      target: { value: "Stacy used the strategy without prompting." },
+    });
+    fireEvent.click(
+      screen.getByRole("button", { name: "Add @stacy as a new student" })
+    );
+    expect((screen.getByLabelText("Student name") as HTMLInputElement).value).toBe(
+      "Stacy"
+    );
+    expect((screen.getByLabelText("Class") as HTMLSelectElement).value).toBe(
+      "class_reading"
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Add student" }));
+
+    await waitFor(() => expect(onCreateStudent).toHaveBeenCalledOnce());
+    expect(onCreateStudent).toHaveBeenCalledWith({
+      displayName: "Stacy",
+      mentionHandle: "stacy",
+      classGroupId: "class_reading",
+    });
+    expect(await screen.findByText("Student:")).toBeTruthy();
+    expect(onConfirm).not.toHaveBeenCalled();
+
+    const rosterWithStacy = [
+      ...roster,
+      {
+        id: "student_stacy",
+        displayName: "Stacy",
+        mentionHandle: "stacy",
+        classGroupName: "Reading",
+      },
+    ];
+    rerender(
+      <InterpretationReviewPanel
+        display={resolveCaptureDisplay(
+          buildNoteDraft(rawNote),
+          undefined,
+          rosterWithStacy
+        )}
+        resetKey={rawNote}
+        onConfirm={onConfirm}
+        onReviewLater={vi.fn()}
+        onCaptureAnother={vi.fn()}
+        rosterStudents={rosterWithStacy}
+        classGroups={classGroups}
+        onCreateStudent={onCreateStudent}
+      />
+    );
+    expect(
+      (screen.getByLabelText("Evidence note") as HTMLTextAreaElement).value
+    ).toBe("Stacy used the strategy without prompting.");
+
+    fireEvent.click(
+      screen.getByRole("button", { name: "Save validated evidence" })
+    );
+    await waitFor(() => expect(onConfirm).toHaveBeenCalledOnce());
+    expect(onConfirm.mock.calls[0][1].rosterStudentId).toBe("student_stacy");
   });
 
   it("offers useful next actions after the workspace's first saved evidence", async () => {
@@ -176,6 +329,9 @@ describe("InterpretationReviewPanel", () => {
         onConfirm={onConfirm}
         onReviewLater={vi.fn()}
         onCaptureAnother={onCaptureAnother}
+        rosterStudents={roster}
+        classGroups={classGroups}
+        onCreateStudent={vi.fn()}
       />
     );
 

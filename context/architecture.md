@@ -82,6 +82,7 @@ composer React state
   → Capture
   → sessionStorage draft (optional, temporary)
   → deterministic parser/matchers
+  → unmatched-student resolution (match existing or create in active class)
   → review UI
   → teacher-approved save input
   → ownership and input validation
@@ -111,6 +112,12 @@ The client submits only the reviewed Evidence note and structured fields. The se
 3. Rechecks that the student is active and owned by the workspace.
 4. Rechecks the optional class relation in the same workspace.
 5. Writes inside the shared serializable transaction protocol.
+
+An unmatched mention may remain only in the temporary draft. During review,
+the teacher may match it to an active roster student or create a roster student
+through the existing workspace-scoped student mutation. Student creation alone
+does not approve or save the evidence; the later evidence save still rechecks
+the resolved active student and class ownership.
 
 Legacy structured records may have a null Evidence note. The UI labels them honestly and never fabricates note text.
 

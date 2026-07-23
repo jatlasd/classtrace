@@ -70,4 +70,38 @@ describe("QuickCaptureCard mentions editor", () => {
     expect((mention as HTMLElement).style.fontWeight).toBe("inherit");
     expect((mention as HTMLElement).style.backgroundColor).toContain("var(--link)");
   });
+
+  it("captures one unresolved handle for later review", async () => {
+    const onDraft = vi.fn();
+    render(<QuickCaptureCard rosterStudents={roster} onDraft={onDraft} />);
+
+    fireEvent.change(screen.getByLabelText("What happened?"), {
+      target: { value: "@Stacy completed the task independently." },
+    });
+
+    expect(
+      await screen.findByText(
+        "Ready to capture. You'll resolve @Stacy before saving."
+      )
+    ).toBeTruthy();
+    const captureButton = screen.getByRole("button", { name: "Capture Note" });
+    expect((captureButton as HTMLButtonElement).disabled).toBe(false);
+    fireEvent.click(captureButton);
+
+    expect(onDraft).toHaveBeenCalledOnce();
+  });
+
+  it("continues to block two distinct student handles", async () => {
+    render(<QuickCaptureCard rosterStudents={roster} onDraft={vi.fn()} />);
+
+    fireEvent.change(screen.getByLabelText("What happened?"), {
+      target: { value: "@Mary helped @Stacy with reading." },
+    });
+
+    expect(await screen.findByText("Choose one student for this capture.")).toBeTruthy();
+    expect(
+      (screen.getByRole("button", { name: "Capture Note" }) as HTMLButtonElement)
+        .disabled
+    ).toBe(true);
+  });
 });
