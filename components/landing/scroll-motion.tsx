@@ -2,6 +2,51 @@
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
 
+type ScrollMeasurement = () => (() => void) | undefined;
+
+const scrollMeasurements = new Set<ScrollMeasurement>();
+let scrollFrame = 0;
+
+function runScrollFrame() {
+  scrollFrame = 0;
+  const writes: (() => void)[] = [];
+
+  scrollMeasurements.forEach((measure) => {
+    const write = measure();
+    if (write) writes.push(write);
+  });
+
+  writes.forEach((write) => write());
+}
+
+function scheduleScrollFrame() {
+  if (scrollFrame) return;
+  scrollFrame = window.requestAnimationFrame(runScrollFrame);
+}
+
+export function subscribeToScrollFrame(measure: ScrollMeasurement) {
+  scrollMeasurements.add(measure);
+
+  if (scrollMeasurements.size === 1) {
+    window.addEventListener("scroll", scheduleScrollFrame, { passive: true });
+    window.addEventListener("resize", scheduleScrollFrame);
+  }
+
+  scheduleScrollFrame();
+
+  return () => {
+    scrollMeasurements.delete(measure);
+    if (scrollMeasurements.size > 0) return;
+
+    if (scrollFrame) {
+      window.cancelAnimationFrame(scrollFrame);
+      scrollFrame = 0;
+    }
+    window.removeEventListener("scroll", scheduleScrollFrame);
+    window.removeEventListener("resize", scheduleScrollFrame);
+  };
+}
+
 export function Reveal({
   children,
   className = "",
@@ -63,36 +108,22 @@ export function ParallaxDrift({
       return;
     }
 
-    let frame = 0;
-
-    function measure() {
-      frame = 0;
-      if (!node) return;
+    return subscribeToScrollFrame(() => {
       const rect = node.getBoundingClientRect();
       const viewport = window.innerHeight;
       if (rect.bottom < 0 || rect.top > viewport) return;
       const center = rect.top + rect.height / 2;
       const ratio = (center - viewport / 2) / viewport;
-      node.style.transform = `translateY(${(ratio * depth).toFixed(1)}px)`;
-    }
+      const transform = `translateY(${(ratio * depth).toFixed(1)}px)`;
 
-    function onScroll() {
-      if (frame) return;
-      frame = window.requestAnimationFrame(measure);
-    }
-
-    measure();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", onScroll);
-    return () => {
-      if (frame) window.cancelAnimationFrame(frame);
-      window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", onScroll);
-    };
+      return () => {
+        node.style.transform = transform;
+      };
+    });
   }, [depth]);
 
   return (
-    <div ref={nodeRef} className={`will-change-transform ${className}`}>
+    <div ref={nodeRef} className={className}>
       {children}
     </div>
   );

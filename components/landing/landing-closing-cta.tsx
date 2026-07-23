@@ -26,13 +26,16 @@ export function LandingClosingCta() {
             asChild
             className="h-12 min-w-60 rounded-md px-8 text-[15px] font-semibold"
           >
-            <Link href={routes.signUp}>Complete invited sign-up</Link>
+            <Link href={routes.signUp} prefetch={false}>
+              Complete invited sign-up
+            </Link>
           </Button>
         </div>
         <p className="mt-4 text-sm text-muted-foreground">
           Already tracing?{" "}
           <Link
             href={routes.signIn}
+            prefetch={false}
             className="font-medium text-link underline-offset-4 hover:underline"
           >
             Sign in

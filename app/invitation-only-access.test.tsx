@@ -14,6 +14,7 @@ const mocks = vi.hoisted(() => ({
 vi.mock("@clerk/nextjs/server", () => ({ auth: mocks.auth }));
 vi.mock("next/navigation", () => ({ redirect: mocks.redirect }));
 vi.mock("@clerk/nextjs", () => ({
+  ClerkProvider: ({ children }: { children: React.ReactNode }) => children,
   SignUp: (props: { path: string; signInUrl: string }) => (
     <div
       data-testid="clerk-sign-up"

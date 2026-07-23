@@ -9,6 +9,7 @@ import {
   clerkSignUpUrl,
 } from "@/lib/auth-routes";
 import { SiteFooter } from "@/components/layout/site-footer";
+import { ClassTraceClerkProvider } from "@/components/auth/class-trace-clerk-provider";
 import { routes } from "@/lib/routes";
 
 export const metadata: Metadata = {
@@ -24,16 +25,18 @@ export default async function SignInPage(): Promise<ReactElement> {
   }
 
   return (
-    <div className="flex min-h-dvh flex-col bg-background">
-      <main className="flex flex-1 items-center justify-center px-4 py-8">
-        <SignIn
-          path={clerkSignInUrl}
-          routing="path"
-          signUpUrl={clerkSignUpUrl}
-          fallbackRedirectUrl={clerkAfterSignInUrl}
-        />
-      </main>
-      <SiteFooter />
-    </div>
+    <ClassTraceClerkProvider>
+      <div className="flex min-h-dvh flex-col bg-background">
+        <main className="flex flex-1 items-center justify-center px-4 py-8">
+          <SignIn
+            path={clerkSignInUrl}
+            routing="path"
+            signUpUrl={clerkSignUpUrl}
+            fallbackRedirectUrl={clerkAfterSignInUrl}
+          />
+        </main>
+        <SiteFooter />
+      </div>
+    </ClassTraceClerkProvider>
   );
 }

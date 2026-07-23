@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { EvolvingCard } from "@/components/landing/evolving-card";
+import { subscribeToScrollFrame } from "@/components/landing/scroll-motion";
 import {
   CoffeeRing,
   IndexCard,
@@ -301,59 +302,50 @@ function StickyStory() {
   const sceneryRefs = useRef<(HTMLDivElement | null)[]>([]);
   const [phase, setPhase] = useState(0);
   const phaseRef = useRef(0);
+  const progressRef = useRef(-1);
 
   useEffect(() => {
-    let frame = 0;
-
-    function measure() {
-      frame = 0;
+    return subscribeToScrollFrame(() => {
       const node = containerRef.current;
       if (!node) return;
       const rect = node.getBoundingClientRect();
       const scrollable = rect.height - window.innerHeight;
       if (scrollable <= 0) return;
       const progress = Math.min(Math.max(-rect.top / scrollable, 0), 0.9999);
+      if (progress === progressRef.current) return;
+      progressRef.current = progress;
 
       const nextPhase = Math.floor(progress * phases.length);
-      if (nextPhase !== phaseRef.current) {
-        phaseRef.current = nextPhase;
-        setPhase(nextPhase);
-      }
+      const drift = (progress * phases.length - nextPhase - 0.5) * -7;
+      const annotationOffsets = annotations.map(
+        (annotation) => (progress - 0.5) * annotation.depth
+      );
+      const sceneryOffsets = scenery.map(
+        (item) => (progress - sceneryCenter(item)) * item.depth
+      );
 
-      if (railFillRef.current) {
-        railFillRef.current.style.transform = `scaleY(${progress})`;
-      }
-      if (stageDriftRef.current) {
-        const drift = (progress * phases.length - nextPhase - 0.5) * -7;
-        stageDriftRef.current.style.transform = `translateY(${drift}px)`;
-      }
-      annotationRefs.current.forEach((annotationNode, index) => {
-        if (!annotationNode) return;
-        annotationNode.style.transform = `translateY(${
-          (progress - 0.5) * annotations[index].depth
-        }px)`;
-      });
-      sceneryRefs.current.forEach((sceneryNode, index) => {
-        if (!sceneryNode) return;
-        const item = scenery[index];
-        const offset = (progress - sceneryCenter(item)) * item.depth;
-        sceneryNode.style.transform = `translateY(${offset.toFixed(1)}px)`;
-      });
-    }
+      return () => {
+        if (nextPhase !== phaseRef.current) {
+          phaseRef.current = nextPhase;
+          setPhase(nextPhase);
+        }
 
-    function onScroll() {
-      if (frame) return;
-      frame = window.requestAnimationFrame(measure);
-    }
-
-    measure();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", onScroll);
-    return () => {
-      if (frame) window.cancelAnimationFrame(frame);
-      window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", onScroll);
-    };
+        if (railFillRef.current) {
+          railFillRef.current.style.transform = `scaleY(${progress})`;
+        }
+        if (stageDriftRef.current) {
+          stageDriftRef.current.style.transform = `translateY(${drift}px)`;
+        }
+        annotationRefs.current.forEach((annotationNode, index) => {
+          if (!annotationNode) return;
+          annotationNode.style.transform = `translateY(${annotationOffsets[index]}px)`;
+        });
+        sceneryRefs.current.forEach((sceneryNode, index) => {
+          if (!sceneryNode) return;
+          sceneryNode.style.transform = `translateY(${sceneryOffsets[index].toFixed(1)}px)`;
+        });
+      };
+    });
   }, []);
 
   const activePhase = phases[phase];
@@ -464,7 +456,7 @@ function StickyStory() {
             ))}
             <div
               ref={stageDriftRef}
-              className="flex w-full justify-center transition-transform duration-300 ease-out [@media(max-height:840px)]:scale-[0.88]"
+              className="flex w-full justify-center [@media(max-height:840px)]:scale-[0.88]"
             >
               <EvolvingCard phase={phase} />
             </div>
@@ -476,14 +468,16 @@ function StickyStory() {
 }
 
 export function EvidenceStory() {
-  const [enhanced, setEnhanced] = useState(false);
+  const [mode, setMode] = useState<"pending" | "static" | "sticky">(
+    "pending"
+  );
 
   useEffect(() => {
     const wide = window.matchMedia("(min-width: 64rem)");
     const motionOk = window.matchMedia("(prefers-reduced-motion: no-preference)");
 
     function update() {
-      setEnhanced(wide.matches && motionOk.matches);
+      setMode(wide.matches && motionOk.matches ? "sticky" : "static");
     }
 
     update();
@@ -501,7 +495,16 @@ export function EvidenceStory() {
       className="scroll-mt-20 overflow-x-clip border-t border-border/70 bg-secondary/45 py-16 lg:py-20"
     >
       <StoryHeading />
-      {enhanced ? <StickyStory /> : <StaticStory />}
+      {mode !== "sticky" ? (
+        <div className={mode === "pending" ? "landing-story-static" : ""}>
+          <StaticStory />
+        </div>
+      ) : null}
+      {mode !== "static" ? (
+        <div className={mode === "pending" ? "landing-story-sticky" : ""}>
+          <StickyStory />
+        </div>
+      ) : null}
     </section>
   );
 }

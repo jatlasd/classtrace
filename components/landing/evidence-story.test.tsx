@@ -26,6 +26,11 @@ describe("EvidenceStory", () => {
     expect(markup).not.toMatch(/insights?/i);
   });
 
+  it("renders both responsive story variants before hydration", () => {
+    expect(markup).toContain('class="landing-story-static"');
+    expect(markup).toContain('class="landing-story-sticky"');
+  });
+
   it("starts with a quick handwritten reminder before the fuller capture", () => {
     const reminderMarkup = renderToStaticMarkup(<EvolvingCard phase={0} />);
     const captureMarkup = renderToStaticMarkup(<EvolvingCard phase={1} />);

@@ -52,12 +52,14 @@ export function SiteFooter({ showAccessLinks = false }: SiteFooterProps) {
             <>
               <Link
                 href={routes.signIn}
+                prefetch={false}
                 className="text-sm font-medium text-foreground/80 transition-colors hover:text-foreground"
               >
                 Sign in
               </Link>
               <Link
                 href={routes.signUp}
+                prefetch={false}
                 className="text-sm text-muted-foreground transition-colors hover:text-foreground"
               >
                 Invited sign-up →
