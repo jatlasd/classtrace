@@ -118,7 +118,7 @@ describe("EvidenceCaptureCard review flow", () => {
     expect(onEdit).toHaveBeenCalledWith("@Mary read independently #reading");
   });
 
-  it("keeps an existing-student match accurate after review is collapsed", () => {
+  it("keeps an existing-student match after an unchanged source edit", () => {
     const unresolvedDraft = {
       ...buildNoteDraft("@Stacy used a reading strategy independently #reading"),
       needsTeacherValidation: true,
@@ -143,6 +143,54 @@ describe("EvidenceCaptureCard review flow", () => {
 
     expect(screen.queryByText(/isn.t on your roster yet/i)).toBeNull();
     expect(screen.getByRole("link", { name: /Mary/ })).toBeTruthy();
+
+    fireEvent.click(
+      screen.getByRole("button", { name: "Edit original capture" })
+    );
+    fireEvent.click(
+      screen.getByRole("button", { name: "Save original capture" })
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Review later" }));
+
+    expect(screen.queryByText(/isn.t on your roster yet/i)).toBeNull();
+    expect(screen.getByRole("link", { name: /Mary/ })).toBeTruthy();
+  });
+
+  it("clears an existing-student match after the source text changes", () => {
+    const unresolvedDraft = {
+      ...buildNoteDraft("@Stacy used a reading strategy independently #reading"),
+      needsTeacherValidation: true,
+    };
+    render(
+      <CaptureHarness
+        captureDraft={unresolvedDraft}
+        onEdit={vi.fn(() => true)}
+        onDelete={vi.fn()}
+      />
+    );
+
+    fireEvent.click(
+      screen.getByRole("button", { name: "Review before saving" })
+    );
+    const rosterSearch = screen.getByRole("combobox", {
+      name: "Match roster student",
+    });
+    fireEvent.change(rosterSearch, { target: { value: "@mary" } });
+    fireEvent.keyDown(rosterSearch, { key: "Enter" });
+    fireEvent.click(screen.getByRole("button", { name: "Review later" }));
+
+    fireEvent.click(
+      screen.getByRole("button", { name: "Edit original capture" })
+    );
+    fireEvent.change(screen.getByLabelText("Original capture"), {
+      target: { value: "@Stacy used a different reading strategy #reading" },
+    });
+    fireEvent.click(
+      screen.getByRole("button", { name: "Save original capture" })
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Review later" }));
+
+    expect(screen.getByText(/isn.t on your roster yet/i)).toBeTruthy();
   });
 
   it("uses an inline confirmation before deleting a draft", () => {

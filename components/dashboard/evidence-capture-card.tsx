@@ -269,7 +269,9 @@ export function EvidenceCaptureCard({
     }
     const saved = onEdit?.(trimmed) ?? true;
     if (saved) {
-      setResolvedStudentOverride(null);
+      if (trimmed !== draft.parsed.rawNote) {
+        setResolvedStudentOverride(null);
+      }
       setIsEditing(false);
       onReviewOpenChange(true);
     }
