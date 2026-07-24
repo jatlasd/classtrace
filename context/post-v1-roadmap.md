@@ -16,7 +16,7 @@ This is strategic direction, not an active implementation queue. Any item still 
 
 ## Sensible next priorities
 
-1. Run a small real-teacher beta and record workflow friction before adding surface area.
+1. Run the limited beta with a small teacher cohort and record workflow friction before adding surface area.
 2. Make deployment/operations decisions: hosting, database backups, error monitoring, support path, and privacy/legal review.
 3. Improve existing capture/review behavior only where beta evidence shows repeated friction.
 4. Add narrowly scoped reporting improvements only if they preserve capture-first hierarchy.

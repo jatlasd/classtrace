@@ -102,4 +102,4 @@ Avoid inflated terms such as intelligence, insights, automation, compliance, cas
 
 ## Readiness posture
 
-ClassTrace is a credible early-stage project and beta candidate after environment-specific validation. It is not represented as a professionally operated production service until deployment, monitoring, backup/restore, policy, and real-user validation decisions are completed separately.
+ClassTrace is operating as an invitation-only limited beta for a small teacher cohort. That beta posture does not represent the service as production-ready, compliant, district-approved, or suitable as a system of record. Expansion beyond the limited cohort still requires deployment validation, monitoring, backup/restore decisions, policy and legal review, and evidence from real teacher use.
