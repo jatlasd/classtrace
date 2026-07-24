@@ -38,6 +38,7 @@ These are engineering boundaries, not claims of FERPA compliance or district app
 - Clerk authentication
 - Prisma 7 with PostgreSQL
 - Resend for outbound beta-support email
+- Sentry for privacy-scrubbed error monitoring and sampled tracing
 - Vitest and Testing Library
 
 ## Local development
@@ -49,6 +50,7 @@ Prerequisites:
 - PostgreSQL
 - Clerk
 - Resend
+- Sentry
 
 Install dependencies and create local configuration:
 
@@ -101,7 +103,7 @@ Start with [context/README.md](context/README.md). Coding agents should also fol
 
 ## Deployment
 
-Configure the applicable Clerk, operator, Resend, and `DATABASE_URL` variables in each Vercel environment. Keep all Resend values server-only. Before sending feedback to a recipient other than the Resend account email, configure a verified sending domain and a domain-restricted API key.
+Configure the applicable Clerk, operator, Resend, Sentry, and `DATABASE_URL` variables in each Vercel environment. Keep Resend values and `SENTRY_AUTH_TOKEN` server-only. Sentry's `NEXT_PUBLIC_SENTRY_DSN` is public by design; `SENTRY_AUTH_TOKEN` is required at build time for readable production source maps. Before sending feedback to a recipient other than the Resend account email, configure a verified sending domain and a domain-restricted API key.
 
 For a release:
 

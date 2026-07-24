@@ -10,7 +10,12 @@ import {
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
+  captureException: vi.fn(),
   registerUnexpectedErrorReference: vi.fn(),
+}));
+
+vi.mock("@sentry/nextjs", () => ({
+  captureException: mocks.captureException,
 }));
 
 vi.mock("@/actions/error-reporting", () => ({
@@ -63,6 +68,7 @@ describe("UnexpectedErrorFallback", () => {
         boundary: "app",
       })
     );
+    expect(mocks.captureException).not.toHaveBeenCalled();
   });
 
   it("prevents duplicate retry clicks while recovery is in progress", () => {
@@ -104,6 +110,16 @@ describe("UnexpectedErrorFallback", () => {
     ).toBeTruthy();
     await waitFor(() =>
       expect(mocks.registerUnexpectedErrorReference).toHaveBeenCalledTimes(1)
+    );
+    expect(mocks.captureException).toHaveBeenCalledWith(
+      expect.objectContaining({ message: "SENTINEL_CLIENT_ERROR" }),
+      {
+        tags: {
+          "classtrace.boundary": "global",
+          "classtrace.error_reference":
+            "CT-C-123e4567-e89b-12d3-a456-426614174000",
+        },
+      }
     );
     expect(screen.queryByRole("alert")).toBeNull();
   });

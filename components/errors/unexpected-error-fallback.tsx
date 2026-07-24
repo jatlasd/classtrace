@@ -1,5 +1,6 @@
 "use client";
 
+import * as Sentry from "@sentry/nextjs";
 import { MessageCircleQuestion, RefreshCw, TriangleAlert } from "lucide-react";
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { registerUnexpectedErrorReference } from "@/actions/error-reporting";
@@ -38,10 +39,19 @@ export function UnexpectedErrorFallback({
     if (registeredReference.current === referenceId) return;
     registeredReference.current = referenceId;
 
+    if (!getServerErrorReference(error.digest)) {
+      Sentry.captureException(error, {
+        tags: {
+          "classtrace.boundary": boundary,
+          "classtrace.error_reference": referenceId,
+        },
+      });
+    }
+
     void registerUnexpectedErrorReference({ referenceId, boundary }).catch(
       () => undefined
     );
-  }, [boundary, referenceId]);
+  }, [boundary, error, referenceId]);
 
   const retrying =
     (retryState.error === error && retryState.active) || isPending;

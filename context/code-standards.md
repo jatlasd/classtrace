@@ -127,6 +127,8 @@ Use `npm run test:coverage` to find weak areas. Current global minimums are guar
 Required runtime environment variables are documented in `.env.example` and
 README. Database access consumes `DATABASE_URL`; outbound support feedback uses
 the server-only Resend key, fixed sender, and fixed operator recipient variables.
+Sentry uses public client/server DSNs for privacy-scrubbed error and trace
+ingestion plus a build-only secret auth token for production source maps.
 
 ## Documentation workflow
 

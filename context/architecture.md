@@ -13,8 +13,9 @@ browser
 ```
 
 There is no separate API service, job queue, analytics pipeline, file service,
-AI service, or shared district identity layer. The one narrow external delivery
-path is Settings feedback sent through Resend to the configured operator.
+AI service, or shared district identity layer. The two narrow external paths
+are Settings feedback sent through Resend to the configured operator and
+privacy-scrubbed application errors and sampled traces sent to Sentry.
 
 ## Ownership model
 
@@ -244,7 +245,8 @@ These limits protect resource usage and database hygiene; they are not substitut
 - Expected validation/ownership failures return typed errors without revealing whether another workspace owns an ID.
 - Route-level `loading.tsx`, `error.tsx`, and `not-found.tsx` provide safe recovery states. A root `global-error.tsx` covers failures outside the authenticated app boundary and failures in the root layout.
 - Unexpected boundary failures display an opaque `CT-S-` server-digest reference or `CT-C-` client reference, offer Next.js retry, and link to the existing Help and Feedback form without attaching raw error details.
-- Next.js request instrumentation logs server references with only the route template and framework failure classification. A narrow registration action logs the same displayed client reference when the server remains reachable; neither path logs error messages, stacks, concrete URLs, request data, or teacher/student content.
+- Next.js request instrumentation logs server references with only the route template and framework failure classification. A narrow registration action logs the same displayed client reference when the server remains reachable; neither log path includes error messages, stacks, concrete URLs, request data, or teacher/student content.
+- Sentry receives scrubbed exception type/stack frames, safe opaque error references, parameterized route templates, runtime/release metadata, and sampled timing. SDK collection and final send hooks remove user identity, IP-derived data, cookies, headers, bodies, query parameters, concrete request URLs, breadcrumbs, local variables, database values, arbitrary context, and user-controlled error messages. Session Replay and Sentry log shipping are disabled.
 - Destructive actions require explicit confirmation and do not disappear from the UI until the server succeeds.
 - Unexpected action/domain errors are logged with an operation prefix; raw notes are never included.
 
@@ -264,10 +266,10 @@ These limits protect resource usage and database hygiene; they are not substitut
 
 | Runtime | Database boundary | Identity and support variables | Test-only variables |
 |---|---|---|---|
-| Local (`.env.local`) | `DATABASE_URL` targets `classtrace_dev` in `classtrace-nonproduction` | Clerk development keys and route variables; operator user IDs; development Resend sender/recipient | `TEST_DATABASE_URL` targets only `classtrace_test`; `TEST_DATABASE_RESET_ALLOWED=0` except for the explicit test process |
-| Vercel Development | `DATABASE_URL` targets `classtrace_dev` | Applicable Clerk, operator, route, and Resend variables | Never set |
-| Vercel Preview | `DATABASE_URL` targets `classtrace_dev` | Applicable Clerk, operator, route, and Resend variables | Never set |
-| Vercel Production | `DATABASE_URL` targets the `classtrace` project, `production` branch, `neondb` database | Applicable Clerk, operator, route, and Resend variables | Never set |
+| Local (`.env.local`) | `DATABASE_URL` targets `classtrace_dev` in `classtrace-nonproduction` | Clerk development keys and route variables; operator user IDs; development Resend sender/recipient; Sentry DSNs | `TEST_DATABASE_URL` targets only `classtrace_test`; `TEST_DATABASE_RESET_ALLOWED=0` except for the explicit test process |
+| Vercel Development | `DATABASE_URL` targets `classtrace_dev` | Applicable Clerk, operator, route, Resend, and Sentry variables | Never set |
+| Vercel Preview | `DATABASE_URL` targets `classtrace_dev` | Applicable Clerk, operator, route, Resend, and Sentry variables | Never set |
+| Vercel Production | `DATABASE_URL` targets the `classtrace` project, `production` branch, `neondb` database | Applicable Clerk, operator, route, Resend, and Sentry variables; build-only `SENTRY_AUTH_TOKEN` | Never set |
 
 Production data is never copied or branched into non-production. Verify a
 database target by project, branch, and database name without printing the
