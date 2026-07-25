@@ -22,8 +22,11 @@ async function withExpectedDeleteError<T>(run: () => Promise<T>): Promise<T> {
     const result = await run();
     expect(consoleError).toHaveBeenCalledTimes(1);
     expect(consoleError).toHaveBeenCalledWith(
-      "[lib/evidence/deleteEvidenceForWorkspace]",
-      expect.any(Error)
+      "[monitoring/capture-operational-error] unexpected",
+      {
+        operation: "evidence.delete",
+        errorName: "Error",
+      }
     );
     return result;
   } finally {

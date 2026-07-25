@@ -3,6 +3,7 @@ import "server-only";
 import { Prisma } from "@/lib/generated/prisma/client";
 import { prisma } from "@/lib/db/prisma";
 import { withSerializableTransactionRetry } from "@/lib/db/serializable-transaction";
+import { captureOperationalError } from "@/lib/monitoring/capture-operational-error";
 import { INPUT_LIMITS } from "@/lib/validation/input-limits";
 
 type SortOrder = "asc" | "desc";
@@ -352,7 +353,7 @@ export async function createClassGroupForWorkspace(
       };
     }
 
-    console.error("[lib/classes/createClassGroupForWorkspace]", error);
+    captureOperationalError("class.create", error);
     return { success: false, error: "Failed to save class." };
   }
 }
@@ -438,7 +439,7 @@ export async function renameClassGroupForWorkspace(
       };
     }
 
-    console.error("[lib/classes/renameClassGroupForWorkspace]", error);
+    captureOperationalError("class.rename", error);
     return { success: false, error: "Failed to rename class." };
   }
 }
@@ -511,7 +512,7 @@ export async function archiveClassGroupForWorkspace(
       };
     }
 
-    console.error("[lib/classes/archiveClassGroupForWorkspace]", error);
+    captureOperationalError("class.archive", error);
     return { success: false, error: "Failed to archive class." };
   }
 }

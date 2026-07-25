@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { captureOperationalError } from "@/lib/monitoring/capture-operational-error";
 import { requireOperator } from "@/lib/operator/operator-auth";
 import {
   deleteOperatorClerkUser,
@@ -22,7 +23,7 @@ export async function searchOperatorAccountAction(input: {
       email: input.email,
     });
   } catch (error) {
-    console.error("[actions/operator/searchOperatorAccountAction] failed", error);
+    captureOperationalError("operator.account-search", error);
     return { success: false, error: "Account search is not available." };
   }
 }
@@ -42,10 +43,7 @@ export async function deleteOperatorWorkspaceDataAction(input: {
     if (result.success) revalidatePath(routes.operator);
     return result;
   } catch (error) {
-    console.error(
-      "[actions/operator/deleteOperatorWorkspaceDataAction] failed",
-      error
-    );
+    captureOperationalError("operator.workspace-delete", error);
     return { success: false, error: "ClassTrace data could not be deleted." };
   }
 }
@@ -67,10 +65,7 @@ export async function deleteOperatorClerkUserAction(input: {
     }
     return result;
   } catch (error) {
-    console.error(
-      "[actions/operator/deleteOperatorClerkUserAction] failed",
-      error
-    );
+    captureOperationalError("operator.clerk-user-delete", error);
     return { success: false, error: "The Clerk user could not be deleted." };
   }
 }

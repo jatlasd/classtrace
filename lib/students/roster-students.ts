@@ -3,6 +3,7 @@ import "server-only";
 import { Prisma } from "@/lib/generated/prisma/client";
 import { prisma } from "@/lib/db/prisma";
 import { withSerializableTransactionRetry } from "@/lib/db/serializable-transaction";
+import { captureOperationalError } from "@/lib/monitoring/capture-operational-error";
 import { normalizeMentionHandle } from "@/lib/students/normalize-mention-handle";
 import { INPUT_LIMITS } from "@/lib/validation/input-limits";
 
@@ -444,10 +445,7 @@ export async function createRosterStudentForWorkspace(
       };
     }
 
-    console.error(
-      "[lib/students/createRosterStudentForWorkspace]",
-      error instanceof Error ? error.name : "UnknownError"
-    );
+    captureOperationalError("roster.create", error);
     return { success: false, error: "Failed to save student." };
   }
 }
@@ -630,7 +628,7 @@ export async function updateRosterStudentForWorkspace(
       };
     }
 
-    console.error("[lib/students/updateRosterStudentForWorkspace]", error);
+    captureOperationalError("roster.update", error);
     return { success: false, error: "Failed to save student." };
   }
 }

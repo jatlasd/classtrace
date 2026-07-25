@@ -202,8 +202,11 @@ describe("roster Server Actions", () => {
         preview: { hasErrors: true, totalRows: 0 },
       });
       expect(consoleError).toHaveBeenCalledWith(
-        "[actions/roster/importRosterStudents]",
-        failure
+        "[monitoring/capture-operational-error] unexpected",
+        {
+          operation: "roster.import",
+          errorName: "Error",
+        }
       );
     } finally {
       consoleError.mockRestore();

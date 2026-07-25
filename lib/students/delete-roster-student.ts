@@ -1,6 +1,7 @@
 import "server-only";
 
 import { prisma } from "@/lib/db/prisma";
+import { captureOperationalError } from "@/lib/monitoring/capture-operational-error";
 import { INPUT_LIMITS } from "@/lib/validation/input-limits";
 
 type RosterStudentFindFirstArgs = {
@@ -133,7 +134,7 @@ export async function deleteRosterStudentForWorkspace(
       deletedEvidenceCount,
     };
   } catch (error) {
-    console.error("[lib/students/deleteRosterStudentForWorkspace]", error);
+    captureOperationalError("roster.delete", error);
     return {
       success: false,
       error: "Failed to delete student.",

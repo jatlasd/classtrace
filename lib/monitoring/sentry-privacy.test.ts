@@ -105,6 +105,48 @@ describe("Sentry privacy boundary", () => {
     ).toBe(verification);
   });
 
+  it("turns an allowlisted operation into an actionable safe issue title", () => {
+    const event: Event = {
+      tags: {
+        "classtrace.operation": "evidence.save",
+        unsafe: "SENTINEL_TAG",
+      },
+      exception: {
+        values: [{ type: "TypeError", value: "SENTINEL_STUDENT_NOTE" }],
+      },
+    };
+
+    expect(sanitizeSentryEvent(event)).toMatchObject({
+      tags: { "classtrace.operation": "evidence.save" },
+      exception: {
+        values: [
+          {
+            type: "TypeError",
+            value: "ClassTrace operation failed: evidence.save",
+          },
+        ],
+      },
+    });
+    expect(JSON.stringify(event)).not.toContain("SENTINEL");
+  });
+
+  it("drops operation tags outside the static allowlist", () => {
+    const event: Event = {
+      tags: { "classtrace.operation": "student-name-from-input" },
+      exception: {
+        values: [{ type: "Error", value: "SENTINEL_STUDENT_NOTE" }],
+      },
+    };
+
+    expect(sanitizeSentryEvent(event)).toMatchObject({
+      exception: {
+        values: [{ value: "Unexpected application error" }],
+      },
+    });
+    expect(event.tags).toBeUndefined();
+    expect(JSON.stringify(event)).not.toContain("SENTINEL");
+  });
+
   it("strips span attributes and raw descriptions", () => {
     const span: SpanJSON = {
       data: {

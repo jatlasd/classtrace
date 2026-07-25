@@ -1,6 +1,7 @@
 import "server-only";
 
 import { prisma } from "@/lib/db/prisma";
+import { captureOperationalError } from "@/lib/monitoring/capture-operational-error";
 import { INPUT_LIMITS } from "@/lib/validation/input-limits";
 
 type EvidenceFindFirstArgs = {
@@ -116,7 +117,7 @@ export async function deleteEvidenceForWorkspace(
       rosterStudentId: evidence.rosterStudentId,
     };
   } catch (error) {
-    console.error("[lib/evidence/deleteEvidenceForWorkspace]", error);
+    captureOperationalError("evidence.delete", error);
     return {
       success: false,
       error: "Failed to delete evidence.",

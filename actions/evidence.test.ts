@@ -154,8 +154,11 @@ describe("evidence Server Actions", () => {
         error: "Failed to save evidence.",
       });
       expect(consoleError).toHaveBeenCalledWith(
-        "[actions/evidence/saveValidatedEvidence]",
-        failure
+        "[monitoring/capture-operational-error] unexpected",
+        {
+          operation: "evidence.save",
+          errorName: "Error",
+        }
       );
     } finally {
       consoleError.mockRestore();

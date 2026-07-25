@@ -9,6 +9,7 @@ import {
   type ClassGroupMutationResult,
   renameClassGroupForWorkspace,
 } from "@/lib/classes/class-groups";
+import { captureOperationalError } from "@/lib/monitoring/capture-operational-error";
 import { routes } from "@/lib/routes";
 
 export type CreateClassGroupActionInput = {
@@ -46,7 +47,7 @@ export async function createClassGroup(
 
     return result;
   } catch (error) {
-    console.error("[actions/classes/createClassGroup]", error);
+    captureOperationalError("class.create", error);
     return { success: false, error: "Failed to save class." };
   }
 }
@@ -68,7 +69,7 @@ export async function renameClassGroup(
 
     return result;
   } catch (error) {
-    console.error("[actions/classes/renameClassGroup]", error);
+    captureOperationalError("class.rename", error);
     return { success: false, error: "Failed to rename class." };
   }
 }
@@ -89,7 +90,7 @@ export async function archiveClassGroup(
 
     return result;
   } catch (error) {
-    console.error("[actions/classes/archiveClassGroup]", error);
+    captureOperationalError("class.archive", error);
     return { success: false, error: "Failed to archive class." };
   }
 }

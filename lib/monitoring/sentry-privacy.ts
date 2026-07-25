@@ -6,15 +6,37 @@ import type {
 } from "@sentry/core";
 
 const REDACTED_ERROR_MESSAGE = "Unexpected application error";
+const SAFE_OPERATIONS = [
+  "class.archive",
+  "class.create",
+  "class.rename",
+  "evidence.archive",
+  "evidence.delete",
+  "evidence.export",
+  "evidence.save",
+  "feedback.submit",
+  "operator.account-search",
+  "operator.clerk-user-delete",
+  "operator.workspace-delete",
+  "roster.archive",
+  "roster.create",
+  "roster.delete",
+  "roster.import",
+  "roster.restore",
+  "roster.update",
+] as const;
 const SAFE_TAG_KEYS = [
   "classtrace.boundary",
   "classtrace.error_reference",
   "classtrace.http_method",
+  "classtrace.operation",
   "classtrace.render_source",
   "classtrace.route_template",
   "classtrace.route_type",
   "classtrace.verification",
 ] as const;
+
+export type SentryOperation = (typeof SAFE_OPERATIONS)[number];
 
 export const sentryDataCollection: DataCollection = {
   userInfo: false,
@@ -69,6 +91,13 @@ function isSafeErrorReference(value: unknown): value is string {
   );
 }
 
+function isSafeOperation(value: unknown): value is SentryOperation {
+  return (
+    typeof value === "string" &&
+    (SAFE_OPERATIONS as readonly string[]).includes(value)
+  );
+}
+
 function isSafeTag(key: (typeof SAFE_TAG_KEYS)[number], value: unknown) {
   switch (key) {
     case "classtrace.boundary":
@@ -80,6 +109,8 @@ function isSafeTag(key: (typeof SAFE_TAG_KEYS)[number], value: unknown) {
         typeof value === "string" &&
         /^(DELETE|GET|HEAD|OPTIONS|PATCH|POST|PUT)$/.test(value)
       );
+    case "classtrace.operation":
+      return isSafeOperation(value);
     case "classtrace.render_source":
       return (
         value === "react-server-components" ||
@@ -156,6 +187,11 @@ export function sanitizeSentryEvent<T extends Event>(event: T): T {
   const routeTemplate = safeTags?.["classtrace.route_template"];
   const httpMethod = safeTags?.["classtrace.http_method"];
   const verificationMessage = safeTags?.["classtrace.verification"];
+  const operation = safeTags?.["classtrace.operation"];
+  const safeErrorMessage =
+    typeof operation === "string"
+      ? `ClassTrace operation failed: ${operation}`
+      : REDACTED_ERROR_MESSAGE;
 
   event.request = undefined;
   event.user = { ip_address: null };
@@ -189,18 +225,18 @@ export function sanitizeSentryEvent<T extends Event>(event: T): T {
     event.message =
       verificationMessage === event.message
         ? verificationMessage
-        : REDACTED_ERROR_MESSAGE;
+        : safeErrorMessage;
   }
 
   if (event.logentry) {
-    event.logentry = { message: REDACTED_ERROR_MESSAGE };
+    event.logentry = { message: safeErrorMessage };
   }
 
   for (const exception of event.exception?.values ?? []) {
     exception.value =
       verificationMessage === exception.value
         ? verificationMessage
-        : REDACTED_ERROR_MESSAGE;
+        : safeErrorMessage;
   }
 
   sanitizeStackFrames(event);
