@@ -3,6 +3,7 @@ import type {
   Event,
   Primitive,
   SpanJSON,
+  TraceContext,
 } from "@sentry/core";
 
 const REDACTED_ERROR_MESSAGE = "Unexpected application error";
@@ -148,6 +149,20 @@ function getSafeTags(
   return Object.keys(safeTags).length > 0 ? safeTags : undefined;
 }
 
+function getSafeTraceContext(
+  trace: TraceContext | undefined
+): TraceContext | undefined {
+  if (!trace) return undefined;
+
+  return {
+    trace_id: trace.trace_id,
+    span_id: trace.span_id,
+    ...(trace.parent_span_id
+      ? { parent_span_id: trace.parent_span_id }
+      : undefined),
+  };
+}
+
 function sanitizeStackFrames(event: Event): void {
   for (const exception of event.exception?.values ?? []) {
     const type =
@@ -203,9 +218,8 @@ export function sanitizeSentryEvent<T extends Event>(event: T): T {
   event.threads = undefined;
   event.sdkProcessingMetadata = undefined;
   event.tags = safeTags;
-  event.contexts = event.contexts?.trace
-    ? { trace: event.contexts.trace }
-    : undefined;
+  const trace = getSafeTraceContext(event.contexts?.trace);
+  event.contexts = trace ? { trace } : undefined;
 
   if (typeof routeTemplate === "string") {
     event.transaction = `${typeof httpMethod === "string" ? `${httpMethod} ` : ""}${routeTemplate}`;

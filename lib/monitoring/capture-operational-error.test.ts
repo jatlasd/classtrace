@@ -66,4 +66,24 @@ describe("captureOperationalError", () => {
       "SENTINEL_STUDENT_NOTE"
     );
   });
+
+  it("classifies a custom error name without logging it", () => {
+    const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
+    const error = new Error("Unexpected failure");
+    error.name = "SENTINEL_STUDENT_NOTE";
+
+    captureOperationalError("evidence.save", error);
+
+    expect(sentry.captureException).toHaveBeenCalledWith(error);
+    expect(consoleError).toHaveBeenCalledWith(
+      "[monitoring/capture-operational-error] unexpected",
+      {
+        operation: "evidence.save",
+        errorName: "UnknownError",
+      }
+    );
+    expect(JSON.stringify(consoleError.mock.calls)).not.toContain(
+      "SENTINEL_STUDENT_NOTE"
+    );
+  });
 });

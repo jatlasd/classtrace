@@ -105,6 +105,37 @@ describe("Sentry privacy boundary", () => {
     ).toBe(verification);
   });
 
+  it("keeps only trace identifiers needed for correlation", () => {
+    const traceId = "a".repeat(32);
+    const spanId = "b".repeat(16);
+    const parentSpanId = "c".repeat(16);
+    const event: Event = {
+      contexts: {
+        trace: {
+          trace_id: traceId,
+          span_id: spanId,
+          parent_span_id: parentSpanId,
+          data: { note: "SENTINEL_TRACE_DATA" },
+          description: "SENTINEL_TRACE_DESCRIPTION",
+          op: "SENTINEL_TRACE_OPERATION",
+          origin: "SENTINEL_TRACE_ORIGIN",
+        },
+      },
+    };
+
+    const sanitized = sanitizeSentryEvent(event);
+
+    expect(sanitized.contexts).toEqual({
+      trace: {
+        trace_id: traceId,
+        span_id: spanId,
+        parent_span_id: parentSpanId,
+      },
+    });
+    expect(JSON.stringify(sanitized)).not.toContain("SENTINEL");
+    expect(sanitizeSentryEvent({ contexts: {} }).contexts).toBeUndefined();
+  });
+
   it("turns an allowlisted operation into an actionable safe issue title", () => {
     const event: Event = {
       tags: {

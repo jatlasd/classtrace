@@ -2,12 +2,19 @@ import * as Sentry from "@sentry/nextjs";
 import type { SentryOperation } from "@/lib/monitoring/sentry-privacy";
 
 const ERROR_LOG_PREFIX = "[monitoring/capture-operational-error] unexpected";
+const SAFE_ERROR_NAMES = new Set([
+  "AggregateError",
+  "Error",
+  "EvalError",
+  "RangeError",
+  "ReferenceError",
+  "SyntaxError",
+  "TypeError",
+  "URIError",
+]);
 
 function getSafeErrorName(error: unknown): string {
-  if (
-    error instanceof Error &&
-    /^[A-Za-z][A-Za-z0-9_.-]{0,79}$/.test(error.name)
-  ) {
+  if (error instanceof Error && SAFE_ERROR_NAMES.has(error.name)) {
     return error.name;
   }
 
