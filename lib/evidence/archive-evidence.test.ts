@@ -22,8 +22,11 @@ async function withExpectedArchiveError<T>(run: () => Promise<T>): Promise<T> {
     const result = await run();
     expect(consoleError).toHaveBeenCalledTimes(1);
     expect(consoleError).toHaveBeenCalledWith(
-      "[lib/evidence/archiveEvidenceForWorkspace]",
-      expect.any(Error)
+      "[monitoring/capture-operational-error] unexpected",
+      {
+        operation: "evidence.archive",
+        errorName: "Error",
+      }
     );
     return result;
   } finally {

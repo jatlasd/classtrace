@@ -1,6 +1,7 @@
 import "server-only";
 
 import { prisma } from "@/lib/db/prisma";
+import { captureOperationalError } from "@/lib/monitoring/capture-operational-error";
 import { INPUT_LIMITS } from "@/lib/validation/input-limits";
 
 const EXPORT_MIME_TYPE = "text/csv;charset=utf-8";
@@ -293,7 +294,7 @@ export async function exportStudentEvidenceForWorkspace(
       recordCount: evidenceRecords.length,
     };
   } catch (error) {
-    console.error("[lib/evidence/exportStudentEvidenceForWorkspace]", error);
+    captureOperationalError("evidence.export", error);
     return {
       success: false,
       error: "Failed to export evidence.",

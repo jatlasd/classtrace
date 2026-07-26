@@ -3,6 +3,7 @@ import "server-only";
 import { Prisma } from "@/lib/generated/prisma/client";
 import { prisma } from "@/lib/db/prisma";
 import { withSerializableTransactionRetry } from "@/lib/db/serializable-transaction";
+import { captureOperationalError } from "@/lib/monitoring/capture-operational-error";
 import { INPUT_LIMITS } from "@/lib/validation/input-limits";
 
 type RosterStudentFindFirstArgs = {
@@ -229,7 +230,7 @@ export async function restoreRosterStudentForWorkspace(
       studentId: result.studentId,
     };
   } catch (error) {
-    console.error("[lib/students/restoreRosterStudentForWorkspace]", error);
+    captureOperationalError("roster.restore", error);
     return {
       success: false,
       error: "Failed to restore student.",

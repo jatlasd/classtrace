@@ -114,7 +114,7 @@ describe("Unit 23 privacy and safety copy guardrails", () => {
     expect(findPatternHits(files, bannedAiClaims)).toEqual([]);
   });
 
-  it("keeps direct dependencies and source imports free of V1-forbidden services", () => {
+  it("keeps direct dependencies and source imports free of unapproved services", () => {
     const packageJson = JSON.parse(
       readFileSync(join(projectRoot, "package.json"), "utf8")
     ) as {
@@ -133,7 +133,6 @@ describe("Unit 23 privacy and safety copy guardrails", () => {
       /telemetry/i,
       /posthog/i,
       /segment/i,
-      /sentry/i,
       /uploadthing/i,
       /cloudinary/i,
       /supabase/i,
@@ -153,7 +152,6 @@ describe("Unit 23 privacy and safety copy guardrails", () => {
       /from ["']ai["']/i,
       /from ["']@vercel\/analytics["']/i,
       /from ["']posthog-js["']/i,
-      /from ["']@sentry\//i,
       /from ["']uploadthing\//i,
       /from ["']cloudinary["']/i,
       /from ["']@aws-sdk\/client-s3["']/i,
@@ -161,6 +159,9 @@ describe("Unit 23 privacy and safety copy guardrails", () => {
 
     expect(forbiddenDependencies).toEqual([]);
     expect(findPatternHits(files, forbiddenSourcePatterns)).toEqual([]);
+    expect(directDependencyNames.filter((name) => /sentry/i.test(name))).toEqual([
+      "@sentry/nextjs",
+    ]);
   });
 
   it("uses only approved fictional student names in app-facing examples and tests", () => {

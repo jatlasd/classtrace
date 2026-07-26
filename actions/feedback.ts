@@ -10,6 +10,7 @@ import type {
 import {
   submitFeedbackForWorkspace,
 } from "@/lib/feedback/submit-feedback";
+import { captureOperationalError } from "@/lib/monitoring/capture-operational-error";
 
 function getReleaseIdentifier(): string {
   return process.env.VERCEL_GIT_COMMIT_SHA?.trim() || packageJson.version || "unknown";
@@ -31,8 +32,8 @@ export async function submitFeedbackAction(
       },
       delivery: feedbackDelivery,
     });
-  } catch {
-    console.error("[actions/feedback/submitFeedbackAction] failed");
+  } catch (error) {
+    captureOperationalError("feedback.submit", error);
     return {
       success: false,
       error: "Feedback is not available right now. Try again.",

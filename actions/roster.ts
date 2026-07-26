@@ -24,6 +24,7 @@ import {
   importRosterStudentsForWorkspace,
   type ImportRosterStudentsResult,
 } from "@/lib/import/roster-import";
+import { captureOperationalError } from "@/lib/monitoring/capture-operational-error";
 
 export type CreateRosterStudentActionInput = {
   displayName: string;
@@ -94,7 +95,7 @@ export async function createRosterStudent(
 
     return result;
   } catch (error) {
-    console.error("[actions/roster/createRosterStudent]", error);
+    captureOperationalError("roster.create", error);
     return { success: false, error: "Failed to save student." };
   }
 }
@@ -117,7 +118,7 @@ export async function importRosterStudents(
 
     return result;
   } catch (error) {
-    console.error("[actions/roster/importRosterStudents]", error);
+    captureOperationalError("roster.import", error);
     return {
       success: false,
       error: "Failed to import roster.",
@@ -155,7 +156,7 @@ export async function updateRosterStudent(
 
     return result;
   } catch (error) {
-    console.error("[actions/roster/updateRosterStudent]", error);
+    captureOperationalError("roster.update", error);
     return { success: false, error: "Failed to save student." };
   }
 }
@@ -178,7 +179,7 @@ export async function archiveRosterStudent(
 
     return result;
   } catch (error) {
-    console.error("[actions/roster/archiveRosterStudent]", error);
+    captureOperationalError("roster.archive", error);
     return { success: false, error: "Failed to archive student." };
   }
 }
@@ -201,7 +202,7 @@ export async function restoreRosterStudent(
 
     return result;
   } catch (error) {
-    console.error("[actions/roster/restoreRosterStudent]", error);
+    captureOperationalError("roster.restore", error);
     return { success: false, error: "Failed to restore student." };
   }
 }
@@ -223,7 +224,7 @@ export async function deleteRosterStudent(
 
     return result;
   } catch (error) {
-    console.error("[actions/roster/deleteRosterStudent]", error);
+    captureOperationalError("roster.delete", error);
     return { success: false, error: "Failed to delete student." };
   }
 }

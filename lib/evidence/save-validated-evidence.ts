@@ -4,6 +4,7 @@ import { Prisma } from "@/lib/generated/prisma/client";
 import { normalizeTag } from "@/lib/format-tag";
 import { prisma } from "@/lib/db/prisma";
 import { withSerializableTransactionRetry } from "@/lib/db/serializable-transaction";
+import { captureOperationalError } from "@/lib/monitoring/capture-operational-error";
 import { INPUT_LIMITS } from "@/lib/validation/input-limits";
 
 type RosterStudentFindFirstArgs = {
@@ -434,10 +435,7 @@ export async function saveValidatedEvidenceForWorkspace(
       };
     }
 
-    console.error(
-      "[lib/evidence/saveValidatedEvidenceForWorkspace]",
-      error instanceof Error ? error.name : "UnknownError"
-    );
+    captureOperationalError("evidence.save", error);
     return { success: false, error: "Failed to save evidence." };
   }
 }

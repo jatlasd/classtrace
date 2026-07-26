@@ -3,6 +3,7 @@ import "server-only";
 import { Prisma } from "@/lib/generated/prisma/client";
 import { prisma } from "@/lib/db/prisma";
 import { withSerializableTransactionRetry } from "@/lib/db/serializable-transaction";
+import { captureOperationalError } from "@/lib/monitoring/capture-operational-error";
 import { INPUT_LIMITS } from "@/lib/validation/input-limits";
 
 type RosterStudentFindFirstArgs = {
@@ -132,7 +133,7 @@ export async function archiveRosterStudentForWorkspace(
       studentId: student.id,
     };
   } catch (error) {
-    console.error("[lib/students/archiveRosterStudentForWorkspace]", error);
+    captureOperationalError("roster.archive", error);
     return {
       success: false,
       error: "Failed to archive student.",

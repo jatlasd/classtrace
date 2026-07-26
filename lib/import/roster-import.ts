@@ -8,6 +8,7 @@ import {
   type ExistingRosterImportStudent,
   type RosterImportPreview,
 } from "@/lib/import/parse-roster-import";
+import { captureOperationalError } from "@/lib/monitoring/capture-operational-error";
 import { type RosterStudentDisplay } from "@/lib/students/roster-students";
 import { INPUT_LIMITS } from "@/lib/validation/input-limits";
 
@@ -251,10 +252,7 @@ export async function importRosterStudentsForWorkspace(
       );
     }
 
-    console.error(
-      "[lib/import/importRosterStudentsForWorkspace]",
-      error instanceof Error ? error.name : "UnknownError"
-    );
+    captureOperationalError("roster.import", error);
     return buildImportFailure(preview, "Failed to import roster.");
   }
 }

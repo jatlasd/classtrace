@@ -140,8 +140,11 @@ describe("operator actions", () => {
     });
     expect(mocks.deleteOperatorClerkUser).not.toHaveBeenCalled();
     expect(error).toHaveBeenCalledWith(
-      "[actions/operator/deleteOperatorClerkUserAction] failed",
-      authorizationError
+      "[monitoring/capture-operational-error] unexpected",
+      {
+        operation: "operator.clerk-user-delete",
+        errorName: "Error",
+      }
     );
 
     error.mockRestore();

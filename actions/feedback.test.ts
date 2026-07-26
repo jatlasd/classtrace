@@ -91,7 +91,11 @@ describe("submitFeedbackAction", () => {
 
     expect(mocks.submitFeedbackForWorkspace).not.toHaveBeenCalled();
     expect(consoleError).toHaveBeenCalledWith(
-      "[actions/feedback/submitFeedbackAction] failed"
+      "[monitoring/capture-operational-error] unexpected",
+      {
+        operation: "feedback.submit",
+        errorName: "Error",
+      }
     );
     expect(consoleError).toHaveBeenCalledTimes(1);
     consoleError.mockRestore();
@@ -109,7 +113,11 @@ describe("submitFeedbackAction", () => {
     });
 
     expect(consoleError).toHaveBeenCalledWith(
-      "[actions/feedback/submitFeedbackAction] failed"
+      "[monitoring/capture-operational-error] unexpected",
+      {
+        operation: "feedback.submit",
+        errorName: "Error",
+      }
     );
     consoleError.mockRestore();
   });

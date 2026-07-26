@@ -1,6 +1,7 @@
 import "server-only";
 
 import { prisma } from "@/lib/db/prisma";
+import { captureOperationalError } from "@/lib/monitoring/capture-operational-error";
 import { INPUT_LIMITS } from "@/lib/validation/input-limits";
 
 type EvidenceFindFirstArgs = {
@@ -128,7 +129,7 @@ export async function archiveEvidenceForWorkspace(
       rosterStudentId: evidence.rosterStudentId,
     };
   } catch (error) {
-    console.error("[lib/evidence/archiveEvidenceForWorkspace]", error);
+    captureOperationalError("evidence.archive", error);
     return {
       success: false,
       error: "Failed to archive evidence.",

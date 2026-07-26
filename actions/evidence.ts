@@ -22,6 +22,7 @@ import {
   type SaveValidatedEvidenceInput,
   type SaveValidatedEvidenceResult,
 } from "@/lib/evidence/save-validated-evidence";
+import { captureOperationalError } from "@/lib/monitoring/capture-operational-error";
 import { routes } from "@/lib/routes";
 
 export type SaveValidatedEvidenceActionInput = SaveValidatedEvidenceInput;
@@ -50,7 +51,7 @@ export async function saveValidatedEvidence(
 
     return result;
   } catch (error) {
-    console.error("[actions/evidence/saveValidatedEvidence]", error);
+    captureOperationalError("evidence.save", error);
     return { success: false, error: "Failed to save evidence." };
   }
 }
@@ -72,7 +73,7 @@ export async function archiveEvidence(
 
     return result;
   } catch (error) {
-    console.error("[actions/evidence/archiveEvidence]", error);
+    captureOperationalError("evidence.archive", error);
     return { success: false, error: "Failed to archive evidence." };
   }
 }
@@ -94,7 +95,7 @@ export async function deleteEvidence(
 
     return result;
   } catch (error) {
-    console.error("[actions/evidence/deleteEvidence]", error);
+    captureOperationalError("evidence.delete", error);
     return { success: false, error: "Failed to delete evidence." };
   }
 }
@@ -110,7 +111,7 @@ export async function exportStudentEvidence(
       input,
     });
   } catch (error) {
-    console.error("[actions/evidence/exportStudentEvidence]", error);
+    captureOperationalError("evidence.export", error);
     return { success: false, error: "Failed to export evidence." };
   }
 }
