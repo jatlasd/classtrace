@@ -1,7 +1,9 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 const sentry = vi.hoisted(() => ({
+  captureRouterTransitionStart: vi.fn(),
   captureRequestError: vi.fn(),
+  init: vi.fn(),
   setTag: vi.fn(),
   setTags: vi.fn(),
   withScope: vi.fn(
@@ -17,6 +19,8 @@ import { onRequestError } from "@/instrumentation";
 afterEach(() => {
   vi.restoreAllMocks();
   vi.clearAllMocks();
+  vi.resetModules();
+  vi.unstubAllEnvs();
 });
 
 describe("onRequestError", () => {
@@ -100,4 +104,28 @@ describe("onRequestError", () => {
       context
     );
   });
+});
+
+describe("Sentry deployment environment", () => {
+  it.each([
+    [
+      "client",
+      "NEXT_PUBLIC_VERCEL_ENV",
+      () => import("@/instrumentation-client"),
+    ],
+    ["server", "VERCEL_ENV", () => import("@/sentry.server.config")],
+    ["edge", "VERCEL_ENV", () => import("@/sentry.edge.config")],
+  ])(
+    "labels a Vercel Preview deployment in the %s configuration",
+    async (_, vercelEnvironmentName, loadConfiguration) => {
+      vi.stubEnv("NODE_ENV", "production");
+      vi.stubEnv(vercelEnvironmentName, "preview");
+
+      await loadConfiguration();
+
+      expect(sentry.init).toHaveBeenCalledWith(
+        expect.objectContaining({ environment: "preview" })
+      );
+    }
+  );
 });

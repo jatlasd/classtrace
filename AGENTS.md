@@ -78,13 +78,18 @@ Do not turn ClassTrace into a notebook, gradebook, SIS, IEP writer, parent commu
 
 ## Verification
 
-Run checks in proportion to risk. Before declaring a runtime change complete, run:
+Run checks in proportion to risk. For a narrow change, run the directly
+affected tests and lint the changed files; do not rerun the entire local suite
+after every incremental fix. Pull-request CI is the merge gate and runs:
 
 ```bash
 npm run lint
-npm run test
+npm run test:coverage
 npm run build
 ```
+
+Run those full gates locally for broad or high-risk changes, release work, CI
+troubleshooting, or when the user explicitly requests them.
 
 Additional requirements:
 

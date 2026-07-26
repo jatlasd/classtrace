@@ -105,13 +105,18 @@ Test the behavior that could regress:
 
 Do not read source files merely to assert that a function name, JSX string, or import exists. Repository/config tests are acceptable only when the file content itself is the contract (for example schema constraints, env variables, or scripts).
 
-Quality gates:
+During narrow implementation and review fixes, run the directly affected tests
+and lint the changed files. Do not rerun the full suite after every incremental
+change. Pull-request CI is the authoritative merge gate and runs:
 
 ```bash
 npm run lint
-npm run test
+npm run test:coverage
 npm run build
 ```
+
+Run the full gates locally for broad or high-risk changes, release work, CI
+troubleshooting, or when explicitly requested.
 
 Use `npm run test:coverage` to find weak areas. Current global minimums are guardrails against regression, not a target. Domain risk matters more than an inflated repository percentage. Use `npm run test:db` after schema/ownership/transaction changes against a deliberately disposable database.
 
