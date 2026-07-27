@@ -16,6 +16,7 @@
 | `components/` | Product UI and small shared UI primitives |
 | `actions/` | Authenticated mutation entry points |
 | `lib/auth/` | Clerk-to-workspace resolution |
+| `lib/beta-agreement/` | Current beta versions, acknowledgement IDs, and acceptance persistence |
 | `lib/db/` | Prisma client and transaction helpers |
 | `lib/note-processing/` | Pure deterministic parsing/matching |
 | `lib/evidence/` | Evidence validation, persistence, read models, export |
@@ -55,7 +56,8 @@ The project currently uses narrow handwritten database ports to inject fakes in 
 
 Server Actions should be thin:
 
-1. Resolve the current workspace from Clerk.
+1. Resolve the current accepted workspace from Clerk. Only the beta acceptance
+   action may use the narrow pre-acceptance provisioning path.
 2. Call one ownership-scoped domain operation.
 3. Revalidate affected routes after success.
 4. Return `{ success: true, ... }` or `{ success: false, error }`.

@@ -1,11 +1,14 @@
 import "server-only";
 
 import { auth } from "@clerk/nextjs/server";
+import { redirect } from "next/navigation";
+import { hasAcceptedCurrentBetaAgreement } from "@/lib/beta-agreement/beta-agreement";
 import { prisma } from "@/lib/db/prisma";
+import { routes } from "@/lib/routes";
 
 export class CurrentWorkspaceError extends Error {
   constructor(
-    public readonly code: "AUTH_REQUIRED",
+    public readonly code: "AUTH_REQUIRED" | "BETA_AGREEMENT_REQUIRED",
     message: string
   ) {
     super(message);
@@ -61,7 +64,7 @@ async function provisionCurrentWorkspace(
   };
 }
 
-export async function getCurrentWorkspace(): Promise<CurrentWorkspace> {
+export async function getProvisionedCurrentWorkspace(): Promise<CurrentWorkspace> {
   const { userId } = await auth();
 
   if (!userId) {
@@ -79,5 +82,36 @@ export async function getCurrentWorkspace(): Promise<CurrentWorkspace> {
     }
 
     return provisionCurrentWorkspace(userId);
+  }
+}
+
+export async function getCurrentWorkspace(): Promise<CurrentWorkspace> {
+  const workspace = await getProvisionedCurrentWorkspace();
+  const hasAccepted = await hasAcceptedCurrentBetaAgreement(
+    workspace.teacherProfileId
+  );
+
+  if (!hasAccepted) {
+    throw new CurrentWorkspaceError(
+      "BETA_AGREEMENT_REQUIRED",
+      "Complete the current beta agreement before accessing ClassTrace."
+    );
+  }
+
+  return workspace;
+}
+
+export async function getCurrentAppWorkspace(): Promise<CurrentWorkspace> {
+  try {
+    return await getCurrentWorkspace();
+  } catch (error) {
+    if (
+      error instanceof CurrentWorkspaceError &&
+      error.code === "BETA_AGREEMENT_REQUIRED"
+    ) {
+      redirect(routes.betaAcknowledgements);
+    }
+
+    throw error;
   }
 }

@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { ReactElement } from "react";
 import { StudentTimelinePage } from "@/components/students/student-timeline-page";
 import { Button } from "@/components/ui/button";
-import { getCurrentWorkspace } from "@/lib/auth/get-current-workspace";
+import { getCurrentAppWorkspace } from "@/lib/auth/get-current-workspace";
 import { getStudentTimelineRecordsForWorkspace } from "@/lib/evidence/student-timeline-records";
 import { routes } from "@/lib/routes";
 
@@ -14,7 +14,7 @@ export default async function StudentProfilePage({
   params,
 }: StudentProfilePageProps): Promise<ReactElement> {
   const { studentId } = await params;
-  const workspace = await getCurrentWorkspace();
+  const workspace = await getCurrentAppWorkspace();
   const timeline = await getStudentTimelineRecordsForWorkspace(
     workspace.workspaceId,
     studentId

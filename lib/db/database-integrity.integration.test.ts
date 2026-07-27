@@ -126,7 +126,6 @@ describe("database ownership constraints", () => {
         validatedAt: new Date(),
       },
     });
-
     await database.classGroup.delete({ where: { id: classForDelete.id } });
     expect(
       await database.rosterStudent.findUnique({
@@ -180,6 +179,15 @@ describe("database ownership constraints", () => {
         validatedAt: new Date(),
       },
     });
+    const acceptance = await database.betaAgreementAcceptance.create({
+      data: {
+        teacherProfileId: teacher.id,
+        agreementVersion: "2026-07-27",
+        termsVersion: "2026-07-14",
+        privacyVersion: "2026-07-14",
+        appRelease: "integration-release",
+      },
+    });
     const audit = await database.operatorActionAudit.create({
       data: {
         operatorClerkUserId: "integration_operator",
@@ -208,6 +216,16 @@ describe("database ownership constraints", () => {
       database.evidenceRecord.findUnique({ where: { id: evidence.id } })
     ).resolves.toBeNull();
     await expect(
+      database.betaAgreementAcceptance.findUnique({
+        where: {
+          teacherProfileId_agreementVersion: {
+            teacherProfileId: acceptance.teacherProfileId,
+            agreementVersion: acceptance.agreementVersion,
+          },
+        },
+      })
+    ).resolves.toBeNull();
+    await expect(
       database.operatorActionAudit.findUnique({ where: { id: audit.id } })
     ).resolves.toMatchObject({
       targetClerkUserId: "integration_delete_target",
@@ -215,6 +233,52 @@ describe("database ownership constraints", () => {
       rosterStudentCount: 1,
       evidenceRecordCount: 1,
     });
+  });
+
+  it("stores one beta acceptance per teacher and agreement version", async () => {
+    const teacher = await database.teacherProfile.create({
+      data: {
+        clerkUserId: "integration_beta_versions",
+        displayName: "Teacher",
+      },
+    });
+
+    await database.betaAgreementAcceptance.createMany({
+      data: [
+        {
+          teacherProfileId: teacher.id,
+          agreementVersion: "2026-07-27",
+          termsVersion: "2026-07-14",
+          privacyVersion: "2026-07-14",
+          appRelease: "release-1",
+        },
+        {
+          teacherProfileId: teacher.id,
+          agreementVersion: "2026-08-15",
+          termsVersion: "2026-08-15",
+          privacyVersion: "2026-07-14",
+          appRelease: "release-2",
+        },
+      ],
+    });
+
+    await expect(
+      database.betaAgreementAcceptance.count({
+        where: { teacherProfileId: teacher.id },
+      })
+    ).resolves.toBe(2);
+
+    await expect(
+      database.betaAgreementAcceptance.create({
+        data: {
+          teacherProfileId: teacher.id,
+          agreementVersion: "2026-07-27",
+          termsVersion: "changed",
+          privacyVersion: "changed",
+          appRelease: "release-3",
+        },
+      })
+    ).rejects.toMatchObject({ code: "P2002" });
   });
 
   it("does not commit an active student into an archived class", async () => {

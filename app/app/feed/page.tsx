@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { EvidenceFeed } from "@/components/dashboard/evidence-feed";
-import { getCurrentWorkspace } from "@/lib/auth/get-current-workspace";
+import { getCurrentAppWorkspace } from "@/lib/auth/get-current-workspace";
 import {
   getClassRosterReadinessForWorkspace,
   listActiveClassGroupsForWorkspace,
@@ -34,7 +34,7 @@ function pageNumber(value: string): number {
 }
 
 export default async function FeedPage({ searchParams }: FeedPageProps) {
-  const workspace = await getCurrentWorkspace();
+  const workspace = await getCurrentAppWorkspace();
   const resolvedSearchParams = searchParams ? await searchParams : {};
   const requestedPage = pageNumber(singleParam(resolvedSearchParams.page));
   const initialFilter = singleParam(resolvedSearchParams.filter);

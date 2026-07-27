@@ -28,6 +28,10 @@ The strongest early users are special education teachers, case managers, interve
 ## Current behavior
 
 - A signed-in teacher receives one personal workspace.
+- Before entering the teacher product, every teacher must complete the current
+  six-step beta acknowledgement. Acceptance is stored by explicit agreement,
+  terms, and privacy versions and is required again only when the agreement
+  version changes.
 - The controlled beta uses Clerk Waitlist mode. Existing users can sign in,
   while a new teacher must be approved or invited before creating an account.
 - Classes organize roster setup and student management.
@@ -71,6 +75,7 @@ These states must not be collapsed. In particular, a captured raw note must not 
 | `/support` | Support path and safe-report guidance |
 | `/data-deletion` | Full-account deletion request steps and scope |
 | `/sign-in`, `/sign-up` | Existing-user sign-in and invited-user sign-up |
+| `/beta-acknowledgements` | Required versioned beta acknowledgement before teacher-product access |
 | `/app` | Redirect based on roster readiness |
 | `/app/feed` | Capture and paged evidence inbox |
 | `/app/roster` | Class-first roster management |

@@ -8,12 +8,25 @@ datasource db {
 }
 
 model TeacherProfile {
-  id          String    @id @default(cuid())
-  clerkUserId String    @unique
-  displayName String
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  workspace   Workspace?
+  id                       String                    @id @default(cuid())
+  clerkUserId              String                    @unique
+  displayName              String
+  createdAt                DateTime                  @default(now())
+  updatedAt                DateTime                  @updatedAt
+  workspace                Workspace?
+  betaAgreementAcceptances BetaAgreementAcceptance[]
+}
+
+model BetaAgreementAcceptance {
+  teacherProfileId String
+  agreementVersion String
+  termsVersion     String
+  privacyVersion   String
+  acceptedAt       DateTime       @default(now())
+  appRelease       String
+  teacherProfile   TeacherProfile @relation(fields: [teacherProfileId], references: [id], onDelete: Cascade)
+
+  @@id([teacherProfileId, agreementVersion])
 }
 
 model Workspace {

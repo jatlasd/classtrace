@@ -201,6 +201,30 @@ Last updated: 2026-07-20
   provider flow with the same invitation-only language.
 - Existing-user sign-in stays visually secondary but always available.
 
+## Beta acknowledgement flow
+
+File: `components/beta-agreement/beta-acknowledgement-flow.tsx`
+
+Last updated: 2026-07-27
+
+| Property | Pattern |
+|---|---|
+| Background | Page `bg-background`; active surface `bg-card`; checkbox row `bg-muted/25` |
+| Border | Surface and dividers use `border-border`; errors use semantic destructive borders |
+| Border radius | One outer `rounded-card`; internal ledger rows remain square |
+| Primary text | Headings `font-display text-foreground`; acknowledgement label `text-sm font-medium text-foreground` |
+| Secondary text | Body `text-[15px] leading-7 text-muted-foreground` |
+| Spacing | Surface sections `px-5 py-6`, widening to `px-7 py-7`; content uses `space-y-3` |
+| Interaction | Native checkbox with visible semantic focus ring; shared primary Button at `min-h-11` |
+| Shadow | `shadow-paper` on the single active acknowledgement surface |
+| Accent | `text-link` for terms/privacy links; destructive tokens only for submission errors |
+
+The authenticated flow has no app navigation because acceptance precedes
+teacher-product access. Show exactly one numbered acknowledgement at a time,
+keep its checkbox and action in the same reading surface, and move focus to the
+next heading after progression. Do not persist partial progress, add a card per
+step, or introduce decorative beta imagery.
+
 ## Evidence record content
 
 File: `components/evidence/evidence-record-content.tsx`
