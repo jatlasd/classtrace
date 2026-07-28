@@ -96,6 +96,10 @@ describe("submitFeedbackAction", () => {
       {
         operation: "feedback.submit",
         errorName: "Error",
+        operationStage: "operation.execute",
+        errorSource: "javascript",
+        errorType: "Error",
+        failureKind: "application.unexpected",
       }
     );
     expect(consoleError).toHaveBeenCalledTimes(1);
@@ -118,6 +122,10 @@ describe("submitFeedbackAction", () => {
       {
         operation: "feedback.submit",
         errorName: "Error",
+        operationStage: "operation.execute",
+        errorSource: "javascript",
+        errorType: "Error",
+        failureKind: "application.unexpected",
       }
     );
     consoleError.mockRestore();

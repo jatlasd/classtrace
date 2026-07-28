@@ -144,6 +144,10 @@ describe("operator actions", () => {
       {
         operation: "operator.clerk-user-delete",
         errorName: "Error",
+        operationStage: "operation.execute",
+        errorSource: "javascript",
+        errorType: "Error",
+        failureKind: "application.unexpected",
       }
     );
 

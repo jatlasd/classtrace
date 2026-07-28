@@ -26,6 +26,10 @@ async function withExpectedArchiveError<T>(run: () => Promise<T>): Promise<T> {
       {
         operation: "evidence.archive",
         errorName: "Error",
+        operationStage: "operation.execute",
+        errorSource: "javascript",
+        errorType: "Error",
+        failureKind: "application.unexpected",
       }
     );
     return result;

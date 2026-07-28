@@ -26,6 +26,10 @@ async function withExpectedDeleteError<T>(run: () => Promise<T>): Promise<T> {
       {
         operation: "evidence.delete",
         errorName: "Error",
+        operationStage: "operation.execute",
+        errorSource: "javascript",
+        errorType: "Error",
+        failureKind: "application.unexpected",
       }
     );
     return result;
