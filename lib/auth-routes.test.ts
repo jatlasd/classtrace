@@ -42,6 +42,11 @@ describe("auth route boundaries", () => {
     expect(protectedRoutePatterns).toContain("/operator/(.*)");
   });
 
+  it("protects the acknowledgement flow without treating it as an app route", () => {
+    expect(protectedRoutePatterns).toContain("/beta-acknowledgements");
+    expect(isProtectedAppPath("/beta-acknowledgements")).toBe(false);
+  });
+
   it("redirects signed-in users away from auth pages", () => {
     const signInPage = readFileSync(
       join(projectRoot, "app", "sign-in", "[[...sign-in]]", "page.tsx"),

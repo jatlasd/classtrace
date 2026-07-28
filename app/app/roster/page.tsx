@@ -8,7 +8,7 @@ import {
   type ActiveClassOption,
 } from "@/components/roster/roster-student-row";
 import { Button } from "@/components/ui/button";
-import { getCurrentWorkspace } from "@/lib/auth/get-current-workspace";
+import { getCurrentAppWorkspace } from "@/lib/auth/get-current-workspace";
 import {
   getClassRosterReadinessForWorkspace,
   listActiveClassGroupsForWorkspace,
@@ -297,7 +297,7 @@ function OpenClassView({
 }
 
 export default async function RosterPage({ searchParams }: RosterPageProps) {
-  const workspace = await getCurrentWorkspace();
+  const workspace = await getCurrentAppWorkspace();
   const resolvedSearchParams = searchParams ? await searchParams : {};
   const selectedClassId = getSingleParam(resolvedSearchParams.classId);
   const view = getSingleParam(resolvedSearchParams.view);

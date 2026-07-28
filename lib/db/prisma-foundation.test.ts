@@ -35,6 +35,13 @@ const operatorAuditEnumMigrationPath = join(
   "20260721000000_convert_operator_audit_columns_to_enums",
   "migration.sql"
 );
+const betaAgreementMigrationPath = join(
+  projectRoot,
+  "prisma",
+  "migrations",
+  "20260727000000_add_beta_agreement_acceptance",
+  "migration.sql"
+);
 
 const schema = readFileSync(schemaPath, "utf8");
 const envExample = readFileSync(envExamplePath, "utf8");
@@ -77,6 +84,37 @@ describe("Prisma database foundation", () => {
     expect(schema).toContain("model EvidenceRecord");
     expect(schema).toContain("workspaceId");
     expect(schema).toContain("rosterStudentId");
+  });
+
+  it("defines immutable versioned beta acceptance without a fabricated backfill", () => {
+    expect(existsSync(betaAgreementMigrationPath)).toBe(true);
+
+    const migration = readFileSync(betaAgreementMigrationPath, "utf8");
+
+    expect(getPrismaModelFields("BetaAgreementAcceptance")).toEqual([
+      "teacherProfileId String",
+      "agreementVersion String",
+      "termsVersion String",
+      "privacyVersion String",
+      "acceptedAt DateTime",
+      "appRelease String",
+      "teacherProfile TeacherProfile",
+    ]);
+    expect(schema).toContain(
+      "@@id([teacherProfileId, agreementVersion])"
+    );
+    expect(schema).toContain(
+      "@relation(fields: [teacherProfileId], references: [id], onDelete: Cascade)"
+    );
+    expect(migration).toContain(
+      'PRIMARY KEY ("teacherProfileId", "agreementVersion")'
+    );
+    expect(migration).toContain(
+      'FOREIGN KEY ("teacherProfileId")'
+    );
+    expect(migration).toContain('REFERENCES "TeacherProfile"("id")');
+    expect(migration).toContain("ON DELETE CASCADE");
+    expect(migration).not.toMatch(/INSERT|UPDATE\s+"TeacherProfile"/i);
   });
 
   it("keeps permanent evidence structured and teacher validated", () => {

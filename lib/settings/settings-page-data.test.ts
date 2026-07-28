@@ -7,7 +7,7 @@ vi.mock("@clerk/nextjs/server", () => ({
   currentUser: vi.fn(),
 }));
 vi.mock("@/lib/auth/get-current-workspace", () => ({
-  getCurrentWorkspace: vi.fn(),
+  getCurrentAppWorkspace: vi.fn(),
 }));
 vi.mock("@/lib/db/prisma", () => ({
   prisma: {
@@ -141,7 +141,7 @@ describe("getSettingsPageData", () => {
     );
 
     expect(source).toContain('import "server-only"');
-    expect(source).toContain("getCurrentWorkspace");
+    expect(source).toContain("getCurrentAppWorkspace");
     expect(source).toContain("currentUser");
     expect(source).not.toMatch(/rosterStudent|evidenceRecord|rawNote|draftText/i);
     expect(source).not.toMatch(/create|update|delete|upsert|localStorage/);

@@ -7,7 +7,7 @@ const mocks = vi.hoisted(() => ({
   redirect: vi.fn((href: string) => {
     throw new Error(`redirect:${href}`);
   }),
-  getCurrentWorkspace: vi.fn(),
+  getCurrentAppWorkspace: vi.fn(),
   getClassRosterReadinessForWorkspace: vi.fn(),
   listActiveClassGroupsForWorkspace: vi.fn(),
   listActiveRosterStudentsForWorkspace: vi.fn(),
@@ -16,7 +16,7 @@ const mocks = vi.hoisted(() => ({
 
 vi.mock("next/navigation", () => ({ redirect: mocks.redirect }));
 vi.mock("@/lib/auth/get-current-workspace", () => ({
-  getCurrentWorkspace: mocks.getCurrentWorkspace,
+  getCurrentAppWorkspace: mocks.getCurrentAppWorkspace,
 }));
 vi.mock("@/lib/classes/class-groups", () => ({
   getClassRosterReadinessForWorkspace:
@@ -58,7 +58,9 @@ afterEach(cleanup);
 describe("authenticated app routing", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mocks.getCurrentWorkspace.mockResolvedValue({ workspaceId: "workspace_1" });
+    mocks.getCurrentAppWorkspace.mockResolvedValue({
+      workspaceId: "workspace_1",
+    });
     mocks.listActiveRosterStudentsForWorkspace.mockResolvedValue([
       {
         id: "student_1",

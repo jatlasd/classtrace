@@ -5,6 +5,7 @@ describe("routes", () => {
   it("defines the canonical Unit 02 route map", () => {
     expect(routes.root).toBe("/");
     expect(routes.app).toBe("/app");
+    expect(routes.betaAcknowledgements).toBe("/beta-acknowledgements");
     expect(routes.feed).toBe("/app/feed");
     expect(routes.roster).toBe("/app/roster");
     expect(routes.studentsPrefix).toBe("/app/students");

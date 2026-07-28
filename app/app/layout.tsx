@@ -1,12 +1,15 @@
 import { AppTopNav } from "@/components/dashboard/app-top-nav";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { ClassTraceClerkProvider } from "@/components/auth/class-trace-clerk-provider";
+import { getCurrentAppWorkspace } from "@/lib/auth/get-current-workspace";
 
-export default function AppLayout({
+export default async function AppLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  await getCurrentAppWorkspace();
+
   return (
     <ClassTraceClerkProvider>
       <div className="flex min-h-dvh flex-col bg-background">

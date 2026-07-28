@@ -1,6 +1,5 @@
 "use server";
 
-import packageJson from "@/package.json";
 import { getCurrentWorkspace } from "@/lib/auth/get-current-workspace";
 import { feedbackDelivery } from "@/lib/feedback/feedback-delivery";
 import type {
@@ -11,10 +10,7 @@ import {
   submitFeedbackForWorkspace,
 } from "@/lib/feedback/submit-feedback";
 import { captureOperationalError } from "@/lib/monitoring/capture-operational-error";
-
-function getReleaseIdentifier(): string {
-  return process.env.VERCEL_GIT_COMMIT_SHA?.trim() || packageJson.version || "unknown";
-}
+import { getReleaseIdentifier } from "@/lib/release";
 
 export async function submitFeedbackAction(
   form: FeedbackFormInput

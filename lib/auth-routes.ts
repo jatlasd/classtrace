@@ -7,6 +7,7 @@ export const clerkAfterSignUpUrl = routes.app;
 export const protectedAppRoutePatterns = [routes.app, `${routes.app}/(.*)`] as const;
 export const protectedRoutePatterns = [
   ...protectedAppRoutePatterns,
+  routes.betaAcknowledgements,
   routes.operator,
   `${routes.operator}/(.*)`,
 ] as const;

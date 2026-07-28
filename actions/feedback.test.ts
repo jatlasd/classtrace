@@ -6,6 +6,7 @@ const mocks = vi.hoisted(() => ({
   feedbackDelivery: { deliver: vi.fn() },
 }));
 
+vi.mock("server-only", () => ({}));
 vi.mock("@/lib/auth/get-current-workspace", () => ({
   getCurrentWorkspace: mocks.getCurrentWorkspace,
 }));

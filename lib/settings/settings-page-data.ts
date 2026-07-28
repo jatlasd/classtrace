@@ -2,7 +2,7 @@ import "server-only";
 
 import { currentUser } from "@clerk/nextjs/server";
 import {
-  getCurrentWorkspace,
+  getCurrentAppWorkspace,
   type CurrentWorkspace,
 } from "@/lib/auth/get-current-workspace";
 import { prisma } from "@/lib/db/prisma";
@@ -108,7 +108,7 @@ function getReplyEmail(user: ClerkAccountUser | null): string {
 
 export async function getSettingsPageData(
   dependencies: SettingsPageDependencies = {
-    resolveWorkspace: getCurrentWorkspace,
+    resolveWorkspace: getCurrentAppWorkspace,
     getClerkUser: currentUser,
     database: settingsPageDatabase,
   }

@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { ReactElement } from "react";
 import { StudentReportPage } from "@/components/students/student-report-page";
 import { Button } from "@/components/ui/button";
-import { getCurrentWorkspace } from "@/lib/auth/get-current-workspace";
+import { getCurrentAppWorkspace } from "@/lib/auth/get-current-workspace";
 import {
   getStudentReportRecordsForWorkspace,
   parseStudentReportDateRange,
@@ -33,7 +33,7 @@ export default async function StudentReportRoute({
 }: StudentReportRouteProps): Promise<ReactElement> {
   const { studentId } = await params;
   const query = await searchParams;
-  const workspace = await getCurrentWorkspace();
+  const workspace = await getCurrentAppWorkspace();
   const dateRange = parseStudentReportDateRange({
     start: firstSearchParam(query.start),
     end: firstSearchParam(query.end),

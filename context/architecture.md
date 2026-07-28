@@ -22,6 +22,7 @@ privacy-scrubbed application errors and sampled traces sent to Sentry.
 ```text
 Clerk user
   → TeacherProfile
+    → BetaAgreementAcceptance
     → Workspace
       → ClassGroup
       → RosterStudent
@@ -33,6 +34,36 @@ Clerk user
 - Student/class/evidence relations use composite same-workspace foreign keys where the relation crosses an ownership boundary.
 - Cross-workspace writes are rejected by both application checks and PostgreSQL constraints.
 - V1 has no global student identity and no cross-teacher sharing.
+
+## Mandatory beta acknowledgement
+
+The beta acknowledgement is a server-enforced authorization condition between
+Clerk authentication and teacher-product access:
+
+```text
+signed-in Clerk user
+  → provisioned TeacherProfile and Workspace
+    → current agreement-version acceptance exists
+      → teacher-product route or Server Action
+```
+
+- `/beta-acknowledgements` is authenticated but sits outside `/app` so a
+  teacher without acceptance can complete the gate without a redirect loop.
+- Every `/app` read redirects to the acknowledgement flow when the current
+  agreement version is absent.
+- Teacher-facing Server Actions use the same acceptance-aware workspace
+  resolver and fail closed when invoked without current acceptance.
+- The acknowledgement page and its one acceptance action are the only
+  teacher-facing boundaries allowed to provision a workspace without prior
+  acceptance. Public routes and the sanctioned `/operator` exception remain
+  outside this teacher beta gate.
+- The current agreement, terms, and privacy versions are immutable server-owned
+  code constants. Only the agreement version determines whether acceptance is
+  current.
+- Incomplete step progress is transient React state. ClassTrace does not store
+  partial acknowledgements in PostgreSQL or browser storage.
+- Final submission validates the exact six server-defined acknowledgement IDs.
+  Version values and the app release are never accepted from the browser.
 
 ## Controlled-beta identity access
 
@@ -69,6 +100,9 @@ admin, district, organization, and membership models remains in force.
 ## Main data models
 
 - `TeacherProfile` maps Clerk identity to app-owned data.
+- `BetaAgreementAcceptance` stores immutable teacher acceptance history with
+  one row per teacher and agreement version, including the accepted terms,
+  privacy version, timestamp, and app release.
 - `Workspace` is the personal teacher ownership boundary.
 - `ClassGroup` organizes roster setup.
 - `RosterStudent` is a teacher-owned student entry with a mention handle and one active class assignment during the limited beta.
@@ -141,6 +175,8 @@ Legacy structured records may have a null Evidence note. The UI labels them hone
 ### Server Actions
 
 - Authenticate first.
+- Require the current beta agreement for every teacher-product mutation; the
+  acceptance action itself uses the narrow pre-acceptance provisioning path.
 - Call a domain function that validates/scopes the operation.
 - Return a typed success/error union with safe teacher-facing copy.
 - Revalidate affected routes after success.
@@ -200,9 +236,10 @@ operator mailbox or add a second unauthenticated message endpoint.
    and signs out before deletion begins.
 2. The operator confirms the target by exact email in `/operator`. If the
    request and Clerk identity do not correlate, stop and resolve the mismatch.
-3. Run **Delete ClassTrace data** first. Confirm the workspace is absent and
-   retain only the narrow deletion audit. Do not sign in as the target between
-   stages because app entry can recreate app-owned profile data.
+3. Run **Delete ClassTrace data** first. Confirm the teacher profile, beta
+   acceptance history, and workspace are absent and retain only the narrow
+   deletion audit. Do not sign in as the target between stages because app
+   entry can recreate app-owned profile data.
 4. Only after ClassTrace data is absent, run **Delete Clerk user** as the
    separate second confirmation. If this step fails, leave the workspace
    deleted and retry only the Clerk stage; never bypass the operator flow with
