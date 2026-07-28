@@ -1,12 +1,17 @@
 import type {
   DataCollection,
   Event,
+  EventHint,
   Primitive,
   SpanJSON,
   TraceContext,
 } from "@sentry/core";
+import {
+  formatSafeErrorMessage,
+  getSafeErrorDiagnostic,
+  getSafeOperationStage,
+} from "@/lib/monitoring/safe-error-diagnostic";
 
-const REDACTED_ERROR_MESSAGE = "Unexpected application error";
 const SAFE_OPERATIONS = [
   "class.archive",
   "class.create",
@@ -31,6 +36,7 @@ const SAFE_TAG_KEYS = [
   "classtrace.error_reference",
   "classtrace.http_method",
   "classtrace.operation",
+  "classtrace.operation_stage",
   "classtrace.render_source",
   "classtrace.route_template",
   "classtrace.route_type",
@@ -112,6 +118,8 @@ function isSafeTag(key: (typeof SAFE_TAG_KEYS)[number], value: unknown) {
       );
     case "classtrace.operation":
       return isSafeOperation(value);
+    case "classtrace.operation_stage":
+      return value === "operation.execute" || value === "workspace.resolve";
     case "classtrace.render_source":
       return (
         value === "react-server-components" ||
@@ -195,18 +203,52 @@ export function sanitizeSentrySpan(span: SpanJSON): SpanJSON {
   return span;
 }
 
-export function sanitizeSentryEvent<T extends Event>(event: T): T {
+export function sanitizeSentryEvent<T extends Event>(
+  event: T,
+  hint?: EventHint
+): T {
   const originalTransaction = event.transaction;
   const originalTransactionSource = event.transaction_info?.source;
-  const safeTags = getSafeTags(event.tags);
-  const routeTemplate = safeTags?.["classtrace.route_template"];
-  const httpMethod = safeTags?.["classtrace.http_method"];
-  const verificationMessage = safeTags?.["classtrace.verification"];
-  const operation = safeTags?.["classtrace.operation"];
-  const safeErrorMessage =
-    typeof operation === "string"
-      ? `ClassTrace operation failed: ${operation}`
-      : REDACTED_ERROR_MESSAGE;
+  const allowlistedTags = getSafeTags(event.tags);
+  const routeTemplate = allowlistedTags?.["classtrace.route_template"];
+  const httpMethod = allowlistedTags?.["classtrace.http_method"];
+  const verificationMessage = allowlistedTags?.["classtrace.verification"];
+  const operation = allowlistedTags?.["classtrace.operation"];
+  const operationStage = allowlistedTags?.["classtrace.operation_stage"];
+  const safeOperationStage =
+    operationStage === "operation.execute" ||
+    operationStage === "workspace.resolve"
+      ? operationStage
+      : getSafeOperationStage(hint?.originalException);
+  const diagnostic = verificationMessage
+    ? undefined
+    : getSafeErrorDiagnostic(hint?.originalException);
+  const safeTags: Record<string, Primitive> = {
+    ...allowlistedTags,
+    ...(safeOperationStage
+      ? { "classtrace.operation_stage": safeOperationStage }
+      : undefined),
+    ...(diagnostic
+      ? {
+          "classtrace.error_source": diagnostic.source,
+          "classtrace.error_type": diagnostic.errorType,
+          "classtrace.failure_kind": diagnostic.failureKind,
+          ...(diagnostic.code
+            ? { "classtrace.error_code": diagnostic.code }
+            : undefined),
+          ...(diagnostic.databaseObject
+            ? {
+                "classtrace.database_object": diagnostic.databaseObject,
+              }
+            : undefined),
+        }
+      : undefined),
+  };
+  const safeErrorMessage = formatSafeErrorMessage(
+    diagnostic,
+    typeof operation === "string" ? operation : undefined,
+    safeOperationStage
+  );
 
   event.request = undefined;
   event.user = { ip_address: null };
@@ -217,7 +259,7 @@ export function sanitizeSentryEvent<T extends Event>(event: T): T {
   event.server_name = undefined;
   event.threads = undefined;
   event.sdkProcessingMetadata = undefined;
-  event.tags = safeTags;
+  event.tags = Object.keys(safeTags).length > 0 ? safeTags : undefined;
   const trace = getSafeTraceContext(event.contexts?.trace);
   event.contexts = trace ? { trace } : undefined;
 

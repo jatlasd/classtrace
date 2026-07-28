@@ -29,6 +29,7 @@ import {
   getCurrentWorkspace,
   getProvisionedCurrentWorkspace,
 } from "@/lib/auth/get-current-workspace";
+import { getSafeOperationStage } from "@/lib/monitoring/safe-error-diagnostic";
 
 describe("getCurrentWorkspace", () => {
   beforeEach(() => {
@@ -79,9 +80,14 @@ describe("getCurrentWorkspace", () => {
 
   it("does not conceal database failures as authentication errors", async () => {
     mocks.auth.mockResolvedValue({ userId: "clerk_user_1" });
-    mocks.teacherProfileUpsert.mockRejectedValue(new Error("database unavailable"));
+    mocks.teacherProfileUpsert.mockRejectedValue(
+      new Error("database unavailable")
+    );
 
-    await expect(getCurrentWorkspace()).rejects.toThrow("database unavailable");
+    const error = await getCurrentWorkspace().catch((caught) => caught);
+
+    expect(error).toMatchObject({ message: "database unavailable" });
+    expect(getSafeOperationStage(error)).toBe("workspace.resolve");
     expect(mocks.teacherProfileUpsert).toHaveBeenCalledTimes(1);
   });
 
