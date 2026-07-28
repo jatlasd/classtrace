@@ -158,6 +158,10 @@ describe("evidence Server Actions", () => {
         {
           operation: "evidence.save",
           errorName: "Error",
+          operationStage: "operation.execute",
+          errorSource: "javascript",
+          errorType: "Error",
+          failureKind: "application.unexpected",
         }
       );
     } finally {

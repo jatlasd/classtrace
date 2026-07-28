@@ -206,6 +206,10 @@ describe("roster Server Actions", () => {
         {
           operation: "roster.import",
           errorName: "Error",
+          operationStage: "operation.execute",
+          errorSource: "javascript",
+          errorType: "Error",
+          failureKind: "application.unexpected",
         }
       );
     } finally {

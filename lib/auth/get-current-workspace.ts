@@ -4,6 +4,7 @@ import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { hasAcceptedCurrentBetaAgreement } from "@/lib/beta-agreement/beta-agreement";
 import { prisma } from "@/lib/db/prisma";
+import { markSafeOperationStage } from "@/lib/monitoring/safe-error-diagnostic";
 import { routes } from "@/lib/routes";
 
 export class CurrentWorkspaceError extends Error {
@@ -86,19 +87,23 @@ export async function getProvisionedCurrentWorkspace(): Promise<CurrentWorkspace
 }
 
 export async function getCurrentWorkspace(): Promise<CurrentWorkspace> {
-  const workspace = await getProvisionedCurrentWorkspace();
-  const hasAccepted = await hasAcceptedCurrentBetaAgreement(
-    workspace.teacherProfileId
-  );
-
-  if (!hasAccepted) {
-    throw new CurrentWorkspaceError(
-      "BETA_AGREEMENT_REQUIRED",
-      "Complete the current beta agreement before accessing ClassTrace."
+  try {
+    const workspace = await getProvisionedCurrentWorkspace();
+    const hasAccepted = await hasAcceptedCurrentBetaAgreement(
+      workspace.teacherProfileId
     );
-  }
 
-  return workspace;
+    if (!hasAccepted) {
+      throw new CurrentWorkspaceError(
+        "BETA_AGREEMENT_REQUIRED",
+        "Complete the current beta agreement before accessing ClassTrace."
+      );
+    }
+
+    return workspace;
+  } catch (error) {
+    throw markSafeOperationStage(error, "workspace.resolve");
+  }
 }
 
 export async function getCurrentAppWorkspace(): Promise<CurrentWorkspace> {

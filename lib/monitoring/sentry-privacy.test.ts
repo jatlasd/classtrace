@@ -6,6 +6,7 @@ import {
   sentryDataCollection,
   sentryPrivacyOptions,
 } from "@/lib/monitoring/sentry-privacy";
+import { markSafeOperationStage } from "@/lib/monitoring/safe-error-diagnostic";
 
 describe("Sentry privacy boundary", () => {
   it("opts out of request, identity, body, query, database, and local data", () => {
@@ -159,6 +160,99 @@ describe("Sentry privacy boundary", () => {
       },
     });
     expect(JSON.stringify(event)).not.toContain("SENTINEL");
+  });
+
+  it("explains a known missing-table failure without retaining raw Prisma data", () => {
+    const error = Object.assign(
+      new Error(
+        "The table BetaAgreementAcceptance does not exist for SENTINEL_TEACHER"
+      ),
+      {
+        name: "PrismaClientKnownRequestError",
+        code: "P2021",
+        clientVersion: "7.8.0",
+        meta: {
+          modelName: "BetaAgreementAcceptance",
+          table: "public.BetaAgreementAcceptance",
+          databaseValue: "SENTINEL_STUDENT_NOTE",
+        },
+      }
+    );
+    markSafeOperationStage(error, "workspace.resolve");
+    const event: Event = {
+      message: "SENTINEL_MESSAGE",
+      tags: {
+        "classtrace.operation": "evidence.save",
+        unsafe: "SENTINEL_TAG",
+      },
+      extra: { error },
+      exception: {
+        values: [
+          {
+            type: "PrismaClientKnownRequestError",
+            value: error.message,
+          },
+        ],
+      },
+    };
+
+    const sanitized = sanitizeSentryEvent(event, {
+      originalException: error,
+    });
+
+    expect(sanitized).toMatchObject({
+      message:
+        "Database setup is missing a required table: BetaAgreementAcceptance (Prisma P2021) while resolving the current workspace for evidence.save",
+      tags: {
+        "classtrace.operation": "evidence.save",
+        "classtrace.operation_stage": "workspace.resolve",
+        "classtrace.error_source": "prisma",
+        "classtrace.error_type": "PrismaClientKnownRequestError",
+        "classtrace.error_code": "P2021",
+        "classtrace.failure_kind": "database.table-missing",
+        "classtrace.database_object": "BetaAgreementAcceptance",
+      },
+      exception: {
+        values: [
+          {
+            type: "PrismaClientKnownRequestError",
+            value:
+              "Database setup is missing a required table: BetaAgreementAcceptance (Prisma P2021) while resolving the current workspace for evidence.save",
+          },
+        ],
+      },
+    });
+    expect(JSON.stringify(sanitized)).not.toContain("SENTINEL");
+    expect(sanitized.extra).toBeUndefined();
+  });
+
+  it("does not retain unrecognized database metadata or arbitrary error codes", () => {
+    const error = Object.assign(new Error("SENTINEL_STUDENT_NOTE"), {
+      code: "P2021",
+      meta: { table: "SENTINEL_PRIVATE_TABLE" },
+    });
+    const event: Event = {
+      tags: { "classtrace.operation": "evidence.save" },
+      exception: {
+        values: [{ type: "Error", value: error.message }],
+      },
+    };
+
+    const sanitized = sanitizeSentryEvent(event, {
+      originalException: error,
+    });
+
+    expect(sanitized.tags).toEqual({
+      "classtrace.operation": "evidence.save",
+      "classtrace.error_source": "javascript",
+      "classtrace.error_type": "Error",
+      "classtrace.failure_kind": "application.unexpected",
+    });
+    expect(sanitized.exception?.values?.[0]?.value).toBe(
+      "An unexpected application operation failed (JavaScript Error) while running evidence.save"
+    );
+    expect(JSON.stringify(sanitized)).not.toContain("SENTINEL");
+    expect(JSON.stringify(sanitized)).not.toContain("P2021");
   });
 
   it("drops operation tags outside the static allowlist", () => {
