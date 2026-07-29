@@ -64,6 +64,15 @@ describe("SavedEvidenceRow management", () => {
     expect(onArchived).toHaveBeenCalledWith("evidence_1");
   });
 
+  it("keeps saved-row metadata implicit and avoids repeating structured chips", () => {
+    render(<SavedEvidenceRow record={record} />);
+
+    expect(screen.queryByText("Validated")).toBeNull();
+    expect(screen.queryByText(/Structured details:/)).toBeNull();
+    expect(screen.getByLabelText(/Saved evidence for Mary on/)).toBeTruthy();
+    expect(screen.getByText("Academic check-in")).toBeTruthy();
+  });
+
   it("states permanence before deleting and reports the successful removal", async () => {
     const onDeleted = vi.fn();
     render(<SavedEvidenceRow record={record} onDeleted={onDeleted} />);

@@ -16,6 +16,7 @@ export type EvidenceRecordContentData = {
 type EvidenceRecordContentProps = {
   record: EvidenceRecordContentData;
   includeClassGroup?: boolean;
+  showStructuredSummary?: boolean;
   textClassName?: string;
 };
 
@@ -45,6 +46,7 @@ function EvidenceChip({
 export function EvidenceRecordContent({
   record,
   includeClassGroup = false,
+  showStructuredSummary = true,
   textClassName = "mt-1",
 }: EvidenceRecordContentProps) {
   const primaryEvidenceText = record.evidenceNote ?? record.summary;
@@ -56,16 +58,16 @@ export function EvidenceRecordContent({
       >
         {primaryEvidenceText}
       </p>
-      {record.evidenceNote ? (
+      {record.evidenceNote && showStructuredSummary ? (
         <p className="mt-2 break-words text-xs leading-relaxed text-muted-foreground [overflow-wrap:anywhere]">
           <span className="font-medium text-foreground">Structured details:</span>{" "}
           {record.summary}
         </p>
-      ) : (
+      ) : !record.evidenceNote ? (
         <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
           Legacy structured entry. This record was saved before Evidence notes were added.
         </p>
-      )}
+      ) : null}
 
       <div className="mt-3 flex flex-wrap gap-1.5">
         {includeClassGroup && record.classGroupName ? (

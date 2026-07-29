@@ -22,7 +22,7 @@ export function SiteFooter({ showAccessLinks = false }: SiteFooterProps) {
         </div>
         <nav
           aria-label="Footer"
-          className="flex max-w-2xl flex-wrap items-center gap-x-6 gap-y-2"
+          className="grid w-full max-w-2xl grid-cols-2 gap-x-6 gap-y-3 sm:flex sm:w-auto sm:flex-wrap sm:items-center sm:gap-y-2"
         >
           <Link
             href={routes.privacy}

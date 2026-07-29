@@ -8,7 +8,7 @@ import { EvidenceRecordContent } from "@/components/evidence/evidence-record-con
 import { Button } from "@/components/ui/button";
 import type { EvidenceFeedRecord } from "@/lib/evidence/evidence-feed-records";
 import { routes } from "@/lib/routes";
-import { Archive, CheckCircle2, Circle, Trash2 } from "lucide-react";
+import { Archive, Trash2 } from "lucide-react";
 
 type SavedEvidenceRowProps = {
   record: EvidenceFeedRecord;
@@ -18,21 +18,34 @@ type SavedEvidenceRowProps = {
 
 type EvidenceDateParts = {
   label: string;
+  month: string;
+  day: string;
+  year: string;
 };
 
 function formatEvidenceDate(value: string): EvidenceDateParts {
   const date = new Date(value);
 
   if (Number.isNaN(date.getTime())) {
-    return { label: "Recently" };
+    return {
+      label: "Recently",
+      month: "",
+      day: "Recent",
+      year: "",
+    };
   }
 
+  const parts = new Intl.DateTimeFormat("en", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  }).formatToParts(date);
+
   return {
-    label: new Intl.DateTimeFormat("en", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    }).format(date),
+    label: parts.map((part) => part.value).join(""),
+    month: parts.find((part) => part.type === "month")?.value ?? "",
+    day: parts.find((part) => part.type === "day")?.value ?? "",
+    year: parts.find((part) => part.type === "year")?.value ?? "",
   };
 }
 
@@ -82,14 +95,28 @@ export function SavedEvidenceRow({
   }
 
   return (
-    <article className="border-b border-border transition-colors hover:bg-muted/20 last:border-b-0">
-      <div className="grid gap-4 px-4 py-5 sm:grid-cols-[48px_minmax(0,1fr)] md:px-6">
-        <span className="flex size-11 items-center justify-center rounded-lg border border-validated/50 bg-validated/35 text-validated-foreground">
-          <CheckCircle2 aria-hidden="true" className="size-5" strokeWidth={1.75} />
-        </span>
+    <article
+      aria-label={`Saved evidence for ${record.studentDisplayName} on ${evidenceDate.label}`}
+      className="border-b border-border transition-colors hover:bg-muted/20 last:border-b-0"
+    >
+      <div className="grid gap-3 px-4 py-5 sm:grid-cols-[64px_minmax(0,1fr)] sm:gap-5 md:px-6">
+        <time
+          dateTime={record.evidenceDate}
+          aria-label={evidenceDate.label}
+          className="flex items-baseline gap-1.5 text-muted-foreground sm:flex-col sm:items-start sm:gap-0.5 sm:border-r sm:border-border/70 sm:pr-4"
+        >
+          <span className="text-sm font-semibold leading-none text-foreground">
+            {evidenceDate.month
+              ? `${evidenceDate.month} ${evidenceDate.day}`
+              : evidenceDate.day}
+          </span>
+          {evidenceDate.year ? (
+            <span className="text-[11px] tabular-nums">{evidenceDate.year}</span>
+          ) : null}
+        </time>
 
         <div className="min-w-0">
-          <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+          <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
             <Link
               href={routes.student(record.rosterStudentId)}
               className="rounded-sm text-sm font-semibold text-foreground underline-offset-2 hover:text-link hover:underline focus-visible:ring-2 focus-visible:ring-ring/30"
@@ -101,26 +128,20 @@ export function SavedEvidenceRow({
                 {record.classGroupName}
               </span>
             ) : null}
-            <time
-              dateTime={record.evidenceDate}
-              className="text-xs text-muted-foreground"
-            >
-              {evidenceDate.label}
-            </time>
-            <span className="inline-flex items-center gap-1.5 rounded-lg border border-validated/60 bg-validated/35 px-2.5 py-1 text-xs font-semibold text-validated-foreground">
-              <Circle aria-hidden="true" className="size-2 fill-current" />
-              Validated
-            </span>
           </div>
 
-          <EvidenceRecordContent record={record} />
+          <EvidenceRecordContent
+            record={record}
+            showStructuredSummary={false}
+            textClassName="mt-2"
+          />
 
-          <div className="mt-4 flex flex-wrap items-center gap-1 border-t border-border/50 pt-3">
+          <div className="mt-3 flex flex-wrap items-center gap-1">
             <Button
               type="button"
               variant="ghost"
               size="sm"
-              className="-ml-2 text-muted-foreground"
+              className="min-h-11 text-muted-foreground sm:min-h-9"
               disabled={isPending}
               onClick={() => {
                 setIsConfirmingArchive(true);
@@ -137,7 +158,7 @@ export function SavedEvidenceRow({
               type="button"
               variant="ghost"
               size="sm"
-              className="text-destructive hover:text-destructive"
+              className="min-h-11 text-destructive hover:text-destructive sm:min-h-9"
               disabled={isPending}
               onClick={() => {
                 setIsConfirmingDelete(true);

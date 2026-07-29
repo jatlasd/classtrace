@@ -8,6 +8,11 @@ function countLabel(count: number, singular: string, plural: string): string {
   return count === 1 ? `1 ${singular}` : `${count} ${plural}`;
 }
 
+function reviewLabel(count: number): string {
+  if (count === 0) return "No drafts to review";
+  return countLabel(count, "draft to review", "drafts to review");
+}
+
 export function EvidenceFeedHeader({
   rosterCount = 0,
   savedCount = 0,
@@ -28,32 +33,26 @@ export function EvidenceFeedHeader({
         </p>
       </div>
 
-      <div className="grid grid-cols-3 overflow-hidden rounded-lg border border-border bg-card text-sm">
-        <div className="min-w-0 border-r border-border px-3 py-2">
-          <p className="text-[11px] font-semibold text-muted-foreground">
-            Roster
-          </p>
-          <p className="mt-0.5 truncate font-medium text-foreground">
-            {countLabel(rosterCount, "student", "students")}
-          </p>
+      <dl className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground lg:justify-end">
+        <div>
+          <dt className="sr-only">Roster</dt>
+          <dd className="font-medium text-foreground">
+            {rosterCount} {rosterCount === 1 ? "student" : "students"}
+          </dd>
         </div>
-        <div className="min-w-0 border-r border-border px-3 py-2">
-          <p className="text-[11px] font-semibold text-muted-foreground">
-            Loaded
-          </p>
-          <p className="mt-0.5 truncate font-medium text-foreground">
-            {countLabel(savedCount, "record", "records")}
-          </p>
+        <div>
+          <dt className="sr-only">Saved evidence</dt>
+          <dd className="font-medium text-foreground">
+            {savedCount} {savedCount === 1 ? "saved record" : "saved records"}
+          </dd>
         </div>
-        <div className="min-w-0 px-3 py-2">
-          <p className="text-[11px] font-semibold text-muted-foreground">
-            Review
-          </p>
-          <p className="mt-0.5 truncate font-medium text-foreground">
-            {countLabel(reviewCount, "draft", "drafts")}
-          </p>
+        <div>
+          <dt className="sr-only">Review queue</dt>
+          <dd className="font-medium text-foreground">
+            {reviewLabel(reviewCount)}
+          </dd>
         </div>
-      </div>
+      </dl>
     </header>
   );
 }
