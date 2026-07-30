@@ -49,7 +49,7 @@ export function AppTopNav() {
               href={routes.settings}
               aria-label="Settings"
               aria-current={pathname === routes.settings ? "page" : undefined}
-              className="flex size-9 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+              className="flex size-11 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
             >
               <Settings className="size-4" />
             </Link>
@@ -57,7 +57,7 @@ export function AppTopNav() {
               <button
                 type="button"
                 aria-label="Sign out"
-                className="flex size-9 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                className="flex size-11 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
               >
                 <LogOut className="size-4" strokeWidth={1.75} />
               </button>

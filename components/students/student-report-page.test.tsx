@@ -2,10 +2,7 @@
 
 import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import {
-  shouldShowEarlyReportGuidance,
-  StudentReportPage,
-} from "@/components/students/student-report-page";
+import { StudentReportPage } from "@/components/students/student-report-page";
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: vi.fn() }),
@@ -29,14 +26,7 @@ const allEvidence = {
 };
 
 describe("StudentReportPage", () => {
-  it("shows accumulation guidance only for the first four records", () => {
-    expect(shouldShowEarlyReportGuidance(0)).toBe(false);
-    expect(shouldShowEarlyReportGuidance(1)).toBe(true);
-    expect(shouldShowEarlyReportGuidance(4)).toBe(true);
-    expect(shouldShowEarlyReportGuidance(5)).toBe(false);
-  });
-
-  it("renders teacher-approved evidence and structured context", () => {
+  it("renders teacher-approved evidence without repeating structured context", () => {
     const longEvidence = `Used ${"strategy".repeat(40)} after one prompt.`;
 
     render(
@@ -64,7 +54,7 @@ describe("StudentReportPage", () => {
 
     const evidence = screen.getByText(longEvidence);
     expect(evidence.className).toContain("overflow-wrap:anywhere");
-    expect(screen.getByText("Structured details:")).toBeTruthy();
+    expect(screen.queryByText("Structured details:")).toBeNull();
     expect(screen.getByText("Academic check-in")).toBeTruthy();
     expect(screen.getByText("Review comprehension tomorrow")).toBeTruthy();
   });

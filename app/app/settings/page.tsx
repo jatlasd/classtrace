@@ -1,11 +1,4 @@
-import {
-  BadgeCheck,
-  BriefcaseBusiness,
-  ExternalLink,
-  MessageCircleQuestion,
-  ShieldCheck,
-  UserRound,
-} from "lucide-react";
+import { ExternalLink, MessageCircleQuestion } from "lucide-react";
 import Link from "next/link";
 import { HelpFeedbackForm } from "@/components/settings/help-feedback-form";
 import { SettingsSignOutAction } from "@/components/settings/settings-sign-out-action";
@@ -57,57 +50,45 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
         </p>
       </header>
 
-      <div className="space-y-4">
-        <section className="border border-border bg-card/60 p-4 sm:p-5">
-          <div className="mb-4 flex items-start gap-3">
-            <span className="flex size-10 shrink-0 items-center justify-center rounded-md border border-border bg-muted/50 text-primary">
-              <UserRound className="size-4" strokeWidth={1.75} />
-            </span>
-            <div>
+      <div className="space-y-5">
+        <section className="overflow-hidden rounded-card border border-border bg-card/60">
+          <div className="grid lg:grid-cols-2">
+            <div className="p-5 sm:p-6 lg:border-r lg:border-border">
               <h2 className="font-display text-lg font-semibold text-foreground">
                 Account
               </h2>
-              <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+              <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
                 Sign-in details are managed by the account provider you used to
                 enter ClassTrace.
               </p>
+              <dl className="mt-4">
+                <DetailRow label="Signed in as" value={settings.accountName} />
+                <DetailRow label="Email" value={settings.accountEmail} />
+              </dl>
             </div>
-          </div>
 
-          <dl>
-            <DetailRow label="Signed in as" value={settings.accountName} />
-            <DetailRow label="Email" value={settings.accountEmail} />
-          </dl>
-        </section>
-
-        <section className="border border-border bg-card/60 p-4 sm:p-5">
-          <div className="mb-4 flex items-start gap-3">
-            <span className="flex size-10 shrink-0 items-center justify-center rounded-md border border-border bg-muted/50 text-primary">
-              <BriefcaseBusiness className="size-4" strokeWidth={1.75} />
-            </span>
-            <div>
+            <div className="border-t border-border p-5 sm:p-6 lg:border-t-0">
               <h2 className="font-display text-lg font-semibold text-foreground">
                 Workspace
               </h2>
-              <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+              <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
                 ClassTrace keeps this as your personal teacher workspace for
                 roster students and validated evidence.
               </p>
+              <dl className="mt-4">
+                <DetailRow label="Workspace" value={settings.workspaceName} />
+                <DetailRow
+                  label="Teacher profile"
+                  value={settings.teacherDisplayName}
+                />
+              </dl>
             </div>
           </div>
-
-          <dl>
-            <DetailRow label="Workspace" value={settings.workspaceName} />
-            <DetailRow
-              label="Teacher profile"
-              value={settings.teacherDisplayName}
-            />
-          </dl>
         </section>
 
         <section
           aria-labelledby="help-feedback-heading"
-          className="border border-border bg-card/60 p-4 sm:p-5"
+          className="rounded-card border border-border bg-card p-5 shadow-paper sm:p-6"
         >
           <div className="mb-5 flex items-start gap-3">
             <span className="flex size-10 shrink-0 items-center justify-center rounded-md border border-border bg-muted/50 text-primary">
@@ -124,7 +105,7 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
               >
                 Help and feedback
               </h2>
-              <p className="mt-1 max-w-2xl text-xs leading-relaxed text-muted-foreground">
+              <p className="mt-1 max-w-2xl text-sm leading-relaxed text-muted-foreground">
                 Tell us what broke, what felt confusing, or what would make
                 ClassTrace more useful.
               </p>
@@ -139,32 +120,23 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
 
         <section
           aria-labelledby="privacy-terms-heading"
-          className="border border-border bg-card/60 p-4 sm:p-5"
+          className="border-y border-border/70 py-5"
         >
-          <div className="mb-4 flex items-start gap-3">
-            <span className="flex size-10 shrink-0 items-center justify-center rounded-md border border-border bg-muted/50 text-primary">
-              <ShieldCheck
-                className="size-4"
-                strokeWidth={1.75}
-                aria-hidden="true"
-              />
-            </span>
-            <div>
+          <div className="mb-3">
               <h2
                 id="privacy-terms-heading"
-                className="font-display text-lg font-semibold text-foreground"
+              className="text-sm font-semibold text-foreground"
               >
                 Privacy and beta terms
               </h2>
-              <p className="mt-1 max-w-2xl text-xs leading-relaxed text-muted-foreground">
-                Review how ClassTrace handles data, what the beta promises, and
-                how to request support or account deletion.
-              </p>
-            </div>
+            <p className="mt-1 max-w-2xl text-sm leading-relaxed text-muted-foreground">
+              Review data handling, beta boundaries, support, and account
+              deletion.
+            </p>
           </div>
 
           <nav aria-label="Privacy and account information">
-            <ul className="divide-y divide-border/70 border-y border-border/70">
+            <ul className="grid gap-x-6 sm:grid-cols-2">
               {[
                 { label: "Privacy", href: routes.privacy },
                 { label: "Beta terms", href: routes.terms },
@@ -174,7 +146,7 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
                 <li key={item.href}>
                   <Link
                     href={item.href}
-                    className="flex min-h-11 items-center justify-between gap-4 py-2.5 text-sm font-medium text-foreground transition-colors hover:text-link"
+                    className="flex min-h-11 items-center justify-between gap-4 border-t border-border/60 py-2.5 text-sm font-medium text-foreground transition-colors hover:text-link"
                   >
                     <span>{item.label}</span>
                     <ExternalLink
@@ -188,20 +160,15 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
           </nav>
         </section>
 
-        <section className="border border-border bg-card/60 px-4 py-4 sm:px-5">
+        <section className="py-2">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex items-start gap-3">
-              <span className="flex size-9 shrink-0 items-center justify-center rounded-md border border-border bg-muted/50 text-primary">
-                <BadgeCheck className="size-4" strokeWidth={1.75} />
-              </span>
-              <div>
+            <div>
                 <h2 className="font-display text-lg font-semibold text-foreground">
                   Sign out
                 </h2>
-                <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+              <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
                   Leave this ClassTrace session and return to the public page.
                 </p>
-              </div>
             </div>
             <SettingsSignOutAction />
           </div>

@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { FormEvent, ReactElement } from "react";
-import { CalendarDays } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { routes } from "@/lib/routes";
 
@@ -103,20 +102,15 @@ export function StudentReportDateRangeForm({
   }
 
   return (
-    <section className="student-report-screen-only mb-5 border border-border bg-card/60 p-4 sm:p-5">
+    <section className="student-report-screen-only mb-5 rounded-lg border border-border bg-card/60 p-4 sm:p-5">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-        <div className="flex min-w-0 gap-3">
-          <div className="flex size-10 shrink-0 items-center justify-center rounded-md border border-border bg-muted/50 text-primary">
-            <CalendarDays aria-hidden="true" className="size-5" strokeWidth={1.75} />
-          </div>
-          <div className="min-w-0">
-            <h2 className="font-display text-lg font-semibold text-foreground">
-              Date range
-            </h2>
-            <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-              Leave dates blank to include all stored evidence for this student.
-            </p>
-          </div>
+        <div className="min-w-0">
+          <h2 className="font-display text-lg font-semibold text-foreground">
+            Date range
+          </h2>
+          <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+            Leave dates blank to include all stored evidence for this student.
+          </p>
         </div>
 
         <form
@@ -153,10 +147,19 @@ export function StudentReportDateRangeForm({
               className="h-10 w-full rounded-md border border-border bg-background/50 px-3 text-sm text-foreground outline-none transition-colors focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/20"
             />
           </div>
-          <Button type="submit" size="sm" className="h-10 rounded-lg px-5">
+          <Button
+            type="submit"
+            size="sm"
+            className="min-h-11 rounded-lg px-5 sm:min-h-10"
+          >
             Apply range
           </Button>
-          <Button asChild variant="ghost" size="sm" className="h-10 rounded-lg px-5">
+          <Button
+            asChild
+            variant="ghost"
+            size="sm"
+            className="min-h-11 rounded-lg px-5 sm:min-h-10"
+          >
             <Link href={routes.studentReport(studentId)}>Clear range</Link>
           </Button>
         </form>

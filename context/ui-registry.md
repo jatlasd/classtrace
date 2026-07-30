@@ -92,11 +92,11 @@ the panel.
 
 File: `components/settings/help-feedback-form.tsx`
 
-Last updated: 2026-07-14
+Last updated: 2026-07-28
 
 | Property | Pattern |
 |---|---|
-| Section surface | Existing Settings `border border-border bg-card/60` surface |
+| Section surface | Single working surface: `rounded-card border border-border bg-card shadow-paper` |
 | Fields | Shared 40 px roster input treatment and `Textarea`; semantic invalid border/ring |
 | Labels | `text-sm font-medium text-foreground` |
 | Guidance | Inline icon plus `text-xs leading-relaxed text-muted-foreground` |
@@ -119,11 +119,16 @@ File: `components/dashboard/quick-capture-card.tsx`
 
 - `rounded-card border border-border bg-card shadow-paper`.
 - “What happened?” is the visual anchor.
+- The header states the review-before-save boundary once; compact composer
+  guidance explains `@` student mentions and `#tags` without repeating it as
+  decorative hint controls.
 - Mention input remains text-only and offers roster-backed suggestions.
 - The textarea and mention-highlighter layers share the same font metrics,
   padding, border, wrapping, and box sizing. Mention emphasis uses a tonal
   background without changing glyph weight or spacing.
-- Footer has quiet syntax hints and one clear Capture action.
+- Footer is the single live guidance line: it shows the quiet draft/keyboard
+  hint when empty, then swaps in student-resolution feedback beside the clear
+  Capture action.
 - After the workspace's first successful save, one inline success panel links to the student's timeline/report and can return focus to this composer.
 - Do not turn capture into a multi-field form.
 
@@ -242,18 +247,29 @@ Last imprinted: 2026-07-12
 | Overflow | `break-words [overflow-wrap:anywhere]` |
 
 This component owns Evidence note versus legacy structured-entry copy, reviewed summary, structured chips, tags, and follow-up display across feed, timeline, and report. Do not copy that markup into a new read surface.
+Feed, timeline, and report rows may suppress the prose structured summary when
+the same reviewed fields are already visible as chips.
 
 ## Evidence rows and timeline/report entries
 
 Files: `components/dashboard/saved-evidence-row.tsx`, `components/students/student-timeline-page.tsx`, `components/students/student-report-page.tsx`
 
-- Evidence content is primary; student, class, date, and validated state are
-  compact supporting metadata.
-- Validated state uses a sage icon/status with the word “Validated.”
+- Evidence content is primary; student, class, and date are compact supporting
+  metadata.
+- Feed rows use a fixed desktop date column as the ledger anchor; on mobile the
+  same date collapses above the content.
+- Saved feed rows do not repeat a “Validated” badge. Their placement, evidence
+  content, and Archive/Delete controls already establish that they are saved
+  records; an accessible article label preserves that distinction for screen
+  readers.
 - Feed rows are divided inside one ledger container.
 - Feed rows expose **Archive** and **Delete** as explicit footer actions with
   inline confirmations; archive precedes permanent delete.
-- Timeline/report entries use a restrained bordered surface; report entries avoid print splitting.
+- Timeline and report headers label class context explicitly (`Class …`) rather
+  than relying on slash-separated metadata.
+- Timeline/report entries use a restrained bordered surface at the full reading
+  width; they do not sit beside a duplicate explanatory card. Report entries
+  avoid print splitting.
 
 ## Feed controls and paging
 

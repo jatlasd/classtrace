@@ -14,17 +14,8 @@ import {
   type CaptureStudentResolution,
 } from "@/lib/students/resolve-capture-students";
 import {
-  AtSign,
   Check,
-  ClipboardCheck,
-  Hash,
 } from "lucide-react";
-
-const captureHints = [
-  { icon: AtSign, label: "Mention one student" },
-  { icon: Hash, label: "Add tags" },
-  { icon: ClipboardCheck, label: "Review before saving" },
-];
 
 const captureTextLayerStyle = {
   boxSizing: "border-box" as const,
@@ -49,17 +40,17 @@ const quickCaptureMentionsStyle: MentionsInputStyle = {
   },
   "&multiLine": {
     control: {
-      minHeight: 88,
+      minHeight: 76,
     },
     highlighter: {
       ...captureTextLayerStyle,
-      minHeight: 88,
+      minHeight: 76,
       overflow: "hidden",
     },
     input: {
       ...captureTextLayerStyle,
       outline: 0,
-      minHeight: 88,
+      minHeight: 76,
       overflow: "auto",
       resize: "none",
     },
@@ -79,7 +70,7 @@ const quickCaptureMentionsStyle: MentionsInputStyle = {
     },
     item: {
       padding: "6px 10px",
-      borderRadius: "calc(var(--radius-lg) * 0.75)",
+      borderRadius: "var(--radius-sm)",
       fontSize: 14,
       color: "var(--foreground)",
       cursor: "pointer",
@@ -220,30 +211,27 @@ export function QuickCaptureCard({
 
   return (
     <section className="overflow-hidden rounded-card border border-border bg-card shadow-paper ring-1 ring-transparent transition-shadow focus-within:ring-primary/20">
-      <div className="grid lg:grid-cols-[180px_minmax(0,1fr)]">
-        <div className="border-b border-border bg-muted/25 px-5 py-4 lg:border-b-0 lg:border-r lg:px-6 lg:py-6">
+      <div className="px-5 pb-5 pt-5 sm:px-6 lg:px-8 lg:pb-6">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between sm:gap-6">
+          <div>
           <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
             Quick capture
           </p>
           <label
             htmlFor="quick-capture"
-            className="mt-2 block font-display text-2xl font-semibold tracking-tight text-foreground"
+              className="mt-1.5 block font-display text-2xl font-semibold tracking-tight text-foreground"
           >
             What happened?
           </label>
-          <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-            Write the moment first. Mention exactly one student; you can resolve
-            a new handle during review.
+          </div>
+          <p className="max-w-xl text-sm leading-relaxed text-muted-foreground sm:text-right">
+            Mention one student with{" "}
+            <span className="font-semibold text-link">@</span>. Add context with{" "}
+            <span className="font-semibold text-validated-foreground">#tags</span>.
           </p>
         </div>
 
-        <div className="min-w-0 px-5 py-5 sm:px-6 lg:px-8 lg:py-6">
-          <p className="mb-4 max-w-3xl text-sm leading-relaxed text-muted-foreground">
-            Use <span className="font-semibold text-link">@student</span> to
-            name one student and <span className="font-semibold text-validated-foreground">#tag</span>{" "}
-            to add context.
-          </p>
-          <div className="quick-capture-mentions rounded-lg border border-border bg-background/45 px-4 py-3 transition-colors focus-within:border-ring focus-within:bg-card focus-within:ring-3 focus-within:ring-ring/20">
+        <div className="quick-capture-mentions mt-4 rounded-lg border border-border bg-background/45 px-4 py-3 transition-colors focus-within:border-ring focus-within:bg-card focus-within:ring-3 focus-within:ring-ring/20">
             <MentionsInput
               inputRef={(element: HTMLInputElement | HTMLTextAreaElement | null) => {
                 inputRef.current = element;
@@ -275,40 +263,36 @@ export function QuickCaptureCard({
                 style={mentionHighlightStyle}
               />
             </MentionsInput>
-          </div>
-          <div aria-live="polite" className="mt-3 min-h-5">
-            {guidance ? (
-              <p
-                className={`text-sm ${
-                  guidance.tone === "error"
-                    ? "text-destructive"
-                    : "text-muted-foreground"
-                }`}
-              >
-                {guidance.text}
-              </p>
-            ) : null}
-          </div>
         </div>
       </div>
 
-      <div className="flex flex-col gap-3 border-t border-border px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
-        <div className="flex flex-wrap items-center gap-2">
-          {captureHints.map((hint) => (
-            <span
-              key={hint.label}
-              className="inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-border bg-muted/30 px-3 text-sm font-medium text-muted-foreground"
-            >
-              <hint.icon aria-hidden="true" className="size-4" strokeWidth={1.75} />
-              <span>{hint.label}</span>
-            </span>
-          ))}
+      <div className="flex flex-col gap-3 border-t border-border bg-muted/15 px-5 py-3.5 sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
+        <div aria-live="polite">
+          <p
+            className={`text-sm leading-relaxed ${
+              guidance?.tone === "error"
+                ? "text-destructive"
+                : "text-muted-foreground"
+            }`}
+          >
+            {guidance ? (
+              guidance.text
+            ) : (
+              <>
+                Capture creates a draft for review.
+                <span className="hidden sm:inline">
+                  {" "}
+                  Press Ctrl or ⌘ + Enter.
+                </span>
+              </>
+            )}
+          </p>
         </div>
 
         <Button
           onClick={handlePost}
           disabled={!canCapture}
-          className="h-10 rounded-lg px-5 text-sm font-semibold"
+          className="min-h-11 w-full rounded-lg px-5 text-sm font-semibold sm:min-h-10 sm:w-auto"
         >
           {posted ? (
             <>
