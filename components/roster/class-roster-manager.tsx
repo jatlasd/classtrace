@@ -83,7 +83,9 @@ export function ClassRosterManager({
         ) : (
           <ul
             className="overflow-hidden rounded-card border border-border bg-card/60"
-            aria-label={`${className} students`}
+            aria-label={`${students.length} ${
+              students.length === 1 ? "student" : "students"
+            } in ${className}`}
           >
             {students.map((student) => (
               <RosterStudentRow

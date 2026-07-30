@@ -330,7 +330,6 @@ export function EvidenceFeed({
   const visibleFeedItemCount =
     visibleDraftItems.length + visibleEvidenceRecords.length;
   const hasVisibleFeedItems = visibleFeedItemCount > 0;
-  const needsReviewItemCount = activeDraftItems.filter(needsReview).length;
 
   function handleDraft(
     draft: NoteDraft,
@@ -620,11 +619,7 @@ export function EvidenceFeed({
 
   return (
     <div className="mx-auto w-full max-w-[1360px] px-4 py-5 sm:px-6 lg:px-8">
-      <EvidenceFeedHeader
-        rosterCount={activeRosterStudents.length}
-        savedCount={initialEvidenceRecords.length}
-        reviewCount={needsReviewItemCount}
-      />
+      <EvidenceFeedHeader />
 
       <section className="mt-5" aria-label="Capture desk">
         {rosterSetupNeeded ? (

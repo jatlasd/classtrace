@@ -29,7 +29,7 @@ export function EvidenceSearchControl({
         onChange={(event) => onQueryChange(event.target.value)}
         placeholder="Search this page…"
         aria-label="Search evidence on this page"
-        className="h-10 w-full rounded-lg border border-border bg-background/50 py-2 pl-9 pr-9 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:bg-card focus-visible:ring-3 focus-visible:ring-ring/20"
+        className="min-h-11 w-full rounded-lg border border-border bg-background/50 py-2 pl-9 pr-9 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:bg-card focus-visible:ring-3 focus-visible:ring-ring/20 sm:min-h-10"
       />
       <Search
         aria-hidden="true"
@@ -68,7 +68,7 @@ export function InboxFilterControl({
           type="button"
           onClick={() => onFilterChange(option.value)}
           aria-pressed={filter === option.value}
-          className={`rounded-lg border px-3 py-2 text-sm font-medium transition-colors ${
+          className={`min-h-11 rounded-lg border px-3 py-2 text-sm font-medium transition-colors sm:min-h-9 ${
             filter === option.value
               ? "border-border bg-muted text-foreground shadow-sm"
               : "border-transparent text-muted-foreground hover:bg-muted/60 hover:text-foreground"

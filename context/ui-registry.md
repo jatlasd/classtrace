@@ -92,11 +92,11 @@ the panel.
 
 File: `components/settings/help-feedback-form.tsx`
 
-Last updated: 2026-07-14
+Last updated: 2026-07-28
 
 | Property | Pattern |
 |---|---|
-| Section surface | Existing Settings `border border-border bg-card/60` surface |
+| Section surface | Single working surface: `rounded-card border border-border bg-card shadow-paper` |
 | Fields | Shared 40 px roster input treatment and `Textarea`; semantic invalid border/ring |
 | Labels | `text-sm font-medium text-foreground` |
 | Guidance | Inline icon plus `text-xs leading-relaxed text-muted-foreground` |
@@ -247,9 +247,8 @@ Last imprinted: 2026-07-12
 | Overflow | `break-words [overflow-wrap:anywhere]` |
 
 This component owns Evidence note versus legacy structured-entry copy, reviewed summary, structured chips, tags, and follow-up display across feed, timeline, and report. Do not copy that markup into a new read surface.
-The compact feed row may suppress the prose structured summary when the same
-fields are already visible as chips; timelines and reports retain the full
-reviewed summary.
+Feed, timeline, and report rows may suppress the prose structured summary when
+the same reviewed fields are already visible as chips.
 
 ## Evidence rows and timeline/report entries
 
@@ -266,7 +265,11 @@ Files: `components/dashboard/saved-evidence-row.tsx`, `components/students/stude
 - Feed rows are divided inside one ledger container.
 - Feed rows expose **Archive** and **Delete** as explicit footer actions with
   inline confirmations; archive precedes permanent delete.
-- Timeline/report entries use a restrained bordered surface; report entries avoid print splitting.
+- Timeline and report headers label class context explicitly (`Class …`) rather
+  than relying on slash-separated metadata.
+- Timeline/report entries use a restrained bordered surface at the full reading
+  width; they do not sit beside a duplicate explanatory card. Report entries
+  avoid print splitting.
 
 ## Feed controls and paging
 

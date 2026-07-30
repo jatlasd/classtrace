@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { ReactElement } from "react";
-import { BookOpenText, Circle, FileText } from "lucide-react";
+import { Circle, FileText } from "lucide-react";
 import { EvidenceRecordContent } from "@/components/evidence/evidence-record-content";
 import { Button } from "@/components/ui/button";
 import { StudentReportDateRangeForm } from "@/components/students/student-report-date-range-form";
@@ -67,17 +67,13 @@ function getRangeLabel(dateRange: StudentReportDateRange): string {
   return "All evidence";
 }
 
-export function shouldShowEarlyReportGuidance(evidenceCount: number): boolean {
-  return evidenceCount >= 1 && evidenceCount <= 4;
-}
-
 function ReportHeader({
   student,
   evidenceCount,
   dateRange,
 }: ReportHeaderProps) {
   const metadata = [
-    student.classGroupName ?? null,
+    student.classGroupName ? `Class ${student.classGroupName}` : null,
     student.schoolLocalId ? `Local ID ${student.schoolLocalId}` : null,
   ].filter(Boolean);
 
@@ -95,7 +91,7 @@ function ReportHeader({
         </div>
       </div>
 
-      <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_300px] lg:items-end">
+      <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
         <div className="min-w-0">
           <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
             Student report
@@ -103,22 +99,22 @@ function ReportHeader({
           <h1 className="mt-2 font-display text-2xl font-semibold tracking-tight text-foreground">
             Evidence report for {student.displayName}
           </h1>
-          <div className="mt-2 flex flex-wrap gap-2 text-sm text-muted-foreground">
+          <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground">
             <span>@{student.mentionHandle}</span>
             {metadata.map((item) => (
-              <span key={item} className="before:mr-2 before:content-['/']">
+              <span key={item} className="border-l border-border pl-3">
                 {item}
               </span>
             ))}
           </div>
         </div>
 
-        <div className="rounded-md border border-validated/60 bg-card/60 px-4 py-3">
-          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            Evidence included
-          </p>
-          <p className="mt-1 text-sm text-foreground">
-            {evidenceCount} {evidenceCount === 1 ? "record" : "records"} shown.
+        <div className="text-sm sm:text-right">
+          <p className="text-muted-foreground">
+            <span className="font-semibold tabular-nums text-foreground">
+              {evidenceCount}
+            </span>{" "}
+            {evidenceCount === 1 ? "record" : "records"} shown
           </p>
           <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
             {getRangeLabel(dateRange)}
@@ -132,7 +128,7 @@ function ReportHeader({
 function ReportEvidenceItem({ record }: ReportEvidenceItemProps) {
   return (
     <li>
-      <article className="student-report-entry border border-border bg-card p-4 shadow-paper">
+      <article className="student-report-entry rounded-lg border border-border bg-card p-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div className="min-w-0">
             <p className="text-sm font-medium text-foreground">
@@ -141,6 +137,7 @@ function ReportEvidenceItem({ record }: ReportEvidenceItemProps) {
             <EvidenceRecordContent
               record={record}
               includeClassGroup
+              showStructuredSummary={false}
               textClassName="mt-2"
             />
           </div>
@@ -193,19 +190,21 @@ function ReportEvidenceList({
   dateRange,
 }: ReportEvidenceListProps) {
   return (
-    <section className="student-report-print-root grid gap-4 lg:grid-cols-[220px_minmax(0,1fr)]">
-      <div className="student-report-print-context border border-border bg-card/60 p-4">
-        <div className="flex size-10 items-center justify-center rounded-md border border-border bg-muted/50 text-primary">
-          <BookOpenText className="size-5" strokeWidth={1.75} />
-        </div>
-        <h2 className="mt-4 font-display text-lg font-semibold text-foreground">
-          Evidence included
+    <section
+      className="student-report-print-root"
+      aria-labelledby="report-evidence-heading"
+    >
+      <div className="student-report-print-context mb-4">
+        <h2
+          id="report-evidence-heading"
+          className="font-display text-xl font-semibold text-foreground"
+        >
+          Evidence
         </h2>
-        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-          Stored evidence for one roster student, ordered from oldest to newest.
+        <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+          Ordered from oldest to newest for reporting.
         </p>
       </div>
-
       <div className="min-w-0">
         {records.length === 0 ? (
           <ReportEmptyState
@@ -229,7 +228,7 @@ export function StudentReportPage({
   dateRange,
 }: StudentReportPageProps): ReactElement {
   return (
-    <div className="student-report-page mx-auto w-full max-w-[1180px] px-4 py-7 sm:px-6 lg:px-8">
+    <div className="student-report-page mx-auto w-full max-w-[980px] px-4 py-7 sm:px-6 lg:px-8">
       <ReportHeader
         student={student}
         evidenceCount={evidenceRecords.length}
@@ -241,12 +240,6 @@ export function StudentReportPage({
         end={dateRange.end}
         error={dateRange.status === "invalid" ? dateRange.error : undefined}
       />
-      {shouldShowEarlyReportGuidance(evidenceRecords.length) ? (
-        <p className="student-report-screen-only mb-5 border-l-4 border-validated bg-card/60 px-4 py-3 text-sm leading-relaxed text-foreground">
-          This report gets more useful as you capture more evidence. Each
-          validated observation adds another moment you can return to later.
-        </p>
-      ) : null}
       <ReportEvidenceList
         records={evidenceRecords}
         dateRange={dateRange}

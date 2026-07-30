@@ -9,7 +9,7 @@ type SiteFooterProps = {
 export function SiteFooter({ showAccessLinks = false }: SiteFooterProps) {
   return (
     <footer className="site-footer mt-auto border-t border-border/70">
-      <div className="mx-auto flex max-w-6xl flex-col gap-4 px-4 py-6 md:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8">
+      <div className="mx-auto flex max-w-[1360px] flex-col gap-4 px-4 py-5 md:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8">
         <div className="flex items-center gap-2.5">
           <NotebookPen
             className="size-6 text-navy"
@@ -26,25 +26,25 @@ export function SiteFooter({ showAccessLinks = false }: SiteFooterProps) {
         >
           <Link
             href={routes.privacy}
-            className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+            className="inline-flex min-h-11 items-center text-sm text-muted-foreground transition-colors hover:text-foreground sm:min-h-9"
           >
             Privacy
           </Link>
           <Link
             href={routes.terms}
-            className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+            className="inline-flex min-h-11 items-center text-sm text-muted-foreground transition-colors hover:text-foreground sm:min-h-9"
           >
             Beta terms
           </Link>
           <Link
             href={routes.support}
-            className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+            className="inline-flex min-h-11 items-center text-sm text-muted-foreground transition-colors hover:text-foreground sm:min-h-9"
           >
             Support
           </Link>
           <Link
             href={routes.dataDeletion}
-            className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+            className="inline-flex min-h-11 items-center text-sm text-muted-foreground transition-colors hover:text-foreground sm:min-h-9"
           >
             Account deletion
           </Link>
