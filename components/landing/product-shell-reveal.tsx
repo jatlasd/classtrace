@@ -183,7 +183,7 @@ function ProductShellArt() {
 export function ProductShellReveal() {
   return (
     <section className="overflow-x-clip border-t border-border/70">
-      <div className="mx-auto max-w-6xl px-4 py-16 md:px-6 lg:px-8 lg:py-24">
+      <div className="mx-auto max-w-6xl px-4 py-10 md:px-6 lg:px-8 lg:py-24">
         <Reveal className="mx-auto max-w-3xl text-center">
           <p className="text-xs font-semibold uppercase tracking-wider text-primary">
             The whole product
@@ -200,14 +200,14 @@ export function ProductShellReveal() {
 
         <Reveal
           from="translate-y-16 scale-[0.97]"
-          className="relative mx-auto mt-12 max-w-4xl"
+          className="relative mx-auto mt-8 max-w-4xl lg:mt-12"
         >
           <ParallaxDrift depth={-18}>
             <ProductShellArt />
           </ParallaxDrift>
         </Reveal>
 
-        <ul className="mx-auto mt-12 grid max-w-4xl gap-x-10 gap-y-8 sm:grid-cols-3">
+        <ul className="mx-auto mt-10 grid max-w-4xl gap-x-10 gap-y-8 sm:grid-cols-3 lg:mt-12">
           {facts.map((fact, index) => (
             <li key={fact.title}>
               <Reveal delay={index * 120}>
@@ -227,7 +227,7 @@ export function ProductShellReveal() {
           ))}
         </ul>
 
-        <div className="mt-12 flex justify-center">
+        <div className="mt-10 flex justify-center lg:mt-12">
           <Button
             asChild
             variant="outline"

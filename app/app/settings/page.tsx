@@ -43,8 +43,8 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
   const initialErrorReference = normalizeErrorReference(query.errorReference);
 
   return (
-    <div className="mx-auto w-full max-w-[920px] px-4 py-7 sm:px-6 lg:px-8">
-      <header className="mb-6 border-b border-border pb-6">
+    <div className="mx-auto w-full max-w-[920px] px-4 py-5 sm:px-6 sm:py-7 lg:px-8">
+      <header className="mb-4 border-b border-border pb-4 sm:mb-6 sm:pb-6">
         <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
           Settings
         </p>

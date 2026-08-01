@@ -1,6 +1,13 @@
 "use client";
 
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import {
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { EvolvingCard } from "@/components/landing/evolving-card";
 import { subscribeToScrollFrame } from "@/components/landing/scroll-motion";
 import {
@@ -61,6 +68,28 @@ const staticScenes = [
   { phase: phases[3], art: <ValidatedRecordArt /> },
   { phase: phases[4], art: <StudentTimelineArt /> },
 ];
+
+function MomentArt() {
+  return (
+    <div
+      aria-hidden="true"
+      className="w-full max-w-60 -rotate-2 rounded-card border border-border bg-card px-6 py-8 text-center shadow-floating"
+    >
+      <p className="font-hand text-3xl text-primary">11:42 AM</p>
+      <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+        Forty seconds between classes. Nothing written down yet.
+      </p>
+    </div>
+  );
+}
+
+const storySceneArt: Record<string, ReactNode> = {
+  moment: <MomentArt />,
+  capture: <CaptureComposerArt />,
+  review: <ReviewPanelArt />,
+  validate: <ValidatedRecordArt />,
+  retrieve: <StudentTimelineArt />,
+};
 
 const annotations = [
   {
@@ -288,6 +317,173 @@ function StaticStory() {
   );
 }
 
+function MobileStoryCard({
+  phase,
+  index,
+  art,
+}: {
+  phase: StoryPhase;
+  index: number;
+  art: ReactNode;
+}) {
+  return (
+    <div
+      className="w-full shrink-0 snap-center px-4"
+      role="group"
+      aria-roledescription="slide"
+      aria-label={`Step ${index + 1} of ${phases.length}: ${phase.step}`}
+    >
+      <div className="mx-auto flex w-full max-w-sm flex-col items-center text-center">
+        <span
+          aria-hidden="true"
+          className="font-hand flex size-9 items-center justify-center rounded-full border-2 border-primary bg-background text-lg font-semibold text-primary"
+        >
+          {index + 1}
+        </span>
+        <p className="mt-3 text-xs font-semibold uppercase tracking-wider text-primary">
+          Step {index + 1} · {phase.step}
+        </p>
+        <h3 className="mt-1.5 font-display text-xl font-semibold tracking-tight text-foreground">
+          {phase.title}
+        </h3>
+        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+          {phase.body}
+        </p>
+        <div className="mt-5 flex w-full justify-center">{art}</div>
+      </div>
+    </div>
+  );
+}
+
+function MobileStory() {
+  const trackRef = useRef<HTMLDivElement>(null);
+  const slideRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const [active, setActive] = useState(0);
+  const [slideHeight, setSlideHeight] = useState<number | undefined>(
+    undefined
+  );
+
+  useEffect(() => {
+    const track = trackRef.current;
+    if (!track) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting || entry.intersectionRatio < 0.5) return;
+          const index = slideRefs.current.findIndex(
+            (node) => node === entry.target
+          );
+          if (index !== -1) setActive(index);
+        });
+      },
+      { root: track, threshold: 0.5 }
+    );
+
+    slideRefs.current.forEach((node) => {
+      if (node) observer.observe(node);
+    });
+
+    return () => observer.disconnect();
+  }, []);
+
+  // The track lays every slide out in one flex row, so without an explicit
+  // height it sizes to the tallest slide. Measure the active slide's own
+  // content height and pin the track to that instead.
+  useLayoutEffect(() => {
+    function measure() {
+      const node = slideRefs.current[active];
+      if (node) setSlideHeight(node.getBoundingClientRect().height);
+    }
+
+    measure();
+    window.addEventListener("resize", measure);
+    return () => window.removeEventListener("resize", measure);
+  }, [active]);
+
+  function goTo(index: number) {
+    const clamped = Math.max(0, Math.min(phases.length - 1, index));
+    const track = trackRef.current;
+    const target = slideRefs.current[clamped];
+    if (!track || !target) return;
+    track.scrollTo({
+      left: target.offsetLeft - track.offsetLeft,
+      behavior: "smooth",
+    });
+  }
+
+  const activePhase = phases[active];
+
+  return (
+    <div className="mt-8">
+      <div
+        ref={trackRef}
+        role="group"
+        aria-roledescription="carousel"
+        aria-label="How ClassTrace works, step by step"
+        style={{ height: slideHeight, transition: "height 200ms ease" }}
+        className="flex snap-x snap-mandatory items-start overflow-x-auto overflow-y-hidden scroll-smooth scrollbar-none [-ms-overflow-style:none]"
+      >
+        {phases.map((phase, index) => (
+          <div
+            key={phase.id}
+            ref={(node) => {
+              slideRefs.current[index] = node;
+            }}
+            className="flex w-full shrink-0 snap-center justify-center"
+          >
+            <MobileStoryCard
+              phase={phase}
+              index={index}
+              art={storySceneArt[phase.id]}
+            />
+          </div>
+        ))}
+      </div>
+
+      <div className="mt-6 flex items-center justify-center gap-4">
+        <button
+          type="button"
+          onClick={() => goTo(active - 1)}
+          disabled={active === 0}
+          aria-label="Previous step"
+          className="flex size-9 items-center justify-center rounded-full border border-border text-foreground transition-opacity disabled:opacity-30"
+        >
+          <ChevronLeft aria-hidden="true" className="size-4" />
+        </button>
+        <div className="flex items-center gap-1.5">
+          {phases.map((phase, index) => (
+            <button
+              key={phase.id}
+              type="button"
+              onClick={() => goTo(index)}
+              aria-label={`Go to step ${index + 1}: ${phase.step}`}
+              aria-current={active === index ? "step" : undefined}
+              className={`size-2 rounded-full transition-colors ${
+                active === index ? "bg-primary" : "bg-border"
+              }`}
+            />
+          ))}
+        </div>
+        <button
+          type="button"
+          onClick={() => goTo(active + 1)}
+          disabled={active === phases.length - 1}
+          aria-label="Next step"
+          className="flex size-9 items-center justify-center rounded-full border border-border text-foreground transition-opacity disabled:opacity-30"
+        >
+          <ChevronRight aria-hidden="true" className="size-4" />
+        </button>
+      </div>
+      <p className="font-hand mt-3 text-center text-base text-muted-foreground">
+        {active === 0
+          ? "swipe to follow the note →"
+          : `step ${active + 1} of ${phases.length} · ${activePhase.step}`}
+      </p>
+    </div>
+  );
+}
+
 function sceneryCenter(item: SceneryItem): number {
   const from = item.visibleFrom ?? 0;
   const until = item.visibleUntil ?? phases.length - 1;
@@ -468,16 +664,23 @@ function StickyStory() {
 }
 
 export function EvidenceStory() {
-  const [mode, setMode] = useState<"pending" | "static" | "sticky">(
-    "pending"
-  );
+  // "narrow" always gets the touch carousel regardless of motion preference.
+  // "wide" (desktop) behavior must stay pixel-identical to before this change,
+  // so it still branches on motion preference between sticky and static.
+  const [mode, setMode] = useState<
+    "pending" | "narrow" | "wide-static" | "wide-sticky"
+  >("pending");
 
   useEffect(() => {
     const wide = window.matchMedia("(min-width: 64rem)");
     const motionOk = window.matchMedia("(prefers-reduced-motion: no-preference)");
 
     function update() {
-      setMode(wide.matches && motionOk.matches ? "sticky" : "static");
+      if (!wide.matches) {
+        setMode("narrow");
+      } else {
+        setMode(motionOk.matches ? "wide-sticky" : "wide-static");
+      }
     }
 
     update();
@@ -492,15 +695,20 @@ export function EvidenceStory() {
   return (
     <section
       id="how-it-works"
-      className="scroll-mt-20 overflow-x-clip border-t border-border/70 bg-secondary/45 py-16 lg:py-20"
+      className="scroll-mt-20 overflow-x-clip border-t border-border/70 bg-secondary/45 py-12 lg:py-20"
     >
       <StoryHeading />
-      {mode !== "sticky" ? (
+      {mode === "pending" || mode === "narrow" ? (
         <div className={mode === "pending" ? "landing-story-static" : ""}>
+          <MobileStory />
+        </div>
+      ) : null}
+      {mode === "pending" || mode === "wide-static" ? (
+        <div className={mode === "pending" ? "landing-story-wide-static" : ""}>
           <StaticStory />
         </div>
       ) : null}
-      {mode !== "static" ? (
+      {mode === "pending" || mode === "wide-sticky" ? (
         <div className={mode === "pending" ? "landing-story-sticky" : ""}>
           <StickyStory />
         </div>

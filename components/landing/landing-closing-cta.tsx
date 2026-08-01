@@ -5,7 +5,7 @@ import { routes } from "@/lib/routes";
 export function LandingClosingCta() {
   return (
     <section className="relative overflow-x-clip border-t border-border/70 bg-card/40">
-      <div className="mx-auto max-w-3xl px-4 py-20 text-center md:px-6 lg:py-28">
+      <div className="mx-auto max-w-3xl px-4 py-14 text-center md:px-6 lg:py-28">
         <p
           aria-hidden="true"
           className="font-hand mx-auto -rotate-2 text-2xl leading-tight text-link"

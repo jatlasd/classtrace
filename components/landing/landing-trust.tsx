@@ -26,7 +26,7 @@ const nots = [
 export function LandingTrust() {
   return (
     <section className="bg-sidebar text-sidebar-foreground">
-      <div className="mx-auto max-w-5xl px-4 py-16 md:px-6 lg:px-8 lg:py-24">
+      <div className="mx-auto max-w-5xl px-4 py-10 md:px-6 lg:px-8 lg:py-24">
         <div className="mx-auto max-w-3xl text-center">
           <h2 className="font-display text-3xl font-semibold tracking-tight lg:text-4xl">
             This is not another platform your district bought.
@@ -37,7 +37,7 @@ export function LandingTrust() {
           </p>
         </div>
 
-        <ul className="mt-10 flex flex-wrap items-center justify-center gap-4">
+        <ul className="mt-8 flex flex-wrap items-center justify-center gap-4 lg:mt-10">
           {nots.map((item, index) => (
             <li key={item}>
               <Reveal
@@ -60,7 +60,7 @@ export function LandingTrust() {
           ))}
         </ul>
 
-        <dl className="mx-auto mt-14 grid max-w-4xl gap-10 text-center sm:grid-cols-3 sm:gap-8 sm:text-left">
+        <dl className="mx-auto mt-10 grid max-w-4xl gap-8 text-center sm:grid-cols-3 sm:gap-8 sm:text-left lg:mt-14 lg:gap-10">
           {promises.map((promise, index) => (
             <Reveal key={promise.title} delay={index * 120}>
               <dt className="font-display text-lg font-semibold text-sidebar-primary">
@@ -73,7 +73,7 @@ export function LandingTrust() {
           ))}
         </dl>
 
-        <p className="font-hand mt-14 text-center text-xl text-sidebar-primary lg:text-2xl">
+        <p className="font-hand mt-10 text-center text-xl text-sidebar-primary lg:mt-14 lg:text-2xl">
           Your roster is yours. Your evidence is yours.{" "}
           <span className="underline decoration-sidebar-primary/70 decoration-2 underline-offset-4">
             One teacher, one workspace.

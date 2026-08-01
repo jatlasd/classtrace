@@ -221,6 +221,9 @@
   .landing-story-sticky {
     display: none;
   }
+  .landing-story-wide-static {
+    display: none;
+  }
   .hand-underline-blue {
     text-decoration: underline;
     text-decoration-color: var(--link);
@@ -242,6 +245,15 @@
     display: none;
   }
   .landing-story-sticky {
+    display: block;
+  }
+}
+
+@media (min-width: 64rem) and (prefers-reduced-motion: reduce) {
+  .landing-story-static {
+    display: none;
+  }
+  .landing-story-wide-static {
     display: block;
   }
 }
@@ -270,6 +282,7 @@
   }
 
   body:has(.student-report-page) .app-top-nav,
+  body:has(.student-report-page) .app-bottom-nav,
   .site-footer,
   .student-report-screen-only {
     display: none !important;

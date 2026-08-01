@@ -297,10 +297,10 @@ export function QuickCaptureCard({
           {captureHints.map((hint) => (
             <span
               key={hint.label}
-              className="inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-border bg-muted/30 px-3 text-sm font-medium text-muted-foreground"
+              className="inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-border bg-muted/30 px-2.5 text-sm font-medium text-muted-foreground sm:px-3"
             >
               <hint.icon aria-hidden="true" className="size-4" strokeWidth={1.75} />
-              <span>{hint.label}</span>
+              <span className="sr-only sm:not-sr-only">{hint.label}</span>
             </span>
           ))}
         </div>

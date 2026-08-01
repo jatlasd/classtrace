@@ -348,8 +348,8 @@ export default async function RosterPage({ searchParams }: RosterPageProps) {
         : "Create a class and add one student before capture.";
 
   return (
-    <div className="mx-auto w-full max-w-[880px] px-4 py-8 sm:px-6">
-      <header className="mb-7 flex flex-wrap items-end justify-between gap-x-8 gap-y-4">
+    <div className="mx-auto w-full max-w-[880px] px-4 py-6 sm:px-6 sm:py-8">
+      <header className="mb-5 flex flex-wrap items-end justify-between gap-x-8 gap-y-4 sm:mb-7">
         <div className="min-w-0">
           <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
             Roster

@@ -82,7 +82,7 @@ function ReportHeader({
   ].filter(Boolean);
 
   return (
-    <header className="mb-6 border-b border-border pb-6">
+    <header className="mb-4 border-b border-border pb-4 sm:mb-6 sm:pb-6">
       <div className="student-report-screen-only mb-4 flex flex-wrap items-center justify-between gap-3">
         <Button asChild variant="ghost" size="sm" className="-ml-2">
           <Link href={routes.student(student.id)}>Back to timeline</Link>
@@ -229,7 +229,7 @@ export function StudentReportPage({
   dateRange,
 }: StudentReportPageProps): ReactElement {
   return (
-    <div className="student-report-page mx-auto w-full max-w-[1180px] px-4 py-7 sm:px-6 lg:px-8">
+    <div className="student-report-page mx-auto w-full max-w-[1180px] px-4 py-5 sm:px-6 sm:py-7 lg:px-8">
       <ReportHeader
         student={student}
         evidenceCount={evidenceRecords.length}

@@ -16,11 +16,11 @@ const roles = [
 
 export function LandingAudience() {
   return (
-    <section className="mx-auto max-w-5xl px-4 py-16 text-center md:px-6 lg:px-8 lg:py-20">
+    <section className="mx-auto max-w-5xl px-4 py-10 text-center md:px-6 lg:px-8 lg:py-20">
       <h2 className="font-display text-2xl font-semibold tracking-tight text-foreground lg:text-3xl">
         Built for the people expected to remember everything.
       </h2>
-      <ul className="mx-auto mt-10 flex max-w-3xl flex-wrap items-center justify-center gap-x-5 gap-y-6">
+      <ul className="mx-auto mt-8 flex max-w-3xl flex-wrap items-center justify-center gap-x-5 gap-y-6 lg:mt-10">
         {roles.map((role, index) => (
           <li key={role.label}>
             <Reveal

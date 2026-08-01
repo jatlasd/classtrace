@@ -33,41 +33,31 @@ export function AppTopNav() {
 
   return (
     <header className="app-top-nav sticky top-0 z-40 border-b border-border bg-card/95 backdrop-blur">
-      <div className="mx-auto flex min-h-16 max-w-[1560px] flex-col gap-2 px-4 py-3 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:gap-6 lg:px-8">
-        <div className="flex items-center justify-between gap-4">
-          <Link href={routes.feed} className="flex items-center gap-3">
-            <span className="flex size-9 items-center justify-center rounded-lg text-primary">
-              <PenLine className="size-5" strokeWidth={2.25} />
-            </span>
-            <span className="font-display text-2xl font-semibold tracking-tight text-foreground">
-              ClassTrace
-            </span>
-          </Link>
+      <div className="mx-auto flex min-h-16 max-w-[1560px] items-center justify-between gap-4 px-4 py-3 sm:px-6 lg:gap-6 lg:px-8">
+        <Link href={routes.feed} className="flex items-center gap-3">
+          <span className="flex size-9 items-center justify-center rounded-lg text-primary">
+            <PenLine className="size-5" strokeWidth={2.25} />
+          </span>
+          <span className="font-display text-2xl font-semibold tracking-tight text-foreground">
+            ClassTrace
+          </span>
+        </Link>
 
-          <div className="flex items-center gap-2 lg:hidden">
-            <Link
-              href={routes.settings}
-              aria-label="Settings"
-              aria-current={pathname === routes.settings ? "page" : undefined}
+        <div className="flex items-center gap-2 lg:hidden">
+          <SignOutButton redirectUrl={routes.root}>
+            <button
+              type="button"
+              aria-label="Sign out"
               className="flex size-9 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
             >
-              <Settings className="size-4" />
-            </Link>
-            <SignOutButton redirectUrl={routes.root}>
-              <button
-                type="button"
-                aria-label="Sign out"
-                className="flex size-9 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-              >
-                <LogOut className="size-4" strokeWidth={1.75} />
-              </button>
-            </SignOutButton>
-          </div>
+              <LogOut className="size-4" strokeWidth={1.75} />
+            </button>
+          </SignOutButton>
         </div>
 
         <nav
           aria-label="Primary"
-          className="flex min-w-0 flex-wrap items-center justify-center gap-1 overflow-visible"
+          className="hidden min-w-0 flex-wrap items-center justify-center gap-1 overflow-visible lg:flex"
         >
           {navItems.map((item) => {
             const active = isActive(item.match);
