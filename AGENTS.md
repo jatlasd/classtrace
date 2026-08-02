@@ -101,3 +101,13 @@ Additional requirements:
 - Do not claim a command passed unless it was actually run.
 
 When reporting work, state files changed, behavior changed, checks run, anything not verified, and remaining risk. Do not claim production or compliance readiness.
+
+## Cursor Cloud specific instructions
+
+The VM snapshot already has Node 22, npm dependencies installed, and a local PostgreSQL 16 server. Standard commands live in `README.md` and `package.json`; the notes below are only the non-obvious cloud caveats.
+
+- PostgreSQL is installed but is not auto-started on boot. Start it before running the app, migrations, or DB tests: `sudo pg_ctlcluster 16 main start` (verify with `sudo pg_lsclusters`). It listens on `127.0.0.1:5432`.
+- Local databases and role are already provisioned: role `classtrace` (password `classtrace`), dev DB `classtrace_dev`, disposable test DB `classtrace_test`.
+- `.env.local` is gitignored and holds local dev config. It points `DATABASE_URL` at the local Postgres with `sslmode=disable` (not `sslmode=require` as in `.env.example`, which is for hosted Postgres). If `.env.local` is missing, recreate it from `.env.example` using the local `DATABASE_URL` above. After first boot, run `npm run db:migrate` once to apply migrations to `classtrace_dev`.
+- Clerk is required to actually use the app. The Clerk middleware runs on every route and the browser performs a client-side handshake against the frontend-API domain encoded in the publishable key. With only placeholder/dummy keys, `next dev`, `npm run build`, `npm run lint`, and `npm run test`/`test:coverage` all pass and the server returns the real landing-page HTML, but the browser shows a Clerk `host_invalid` error and no page renders interactively. Authenticated flows (the capture → draft → review → save loop under `/app`) need real Clerk test keys (`pk_test_`/`sk_test_`) from a working Clerk instance plus an invited test teacher account (the app is an invite-only beta gated by Clerk Waitlist and the beta-acknowledgement flow). Real injected environment secrets take precedence over `.env.local`, so providing `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` and `CLERK_SECRET_KEY` as secrets is enough to override the local placeholders.
+- `npm run test:db` is opt-in and destructive: it runs `prisma migrate reset --force` against `TEST_DATABASE_URL`. Prisma's AI-agent guard blocks the reset unless `PRISMA_USER_CONSENT_FOR_DANGEROUS_AI_ACTION` is set to the user's explicit consent text, so it needs explicit user approval before an agent can run it. `.env.local` already sets `TEST_DATABASE_URL` to `classtrace_test` and `TEST_DATABASE_RESET_ALLOWED=1`.
