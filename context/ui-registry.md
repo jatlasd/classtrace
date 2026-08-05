@@ -353,6 +353,33 @@ metadata and counts use ledger rows rather than a dashboard card grid. Database
 and identity-provider deletion remain visually and behaviorally separate, and
 the second action is unavailable until app-owned data is absent.
 
+## Filed experimental public page
+
+Files: `app/filing/page.tsx`, `app/filing/filed-product-demo.tsx`,
+`app/filing/filed-evidence-finder.tsx`, `app/filing/filing.module.css`
+
+Last imprinted: 2026-08-05
+
+| Property | Pattern |
+|---|---|
+| Page canvas | Flat page-scoped periwinkle field around one warm off-white shell; no gradients |
+| Work surfaces | Warm white sheets with a fine neutral border and soft directional shadow |
+| Border radius | Large outer shell; 21-32px product surfaces; 13-16px controls |
+| Primary text | Near-black Manrope with compact line-height and tight display tracking |
+| Secondary text | Warm gray with relaxed reading line-height |
+| Primary action | Solid coral, white label, visible coral focus ring |
+| Supporting color | Flat coral burden chapter; lavender-gray is a neutral work surface, not an accent glow |
+| Product story | Distinct full-width chapters for burden, teacher review, retrieval, and privacy boundaries |
+
+This is an isolated visual experiment for `/filing`. Do not reuse its brand
+tokens, typography, marketing language, or decorative shell in `/`, the
+authenticated application, or shared components. The reusable product contract
+is the interaction sequence: a teacher writes one student-specific note,
+reviews every proposed field and the Evidence note, then saves validated
+evidence that can be retrieved later. Preserve the chapter-based vertical
+rhythm. Do not reintroduce atmospheric gradients, equal feature-card rows, or
+small explanatory content floating in oversized tinted containers.
+
 ## Update rule
 
 Update an existing entry when a reusable contract changes. Add an entry only for a genuinely new shared component type. Do not append per-feature implementation history, retired navigation, screenshots, speculative variants, or duplicate entries.
