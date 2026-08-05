@@ -11,13 +11,15 @@ import { getStudentTimelineRecordsForWorkspace } from "@/lib/evidence/student-ti
 import { routes } from "@/lib/routes";
 import { INPUT_LIMITS } from "@/lib/validation/input-limits";
 
+type StudentTimelineSearchParams = {
+  q?: string | string[];
+  range?: string | string[];
+  sort?: string | string[];
+};
+
 type StudentProfilePageProps = {
   params: Promise<{ studentId: string }>;
-  searchParams?: Promise<{
-    q?: string | string[];
-    range?: string | string[];
-    sort?: string | string[];
-  }>;
+  searchParams?: Promise<StudentTimelineSearchParams>;
 };
 
 function singleParam(value: string | string[] | undefined): string {
@@ -31,7 +33,7 @@ export default async function StudentProfilePage({
   const [{ studentId }, workspace, query] = await Promise.all([
     params,
     getCurrentAppWorkspace(),
-    searchParams ?? Promise.resolve({}),
+    searchParams ?? Promise.resolve<StudentTimelineSearchParams>({}),
   ]);
   const timeline = await getStudentTimelineRecordsForWorkspace(
     workspace.workspaceId,
