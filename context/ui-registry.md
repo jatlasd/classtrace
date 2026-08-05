@@ -252,7 +252,7 @@ the same reviewed fields are already visible as chips.
 
 ## Evidence rows and timeline/report entries
 
-Files: `components/dashboard/saved-evidence-row.tsx`, `components/students/student-timeline-page.tsx`, `components/students/student-report-page.tsx`
+Files: `components/dashboard/saved-evidence-row.tsx`, `components/students/student-timeline-page.tsx`, `components/students/student-timeline.tsx`, `components/students/student-report-page.tsx`
 
 - Evidence content is primary; student, class, and date are compact supporting
   metadata.
@@ -267,6 +267,11 @@ Files: `components/dashboard/saved-evidence-row.tsx`, `components/students/stude
   inline confirmations; archive precedes permanent delete.
 - Timeline and report headers label class context explicitly (`Class …`) rather
   than relying on slash-separated metadata.
+- Timeline controls use a labeled search field, a named recent-date button
+  group, and a labeled native sort select. A search beginning with `#` matches
+  one exact tag; controls combine and keep bounded state in the URL.
+- Timeline result copy reports the visible and total validated-record counts.
+  No saved evidence and no filter matches remain distinct empty states.
 - Timeline/report entries use a restrained bordered surface at the full reading
   width; they do not sit beside a duplicate explanatory card. Report entries
   avoid print splitting.

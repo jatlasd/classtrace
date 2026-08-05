@@ -3,18 +3,36 @@ import type { ReactElement } from "react";
 import { StudentTimelinePage } from "@/components/students/student-timeline-page";
 import { Button } from "@/components/ui/button";
 import { getCurrentAppWorkspace } from "@/lib/auth/get-current-workspace";
+import {
+  normalizeStudentTimelineDateRange,
+  normalizeStudentTimelineSort,
+} from "@/lib/evidence/student-timeline-filtering";
 import { getStudentTimelineRecordsForWorkspace } from "@/lib/evidence/student-timeline-records";
 import { routes } from "@/lib/routes";
+import { INPUT_LIMITS } from "@/lib/validation/input-limits";
 
 type StudentProfilePageProps = {
   params: Promise<{ studentId: string }>;
+  searchParams?: Promise<{
+    q?: string | string[];
+    range?: string | string[];
+    sort?: string | string[];
+  }>;
 };
+
+function singleParam(value: string | string[] | undefined): string {
+  return Array.isArray(value) ? (value[0] ?? "") : (value ?? "");
+}
 
 export default async function StudentProfilePage({
   params,
+  searchParams,
 }: StudentProfilePageProps): Promise<ReactElement> {
-  const { studentId } = await params;
-  const workspace = await getCurrentAppWorkspace();
+  const [{ studentId }, workspace, query] = await Promise.all([
+    params,
+    getCurrentAppWorkspace(),
+    searchParams ?? Promise.resolve({}),
+  ]);
   const timeline = await getStudentTimelineRecordsForWorkspace(
     workspace.workspaceId,
     studentId
@@ -45,6 +63,14 @@ export default async function StudentProfilePage({
     <StudentTimelinePage
       student={timeline.student}
       evidenceRecords={timeline.evidenceRecords}
+      initialQuery={singleParam(query.q).slice(
+        0,
+        INPUT_LIMITS.evidenceSearchQuery
+      )}
+      initialDateRange={normalizeStudentTimelineDateRange(
+        singleParam(query.range)
+      )}
+      initialSort={normalizeStudentTimelineSort(singleParam(query.sort))}
     />
   );
 }

@@ -45,7 +45,9 @@ The strongest early users are special education teachers, case managers, interve
 - The teacher reviews and may edit the Evidence note and structured fields.
 - Saving creates a permanent evidence record; raw capture text is not part of that record.
 - The first successful workspace save offers direct next steps to the student timeline, report, or another capture without creating a separate onboarding state.
-- Saved records appear in a paged global feed and student timeline.
+- Saved records appear in a paged global feed and student timeline. A timeline
+  can search Evidence notes and reviewed fields, match one exact tag with a
+  `#tag` query, filter to recent local calendar days, and sort by evidence date.
 - A student report can be filtered by teacher-local dates and printed.
 - One student’s evidence can be exported as CSV.
 - Evidence, students, and classes support intentional archive/delete paths.

@@ -1,9 +1,15 @@
 import Link from "next/link";
 import type { ReactElement } from "react";
-import { Circle, Clock3 } from "lucide-react";
-import { EvidenceRecordContent } from "@/components/evidence/evidence-record-content";
 import { StudentEvidenceExportAction } from "@/components/students/student-evidence-export-action";
+import {
+  StudentTimeline,
+  type StudentTimelineEvidenceRecord,
+} from "@/components/students/student-timeline";
 import { Button } from "@/components/ui/button";
+import type {
+  StudentTimelineDateRange,
+  StudentTimelineSort,
+} from "@/lib/evidence/student-timeline-filtering";
 import { routes } from "@/lib/routes";
 
 export type StudentTimelineStudent = {
@@ -14,39 +20,17 @@ export type StudentTimelineStudent = {
   schoolLocalId?: string;
 };
 
-export type StudentTimelineEvidenceRecord = {
-  id: string;
-  evidenceDate: string;
-  evidenceNote?: string;
-  summary: string;
-  evidenceType: string;
-  topic?: string;
-  performance?: string;
-  behavior?: string;
-  tags: string[];
-  followUpNeeded: boolean;
-  followUpNotes?: string;
-  validatedAt: string;
-  createdAt: string;
-};
-
 type StudentTimelinePageProps = {
   student: StudentTimelineStudent;
   evidenceRecords: StudentTimelineEvidenceRecord[];
+  initialQuery: string;
+  initialDateRange: StudentTimelineDateRange;
+  initialSort: StudentTimelineSort;
 };
 
 type StudentProfileHeaderProps = {
   student: StudentTimelineStudent;
   evidenceCount: number;
-};
-
-type StudentTimelineProps = {
-  student: StudentTimelineStudent;
-  records: StudentTimelineEvidenceRecord[];
-};
-
-type StudentTimelineEvidenceItemProps = {
-  record: StudentTimelineEvidenceRecord;
 };
 
 function studentInitials(displayName: string): string {
@@ -61,20 +45,6 @@ function studentInitials(displayName: string): string {
   }
 
   return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
-}
-
-function formatTimelineDate(value: string): string {
-  const date = new Date(value);
-
-  if (Number.isNaN(date.getTime())) {
-    return "Recently";
-  }
-
-  return new Intl.DateTimeFormat("en", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  }).format(date);
 }
 
 function StudentProfileHeader({
@@ -143,94 +113,12 @@ function StudentProfileHeader({
   );
 }
 
-function StudentTimelineEvidenceItem({
-  record,
-}: StudentTimelineEvidenceItemProps) {
-  return (
-    <li className="relative pl-8">
-      <span
-        className="absolute left-0 top-5 flex size-4 items-center justify-center rounded-full border border-validated/60 bg-validated"
-        aria-hidden="true"
-      >
-        <span className="size-1.5 rounded-full bg-validated-foreground" />
-      </span>
-      <article className="rounded-lg border border-border bg-card p-4">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-          <div>
-            <p className="text-sm font-medium text-foreground">
-              {formatTimelineDate(record.evidenceDate)}
-            </p>
-            <EvidenceRecordContent
-              record={record}
-              showStructuredSummary={false}
-            />
-          </div>
-          <span className="inline-flex w-fit items-center gap-2 rounded-lg border border-validated/60 bg-validated/35 px-2.5 py-1 text-xs font-semibold text-validated-foreground">
-            <Circle className="size-2 fill-current" />
-            Validated
-          </span>
-        </div>
-      </article>
-    </li>
-  );
-}
-
-function StudentTimelineEmptyState({
-  student,
-}: {
-  student: StudentTimelineStudent;
-}) {
-  return (
-    <div className="border border-border bg-card/60 p-5 text-sm leading-relaxed text-muted-foreground">
-      <div className="mb-3 flex size-10 items-center justify-center rounded-md border border-border bg-muted/50 text-primary">
-        <Clock3 className="size-5" strokeWidth={1.75} />
-      </div>
-      <p className="font-medium text-foreground">No validated evidence yet.</p>
-      <p className="mt-1">
-        Capture a student-specific note for {student.displayName}, review it,
-        and this timeline will start here.
-      </p>
-      <Button asChild variant="outline" size="sm" className="mt-4">
-        <Link href={routes.feed}>Open evidence feed</Link>
-      </Button>
-    </div>
-  );
-}
-
-function StudentTimeline({ student, records }: StudentTimelineProps) {
-  return (
-    <section aria-labelledby="student-evidence-heading">
-      <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h2
-            id="student-evidence-heading"
-            className="font-display text-xl font-semibold text-foreground"
-          >
-            Evidence
-          </h2>
-          <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-            Newest evidence appears first.
-          </p>
-        </div>
-      </div>
-      <div className="min-w-0">
-        {records.length === 0 ? (
-          <StudentTimelineEmptyState student={student} />
-        ) : (
-          <ol className="space-y-4 border-l border-border">
-            {records.map((record) => (
-              <StudentTimelineEvidenceItem key={record.id} record={record} />
-            ))}
-          </ol>
-        )}
-      </div>
-    </section>
-  );
-}
-
 export function StudentTimelinePage({
   student,
   evidenceRecords,
+  initialQuery,
+  initialDateRange,
+  initialSort,
 }: StudentTimelinePageProps): ReactElement {
   return (
     <div className="mx-auto w-full max-w-[980px] px-4 py-7 sm:px-6 lg:px-8">
@@ -238,7 +126,13 @@ export function StudentTimelinePage({
         student={student}
         evidenceCount={evidenceRecords.length}
       />
-      <StudentTimeline student={student} records={evidenceRecords} />
+      <StudentTimeline
+        studentDisplayName={student.displayName}
+        records={evidenceRecords}
+        initialQuery={initialQuery}
+        initialDateRange={initialDateRange}
+        initialSort={initialSort}
+      />
     </div>
   );
 }

@@ -272,7 +272,10 @@ These limits protect resource usage and database hygiene; they are not substitut
 
 - The global evidence feed reads at most 50 records plus one lookahead row and exposes explicit newer/older page navigation.
 - Search and filter state is represented in the URL; it filters the currently loaded page and survives refresh/back navigation.
-- Student timelines and reports remain student- and workspace-scoped.
+- Student timelines and reports remain student- and workspace-scoped. Timeline
+  search, recent-day filtering, and evidence-date sorting operate on that safe
+  read model in the browser; their bounded state is represented in the URL and
+  is not persisted elsewhere.
 - Report date boundaries include the browser’s offset for each boundary so daylight-saving changes and non-UTC teachers are interpreted correctly.
 - CSV export uses only validated records for the requested owned student.
 

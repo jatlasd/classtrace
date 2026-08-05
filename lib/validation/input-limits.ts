@@ -10,6 +10,7 @@ export const INPUT_LIMITS = {
   className: 120,
   schoolLocalId: 120,
   evidenceNote: 5_000,
+  evidenceSearchQuery: 250,
   evidenceDate: 64,
   evidenceSummary: 1_000,
   evidenceType: 120,
