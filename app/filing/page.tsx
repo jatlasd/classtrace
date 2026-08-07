@@ -1,32 +1,44 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Manrope } from "next/font/google";
-import {
-  ArrowRight,
-  FileCheck2,
-  FolderClosed,
-  LockKeyhole,
-} from "lucide-react";
+import { Manrope, Playfair_Display } from "next/font/google";
+import { ArrowRight, Check, LockKeyhole, PenLine, ShieldCheck, Stamp } from "lucide-react";
 import { FiledEvidenceFinder } from "./filed-evidence-finder";
+import { FiledHeroVignette } from "./filed-hero-vignette";
 import { FiledProductDemo } from "./filed-product-demo";
+import { FiledReveal } from "./filed-reveal";
 import { routes } from "@/lib/routes";
 import styles from "./filing.module.css";
 
-const filedFont = Manrope({
-  variable: "--font-filed",
+const filedSans = Manrope({
+  variable: "--font-filed-sans",
   subsets: ["latin"],
   weight: ["400", "500", "600", "700", "800"],
 });
 
+const filedSerif = Playfair_Display({
+  variable: "--font-filed-serif",
+  subsets: ["latin"],
+  style: ["normal", "italic"],
+  weight: ["500", "600", "700"],
+});
+
 export const metadata: Metadata = {
-  title: "Filed | Student evidence without the mental filing cabinet",
+  title: "Filed | Stop organizing. Filed does it for you.",
   description:
-    "Write what happened, review the structured draft, and find validated student evidence when you need it later.",
+    "Write what happened. Filed drafts the record, you approve it, and the evidence stays filed where you can find it.",
 };
+
+const filingRules = [
+  "Every record belongs to exactly one roster student.",
+  "You approve every note before it becomes permanent.",
+  "Raw captures stay temporary. The approved note is the record.",
+  "Deterministic parsing. No generative AI, ever.",
+  "Your workspace is yours alone.",
+];
 
 export default function FilingPage() {
   return (
-    <div className={`${styles.page} ${filedFont.variable}`}>
+    <div className={`${styles.page} ${filedSans.variable} ${filedSerif.variable}`}>
       <a className={styles.skipLink} href="#main-content">
         Skip to content
       </a>
@@ -35,20 +47,25 @@ export default function FilingPage() {
         <header className={styles.header}>
           <Link className={styles.wordmark} href="/filing" aria-label="Filed home">
             <span className={styles.brandMark} aria-hidden="true">
-              <FolderClosed size={21} strokeWidth={2.1} />
+              <span className={styles.brandMarkSquare}>F</span>
+              <span className={styles.brandMarkTabs}>
+                <i />
+                <i />
+                <i />
+              </span>
             </span>
             Filed
           </Link>
 
           <nav className={styles.nav} aria-label="Filed navigation">
             <a href="#how-it-works">How it works</a>
-            <a href="#for-teachers">For teachers</a>
-            <a href="#why-filed">Why Filed</a>
+            <a href="#find-it-later">Find it later</a>
+            <a href="#filing-rules">The filing rules</a>
           </nav>
 
           <div className={styles.accessNav}>
             <span className={styles.inviteStatus}>
-              <LockKeyhole aria-hidden="true" size={15} strokeWidth={1.9} />
+              <LockKeyhole aria-hidden="true" size={14} strokeWidth={2} />
               Invitation only
             </span>
             <Link href={routes.signIn} prefetch={false}>
@@ -62,18 +79,16 @@ export default function FilingPage() {
             <div className={styles.heroCopy}>
               <h1 id="filed-heading">
                 Stop organizing.
-                <span>Filed does it for you.</span>
+                <span>
+                  Filed <span className={styles.markerHighlight}>does it for you.</span>
+                </span>
               </h1>
               <p>
-                Write the moment. Check the draft. Filed keeps the evidence where
-                you can find it.
+                Write what happened. Filed remembers where it belongs, so you never hold the
+                filing system in your head again.
               </p>
               <div className={styles.heroActions}>
-                <Link
-                  className={styles.primaryAction}
-                  href={routes.signUp}
-                  prefetch={false}
-                >
+                <Link className={styles.primaryAction} href={routes.signUp} prefetch={false}>
                   Complete invited sign-up
                   <ArrowRight aria-hidden="true" size={18} strokeWidth={2} />
                 </Link>
@@ -83,31 +98,84 @@ export default function FilingPage() {
               </div>
             </div>
 
-            <FiledProductDemo />
+            <FiledHeroVignette />
           </section>
 
-          <section
-            id="for-teachers"
-            className={styles.burdenSection}
-            aria-labelledby="burden-heading"
-          >
+          <section className={styles.burdenSection} aria-labelledby="burden-heading">
             <div className={styles.burdenIntro}>
               <p>The mental filing cabinet</p>
-              <h2 id="burden-heading">
-                The note was one sentence. Holding the whole filing system in your
-                head was the work.
-              </h2>
+              <h2 id="burden-heading">The note was never the hard part.</h2>
+              <p className={styles.burdenLede}>
+                Every quick note drags four filing questions behind it. Filed answers
+                them from the line you already wrote.
+              </p>
             </div>
 
-            <div className={styles.burdenQuestions} aria-label="The context teachers must remember">
-              <p>Who was it?</p>
-              <p>When did it happen?</p>
-              <p>Where does it belong?</p>
-              <p>Will I find it later?</p>
-              <div className={styles.burdenRelease}>
-                <span>Put the moment down once.</span>
-                <strong>Filed carries the context forward.</strong>
-              </div>
+            <div className={styles.burdenCanvas}>
+              <article
+                className={styles.burdenNote}
+                aria-label="The captured note, marked up by Filed"
+              >
+                <div className={styles.burdenNoteHeader}>
+                  <span>
+                    <PenLine aria-hidden="true" size={17} strokeWidth={2.1} />
+                    Quick capture
+                  </span>
+                  <mark className={`${styles.burdenMark} ${styles.burdenMarkWhen}`}>
+                    Tue 9:12 AM
+                  </mark>
+                </div>
+                <p>
+                  <mark className={`${styles.burdenMark} ${styles.burdenMarkWho}`}>
+                    @Stacy
+                  </mark>{" "}
+                  used her{" "}
+                  <mark className={`${styles.burdenMark} ${styles.burdenMarkWhere}`}>
+                    calm-down strategy
+                  </mark>
+                  !!
+                </p>
+              </article>
+
+              <dl className={styles.burdenAnswers}>
+                <div>
+                  <dt>Who was it?</dt>
+                  <dd>
+                    <span className={`${styles.burdenChip} ${styles.burdenChipWho}`}>
+                      Stacy
+                    </span>
+                    matched to your roster.
+                  </dd>
+                </div>
+                <div>
+                  <dt>When did it happen?</dt>
+                  <dd>
+                    <span className={`${styles.burdenChip} ${styles.burdenChipWhen}`}>
+                      Tue 9:12 AM
+                    </span>
+                    stamped as you typed.
+                  </dd>
+                </div>
+                <div>
+                  <dt>Where does it belong?</dt>
+                  <dd>
+                    <span className={`${styles.burdenChip} ${styles.burdenChipWhere}`}>
+                      Calm-down strategy
+                    </span>
+                    drafted as the topic, filed under Behavior.
+                  </dd>
+                </div>
+                <div>
+                  <dt>Will you find it in April?</dt>
+                  <dd>
+                    <span className={styles.burdenFiledProof}>
+                      <Check aria-hidden="true" size={14} strokeWidth={2.6} />
+                      Already on Stacy&apos;s timeline
+                    </span>
+                    one search away, all year.
+                  </dd>
+                </div>
+              </dl>
             </div>
           </section>
 
@@ -116,103 +184,86 @@ export default function FilingPage() {
             className={styles.reviewChapter}
             aria-labelledby="review-heading"
           >
-            <div className={styles.sectionHeading}>
-              <h2 id="review-heading">Write what happened. Keep the final say.</h2>
-              <p>
-                Filed turns one student-specific note into a structured draft. You
-                review every field and the Evidence note before save.
-              </p>
-            </div>
-
-            <div className={styles.reviewCanvas}>
-              <article className={styles.rawNotePanel}>
-                <span>What you write</span>
+            <FiledReveal>
+              <div className={styles.sectionHeading}>
+                <h2 id="review-heading">You keep the judgment. Filed keeps the files.</h2>
                 <p>
-                  During science lab, @Jeremy noticed a classmate&apos;s setup was
-                  off balance. He suggested a fix and helped adjust it.
+                  One line in. A structured, teacher-approved record out. Try it below, then save
+                  the note yourself.
                 </p>
-              </article>
-
-              <div className={styles.draftBridge} aria-hidden="true">
-                <span>Filed drafts</span>
-                <ArrowRight size={24} strokeWidth={1.8} />
               </div>
+            </FiledReveal>
 
-              <article className={styles.reviewDetailPanel}>
-                <header>
-                  <span>Review before saving</span>
-                  <strong>Jeremy</strong>
-                </header>
-                <dl>
-                  <div>
-                    <dt>Student</dt>
-                    <dd>Jeremy</dd>
-                  </div>
-                  <div>
-                    <dt>Evidence type</dt>
-                    <dd>Academic</dd>
-                  </div>
-                  <div>
-                    <dt>Topic</dt>
-                    <dd>Science lab</dd>
-                  </div>
-                </dl>
-                <div className={styles.reviewedNote}>
-                  <span>Evidence note</span>
-                  <p>
-                    During science lab, @Jeremy noticed a classmate&apos;s setup was
-                    off balance, suggested a fix, and helped adjust it.
-                  </p>
-                </div>
-                <footer>
-                  <span>Teacher review required</span>
-                  <strong>Ready for your approval</strong>
-                </footer>
-              </article>
-            </div>
-
-            <p className={styles.reviewPromise}>
-              <FileCheck2 aria-hidden="true" size={23} strokeWidth={1.9} />
-              Nothing is permanent until you approve it.
-            </p>
+            <FiledProductDemo />
           </section>
 
           <section
-            id="why-filed"
+            id="find-it-later"
             className={styles.finderChapter}
             aria-labelledby="finder-heading"
           >
-            <div className={styles.finderHeading}>
-              <h2 id="finder-heading">When later arrives, it is already filed.</h2>
-              <p>
-                Search validated evidence by student, topic, or the words you
-                remember.
-              </p>
-            </div>
+            <FiledReveal>
+              <div className={styles.finderHeading}>
+                <h2 id="finder-heading">When later arrives, it is already filed.</h2>
+                <p>Pull one student&apos;s record by tab, topic, or the words you remember.</p>
+              </div>
+            </FiledReveal>
 
             <FiledEvidenceFinder />
           </section>
 
-          <aside className={styles.boundaryStatement} aria-label="Filed product boundaries">
-            <p>Raw capture stays temporary.</p>
-            <p>The teacher-approved Evidence note becomes the record.</p>
-            <span>Deterministic parsing. One resolved student. Teacher review before save.</span>
-          </aside>
+          <section
+            id="filing-rules"
+            className={styles.rulesSection}
+            aria-labelledby="rules-heading"
+          >
+            <FiledReveal>
+              <div className={styles.rulesIntro}>
+                <h2 id="rules-heading">Filed follows rules, not hunches.</h2>
+                <p>
+                  A filing system is only useful if you can trust it. These boundaries are fixed,
+                  and they do not bend.
+                </p>
+              </div>
+            </FiledReveal>
+
+            <FiledReveal>
+              <article className={styles.rulesCard} aria-label="The Filed filing rules">
+                <div className={styles.rulesCardHeading}>
+                  <span>The filing rules</span>
+                  <Stamp aria-hidden="true" size={18} strokeWidth={1.9} />
+                </div>
+                <ul>
+                  {filingRules.map((rule) => (
+                    <li key={rule}>
+                      <ShieldCheck aria-hidden="true" size={16} strokeWidth={2.1} />
+                      {rule}
+                    </li>
+                  ))}
+                </ul>
+              </article>
+            </FiledReveal>
+          </section>
 
           <section className={styles.closing} aria-labelledby="closing-heading">
-            <div>
+            <FiledReveal>
+              <div className={styles.closingTabs} aria-hidden="true">
+                <i />
+                <i />
+                <i />
+              </div>
               <h2 id="closing-heading">Put the moment down.</h2>
-              <p>Filed will keep its place until you need it again.</p>
-            </div>
-            <Link className={styles.primaryAction} href={routes.signUp} prefetch={false}>
-              Complete invited sign-up
-              <ArrowRight aria-hidden="true" size={18} strokeWidth={2} />
-            </Link>
+              <p>Filed keeps its place until you need it again.</p>
+              <Link className={styles.primaryAction} href={routes.signUp} prefetch={false}>
+                Complete invited sign-up
+                <ArrowRight aria-hidden="true" size={18} strokeWidth={2} />
+              </Link>
+            </FiledReveal>
           </section>
         </main>
 
         <footer className={styles.footer}>
-          <p>Filed is a placeholder name for this landing-page experiment.</p>
+          <p>Filed is an invitation-only beta.</p>
           <nav aria-label="Filed legal and support">
             <Link href={routes.privacy}>Privacy</Link>
             <Link href={routes.terms}>Terms</Link>

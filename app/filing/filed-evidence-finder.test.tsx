@@ -15,7 +15,29 @@ describe("FiledEvidenceFinder", () => {
 
     expect(screen.getByText("1 validated record")).toBeTruthy();
     expect(screen.getByText("Science lab")).toBeTruthy();
-    expect(screen.queryByText("Group project")).toBeNull();
+    expect(screen.queryByText("Calm-down strategy")).toBeNull();
+  });
+
+  it("filters by evidence-type tab", () => {
+    render(<FiledEvidenceFinder />);
+
+    fireEvent.click(screen.getByRole("tab", { name: "Behavior" }));
+
+    expect(screen.getByText("1 validated record")).toBeTruthy();
+    expect(screen.getByText("Calm-down strategy")).toBeTruthy();
+    expect(screen.queryByText("Science lab")).toBeNull();
+  });
+
+  it("combines the active tab with the search query", () => {
+    render(<FiledEvidenceFinder />);
+
+    fireEvent.click(screen.getByRole("tab", { name: "Academic" }));
+    fireEvent.change(screen.getByRole("searchbox", { name: "Find validated evidence" }), {
+      target: { value: "reading" },
+    });
+
+    expect(screen.getByText("1 validated record")).toBeTruthy();
+    expect(screen.getByText("Reading discussion")).toBeTruthy();
   });
 
   it("shows a useful empty state", () => {

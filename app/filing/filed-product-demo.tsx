@@ -1,11 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { Check, FileCheck2, PenLine } from "lucide-react";
+import { Check, FileCheck2, PenLine, ShieldCheck } from "lucide-react";
 import styles from "./filing.module.css";
 
-const INITIAL_NOTE =
-  "During science lab, @Jeremy noticed a classmate's setup was off balance. He suggested a fix and helped adjust it. The experiment worked better after that.";
+const INITIAL_NOTE = "@Stacy used her calm-down strategy!!";
 
 export function FiledProductDemo() {
   const [note, setNote] = useState(INITIAL_NOTE);
@@ -18,103 +17,129 @@ export function FiledProductDemo() {
   }
 
   return (
-    <section className={styles.productStage} aria-label="Interactive Filed product preview">
-      <article className={styles.captureSheet}>
-        <div className={styles.sheetHeader}>
-          <span>
-            <PenLine aria-hidden="true" size={18} strokeWidth={2} />
-            Quick capture
-          </span>
-          <span>Jeremy · Today, 9:12 AM</span>
+    <div className={styles.demoFlow} aria-label="Interactive Filed product preview">
+      <section className={styles.demoBeat} aria-label="First, write one line">
+        <div className={styles.demoBeatLabel}>
+          <span aria-hidden="true">1</span>
+          <strong>Scribble it down</strong>
         </div>
-        <label htmlFor="filed-demo-capture">What happened?</label>
-        <textarea
-          id="filed-demo-capture"
-          value={note}
-          onChange={(event) => {
-            setNote(event.target.value);
-            setIsSaved(false);
-          }}
-          rows={5}
-        />
-        <p>Draft ready for your review</p>
-      </article>
+        <article className={`${styles.demoSheet} ${styles.demoCapture}`}>
+          <div className={styles.demoSheetHeader}>
+            <span>
+              <PenLine aria-hidden="true" size={17} strokeWidth={2.1} />
+              Quick capture
+            </span>
+            <span>Tue 9:12 AM</span>
+          </div>
+          <label htmlFor="filed-demo-capture">What happened?</label>
+          <textarea
+            id="filed-demo-capture"
+            value={note}
+            onChange={(event) => {
+              setNote(event.target.value);
+              setIsSaved(false);
+            }}
+            rows={6}
+          />
+          <p>Mid-lesson speed. Exclamation points welcome.</p>
+        </article>
+      </section>
 
-      <article className={styles.reviewSheet}>
-        <div className={styles.sheetHeader}>
-          <span>
-            <FileCheck2 aria-hidden="true" size={19} strokeWidth={2} />
-            Review before saving
-          </span>
-          <span>Jeremy · Today, 9:15 AM</span>
+      <section className={styles.demoBeat} aria-label="Second, check the draft">
+        <div className={styles.demoBeatLabel}>
+          <span aria-hidden="true">2</span>
+          <strong>Check the draft</strong>
         </div>
+        <article className={`${styles.demoSheet} ${styles.demoDraft}`}>
+          <div className={styles.demoSheetHeader}>
+            <span>
+              <FileCheck2 aria-hidden="true" size={17} strokeWidth={2.1} />
+              Review before saving
+            </span>
+            <span>Drafted by Filed</span>
+          </div>
 
-        <dl className={styles.reviewFields}>
-          <div>
-            <dt>Student</dt>
-            <dd>Jeremy</dd>
-          </div>
-          <div>
-            <dt>Evidence type</dt>
-            <dd>Academic</dd>
-          </div>
-          <div>
-            <dt>Topic</dt>
-            <dd>Science lab</dd>
-          </div>
-        </dl>
+          <dl className={styles.demoFields}>
+            <div>
+              <dt>Student</dt>
+              <dd>Stacy</dd>
+            </div>
+            <div>
+              <dt>Evidence type</dt>
+              <dd>
+                <span className={styles.demoTypeTag}>Behavior</span>
+              </dd>
+            </div>
+            <div>
+              <dt>Topic</dt>
+              <dd>Calm-down strategy</dd>
+            </div>
+          </dl>
 
-        <div className={styles.evidenceNote}>
-          <div>
-            <span>Evidence note</span>
-            <button type="button" onClick={() => setIsEditing((value) => !value)}>
-              {isEditing ? "Done editing" : "Edit"}
-            </button>
+          <div className={styles.demoNote}>
+            <div>
+              <span>Evidence note</span>
+              <button type="button" onClick={() => setIsEditing((value) => !value)}>
+                {isEditing ? "Done editing" : "Edit"}
+              </button>
+            </div>
+            {isEditing ? (
+              <textarea
+                aria-label="Evidence note"
+                value={note}
+                onChange={(event) => {
+                  setNote(event.target.value);
+                  setIsSaved(false);
+                }}
+                rows={4}
+              />
+            ) : (
+              <p>{note}</p>
+            )}
           </div>
-          {isEditing ? (
-            <textarea
-              aria-label="Evidence note"
-              value={note}
-              onChange={(event) => {
-                setNote(event.target.value);
-                setIsSaved(false);
-              }}
-              rows={4}
-            />
-          ) : (
-            <p>{note}</p>
-          )}
+        </article>
+      </section>
+
+      <section className={`${styles.demoBeat} ${styles.demoApprove}`} aria-label="Third, approve and it is filed">
+        <div className={styles.demoBeatLabel}>
+          <span aria-hidden="true">3</span>
+          <strong>Approve. It&apos;s filed.</strong>
         </div>
-
-        <div className={styles.reviewActions}>
+        <article className={`${styles.demoSheet} ${styles.demoApproveCard}`}>
           <p aria-live="polite">
             {isSaved ? (
               <>
-                <Check aria-hidden="true" size={16} strokeWidth={2.3} />
-                Saved to Jeremy&apos;s timeline
+                <Check aria-hidden="true" size={16} strokeWidth={2.5} />
+                Saved to Stacy&apos;s timeline
               </>
             ) : (
-              "Nothing is permanent until you approve it."
+              <>
+                <ShieldCheck aria-hidden="true" size={16} strokeWidth={2.1} />
+                Nothing is permanent until you approve it.
+              </>
             )}
           </p>
           <button type="button" onClick={handleSave} disabled={isSaved || note.trim().length === 0}>
             {isSaved ? "Evidence saved" : "Save validated evidence"}
           </button>
-        </div>
-      </article>
+        </article>
 
-      <article className={`${styles.demoTimeline} ${isSaved ? styles.demoTimelineSaved : ""}`}>
-        <div className={styles.demoTimelineHeader}>
-          <span>Jeremy&apos;s timeline</span>
-          <span>{isSaved ? "Just updated" : "Validated evidence"}</span>
-        </div>
-        <div className={styles.demoTimelineRow}>
-          <span aria-hidden="true" />
-          <time>Today, 9:15 AM</time>
-          <strong>Science lab</strong>
-          <p>{note}</p>
-        </div>
-      </article>
-    </section>
+        <article
+          className={
+            isSaved ? `${styles.demoTimeline} ${styles.demoTimelineSaved}` : styles.demoTimeline
+          }
+        >
+          <div className={styles.demoTimelineHeader}>
+            <span>Stacy&apos;s timeline</span>
+            <span>{isSaved ? "Just updated" : "Validated evidence"}</span>
+          </div>
+          <div className={styles.demoTimelineRow}>
+            <time>Tue 9:15 AM</time>
+            <strong>Calm-down strategy</strong>
+            <p>{note}</p>
+          </div>
+        </article>
+      </section>
+    </div>
   );
 }

@@ -12,13 +12,17 @@ describe("FiledProductDemo", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Edit" }));
     const evidenceNote = screen.getByRole("textbox", { name: "Evidence note" });
-    fireEvent.change(evidenceNote, { target: { value: "Jeremy explained the science setup." } });
+    fireEvent.change(evidenceNote, {
+      target: { value: "Stacy used her calm-down strategy without a prompt during math." },
+    });
     fireEvent.click(screen.getByRole("button", { name: "Save validated evidence" }));
 
-    expect(screen.getByText("Saved to Jeremy's timeline")).toBeTruthy();
+    expect(screen.getByText("Saved to Stacy's timeline")).toBeTruthy();
     expect(
       screen.getByRole("button", { name: "Evidence saved" }).hasAttribute("disabled")
     ).toBe(true);
-    expect(screen.getAllByText("Jeremy explained the science setup.").length).toBeGreaterThan(0);
+    expect(
+      screen.getAllByText("Stacy used her calm-down strategy without a prompt during math.").length
+    ).toBeGreaterThan(0);
   });
 });
