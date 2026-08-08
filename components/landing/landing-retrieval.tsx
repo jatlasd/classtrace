@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { FileText, ListChecks, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { LandingEvidenceFolder } from "@/components/landing/landing-evidence-folder";
 import { Reveal } from "@/components/landing/scroll-motion";
 import { routes } from "@/lib/routes";
 
@@ -38,23 +37,13 @@ export function LandingRetrieval() {
             When later arrives, it&apos;s already filed.
           </h2>
           <p className="mx-auto mt-4 max-w-xl text-[15px] leading-relaxed text-muted-foreground">
-            Pull one student&apos;s whole story by tag, follow-up, or date. The
-            moment you validated in September is still exactly where ClassTrace
-            filed it — no binder to maintain, no system to remember.
+            Open one student&apos;s timeline, filter a report by date, or export
+            their evidence as CSV. The moment you validated in September stays
+            organized without another filing system to maintain.
           </p>
         </Reveal>
 
-        <Reveal from="translate-y-12 scale-[0.98]">
-          <p
-            aria-hidden="true"
-            className="font-hand mx-auto mt-10 max-w-3xl -rotate-1 px-8 text-left text-xl text-primary md:px-10"
-          >
-            the meeting you haven&apos;t scheduled yet? already prepped.
-          </p>
-          <LandingEvidenceFolder />
-        </Reveal>
-
-        <ul className="mx-auto mt-14 grid max-w-4xl gap-x-10 gap-y-8 sm:grid-cols-3">
+        <ul className="mx-auto mt-12 grid max-w-4xl gap-x-10 gap-y-8 sm:grid-cols-3">
           {facts.map((fact, index) => (
             <li key={fact.title}>
               <Reveal delay={index * 120}>

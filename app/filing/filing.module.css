@@ -10,7 +10,6 @@
 
 .page {
   --desk: #123259;
-  --desk-deep: #0c2440;
   --paper: #f8f4ea;
   --paper-warm: #f2ecdd;
   --card: #fffdf7;
@@ -1146,16 +1145,6 @@
   -webkit-box-orient: vertical;
   overflow: hidden;
   line-height: 1.5;
-}
-
-.demoBridge {
-  align-self: center;
-  justify-self: center;
-  display: grid;
-  justify-items: center;
-  gap: 0.4rem;
-  padding-top: 4rem;
-  color: var(--tab-followup-deep);
 }
 
 /* ------------------------------ finder chapter --------------------------- */
