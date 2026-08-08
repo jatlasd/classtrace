@@ -14,12 +14,13 @@ export function LandingClosingCta() {
         </p>
         <h2 className="mt-4 font-display text-4xl font-semibold leading-[1.08] tracking-tight text-foreground sm:text-5xl">
           You&apos;re going to{" "}
-          <span className="hand-underline-rust">need it later</span>.
+          <span className="hand-underline-rust">need it in March</span>.
         </h2>
         <p className="mx-auto mt-6 max-w-md text-base leading-relaxed text-muted-foreground">
           If you received a beta invitation, complete sign-up and start with
-          one student. Capture one moment. Build the record before you need it,
-          so the next conversation does not start from memory.
+          one student. Catch one moment, sign off on it, and let ClassTrace do
+          the filing — so the next conversation doesn&apos;t start from
+          memory.
         </p>
         <div className="mt-9 flex justify-center">
           <Button

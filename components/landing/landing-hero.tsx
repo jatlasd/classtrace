@@ -4,10 +4,12 @@ import {
   CoffeeRing,
   IndexCard,
   StickyScrap,
+  StudentFolder,
 } from "@/components/landing/landing-ephemera";
 import { RawNoteArt } from "@/components/landing/story-artifacts";
 import { ParallaxDrift } from "@/components/landing/scroll-motion";
 import { routes } from "@/lib/routes";
+import styles from "./landing.module.css";
 
 export function LandingHero() {
   return (
@@ -21,22 +23,28 @@ export function LandingHero() {
         </ParallaxDrift>
         <ParallaxDrift
           depth={-34}
-          className="absolute right-[4%] top-36 xl:right-[8%]"
+          className="absolute right-[4%] top-32 xl:right-[7%]"
         >
           <StickyScrap className="relative rotate-3" variant="blue">
             IEP meeting moved to Thursday
           </StickyScrap>
         </ParallaxDrift>
         <ParallaxDrift
+          depth={-64}
+          className="absolute right-[5%] top-[26rem] xl:right-[9%]"
+        >
+          <StudentFolder className="rotate-2" />
+        </ParallaxDrift>
+        <ParallaxDrift
           depth={-70}
-          className="absolute right-[10%] top-[26rem] xl:right-[14%]"
+          className="absolute left-[8%] top-[27rem] xl:left-[12%]"
         >
           <StickyScrap className="relative -rotate-2" variant="rose">
             &ldquo;can you show growth over time?&rdquo;
           </StickyScrap>
         </ParallaxDrift>
         <CoffeeRing
-          className="absolute left-[13%] top-[24rem] size-24 -rotate-12"
+          className="absolute left-[16%] top-[21rem] size-24 -rotate-12"
           variant="full"
         />
         <CoffeeRing
@@ -49,13 +57,20 @@ export function LandingHero() {
         <p className="animate-in fade-in slide-in-from-bottom-2 duration-500 text-xs font-semibold uppercase tracking-[0.2em] text-primary">
           Student evidence capture for teachers
         </p>
-        <h1 className="mx-auto mt-5 max-w-3xl animate-in fade-in slide-in-from-bottom-3 font-display text-[2.6rem] font-semibold leading-[1.08] tracking-tight text-foreground duration-700 sm:text-6xl lg:text-[4.25rem]">
-          The note you lose today is the evidence you&apos;ll need in March.
+        <h1 className="mx-auto mt-5 max-w-4xl animate-in fade-in slide-in-from-bottom-3 font-display text-[2.6rem] font-semibold leading-[1.08] tracking-tight text-foreground duration-700 sm:text-6xl lg:text-[4rem]">
+          You catch the moment.
+          <span className="block">
+            ClassTrace{" "}
+            <span className={`${styles.marker} ${styles.markerSweep}`}>
+              does the filing.
+            </span>
+          </span>
         </h1>
         <p className="mx-auto mt-6 max-w-xl animate-in fade-in slide-in-from-bottom-3 text-base leading-relaxed text-muted-foreground duration-700 [animation-delay:120ms] [animation-fill-mode:backwards]">
-          ClassTrace turns the moment you almost forgot into a validated,
-          student-specific evidence record — captured in seconds, reviewed by
-          you, and filed where you can find it again.
+          Scribble what happened while it&apos;s still fresh — no form, no
+          folder to pick. ClassTrace drafts the record, files it to the right
+          student, and nothing saves until you sign off. The filing system
+          lives here now, not in your head.
         </p>
         <p className="mx-auto mt-4 max-w-xl text-sm font-medium leading-relaxed text-foreground">
           ClassTrace is currently an invitation-only beta. Sign-up is available
@@ -83,7 +98,7 @@ export function LandingHero() {
       <div className="relative mx-auto max-w-2xl px-6 pb-6 md:px-0">
         <p
           aria-hidden="true"
-          className="font-hand mb-3 -rotate-2 pl-2 text-left text-xl leading-tight text-link sm:pl-0"
+          className="font-hand mb-6 -rotate-2 pl-2 text-left text-xl leading-tight text-link sm:mb-4 sm:pl-0"
         >
           it starts as forty seconds between classes…
         </p>
@@ -94,7 +109,7 @@ export function LandingHero() {
         </ParallaxDrift>
         <div className="mt-8 flex flex-col items-center gap-1 pb-2 text-center">
           <p aria-hidden="true" className="font-hand text-xl text-primary">
-            watch this note become evidence
+            now watch this note file itself
           </p>
           <Link
             href="#how-it-works"

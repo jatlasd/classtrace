@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import { LandingHeader } from "@/components/landing/landing-header";
 import { LandingHero } from "@/components/landing/landing-hero";
 import { EvidenceStory } from "@/components/landing/evidence-story";
-import { ProductShellReveal } from "@/components/landing/product-shell-reveal";
+import { LandingFilingCabinet } from "@/components/landing/landing-filing-cabinet";
+import { LandingRetrieval } from "@/components/landing/landing-retrieval";
 import { LandingTrust } from "@/components/landing/landing-trust";
 import { LandingAudience } from "@/components/landing/landing-audience";
 import { LandingClosingCta } from "@/components/landing/landing-closing-cta";
@@ -11,7 +12,7 @@ import { SiteFooter } from "@/components/layout/site-footer";
 export const metadata: Metadata = {
   title: "ClassTrace — Student evidence capture for teachers",
   description:
-    "Invitation-only beta for turning quick teacher notes into organized, teacher-validated student evidence.",
+    "Invitation-only beta for teachers: catch the moment in one quick note, sign off, and ClassTrace files it as organized, findable student evidence.",
 };
 
 export default function Home() {
@@ -21,7 +22,8 @@ export default function Home() {
       <main className="flex-1">
         <LandingHero />
         <EvidenceStory />
-        <ProductShellReveal />
+        <LandingFilingCabinet />
+        <LandingRetrieval />
         <LandingTrust />
         <LandingAudience />
         <LandingClosingCta />

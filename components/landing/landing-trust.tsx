@@ -1,19 +1,15 @@
-import { Reveal } from "@/components/landing/scroll-motion";
 import Image from "next/image";
+import { Check } from "lucide-react";
+import { TapeStrip } from "@/components/landing/landing-ephemera";
+import { Reveal } from "@/components/landing/scroll-motion";
+import styles from "./landing.module.css";
 
-const promises = [
-  {
-    title: "Your words, saved exactly",
-    body: "The evidence note is stored exactly as you approved it. The raw scribble never quietly becomes the permanent record.",
-  },
-  {
-    title: "Deterministic, not generative",
-    body: "ClassTrace structures your note with plain rules you can predict. It never invents documentation or writes on your behalf.",
-  },
-  {
-    title: "One teacher, one workspace",
-    body: "Your roster and your evidence live in a private workspace only you can see. No admin views, no district feed.",
-  },
+const filingRules = [
+  "Every record belongs to exactly one student.",
+  "Nothing saves without your sign-off.",
+  "Your words are stored exactly as you approved them.",
+  "Deterministic parsing — it never writes for you.",
+  "One teacher, one workspace. Yours alone.",
 ];
 
 const nots = [
@@ -25,15 +21,16 @@ const nots = [
 
 export function LandingTrust() {
   return (
-    <section className="bg-sidebar text-sidebar-foreground">
+    <section className="overflow-x-clip bg-sidebar text-sidebar-foreground">
       <div className="mx-auto max-w-5xl px-4 py-16 md:px-6 lg:px-8 lg:py-24">
         <div className="mx-auto max-w-3xl text-center">
           <h2 className="font-display text-3xl font-semibold tracking-tight lg:text-4xl">
             This is not another platform your district bought.
           </h2>
           <p className="mt-4 text-[15px] leading-relaxed text-sidebar-foreground/80">
-            It&apos;s your private documentation memory — and every saved
-            record is one you reviewed and signed off on.
+            It&apos;s your private filing cabinet — every record in it is one
+            you reviewed and signed off on. And it follows rules that
+            don&apos;t bend.
           </p>
         </div>
 
@@ -60,18 +57,34 @@ export function LandingTrust() {
           ))}
         </ul>
 
-        <dl className="mx-auto mt-14 grid max-w-4xl gap-10 text-center sm:grid-cols-3 sm:gap-8 sm:text-left">
-          {promises.map((promise, index) => (
-            <Reveal key={promise.title} delay={index * 120}>
-              <dt className="font-display text-lg font-semibold text-sidebar-primary">
-                {promise.title}
-              </dt>
-              <dd className="mt-2 text-sm leading-relaxed text-sidebar-foreground/80">
-                {promise.body}
-              </dd>
-            </Reveal>
-          ))}
-        </dl>
+        <Reveal
+          from="translate-y-10 scale-[0.97]"
+          className="mx-auto mt-14 max-w-xl"
+        >
+          <div className={`${styles.ruledCard} rotate-1`}>
+            <TapeStrip className="-top-3 left-1/2 -translate-x-1/2 -rotate-2" />
+            <p
+              className={`${styles.ruledRow} text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground`}
+            >
+              The filing rules
+            </p>
+            <ul>
+              {filingRules.map((rule) => (
+                <li
+                  key={rule}
+                  className={`${styles.ruledRow} text-[15px] font-medium leading-snug text-foreground`}
+                >
+                  <Check
+                    className="size-4 shrink-0 text-primary"
+                    strokeWidth={2.5}
+                    aria-hidden="true"
+                  />
+                  {rule}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </Reveal>
 
         <p className="font-hand mt-14 text-center text-xl text-sidebar-primary lg:text-2xl">
           Your roster is yours. Your evidence is yours.{" "}

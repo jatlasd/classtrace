@@ -1,4 +1,5 @@
 import Image from "next/image";
+import styles from "./landing.module.css";
 
 type CoffeeRingVariant = "full" | "broken" | "arc" | "ghost";
 
@@ -88,6 +89,23 @@ export function IndexCard({ className = "" }: { className?: string }) {
         </li>
         <li className="text-foreground/45">mary — check tues</li>
       </ul>
+    </div>
+  );
+}
+
+export function StudentFolder({ className = "" }: { className?: string }) {
+  return (
+    <div
+      aria-hidden="true"
+      className={`pointer-events-none ${styles.folder} ${className}`}
+    >
+      <span className={styles.folderFlag}>✓ Filed</span>
+      <span className={styles.folderTab}>Stacy</span>
+      <div className={styles.folderBody}>
+        <span className={styles.folderLine} />
+        <span className={styles.folderLine} />
+        <span className={styles.folderLine} />
+      </div>
     </div>
   );
 }

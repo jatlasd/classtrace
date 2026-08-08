@@ -244,12 +244,12 @@ function StoryHeading() {
         How it works
       </p>
       <h2 className="mt-3 font-display text-3xl font-semibold tracking-tight text-foreground lg:text-4xl">
-        Watch one note become the whole product
+        Follow one note from scribble to filed
       </h2>
       <p className="mx-auto mt-4 max-w-xl text-[15px] leading-relaxed text-muted-foreground">
-        The same surface keeps transforming: a scribble becomes a capture,
-        a capture becomes a reviewed draft, a draft becomes validated evidence
-        on a student&apos;s timeline.
+        The same surface keeps transforming: a scribble becomes a capture, a
+        capture becomes a reviewed draft, a draft becomes validated evidence —
+        filed on a student&apos;s timeline without you touching a folder.
       </p>
     </div>
   );
