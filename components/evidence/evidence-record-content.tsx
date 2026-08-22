@@ -110,7 +110,7 @@ export function EvidenceRecordContent({
           evidenceId={record.id}
           evidenceDate={record.evidenceDate}
           loading={photoLoading}
-          className="mt-3 break-inside-avoid print:max-h-[6.5in]"
+          className="mt-3 break-inside-avoid"
         />
       ) : null}
 

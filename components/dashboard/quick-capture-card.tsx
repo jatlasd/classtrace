@@ -343,11 +343,10 @@ export function QuickCaptureCard({
           />
 
           {photo ? (
-            <div className="grid gap-3 sm:grid-cols-[minmax(0,18rem)_1fr] sm:items-start">
+            <div className="grid gap-3 sm:grid-cols-[7rem_1fr] sm:items-start">
               <LocalPhotoPreview
                 blob={photo.blob}
                 alt="Selected photo evidence preview"
-                className="max-h-56 w-auto max-w-full rounded-md border border-border bg-muted/20 object-contain"
               />
               <div className="space-y-2">
                 <p className="text-sm font-medium text-foreground">Photo ready</p>

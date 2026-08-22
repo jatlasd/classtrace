@@ -167,6 +167,7 @@ Last imprinted: 2026-07-22
   or review content, then inline actions. Do not add a nested card, shadow, or
   narrow action rail.
 - Photo-only drafts use the existing student-resolution control, keep structured fields empty unless the teacher supplies them, and may save only after one student and the evidence date are confirmed.
+- Draft photos use the shared Photo thumbnails pattern; they do not widen the ledger row or consume the viewport before the teacher chooses to expand them.
 
 ## Public trust and support pages
 
@@ -249,8 +250,28 @@ Last imprinted: 2026-07-12
 | Overflow | `break-words [overflow-wrap:anywhere]` |
 
 This component owns Evidence note versus legacy structured-entry copy, reviewed summary, structured chips, tags, follow-up, and authenticated photo display across feed, timeline, and report. Do not copy that markup into a new read surface.
+Authenticated photos use the shared Photo thumbnails pattern. Printed reports render the full image without the interactive affordance.
 Feed, timeline, and report rows may suppress the prose structured summary when
 the same reviewed fields are already visible as chips.
+
+## Photo thumbnails
+
+File: `components/evidence/photo-thumbnail.tsx`
+
+Last updated: 2026-08-22
+
+| Property | Pattern |
+|---|---|
+| Thumbnail background | `bg-muted/20` |
+| Border | `border border-border` |
+| Border radius | `rounded-md` |
+| Expand affordance | `bg-foreground/85 text-background`; `shadow-sm` |
+| Hover state | `group-hover:bg-foreground` |
+| Focus state | `focus-visible:ring-3 focus-visible:ring-ring/30` |
+| Expanded backdrop | `bg-foreground/85`; responsive page-edge padding |
+| Close control | 44px target, `bg-card text-foreground`, visible focus ring |
+
+Draft and authenticated evidence photos use one compact square thumbnail on screen. The image uses `object-cover` for scanning; a visible icon and accessible button name disclose expansion. The focused overlay uses `object-contain`, closes from its named control, backdrop, or Escape key, and returns focus to the thumbnail. Printed reports hide the affordance and render the complete image.
 
 ## Evidence rows and timeline/report entries
 

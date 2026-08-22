@@ -149,6 +149,11 @@ describe("QuickCaptureCard mentions editor", () => {
     });
 
     expect(await screen.findByText("Photo ready")).toBeTruthy();
+    expect(
+      screen.getByRole("button", {
+        name: "Expand Selected photo evidence preview",
+      })
+    ).toBeTruthy();
     const captureButton = screen.getByRole("button", { name: "Capture" });
     expect((captureButton as HTMLButtonElement).disabled).toBe(false);
     fireEvent.click(captureButton);

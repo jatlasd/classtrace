@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { PhotoThumbnail } from "@/components/evidence/photo-thumbnail";
 import { routes } from "@/lib/routes";
 
 type EvidencePhotoProps = {
@@ -38,15 +39,12 @@ export function EvidencePhoto({
   }
 
   return (
-    // The authenticated, no-store route cannot be optimized through a public image cache.
-    // eslint-disable-next-line @next/next/no-img-element
-    <img
+    <PhotoThumbnail
       src={routes.evidencePhoto(evidenceId)}
       alt={`Photo evidence from ${photoDateLabel(evidenceDate)}`}
       loading={loading}
-      decoding="async"
       onError={() => setUnavailable(true)}
-      className={`max-h-[32rem] w-auto max-w-full rounded-md border border-border bg-muted/20 object-contain ${className}`}
+      className={className}
     />
   );
 }
