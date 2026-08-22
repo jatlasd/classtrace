@@ -49,6 +49,7 @@ type EvidenceRecordFindManyArgs = {
     followUpNotes: true;
     validatedAt: true;
     createdAt: true;
+    photo: { select: { id: true } };
   };
 };
 
@@ -64,8 +65,8 @@ type ExportEvidenceFromDatabase = {
   id: string;
   evidenceDate: Date;
   evidenceNote: string | null;
-  summary: string;
-  evidenceType: string;
+  summary: string | null;
+  evidenceType: string | null;
   topic: string | null;
   supportLevel: string | null;
   context: string | null;
@@ -77,6 +78,7 @@ type ExportEvidenceFromDatabase = {
   followUpNotes: string | null;
   validatedAt: Date;
   createdAt: Date;
+  photo?: { id: string } | null;
 };
 
 export type ExportStudentEvidenceDatabase = {
@@ -134,6 +136,7 @@ const EXPORT_COLUMNS = [
   "Tags",
   "Follow-up needed",
   "Follow-up notes",
+  "Photo",
 ];
 
 function normalizeStudentId(value: unknown): string {
@@ -191,18 +194,19 @@ function buildCsvContent({
       schoolLocalId,
       formatIsoDate(record.evidenceDate),
       formatIsoDate(record.validatedAt),
-      record.evidenceType,
+      optionalText(record.evidenceType),
       optionalText(record.evidenceNote),
       optionalText(record.topic),
       optionalText(record.supportLevel),
       optionalText(record.context),
-      record.summary,
+      optionalText(record.summary),
       optionalText(record.performance),
       optionalText(record.communication),
       optionalText(record.behavior),
       record.tags.join("; "),
       record.followUpNeeded ? "Yes" : "No",
       optionalText(record.followUpNotes),
+      record.photo ? "Yes" : "No",
     ])
   );
 
@@ -283,6 +287,7 @@ export async function exportStudentEvidenceForWorkspace(
         followUpNotes: true,
         validatedAt: true,
         createdAt: true,
+        photo: { select: { id: true } },
       },
     });
 

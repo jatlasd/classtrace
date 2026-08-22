@@ -34,6 +34,7 @@ type StudentResolutionFieldProps = {
   ) => Promise<CreateStudentFromReviewResult>;
   onPendingChange: (isPending: boolean) => void;
   onError: (message: string) => void;
+  allowCreate?: boolean;
 };
 
 const MAX_ROSTER_RESULTS = 5;
@@ -67,6 +68,7 @@ export function StudentResolutionField({
   onCreateStudent,
   onPendingChange,
   onError,
+  allowCreate = true,
 }: StudentResolutionFieldProps) {
   const idPrefix = useId();
   const rosterSearchId = `${idPrefix}-roster-search`;
@@ -261,7 +263,7 @@ export function StudentResolutionField({
               htmlFor={rosterSearchId}
               className="mb-1 block text-xs font-medium text-foreground"
             >
-              Match roster student
+              {mention ? "Match roster student" : "Choose roster student"}
             </label>
             <input
               id={rosterSearchId}
@@ -332,6 +334,7 @@ export function StudentResolutionField({
               </div>
             ) : null}
           </div>
+          {allowCreate ? (
           <Button
             type="button"
             size="sm"
@@ -346,6 +349,7 @@ export function StudentResolutionField({
             <UserPlus aria-hidden="true" className="size-4 text-primary" />
             Add @{handle} as a new student
           </Button>
+          ) : null}
         </div>
       )}
     </div>

@@ -72,7 +72,8 @@ const agreementSteps: readonly AgreementStep[] = [
         <p>
           Do not enter real names, initials, student IDs, dates of birth,
           disability information, behavior details, academic records, or
-          anything else that could identify a real student.
+          anything else that could identify a real student. Do not photograph
+          or upload real student work during this beta.
         </p>
       </>
     ),

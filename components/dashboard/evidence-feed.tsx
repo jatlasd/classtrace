@@ -48,6 +48,13 @@ import {
   upsertSessionDraft,
   type SessionDraftStorage,
 } from "@/lib/evidence/session-draft-storage";
+import {
+  loadPhotoDraft,
+  prunePhotoDrafts,
+  removePhotoDraft,
+  savePhotoDraft,
+  type PhotoDraft,
+} from "@/lib/evidence/photo-draft-storage";
 import { buildNoteDraft, type NoteDraft } from "@/lib/note-processing";
 import { routes } from "@/lib/routes";
 import {
@@ -71,6 +78,8 @@ type EvidenceFeedProps = {
 
 type DraftFeedItem = FeedItem & {
   reviewOpen: boolean;
+  photo?: PhotoDraft;
+  photoRecoveryWarning?: string;
 };
 
 type BlockedCaptureStudentResolution = Extract<
@@ -168,24 +177,44 @@ export function EvidenceFeed({
   useEffect(() => {
     const storage = getBrowserSessionStorage();
     sessionStorageRef.current = storage;
-    const hydrationTimer = window.setTimeout(() => {
+    let cancelled = false;
+    const hydrationTimer = window.setTimeout(async () => {
       const restored = loadSessionDrafts(storage, workspaceId);
-
-      setDraftItems(
-        restored.drafts
-          .map((sessionDraft) => ({
+      const restoredItems = await Promise.all(
+        restored.drafts.map(async (sessionDraft) => {
+          const photo = sessionDraft.hasPhoto
+            ? await loadPhotoDraft(workspaceId, sessionDraft.id)
+            : null;
+          return {
             id: sessionDraft.id,
             draft: buildNoteDraft(sessionDraft.rawNote),
             timestamp: formatSessionDraftTimestamp(sessionDraft.capturedAt),
             timestampMs: sessionDraft.capturedAt,
             reviewOpen: false,
-          }))
-          .sort((a, b) => b.timestampMs - a.timestampMs)
+            photo: photo ?? undefined,
+            photoRecoveryWarning:
+              sessionDraft.hasPhoto && !photo && sessionDraft.rawNote.trim()
+                ? "The draft photo could not be restored. Choose it again before saving."
+                : undefined,
+          } satisfies DraftFeedItem;
+        })
       );
+      const usableItems = restoredItems
+        .filter((item) => item.draft.parsed.rawNote.trim() || item.photo)
+        .sort((a, b) => b.timestampMs - a.timestampMs);
+      await prunePhotoDrafts(
+        workspaceId,
+        new Set(usableItems.map((item) => item.id))
+      );
+      if (cancelled) return;
+      setDraftItems(usableItems);
       setHydratedWorkspaceId(workspaceId);
     }, 0);
 
-    return () => window.clearTimeout(hydrationTimer);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(hydrationTimer);
+    };
   }, [workspaceId]);
 
   useEffect(() => {
@@ -202,6 +231,7 @@ export function EvidenceFeed({
           id: item.id,
           rawNote: item.draft.parsed.rawNote,
           capturedAt: item.timestampMs,
+          hasPhoto: Boolean(item.photo),
         }))
     );
   }, [draftItems, sessionDraftsReady, workspaceId]);
@@ -217,11 +247,17 @@ export function EvidenceFeed({
     function purgeExpiredDrafts(): void {
       const now = Date.now();
       loadSessionDrafts(storage, workspaceId, now);
-      setDraftItems((current) =>
-        current.filter(
+      setDraftItems((current) => {
+        const active = current.filter(
           (item) => isValidated(item) || isCurrentLocalDay(item.timestampMs, now)
-        )
-      );
+        );
+        void prunePhotoDrafts(
+          workspaceId,
+          new Set(active.filter((item) => !isValidated(item)).map((item) => item.id)),
+          now
+        );
+        return active;
+      });
     }
 
     function scheduleMidnightPurge(): void {
@@ -331,10 +367,11 @@ export function EvidenceFeed({
     visibleDraftItems.length + visibleEvidenceRecords.length;
   const hasVisibleFeedItems = visibleFeedItemCount > 0;
 
-  function handleDraft(
+  async function handleDraft(
     draft: NoteDraft,
-    identity: { id: string; capturedAt: number }
-  ) {
+    identity: { id: string; capturedAt: number },
+    photo?: PhotoDraft
+  ): Promise<void> {
     const resolution = resolveCaptureStudents(
       draft.parsed.mentions,
       activeRosterStudents
@@ -342,7 +379,8 @@ export function EvidenceFeed({
 
     if (
       resolution.status !== "resolved_one_student" &&
-      resolution.status !== "unresolved_student"
+      resolution.status !== "unresolved_student" &&
+      !(photo && resolution.status === "no_student_mentioned")
     ) {
       handleInvalidCaptureEdit(resolution);
       return;
@@ -355,11 +393,25 @@ export function EvidenceFeed({
       timestamp: "Just now",
       timestampMs: identity.capturedAt,
       reviewOpen: false,
+      photo,
     };
+    const photoStored = photo
+      ? await savePhotoDraft({
+          workspaceId,
+          draftId: identity.id,
+          expiresAt: nextLocalMidnight(identity.capturedAt),
+          photo,
+        })
+      : true;
+    if (!photoStored) {
+      newItem.photoRecoveryWarning =
+        "This photo is available now but cannot be recovered after a refresh.";
+    }
     upsertSessionDraft(sessionStorageRef.current, workspaceId, {
       id: newItem.id,
       rawNote: draft.parsed.rawNote,
       capturedAt: identity.capturedAt,
+      hasPhoto: Boolean(photo),
     });
     setDraftItems((current) => [newItem, ...current]);
   }
@@ -400,13 +452,20 @@ export function EvidenceFeed({
     saveInput: SaveValidatedEvidenceActionInput
   ): Promise<SaveValidatedEvidenceActionResult> {
     setCaptureEditError("");
-    const result = await saveValidatedEvidence(saveInput);
+    const item = draftItems.find((candidate) => candidate.id === id);
+    const formData = new FormData();
+    formData.set("evidence", JSON.stringify(saveInput));
+    if (item?.photo) {
+      formData.set("photo", item.photo.blob);
+    }
+    const result = await saveValidatedEvidence(formData);
 
     if (!result.success) {
       return result;
     }
 
     removeSessionDraft(sessionStorageRef.current, workspaceId, id);
+    await removePhotoDraft(workspaceId, id);
 
     setDraftItems((current) =>
       current.map((item) =>
@@ -456,6 +515,7 @@ export function EvidenceFeed({
         id,
         rawNote: nextDraft.parsed.rawNote,
         capturedAt: currentItem.timestampMs,
+        hasPhoto: Boolean(currentItem.photo),
       });
     }
     setDraftItems((current) =>
@@ -479,7 +539,48 @@ export function EvidenceFeed({
   function handleDeleteCapture(id: string) {
     setCaptureEditError("");
     removeSessionDraft(sessionStorageRef.current, workspaceId, id);
+    void removePhotoDraft(workspaceId, id);
     setDraftItems((current) => current.filter((item) => item.id !== id));
+  }
+
+  async function handlePhotoChanged(id: string, photo: PhotoDraft): Promise<void> {
+    const item = draftItems.find((candidate) => candidate.id === id);
+    if (!item) return;
+    const stored = await savePhotoDraft({
+      workspaceId,
+      draftId: id,
+      expiresAt: nextLocalMidnight(item.timestampMs),
+      photo,
+    });
+    setDraftItems((current) =>
+      current.map((candidate) =>
+        candidate.id === id
+          ? {
+              ...candidate,
+              photo,
+              photoRecoveryWarning: stored
+                ? undefined
+                : "This photo is available now but cannot be recovered after a refresh.",
+            }
+          : candidate
+      )
+    );
+  }
+
+  function handlePhotoRemoved(id: string): void {
+    void removePhotoDraft(workspaceId, id);
+    setDraftItems((current) =>
+      current
+        .map((candidate) =>
+          candidate.id === id
+            ? { ...candidate, photo: undefined, photoRecoveryWarning: undefined }
+            : candidate
+        )
+        .filter(
+          (candidate) =>
+            candidate.id !== id || candidate.draft.parsed.rawNote.trim().length > 0
+        )
+    );
   }
 
   function handleReviewOpenChange(id: string, reviewOpen: boolean): void {
@@ -587,6 +688,7 @@ export function EvidenceFeed({
             key={item.id}
             draft={item.draft}
             timestamp={item.timestamp}
+            capturedAt={item.timestampMs}
             validation={item.validation}
             rosterStudents={activeRosterStudents}
             classGroups={classGroups}
@@ -594,6 +696,10 @@ export function EvidenceFeed({
               handleValidate(item.id, fields, saveInput)
             }
             onCreateStudent={handleCreateStudent}
+            photo={item.photo}
+            photoRecoveryWarning={item.photoRecoveryWarning}
+            onPhotoChange={(photo) => handlePhotoChanged(item.id, photo)}
+            onPhotoRemove={() => handlePhotoRemoved(item.id)}
             onEdit={(rawNote) => handleEditCapture(item.id, rawNote)}
             onDelete={() => handleDeleteCapture(item.id)}
             reviewOpen={item.reviewOpen}

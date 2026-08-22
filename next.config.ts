@@ -2,7 +2,13 @@ import type { NextConfig } from "next";
 import { withSentryConfig } from "@sentry/nextjs";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  allowedDevOrigins: ["festive-reprint-thermal.ngrok-free.dev"],
+
+  experimental: {
+    serverActions: {
+      bodySizeLimit: "2mb",
+    },
+  },
 };
 
 export default withSentryConfig(nextConfig, {

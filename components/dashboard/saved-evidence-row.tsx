@@ -177,7 +177,7 @@ export function SavedEvidenceRow({
             <div className="mt-3 space-y-3 border-y border-border bg-muted/20 px-3 py-3">
               <p className="text-xs leading-relaxed text-muted-foreground">
                 Archive this evidence? It will be hidden from default evidence
-                views but kept in your records.
+                views but kept in your records{record.hasPhoto ? ", including its photo" : ""}.
               </p>
               <div className="flex flex-wrap gap-2">
                 <Button
@@ -216,7 +216,7 @@ export function SavedEvidenceRow({
           {isConfirmingDelete ? (
             <div className="mt-3 space-y-3 border-y border-destructive/30 bg-destructive/5 px-3 py-3">
               <p className="text-xs font-medium leading-relaxed text-destructive">
-                Permanently delete this evidence record? This cannot be undone.
+                Permanently delete this evidence record{record.hasPhoto ? " and its photo" : ""}? This cannot be undone.
               </p>
               <div className="flex flex-wrap gap-2">
                 <Button

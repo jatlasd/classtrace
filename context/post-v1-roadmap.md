@@ -9,6 +9,7 @@ This is strategic direction, not an active implementation queue. Any item still 
 - Global one-student text capture
 - Deterministic draft interpretation
 - Teacher-approved Evidence notes and structured fields
+- One teacher-validated photo per evidence record with local-only draft handling
 - Paged evidence feed, student timeline, printable report, and one-student CSV export
 - Archive/delete behavior with ownership checks
 - Private owner account administration with narrow destructive-action auditing
@@ -25,7 +26,7 @@ This is strategic direction, not an active implementation queue. Any item still 
 
 - Generative AI or AI-written documentation
 - Multi-student or classwide capture
-- Files, photos, audio, PDFs, or attachments
+- Multiple photos, audio, video, PDFs, arbitrary files, or general attachments
 - SIS/LMS/Classroom/Clever/ClassLink integrations
 - Gradebook or IEP-writing features
 - Parent communication

@@ -42,6 +42,13 @@ const betaAgreementMigrationPath = join(
   "20260727000000_add_beta_agreement_acceptance",
   "migration.sql"
 );
+const evidencePhotoMigrationPath = join(
+  projectRoot,
+  "prisma",
+  "migrations",
+  "20260821000000_add_evidence_photos",
+  "migration.sql"
+);
 
 const schema = readFileSync(schemaPath, "utf8");
 const envExample = readFileSync(envExamplePath, "utf8");
@@ -123,6 +130,37 @@ describe("Prisma database foundation", () => {
     expect(schema).toContain("evidenceType");
     expect(schema).toContain("validatedAt");
     expect(schema).not.toMatch(/\b(rawNote|draftNote|originalText|prompt|aiSummary)\b/i);
+  });
+
+  it("defines one workspace-scoped photo with bytea storage and cascade deletion", () => {
+    expect(existsSync(evidencePhotoMigrationPath)).toBe(true);
+    const migration = readFileSync(evidencePhotoMigrationPath, "utf8");
+
+    expect(getPrismaModelFields("EvidencePhoto")).toEqual([
+      "id String",
+      "workspaceId String",
+      "evidenceRecordId String",
+      "imageData Bytes",
+      "contentType String",
+      "byteSize Int",
+      "width Int",
+      "height Int",
+      "createdAt DateTime",
+      "workspace Workspace",
+      "evidenceRecord EvidenceRecord",
+    ]);
+    expect(schema).toContain("summary         String?");
+    expect(schema).toContain("evidenceType    String?");
+    expect(schema).toContain("@@unique([workspaceId, evidenceRecordId])");
+    expect(migration).toContain('"imageData" BYTEA NOT NULL');
+    expect(migration).toContain(
+      'FOREIGN KEY ("workspaceId", "evidenceRecordId")'
+    );
+    expect(migration).toContain(
+      'REFERENCES "EvidenceRecord"("workspaceId", "id")'
+    );
+    expect(migration).toContain("ON DELETE CASCADE");
+    expect(migration).not.toMatch(/filename|EXIF|location|camera/i);
   });
 
   it("adds nullable evidence notes without fabricating legacy note text", () => {

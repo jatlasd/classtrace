@@ -18,8 +18,9 @@ export type StudentTimelineEvidenceRecord = {
   id: string;
   evidenceDate: string;
   evidenceNote?: string;
-  summary: string;
-  evidenceType: string;
+  summary?: string;
+  evidenceType?: string;
+  hasPhoto?: boolean;
   topic?: string;
   performance?: string;
   behavior?: string;

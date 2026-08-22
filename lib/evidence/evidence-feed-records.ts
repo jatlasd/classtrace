@@ -40,6 +40,7 @@ type EvidenceFeedFindManyArgs = {
         name: true;
       };
     };
+    photo: { select: { id: true } };
   };
 };
 
@@ -48,8 +49,8 @@ type EvidenceFeedRecordFromDatabase = {
   rosterStudentId: string;
   evidenceDate: Date;
   evidenceNote: string | null;
-  summary: string;
-  evidenceType: string;
+  summary: string | null;
+  evidenceType: string | null;
   topic: string | null;
   performance: string | null;
   behavior: string | null;
@@ -66,6 +67,7 @@ type EvidenceFeedRecordFromDatabase = {
   classGroup: {
     name: string;
   } | null;
+  photo?: { id: string } | null;
 };
 
 export type EvidenceFeedDatabase = {
@@ -84,8 +86,9 @@ export type EvidenceFeedRecord = {
   classGroupName?: string;
   evidenceDate: string;
   evidenceNote?: string;
-  summary: string;
-  evidenceType: string;
+  summary?: string;
+  evidenceType?: string;
+  hasPhoto?: boolean;
   topic?: string;
   performance?: string;
   behavior?: string;
@@ -124,8 +127,7 @@ function toFeedRecord(record: EvidenceFeedRecordFromDatabase): EvidenceFeedRecor
     studentDisplayName: record.rosterStudent.displayName,
     studentMentionHandle: record.rosterStudent.mentionHandle,
     evidenceDate: record.evidenceDate.toISOString(),
-    summary: record.summary,
-    evidenceType: record.evidenceType,
+    hasPhoto: record.photo !== null,
     tags: [...record.tags],
     followUpNeeded: record.followUpNeeded,
     validatedAt: record.validatedAt.toISOString(),
@@ -138,12 +140,20 @@ function toFeedRecord(record: EvidenceFeedRecordFromDatabase): EvidenceFeedRecor
   const performance = optionalText(record.performance);
   const behavior = optionalText(record.behavior);
   const followUpNotes = optionalText(record.followUpNotes);
+  const summary = optionalText(record.summary);
+  const evidenceType = optionalText(record.evidenceType);
 
   if (classGroupName) {
     feedRecord.classGroupName = classGroupName;
   }
   if (evidenceNote) {
     feedRecord.evidenceNote = evidenceNote;
+  }
+  if (summary) {
+    feedRecord.summary = summary;
+  }
+  if (evidenceType) {
+    feedRecord.evidenceType = evidenceType;
   }
   if (topic) {
     feedRecord.topic = topic;
@@ -208,6 +218,7 @@ export async function getEvidenceFeedPageForWorkspace(
           name: true,
         },
       },
+      photo: { select: { id: true } },
     },
   });
 

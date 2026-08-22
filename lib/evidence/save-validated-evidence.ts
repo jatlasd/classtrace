@@ -5,6 +5,10 @@ import { normalizeTag } from "@/lib/format-tag";
 import { prisma } from "@/lib/db/prisma";
 import { withSerializableTransactionRetry } from "@/lib/db/serializable-transaction";
 import { captureOperationalError } from "@/lib/monitoring/capture-operational-error";
+import {
+  validateAndNormalizeEvidencePhoto,
+  type ValidatedEvidencePhoto,
+} from "@/lib/evidence/evidence-photo";
 import { INPUT_LIMITS } from "@/lib/validation/input-limits";
 
 type RosterStudentFindFirstArgs = {
@@ -33,9 +37,9 @@ type EvidenceRecordCreateData = {
   rosterStudentId: string;
   classGroupId?: string;
   evidenceDate: Date;
-  evidenceNote: string;
-  summary: string;
-  evidenceType: string;
+  evidenceNote?: string;
+  summary?: string;
+  evidenceType?: string;
   topic?: string;
   performance?: string;
   behavior?: string;
@@ -43,6 +47,9 @@ type EvidenceRecordCreateData = {
   followUpNeeded: boolean;
   followUpNotes?: string;
   validatedAt: Date;
+  photo?: {
+    create: ValidatedEvidencePhoto & { workspaceId: string };
+  };
 };
 
 type EvidenceRecordCreateArgs = {
@@ -81,14 +88,15 @@ export type SaveValidatedEvidenceDatabase = {
 export type SaveValidatedEvidenceInput = {
   rosterStudentId: string;
   evidenceDate?: string;
-  evidenceNote: string;
-  summary: string;
-  evidenceType: string;
+  evidenceNote?: string;
+  summary?: string;
+  evidenceType?: string;
   topic?: string;
   performance?: string;
   behavior?: string[];
   tags: string[];
   followUpNotes?: string[];
+  photoBytes?: Uint8Array;
 };
 
 export type SaveValidatedEvidenceResult =
@@ -137,7 +145,21 @@ const evidenceDatabase: SaveValidatedEvidenceDatabase = {
             const existingEvidenceCount = await transaction.evidenceRecord.count({
               where: { workspaceId: args.data.workspaceId },
             });
-            const evidence = await transaction.evidenceRecord.create(args);
+            const { photo, ...evidenceData } = args.data;
+            const evidence = await transaction.evidenceRecord.create({
+              data: evidenceData,
+              select: args.select,
+            });
+            if (photo) {
+              await transaction.evidencePhoto.create({
+                data: {
+                  ...photo.create,
+                  imageData: new Uint8Array(photo.create.imageData),
+                  evidenceRecordId: evidence.id,
+                },
+                select: { id: true },
+              });
+            }
 
             return {
               ...evidence,
@@ -246,45 +268,46 @@ export async function saveValidatedEvidenceForWorkspace(
     };
   }
 
-  const evidenceNote = normalizeRequiredText(args.input.evidenceNote);
+  const evidenceNote = normalizeOptionalText(args.input.evidenceNote);
+  const submittedPhotoBytes = args.input.photoBytes;
 
-  if (!evidenceNote) {
+  if (!evidenceNote && !submittedPhotoBytes) {
     return {
       success: false,
-      error: "Add an evidence note before saving evidence.",
+      error: "Add an evidence note or photo before saving evidence.",
     };
   }
 
-  if (evidenceNote.length > INPUT_LIMITS.evidenceNote) {
+  if (evidenceNote && evidenceNote.length > INPUT_LIMITS.evidenceNote) {
     return {
       success: false,
       error: `Evidence note must be ${INPUT_LIMITS.evidenceNote.toLocaleString()} characters or fewer.`,
     };
   }
 
-  const summary = normalizeRequiredText(args.input.summary);
+  const summary = normalizeOptionalText(args.input.summary);
 
-  if (!summary) {
+  if (evidenceNote && !submittedPhotoBytes && !summary) {
     return { success: false, error: "Add a summary before saving evidence." };
   }
 
-  if (summary.length > INPUT_LIMITS.evidenceSummary) {
+  if (summary && summary.length > INPUT_LIMITS.evidenceSummary) {
     return {
       success: false,
       error: `Summary must be ${INPUT_LIMITS.evidenceSummary.toLocaleString()} characters or fewer.`,
     };
   }
 
-  const evidenceType = normalizeRequiredText(args.input.evidenceType);
+  const evidenceType = normalizeOptionalText(args.input.evidenceType);
 
-  if (!evidenceType) {
+  if (evidenceNote && !submittedPhotoBytes && !evidenceType) {
     return {
       success: false,
       error: "Choose an evidence type before saving evidence.",
     };
   }
 
-  if (evidenceType.length > INPUT_LIMITS.evidenceType) {
+  if (evidenceType && evidenceType.length > INPUT_LIMITS.evidenceType) {
     return {
       success: false,
       error: `Evidence type must be ${INPUT_LIMITS.evidenceType} characters or fewer.`,
@@ -357,6 +380,15 @@ export async function saveValidatedEvidenceForWorkspace(
     return { success: false, error: "Use a valid evidence date." };
   }
 
+  let photo: ValidatedEvidencePhoto | undefined;
+  if (submittedPhotoBytes) {
+    const photoResult = await validateAndNormalizeEvidencePhoto(submittedPhotoBytes);
+    if (!photoResult.success) {
+      return photoResult;
+    }
+    photo = photoResult.photo;
+  }
+
   const student = await database.rosterStudent.findFirst({
     where: {
       id: rosterStudentId,
@@ -418,6 +450,14 @@ export async function saveValidatedEvidenceForWorkspace(
         followUpNeeded: Boolean(followUpNotes),
         followUpNotes,
         validatedAt: now,
+        photo: photo
+          ? {
+              create: {
+                ...photo,
+                workspaceId: args.workspaceId,
+              },
+            }
+          : undefined,
       },
       select: { id: true },
     });

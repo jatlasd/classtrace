@@ -70,4 +70,32 @@ describe("StudentReportPage", () => {
 
     expect(screen.getByText("No validated evidence yet.")).toBeTruthy();
   });
+
+  it("renders photo-only evidence eagerly within the printable entry", () => {
+    render(
+      <StudentReportPage
+        student={student}
+        dateRange={allEvidence}
+        evidenceRecords={[
+          {
+            id: "evidence_photo",
+            evidenceDate: "2026-06-16T14:00:00.000Z",
+            hasPhoto: true,
+            tags: [],
+            followUpNeeded: false,
+            validatedAt: "2026-06-16T14:05:00.000Z",
+            createdAt: "2026-06-16T14:06:00.000Z",
+            classGroupName: "Reading",
+          },
+        ]}
+      />
+    );
+
+    const photo = screen.getByRole("img", {
+      name: "Photo evidence from June 16, 2026",
+    });
+    expect(photo.getAttribute("src")).toBe("/app/evidence/evidence_photo/photo");
+    expect(photo.getAttribute("loading")).toBe("eager");
+    expect(photo.className).toContain("print:max-h-[6.5in]");
+  });
 });

@@ -19,7 +19,13 @@ import {
 } from "@/lib/evidence/student-report-records";
 import { INPUT_LIMITS } from "@/lib/validation/input-limits";
 
-function buildStudent() {
+function buildStudent(): {
+  id: string;
+  displayName: string;
+  mentionHandle: string;
+  schoolLocalId: string | null;
+  classGroup: { name: string } | null;
+} {
   return {
     id: "student_mary",
     displayName: "Mary",
@@ -36,7 +42,23 @@ function buildEvidenceRecord(overrides?: {
   evidenceDate?: Date;
   evidenceNote?: string | null;
   classGroup?: { name: string } | null;
-}) {
+}): {
+  id: string;
+  evidenceDate: Date;
+  evidenceNote: string | null;
+  summary: string | null;
+  evidenceType: string | null;
+  topic: string | null;
+  performance: string | null;
+  behavior: string | null;
+  tags: string[];
+  followUpNeeded: boolean;
+  followUpNotes: string | null;
+  validatedAt: Date;
+  createdAt: Date;
+  classGroup: { name: string } | null;
+  photo: { id: string } | null;
+} {
   return {
     id: overrides?.id ?? "evidence_1",
     evidenceDate:
@@ -57,6 +79,7 @@ function buildEvidenceRecord(overrides?: {
       overrides?.classGroup === undefined
         ? { name: "Reading group" }
         : overrides.classGroup,
+    photo: null,
   };
 }
 
@@ -237,6 +260,7 @@ describe("getStudentReportRecordsForWorkspace", () => {
               name: true,
             },
           },
+          photo: { select: { id: true } },
         },
       },
     ]);
@@ -255,6 +279,7 @@ describe("getStudentReportRecordsForWorkspace", () => {
           evidenceNote: "worked through a reading passage with one prompt",
           summary: "Mary worked through a reading passage with one prompt.",
           evidenceType: "Academic check-in",
+          hasPhoto: false,
           topic: "reading",
           performance: "worked through the passage",
           behavior: "used a strategy",

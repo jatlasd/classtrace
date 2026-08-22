@@ -1,0 +1,44 @@
+// @vitest-environment jsdom
+
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { afterEach, describe, expect, it } from "vitest";
+import { EvidenceRecordContent } from "./evidence-record-content";
+
+afterEach(cleanup);
+
+describe("EvidenceRecordContent photo evidence", () => {
+  it("uses an authenticated photo as the primary photo-only content", () => {
+    render(
+      <EvidenceRecordContent
+        record={{
+          id: "evidence_1",
+          evidenceDate: "2026-08-21T12:00:00.000Z",
+          hasPhoto: true,
+          tags: [],
+        }}
+      />
+    );
+
+    const image = screen.getByRole("img", {
+      name: "Photo evidence from August 21, 2026",
+    });
+    expect(image.getAttribute("src")).toBe("/app/evidence/evidence_1/photo");
+    expect(screen.queryByText(/Legacy structured entry/)).toBeNull();
+  });
+
+  it("shows a quiet unavailable state when the authenticated read fails", () => {
+    render(
+      <EvidenceRecordContent
+        record={{
+          id: "evidence_1",
+          evidenceDate: "2026-08-21T12:00:00.000Z",
+          hasPhoto: true,
+          tags: [],
+        }}
+      />
+    );
+
+    fireEvent.error(screen.getByRole("img"));
+    expect(screen.getByText("Photo evidence is unavailable.")).toBeTruthy();
+  });
+});

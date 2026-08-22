@@ -29,9 +29,9 @@ Protect these invariants:
 - Saved evidence belongs to exactly one resolved roster student.
 - Zero-student and multi-student captures cannot be saved.
 - Teacher validation is required before permanent save.
-- New evidence stores the teacher-reviewed Evidence note exactly as approved.
+- New evidence stores any teacher-reviewed Evidence note exactly as approved.
 - Parsing is deterministic. Do not add generative AI.
-- Evidence is text-only. Do not add file, photo, audio, PDF, or attachment handling.
+- Evidence may contain one validated photo, an Evidence note, or both. Do not add multiple photos, audio, video, PDFs, arbitrary files, or a general attachment repository.
 - Every roster student and evidence record is isolated to one teacher workspace.
 - Every active student belongs to exactly one active class; capture remains global and student-specific.
 
@@ -39,10 +39,10 @@ Do not turn ClassTrace into a notebook, gradebook, SIS, IEP writer, parent commu
 
 ## Privacy contract
 
-- Never log raw notes.
+- Never log raw notes or photo bytes.
 - Never store raw notes in the database, exports, timelines, reports, `localStorage`, analytics, or server-side draft storage.
-- The only approved post-capture draft persistence is workspace-scoped, versioned `sessionStorage` until successful validation, explicit deletion, or the next device-local midnight.
-- Do not send student notes to external AI or telemetry services.
+- The only approved post-capture draft persistence is a workspace-scoped, versioned `sessionStorage` manifest plus encrypted photo bytes in IndexedDB until successful validation, explicit deletion, or the next device-local midnight. The usable photo key remains session-scoped.
+- Do not send student notes or photos to external AI or telemetry services.
 - Do not claim compliance, legal de-identification, district approval, or production safety.
 - Use only Jeremy, Stacy, Jeff, and Mary for fictional examples. Do not use real student names or `Jayden`.
 

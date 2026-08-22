@@ -43,13 +43,16 @@ type InterpretationReviewPanelProps = {
   ) => Promise<CreateStudentFromReviewResult>;
   onSavePendingChange?: (isPending: boolean) => void;
   onResolvedStudentChange?: (student: CaptureRosterStudent | null) => void;
+  hasPhoto?: boolean;
+  capturedAt?: number;
 };
 
 type ValidatedEvidenceSaveInput = {
   rosterStudentId: string;
-  evidenceNote: string;
-  summary: string;
-  evidenceType: string;
+  evidenceDate?: string;
+  evidenceNote?: string;
+  summary?: string;
+  evidenceType?: string;
   topic?: string;
   performance?: string;
   behavior?: string[];
@@ -66,6 +69,7 @@ type ValidatedEvidenceSaveResult =
   | { success: false; error: string };
 
 type FormState = {
+  evidenceDate: string;
   evidenceNote: string;
   evidenceType: string;
   topic: string;
@@ -75,16 +79,29 @@ type FormState = {
   followUpNotes: string;
 };
 
-function displayToFormState(display: DraftDisplay): FormState {
+function localDateInputValue(timestamp = Date.now()): string {
+  const date = new Date(timestamp);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function displayToFormState(
+  display: DraftDisplay,
+  photoOnly: boolean,
+  capturedAt?: number
+): FormState {
   const fields = displayToInterpretationFields(display);
   return {
+    evidenceDate: localDateInputValue(capturedAt),
     evidenceNote: display.cleanText,
-    evidenceType: fields.evidenceType,
-    topic: fields.topic ?? "",
-    performance: fields.performance ?? "",
-    behavior: joinOptionalList(fields.behavior),
-    tags: fields.tags.map(formatTagLabel).join(", "),
-    followUpNotes: joinFollowUpNotes(fields.followUpNotes),
+    evidenceType: photoOnly ? "" : fields.evidenceType,
+    topic: photoOnly ? "" : (fields.topic ?? ""),
+    performance: photoOnly ? "" : (fields.performance ?? ""),
+    behavior: photoOnly ? "" : joinOptionalList(fields.behavior),
+    tags: photoOnly ? "" : fields.tags.map(formatTagLabel).join(", "),
+    followUpNotes: photoOnly ? "" : joinFollowUpNotes(fields.followUpNotes),
   };
 }
 
@@ -163,9 +180,12 @@ function InterpretationReviewPanelContent({
   onCreateStudent,
   onSavePendingChange,
   onResolvedStudentChange,
+  hasPhoto = false,
+  capturedAt,
 }: InterpretationReviewPanelProps) {
   const fieldIdPrefix = useId();
   const evidenceNoteId = `${fieldIdPrefix}-evidence-note`;
+  const evidenceDateId = `${fieldIdPrefix}-evidence-date`;
   const evidenceTypeId = `${fieldIdPrefix}-evidence-type`;
   const topicId = `${fieldIdPrefix}-topic`;
   const performanceId = `${fieldIdPrefix}-performance`;
@@ -173,7 +193,10 @@ function InterpretationReviewPanelContent({
   const tagsId = `${fieldIdPrefix}-tags`;
   const followUpsId = `${fieldIdPrefix}-follow-ups`;
   const studentResolutionErrorId = `${fieldIdPrefix}-student-resolution-error`;
-  const [form, setForm] = useState<FormState>(() => displayToFormState(display));
+  const photoOnly = hasPhoto && !display.cleanText.trim();
+  const [form, setForm] = useState<FormState>(() =>
+    displayToFormState(display, photoOnly, capturedAt)
+  );
   const [validationError, setValidationError] = useState("");
   const validationErrorRef = useRef<HTMLParagraphElement | null>(null);
   const studentResolutionRef = useRef<HTMLDivElement | null>(null);
@@ -198,6 +221,9 @@ function InterpretationReviewPanelContent({
     parsedStudentValidation.studentNames.length === 1
       ? parsedStudentValidation.studentNames[0]
       : "";
+  const needsStudentResolution =
+    parsedStudentValidation.status === "unresolved_student" ||
+    parsedStudentValidation.status === "no_student";
   const isBusy = isSaving || isResolvingStudent;
 
   function updateField<K extends keyof FormState>(key: K, value: FormState[K]) {
@@ -263,22 +289,38 @@ function InterpretationReviewPanelContent({
       return;
     }
 
-    if (!form.evidenceType.trim()) {
+    if (!photoOnly && !form.evidenceType.trim()) {
       showValidationError("Choose an evidence type before validating this draft.");
       return;
     }
 
     const evidenceNote = form.evidenceNote.trim();
 
-    if (!evidenceNote) {
-      showValidationError("Add an evidence note before saving evidence.");
+    if (!evidenceNote && !hasPhoto) {
+      showValidationError("Add an evidence note or photo before saving evidence.");
+      return;
+    }
+
+    const evidenceDate = new Date(`${form.evidenceDate}T12:00:00`);
+    if (!form.evidenceDate || Number.isNaN(evidenceDate.getTime())) {
+      showValidationError("Choose a valid evidence date before saving.");
       return;
     }
 
     const fields = formStateToFields(form, studentValidation.studentName);
-    const summary = buildValidatedEvidenceSummary(fields);
+    const hasStructuredFields = Boolean(
+      fields.evidenceType.trim() ||
+        fields.topic ||
+        fields.performance ||
+        fields.behavior?.length ||
+        fields.tags.length ||
+        fields.followUpNotes.length
+    );
+    const summary = hasStructuredFields
+      ? buildValidatedEvidenceSummary(fields)
+      : undefined;
 
-    if (!summary) {
+    if (evidenceNote && !hasPhoto && !summary) {
       showValidationError("Add a summary before saving evidence.");
       return;
     }
@@ -293,9 +335,10 @@ function InterpretationReviewPanelContent({
     try {
       result = await onConfirm(fields, {
         rosterStudentId: studentValidation.studentId,
-        evidenceNote,
+        evidenceDate: evidenceDate.toISOString(),
+        evidenceNote: evidenceNote || undefined,
         summary,
-        evidenceType: fields.evidenceType,
+        evidenceType: fields.evidenceType || undefined,
         topic: fields.topic,
         performance: fields.performance,
         behavior: fields.behavior,
@@ -326,8 +369,8 @@ function InterpretationReviewPanelContent({
           Review before saving
         </h3>
         <p className="text-sm leading-relaxed text-muted-foreground">
-          The Evidence note is the saved observation. Structured details below
-          support searching and scanning.
+          Review the student, date, optional Evidence note, and photo before
+          anything is saved permanently.
         </p>
       </div>
 
@@ -348,9 +391,23 @@ function InterpretationReviewPanelContent({
             className="min-h-[84px] resize-none text-sm"
           />
           <p className="text-xs leading-relaxed text-muted-foreground">
-            This note will be saved exactly as shown.
+            {hasPhoto
+              ? "Optional for photo evidence. Any note is saved exactly as shown."
+              : "This note will be saved exactly as shown."}
           </p>
         </div>
+
+        <FieldRow label="Evidence date" htmlFor={evidenceDateId}>
+          <input
+            id={evidenceDateId}
+            type="date"
+            value={form.evidenceDate}
+            onChange={(event) => updateField("evidenceDate", event.target.value)}
+            disabled={isBusy || Boolean(savedEvidenceId)}
+            required
+            className={fieldInputClass}
+          />
+        </FieldRow>
 
         <div className="border-t border-border/50 pt-3 sm:col-span-2">
           <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
@@ -358,7 +415,7 @@ function InterpretationReviewPanelContent({
           </p>
         </div>
 
-        {unresolvedMention ? (
+        {needsStudentResolution ? (
           <div
             ref={studentResolutionRef}
             tabIndex={-1}
@@ -395,7 +452,9 @@ function InterpretationReviewPanelContent({
             ) : (
               <>
                 <p className="text-sm font-medium text-foreground">
-                  Resolve @{unresolvedMention}
+                  {unresolvedMention
+                    ? `Resolve @${unresolvedMention}`
+                    : "Choose one student"}
                 </p>
                 <StudentResolutionField
                   mention={unresolvedMention}
@@ -411,6 +470,7 @@ function InterpretationReviewPanelContent({
                   onCreateStudent={onCreateStudent}
                   onPendingChange={handleStudentResolutionPendingChange}
                   onError={showStudentResolutionError}
+                  allowCreate={Boolean(unresolvedMention)}
                 />
                 {studentResolutionError ? (
                   <p
@@ -447,6 +507,7 @@ function InterpretationReviewPanelContent({
             disabled={isBusy || Boolean(savedEvidenceId)}
             className={fieldInputClass}
           >
+            <option value="">Optional for photo-only evidence</option>
             {!NOTE_TYPE_OPTIONS.includes(form.evidenceType) && (
               <option value={form.evidenceType}>{form.evidenceType}</option>
             )}
@@ -590,7 +651,7 @@ function InterpretationReviewPanelContent({
             ? "Evidence saved"
             : isSaving
               ? "Saving evidence…"
-              : "Save validated evidence"}
+              : "Validate and save"}
         </Button>
         {!savedEvidenceId ? (
           <Button

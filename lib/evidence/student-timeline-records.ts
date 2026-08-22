@@ -43,6 +43,7 @@ type EvidenceRecordFindManyArgs = {
     followUpNotes: true;
     validatedAt: true;
     createdAt: true;
+    photo: { select: { id: true } };
   };
 };
 
@@ -58,8 +59,8 @@ type TimelineEvidenceFromDatabase = {
   id: string;
   evidenceDate: Date;
   evidenceNote: string | null;
-  summary: string;
-  evidenceType: string;
+  summary: string | null;
+  evidenceType: string | null;
   topic: string | null;
   performance: string | null;
   behavior: string | null;
@@ -68,6 +69,7 @@ type TimelineEvidenceFromDatabase = {
   followUpNotes: string | null;
   validatedAt: Date;
   createdAt: Date;
+  photo?: { id: string } | null;
 };
 
 export type StudentTimelineDatabase = {
@@ -95,8 +97,9 @@ export type StudentTimelineEvidenceRecord = {
   id: string;
   evidenceDate: string;
   evidenceNote?: string;
-  summary: string;
-  evidenceType: string;
+  summary?: string;
+  evidenceType?: string;
+  hasPhoto?: boolean;
   topic?: string;
   performance?: string;
   behavior?: string;
@@ -154,8 +157,7 @@ function toTimelineEvidence(
   const timelineRecord: StudentTimelineEvidenceRecord = {
     id: record.id,
     evidenceDate: record.evidenceDate.toISOString(),
-    summary: record.summary,
-    evidenceType: record.evidenceType,
+    hasPhoto: record.photo !== null,
     tags: [...record.tags],
     followUpNeeded: record.followUpNeeded,
     validatedAt: record.validatedAt.toISOString(),
@@ -167,9 +169,17 @@ function toTimelineEvidence(
   const performance = optionalText(record.performance);
   const behavior = optionalText(record.behavior);
   const followUpNotes = optionalText(record.followUpNotes);
+  const summary = optionalText(record.summary);
+  const evidenceType = optionalText(record.evidenceType);
 
   if (evidenceNote) {
     timelineRecord.evidenceNote = evidenceNote;
+  }
+  if (summary) {
+    timelineRecord.summary = summary;
+  }
+  if (evidenceType) {
+    timelineRecord.evidenceType = evidenceType;
   }
   if (topic) {
     timelineRecord.topic = topic;
@@ -244,6 +254,7 @@ export async function getStudentTimelineRecordsForWorkspace(
       followUpNotes: true,
       validatedAt: true,
       createdAt: true,
+      photo: { select: { id: true } },
     },
   });
 

@@ -18,7 +18,13 @@ import {
 } from "@/lib/evidence/student-timeline-records";
 import { INPUT_LIMITS } from "@/lib/validation/input-limits";
 
-function buildStudent() {
+function buildStudent(): {
+  id: string;
+  displayName: string;
+  mentionHandle: string;
+  schoolLocalId: string | null;
+  classGroup: { name: string } | null;
+} {
   return {
     id: "student_mary",
     displayName: "Mary",
@@ -30,7 +36,22 @@ function buildStudent() {
   };
 }
 
-function buildEvidenceRecord() {
+function buildEvidenceRecord(): {
+  id: string;
+  evidenceDate: Date;
+  evidenceNote: string | null;
+  summary: string | null;
+  evidenceType: string | null;
+  topic: string | null;
+  performance: string | null;
+  behavior: string | null;
+  tags: string[];
+  followUpNeeded: boolean;
+  followUpNotes: string | null;
+  validatedAt: Date;
+  createdAt: Date;
+  photo: { id: string } | null;
+} {
   return {
     id: "evidence_1",
     evidenceDate: new Date("2026-06-17T14:00:00.000Z"),
@@ -45,6 +66,7 @@ function buildEvidenceRecord() {
     followUpNotes: "Check comprehension during the next small group.",
     validatedAt: new Date("2026-06-17T14:05:00.000Z"),
     createdAt: new Date("2026-06-17T14:06:00.000Z"),
+    photo: null,
   };
 }
 
@@ -127,6 +149,7 @@ describe("getStudentTimelineRecordsForWorkspace", () => {
           followUpNotes: true,
           validatedAt: true,
           createdAt: true,
+          photo: { select: { id: true } },
         },
       },
     ]);
@@ -145,6 +168,7 @@ describe("getStudentTimelineRecordsForWorkspace", () => {
           evidenceNote: "worked through a reading passage with one prompt",
           summary: "Mary worked through a reading passage with one prompt.",
           evidenceType: "Academic check-in",
+          hasPhoto: false,
           topic: "reading",
           performance: "worked through the passage",
           behavior: "used a strategy",

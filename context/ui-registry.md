@@ -122,7 +122,7 @@ File: `components/dashboard/quick-capture-card.tsx`
 - The header states the review-before-save boundary once; compact composer
   guidance explains `@` student mentions and `#tags` without repeating it as
   decorative hint controls.
-- Mention input remains text-only and offers roster-backed suggestions.
+- Mention input remains text-only and offers roster-backed suggestions. Adjacent Take photo and Choose photo controls add one temporary work-sample photo without turning capture into a general upload form.
 - The textarea and mention-highlighter layers share the same font metrics,
   padding, border, wrapping, and box sizing. Mention emphasis uses a tonal
   background without changing glyph weight or spacing.
@@ -131,6 +131,7 @@ File: `components/dashboard/quick-capture-card.tsx`
   Capture action.
 - After the workspace's first successful save, one inline success panel links to the student's timeline/report and can return focus to this composer.
 - Do not turn capture into a multi-field form.
+- A selected photo is previewed in the capture surface with Replace and Remove controls, visible local-only guidance, and a written processing state.
 
 ## Capture review
 
@@ -165,6 +166,7 @@ Last imprinted: 2026-07-22
 - Use one ledger row: capture icon, compact status metadata, full-width source
   or review content, then inline actions. Do not add a nested card, shadow, or
   narrow action rail.
+- Photo-only drafts use the existing student-resolution control, keep structured fields empty unless the teacher supplies them, and may save only after one student and the evidence date are confirmed.
 
 ## Public trust and support pages
 
@@ -246,7 +248,7 @@ Last imprinted: 2026-07-12
 | Follow-up | top divider, muted body, foreground label |
 | Overflow | `break-words [overflow-wrap:anywhere]` |
 
-This component owns Evidence note versus legacy structured-entry copy, reviewed summary, structured chips, tags, and follow-up display across feed, timeline, and report. Do not copy that markup into a new read surface.
+This component owns Evidence note versus legacy structured-entry copy, reviewed summary, structured chips, tags, follow-up, and authenticated photo display across feed, timeline, and report. Do not copy that markup into a new read surface.
 Feed, timeline, and report rows may suppress the prose structured summary when
 the same reviewed fields are already visible as chips.
 

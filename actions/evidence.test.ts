@@ -49,6 +49,12 @@ const saveInput = {
   tags: ["reading"],
 };
 
+function saveFormData(): FormData {
+  const formData = new FormData();
+  formData.set("evidence", JSON.stringify(saveInput));
+  return formData;
+}
+
 describe("evidence Server Actions", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -62,7 +68,7 @@ describe("evidence Server Actions", () => {
       isFirstWorkspaceEvidence: true,
     });
 
-    await expect(saveValidatedEvidence(saveInput)).resolves.toEqual({
+    await expect(saveValidatedEvidence(saveFormData())).resolves.toEqual({
       success: true,
       evidenceId: "evidence_1",
       isFirstWorkspaceEvidence: true,
@@ -76,6 +82,10 @@ describe("evidence Server Actions", () => {
       2,
       "/app/students/student_mary"
     );
+    expect(mocks.revalidatePath).toHaveBeenNthCalledWith(
+      3,
+      "/app/students/student_mary/report"
+    );
   });
 
   it("does not revalidate a rejected save", async () => {
@@ -84,11 +94,29 @@ describe("evidence Server Actions", () => {
       error: "This student could not be found in your roster.",
     });
 
-    await expect(saveValidatedEvidence(saveInput)).resolves.toEqual({
+    await expect(saveValidatedEvidence(saveFormData())).resolves.toEqual({
       success: false,
       error: "This student could not be found in your roster.",
     });
     expect(mocks.revalidatePath).not.toHaveBeenCalled();
+  });
+
+  it("accepts the normalized photo only through final FormData", async () => {
+    mocks.saveValidatedEvidenceForWorkspace.mockResolvedValue({
+      success: true,
+      evidenceId: "evidence_photo",
+      isFirstWorkspaceEvidence: false,
+    });
+    const formData = saveFormData();
+    formData.set("photo", new Blob([new Uint8Array([1, 2, 3])], { type: "image/webp" }));
+
+    await expect(saveValidatedEvidence(formData)).resolves.toMatchObject({
+      success: true,
+    });
+    const call = mocks.saveValidatedEvidenceForWorkspace.mock.calls[0][0];
+    expect(call.workspaceId).toBe("workspace_1");
+    expect(call.input.photoBytes).toEqual(new Uint8Array([1, 2, 3]));
+    expect(call.input).not.toHaveProperty("filename");
   });
 
   it("scopes archive and delete actions and refreshes the affected student", async () => {
@@ -149,7 +177,7 @@ describe("evidence Server Actions", () => {
     mocks.getCurrentWorkspace.mockRejectedValue(failure);
 
     try {
-      await expect(saveValidatedEvidence(saveInput)).resolves.toEqual({
+      await expect(saveValidatedEvidence(saveFormData())).resolves.toEqual({
         success: false,
         error: "Failed to save evidence.",
       });

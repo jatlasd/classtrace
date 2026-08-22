@@ -42,8 +42,8 @@ The strongest early users are special education teachers, case managers, interve
   student or resolved by creating a student in an active class.
 - Permanent evidence must resolve to exactly one active roster student.
 - Deterministic rules suggest evidence type, topic, performance, behavior, tags, follow-up, and summary.
-- The teacher reviews and may edit the Evidence note and structured fields.
-- Saving creates a permanent evidence record; raw capture text is not part of that record.
+- The teacher reviews the student, date, optional Evidence note, optional photo, and structured fields.
+- Saving creates a permanent evidence record containing a reviewed note, one validated photo, or both; raw capture text and original photo data are not part of that record.
 - The first successful workspace save offers direct next steps to the student timeline, report, or another capture without creating a separate onboarding state.
 - Saved records appear in a paged global feed and student timeline.
 - A student report can be filtered by teacher-local dates and printed.
@@ -58,7 +58,7 @@ The strongest early users are special education teachers, case managers, interve
 ## Evidence states
 
 1. Composer text — transient React state.
-2. Captured draft — optional workspace/version-scoped `sessionStorage`, expiring at next device-local midnight.
+2. Captured draft — optional workspace/version-scoped `sessionStorage` manifest with encrypted local photo bytes in IndexedDB, expiring at next device-local midnight.
 3. Structured draft — deterministic interpretation for review.
 4. Teacher-approved evidence — durable database record.
 5. Read models — feed, timeline, report, and export derived from durable evidence.
@@ -93,7 +93,7 @@ ClassTrace is not:
 - An IEP-writing or official-document generator
 - A parent communication tool
 - An admin, organization, or staff-surveillance product
-- A file, photo, audio, PDF, or attachment repository
+- A general file, media, audio, video, PDF, or attachment repository
 - A generative-AI product
 - An analytics, billing, or workflow-automation platform
 

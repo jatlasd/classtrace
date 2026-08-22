@@ -27,7 +27,7 @@ export default function TermsPage() {
       title="ClassTrace beta terms"
       description="These plain-language terms set expectations for using an early ClassTrace beta. By creating or using an account, you agree to use the service within these limits."
       sections={sections}
-      lastUpdated="July 14, 2026"
+      lastUpdated="August 21, 2026"
     >
       <PublicNote>
         ClassTrace is an early beta, not a district system of record. It is not
@@ -38,8 +38,9 @@ export default function TermsPage() {
 
       <PublicInfoSection id="beta-service" title="The beta service">
         <p>
-          ClassTrace helps an individual teacher turn text notes into
-          teacher-reviewed, student-specific evidence records. It is not a
+          ClassTrace helps an individual teacher turn text notes and optional
+          work-sample photos into teacher-reviewed, student-specific evidence
+          records. It is not a
           gradebook, SIS, IEP writer, parent communication system, emergency
           service, or official records repository.
         </p>
@@ -81,8 +82,9 @@ export default function TermsPage() {
         <p>
           ClassTrace uses deterministic rules—not generative AI—to organize a
           captured note into a draft. A draft can be incomplete or wrong. You
-          are responsible for checking the student match, Evidence note, and
-          structured fields before saving.
+          are responsible for checking the student match, date, Evidence note,
+          optional photo, and structured fields before saving. ClassTrace does
+          not inspect, describe, classify, or recognize the contents of a photo.
         </p>
         <p>
           You remain responsible for professional decisions and for deciding
