@@ -42,7 +42,7 @@ The strongest early users are special education teachers, case managers, interve
   student or resolved by creating a student in an active class.
 - Permanent evidence must resolve to exactly one active roster student.
 - Deterministic rules suggest evidence type, topic, performance, behavior, tags, follow-up, and summary.
-- The teacher reviews the student, date, optional Evidence note, optional photo, and structured fields.
+- The teacher reviews the student, date, optional Evidence note, optional photo, and structured fields. Evidence dates are limited to the teacher-local calendar window from workspace creation through today.
 - Saving creates a permanent evidence record containing a reviewed note, one validated photo, or both; raw capture text and original photo data are not part of that record.
 - The first successful workspace save offers direct next steps to the student timeline, report, or another capture without creating a separate onboarding state.
 - Saved records appear in a paged global feed and student timeline.

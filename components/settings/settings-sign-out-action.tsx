@@ -1,35 +1,40 @@
 "use client";
 
-import { SignOutButton } from "@clerk/nextjs";
+import { useClerk } from "@clerk/nextjs";
 import { LogOut } from "lucide-react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { routes } from "@/lib/routes";
-import { clearSessionDrafts } from "@/lib/evidence/session-draft-storage";
-import { clearAllPhotoDrafts } from "@/lib/evidence/photo-draft-storage";
+import { clearTemporaryEvidenceDrafts } from "@/lib/evidence/temporary-draft-cleanup";
 
 export function SettingsSignOutAction() {
-  function clearTemporaryDraftAccess(): void {
+  const { signOut } = useClerk();
+  const [isSigningOut, setIsSigningOut] = useState(false);
+
+  async function handleSignOut(): Promise<void> {
+    if (isSigningOut) return;
+
+    setIsSigningOut(true);
     try {
-      clearSessionDrafts(window.sessionStorage);
+      await clearTemporaryEvidenceDrafts();
+      await signOut({ redirectUrl: routes.root });
     } catch {
-      clearSessionDrafts(null);
+      setIsSigningOut(false);
     }
-    void clearAllPhotoDrafts();
   }
 
   return (
-    <SignOutButton redirectUrl={routes.root}>
-      <Button
-        type="button"
-        variant="outline"
-        size="lg"
-        aria-label="Sign out of ClassTrace"
-        className="h-9 rounded-lg px-5 text-sm font-semibold"
-        onClick={clearTemporaryDraftAccess}
-      >
-        <LogOut className="size-4" strokeWidth={1.75} />
-        Sign out
-      </Button>
-    </SignOutButton>
+    <Button
+      type="button"
+      variant="outline"
+      size="lg"
+      aria-label="Sign out of ClassTrace"
+      className="h-9 rounded-lg px-5 text-sm font-semibold"
+      disabled={isSigningOut}
+      onClick={() => void handleSignOut()}
+    >
+      <LogOut className="size-4" strokeWidth={1.75} />
+      Sign out
+    </Button>
   );
 }

@@ -50,7 +50,7 @@ import {
 } from "@/lib/evidence/session-draft-storage";
 import {
   loadPhotoDraft,
-  prunePhotoDrafts,
+  pruneExpiredPhotoDrafts,
   removePhotoDraft,
   savePhotoDraft,
   type PhotoDraft,
@@ -66,6 +66,7 @@ import { ArrowDownUp } from "lucide-react";
 
 type EvidenceFeedProps = {
   workspaceId: string;
+  workspaceCreatedAt: string;
   rosterStudents: CaptureRosterStudent[];
   classGroups: StudentResolutionClassOption[];
   initialEvidenceRecords: EvidenceFeedRecord[];
@@ -131,6 +132,7 @@ function studentResolutionErrorMessage(
 
 export function EvidenceFeed({
   workspaceId,
+  workspaceCreatedAt,
   rosterStudents,
   classGroups,
   initialEvidenceRecords,
@@ -202,10 +204,7 @@ export function EvidenceFeed({
       const usableItems = restoredItems
         .filter((item) => item.draft.parsed.rawNote.trim() || item.photo)
         .sort((a, b) => b.timestampMs - a.timestampMs);
-      await prunePhotoDrafts(
-        workspaceId,
-        new Set(usableItems.map((item) => item.id))
-      );
+      await pruneExpiredPhotoDrafts();
       if (cancelled) return;
       setDraftItems(usableItems);
       setHydratedWorkspaceId(workspaceId);
@@ -251,11 +250,7 @@ export function EvidenceFeed({
         const active = current.filter(
           (item) => isValidated(item) || isCurrentLocalDay(item.timestampMs, now)
         );
-        void prunePhotoDrafts(
-          workspaceId,
-          new Set(active.filter((item) => !isValidated(item)).map((item) => item.id)),
-          now
-        );
+        void pruneExpiredPhotoDrafts(now);
         return active;
       });
     }
@@ -689,6 +684,7 @@ export function EvidenceFeed({
             draft={item.draft}
             timestamp={item.timestamp}
             capturedAt={item.timestampMs}
+            workspaceCreatedAt={workspaceCreatedAt}
             validation={item.validation}
             rosterStudents={activeRosterStudents}
             classGroups={classGroups}

@@ -1,5 +1,6 @@
 import { getCurrentWorkspace } from "@/lib/auth/get-current-workspace";
 import { getEvidencePhotoForWorkspace } from "@/lib/evidence/get-evidence-photo";
+import { captureOperationalError } from "@/lib/monitoring/capture-operational-error";
 
 const PHOTO_HEADERS = {
   "Cache-Control": "private, no-store",
@@ -49,7 +50,8 @@ export async function GET(
         "Content-Length": String(photo.imageData.byteLength),
       },
     });
-  } catch {
+  } catch (error) {
+    captureOperationalError("evidence.photo-read", error);
     return unavailable();
   }
 }

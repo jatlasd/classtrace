@@ -6,12 +6,24 @@ type LocalPhotoPreviewProps = {
   blob: Blob;
   alt: string;
   className?: string;
+  width?: number;
+  height?: number;
 };
 
 export function LocalPhotoPreview({
   blob,
   alt,
   className = "",
+  width,
+  height,
 }: LocalPhotoPreviewProps) {
-  return <PhotoThumbnail blob={blob} alt={alt} className={className} />;
+  return (
+    <PhotoThumbnail
+      blob={blob}
+      alt={alt}
+      className={className}
+      width={width}
+      height={height}
+    />
+  );
 }

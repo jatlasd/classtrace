@@ -39,10 +39,13 @@ const workspace = {
   clerkUserId: "user_1",
   teacherProfileId: "teacher_1",
   workspaceId: "workspace_1",
+  workspaceCreatedAt: new Date("2026-06-01T12:00:00.000Z"),
 };
 
 const saveInput = {
   rosterStudentId: "student_mary",
+  evidenceDate: "2026-06-16",
+  evidenceDateOffsetMinutes: 240,
   evidenceNote: "used a reading strategy independently",
   summary: "Mary used a reading strategy independently.",
   evidenceType: "Academic check-in",
@@ -75,6 +78,7 @@ describe("evidence Server Actions", () => {
     });
     expect(mocks.saveValidatedEvidenceForWorkspace).toHaveBeenCalledWith({
       workspaceId: "workspace_1",
+      workspaceCreatedAt: workspace.workspaceCreatedAt,
       input: saveInput,
     });
     expect(mocks.revalidatePath).toHaveBeenNthCalledWith(1, "/app/feed");
@@ -117,6 +121,37 @@ describe("evidence Server Actions", () => {
     expect(call.workspaceId).toBe("workspace_1");
     expect(call.input.photoBytes).toEqual(new Uint8Array([1, 2, 3]));
     expect(call.input).not.toHaveProperty("filename");
+  });
+
+  it.each(["tags", "behavior", "followUpNotes"])(
+    "rejects a malformed %s collection instead of silently coercing it",
+    async (field) => {
+      const formData = new FormData();
+      formData.set(
+        "evidence",
+        JSON.stringify({ ...saveInput, [field]: ["valid", 7] })
+      );
+
+      await expect(saveValidatedEvidence(formData)).resolves.toEqual({
+        success: false,
+        error: "Review the evidence and try again.",
+      });
+      expect(mocks.saveValidatedEvidenceForWorkspace).not.toHaveBeenCalled();
+    }
+  );
+
+  it("rejects evidence without a reviewed date and timezone offset", async () => {
+    const formData = new FormData();
+    const input: Record<string, unknown> = { ...saveInput };
+    delete input.evidenceDate;
+    delete input.evidenceDateOffsetMinutes;
+    formData.set("evidence", JSON.stringify(input));
+
+    await expect(saveValidatedEvidence(formData)).resolves.toEqual({
+      success: false,
+      error: "Review the evidence and try again.",
+    });
+    expect(mocks.saveValidatedEvidenceForWorkspace).not.toHaveBeenCalled();
   });
 
   it("scopes archive and delete actions and refreshes the affected student", async () => {

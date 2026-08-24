@@ -323,7 +323,7 @@ export function QuickCaptureCard({
           <input
             ref={takePhotoRef}
             type="file"
-            accept="image/jpeg,image/png,image/webp,image/avif,image/heic,image/heif"
+            accept="image/jpeg,image/png,image/webp,image/avif"
             capture="environment"
             className="sr-only"
             aria-label="Take photo"
@@ -334,7 +334,7 @@ export function QuickCaptureCard({
           <input
             ref={choosePhotoRef}
             type="file"
-            accept="image/jpeg,image/png,image/webp,image/avif,image/heic,image/heif"
+            accept="image/jpeg,image/png,image/webp,image/avif"
             className="sr-only"
             aria-label="Choose photo"
             aria-invalid={Boolean(photoError)}
@@ -347,6 +347,8 @@ export function QuickCaptureCard({
               <LocalPhotoPreview
                 blob={photo.blob}
                 alt="Selected photo evidence preview"
+                width={photo.width}
+                height={photo.height}
               />
               <div className="space-y-2">
                 <p className="text-sm font-medium text-foreground">Photo ready</p>

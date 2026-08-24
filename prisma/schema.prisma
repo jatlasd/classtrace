@@ -116,7 +116,7 @@ model EvidenceRecord {
 model EvidencePhoto {
   id               String         @id @default(cuid())
   workspaceId      String
-  evidenceRecordId String         @unique
+  evidenceRecordId String
   imageData        Bytes
   contentType      String
   byteSize         Int
@@ -127,7 +127,6 @@ model EvidencePhoto {
   evidenceRecord   EvidenceRecord @relation(fields: [workspaceId, evidenceRecordId], references: [workspaceId, id], onDelete: Cascade)
 
   @@unique([workspaceId, evidenceRecordId])
-  @@index([workspaceId])
 }
 
 enum OperatorAuditAction {

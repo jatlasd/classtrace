@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const mocks = vi.hoisted(() => ({
   getCurrentWorkspace: vi.fn(),
   getEvidencePhotoForWorkspace: vi.fn(),
+  captureOperationalError: vi.fn(),
 }));
 
 vi.mock("@/lib/auth/get-current-workspace", () => ({
@@ -10,6 +11,9 @@ vi.mock("@/lib/auth/get-current-workspace", () => ({
 }));
 vi.mock("@/lib/evidence/get-evidence-photo", () => ({
   getEvidencePhotoForWorkspace: mocks.getEvidencePhotoForWorkspace,
+}));
+vi.mock("@/lib/monitoring/capture-operational-error", () => ({
+  captureOperationalError: mocks.captureOperationalError,
 }));
 
 import { GET } from "./route";
@@ -54,5 +58,9 @@ describe("authenticated evidence photo route", () => {
     expect(failed.status).toBe(404);
     expect(await missing.text()).toBe(await failed.text());
     expect(failed.headers.get("cache-control")).toBe("private, no-store");
+    expect(mocks.captureOperationalError).toHaveBeenCalledWith(
+      "evidence.photo-read",
+      expect.any(Error)
+    );
   });
 });

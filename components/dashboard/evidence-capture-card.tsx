@@ -37,6 +37,7 @@ type EvidenceCaptureCardProps = {
   draft: NoteDraft;
   timestamp?: string;
   capturedAt?: number;
+  workspaceCreatedAt: string;
   validation?: CaptureValidation;
   rosterStudents: CaptureRosterStudent[];
   classGroups: StudentResolutionClassOption[];
@@ -60,7 +61,8 @@ type EvidenceCaptureCardProps = {
 
 type ValidatedEvidenceSaveInput = {
   rosterStudentId: string;
-  evidenceDate?: string;
+  evidenceDate: string;
+  evidenceDateOffsetMinutes: number;
   evidenceNote?: string;
   summary?: string;
   evidenceType?: string;
@@ -203,6 +205,7 @@ export function EvidenceCaptureCard({
   draft,
   timestamp = "Just now",
   capturedAt,
+  workspaceCreatedAt,
   validation,
   rosterStudents,
   classGroups,
@@ -397,7 +400,7 @@ export function EvidenceCaptureCard({
               <input
                 ref={photoInputRef}
                 type="file"
-                accept="image/jpeg,image/png,image/webp,image/avif,image/heic,image/heif"
+                accept="image/jpeg,image/png,image/webp,image/avif"
                 className="sr-only"
                 aria-label="Replace photo evidence"
                 aria-invalid={Boolean(photoError)}
@@ -407,6 +410,8 @@ export function EvidenceCaptureCard({
               <LocalPhotoPreview
                 blob={photo.blob}
                 alt="Temporary photo evidence preview"
+                width={photo.width}
+                height={photo.height}
               />
               <div className="space-y-2">
                 <p className="text-sm font-medium text-foreground">Temporary photo</p>
@@ -595,6 +600,7 @@ export function EvidenceCaptureCard({
               onResolvedStudentChange={setResolvedStudentOverride}
               hasPhoto={Boolean(photo)}
               capturedAt={capturedAt}
+              workspaceCreatedAt={workspaceCreatedAt}
             />
           </div>
         </div>

@@ -36,6 +36,12 @@ describe("validateAndNormalizeEvidencePhoto", () => {
 
   it("rejects unsupported and oversized payloads safely", async () => {
     await expect(
+      validateAndNormalizeEvidencePhoto(new Uint8Array())
+    ).resolves.toEqual({
+      success: false,
+      error: "Choose a photo before saving evidence.",
+    });
+    await expect(
       validateAndNormalizeEvidencePhoto(new Uint8Array([1, 2, 3]))
     ).resolves.toEqual({
       success: false,

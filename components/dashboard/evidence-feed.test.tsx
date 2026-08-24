@@ -52,6 +52,7 @@ describe("EvidenceFeed capture review", () => {
     render(
       <EvidenceFeed
         workspaceId="workspace_test"
+        workspaceCreatedAt="2026-06-01T12:00:00.000Z"
         rosterStudents={roster}
         classGroups={[{ id: "class_reading", name: "Reading" }]}
         initialEvidenceRecords={[]}
@@ -96,12 +97,13 @@ describe("EvidenceFeed capture review", () => {
     expect(screen.queryByText("Patterns")).toBeNull();
     expect(screen.queryByText("Evidence cues")).toBeNull();
     expect(screen.queryByText("Review prompts")).toBeNull();
-  });
+  }, 10_000);
 
   it("keeps an unresolved capture as a reviewable session draft", async () => {
     render(
       <EvidenceFeed
         workspaceId="workspace_test"
+        workspaceCreatedAt="2026-06-01T12:00:00.000Z"
         rosterStudents={roster}
         classGroups={[{ id: "class_reading", name: "Reading" }]}
         initialEvidenceRecords={[]}

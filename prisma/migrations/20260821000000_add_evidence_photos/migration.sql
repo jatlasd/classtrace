@@ -19,14 +19,8 @@ CREATE TABLE "EvidencePhoto" (
   CONSTRAINT "EvidencePhoto_pkey" PRIMARY KEY ("id")
 );
 
-CREATE UNIQUE INDEX "EvidencePhoto_evidenceRecordId_key"
-  ON "EvidencePhoto"("evidenceRecordId");
-
 CREATE UNIQUE INDEX "EvidencePhoto_workspaceId_evidenceRecordId_key"
   ON "EvidencePhoto"("workspaceId", "evidenceRecordId");
-
-CREATE INDEX "EvidencePhoto_workspaceId_idx"
-  ON "EvidencePhoto"("workspaceId");
 
 ALTER TABLE "EvidencePhoto"
   ADD CONSTRAINT "EvidencePhoto_workspaceId_fkey"

@@ -21,7 +21,11 @@ export type ValidateEvidencePhotoResult =
 export async function validateAndNormalizeEvidencePhoto(
   bytes: Uint8Array
 ): Promise<ValidateEvidencePhotoResult> {
-  if (bytes.byteLength === 0 || bytes.byteLength > INPUT_LIMITS.evidencePhotoStoredBytes) {
+  if (bytes.byteLength === 0) {
+    return { success: false, error: "Choose a photo before saving evidence." };
+  }
+
+  if (bytes.byteLength > INPUT_LIMITS.evidencePhotoStoredBytes) {
     return {
       success: false,
       error: "Choose a photo smaller than 1 MB after processing.",
@@ -46,6 +50,8 @@ export async function validateAndNormalizeEvidencePhoto(
       return { success: false, error: "Choose a supported still image." };
     }
 
+    // Re-encoding is deliberate even for client WebP: it strips metadata and
+    // prevents malformed original bytes from being served from this origin.
     for (const quality of WEBP_QUALITY_STEPS) {
       const normalized = await sharp(bytes, {
         animated: false,

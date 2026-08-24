@@ -14,6 +14,8 @@ describe("EvidenceRecordContent photo evidence", () => {
           id: "evidence_1",
           evidenceDate: "2026-08-21T12:00:00.000Z",
           hasPhoto: true,
+          photoWidth: 1600,
+          photoHeight: 1200,
           tags: [],
         }}
       />
@@ -23,6 +25,8 @@ describe("EvidenceRecordContent photo evidence", () => {
       name: "Photo evidence from August 21, 2026",
     });
     expect(image.getAttribute("src")).toBe("/app/evidence/evidence_1/photo");
+    expect(image.getAttribute("width")).toBe("1600");
+    expect(image.getAttribute("height")).toBe("1200");
     expect(image.className).toContain("object-cover");
     expect(
       screen.getByRole("button", {
@@ -60,7 +64,7 @@ describe("EvidenceRecordContent photo evidence", () => {
     expect(document.activeElement).toBe(trigger);
   });
 
-  it("shows a quiet unavailable state when the authenticated read fails", () => {
+  it("offers a fresh authenticated read after a transient photo failure", () => {
     render(
       <EvidenceRecordContent
         record={{
@@ -74,5 +78,10 @@ describe("EvidenceRecordContent photo evidence", () => {
 
     fireEvent.error(screen.getByRole("img"));
     expect(screen.getByText("Photo evidence is unavailable.")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Retry photo" }));
+
+    expect(screen.getByRole("img").getAttribute("src")).toBe(
+      "/app/evidence/evidence_1/photo?retry=1"
+    );
   });
 });

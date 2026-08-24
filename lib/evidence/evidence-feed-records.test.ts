@@ -112,7 +112,7 @@ describe("getEvidenceFeedPageForWorkspace", () => {
               name: true,
             },
           },
-          photo: { select: { id: true } },
+          photo: { select: { id: true, width: true, height: true } },
         },
       },
     ]);

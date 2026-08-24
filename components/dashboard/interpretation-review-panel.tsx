@@ -45,11 +45,13 @@ type InterpretationReviewPanelProps = {
   onResolvedStudentChange?: (student: CaptureRosterStudent | null) => void;
   hasPhoto?: boolean;
   capturedAt?: number;
+  workspaceCreatedAt?: string;
 };
 
 type ValidatedEvidenceSaveInput = {
   rosterStudentId: string;
-  evidenceDate?: string;
+  evidenceDate: string;
+  evidenceDateOffsetMinutes: number;
   evidenceNote?: string;
   summary?: string;
   evidenceType?: string;
@@ -182,6 +184,7 @@ function InterpretationReviewPanelContent({
   onResolvedStudentChange,
   hasPhoto = false,
   capturedAt,
+  workspaceCreatedAt = "1970-01-01T00:00:00.000Z",
 }: InterpretationReviewPanelProps) {
   const fieldIdPrefix = useId();
   const evidenceNoteId = `${fieldIdPrefix}-evidence-note`;
@@ -193,10 +196,11 @@ function InterpretationReviewPanelContent({
   const tagsId = `${fieldIdPrefix}-tags`;
   const followUpsId = `${fieldIdPrefix}-follow-ups`;
   const studentResolutionErrorId = `${fieldIdPrefix}-student-resolution-error`;
-  const photoOnly = hasPhoto && !display.cleanText.trim();
+  const initialPhotoOnly = hasPhoto && !display.cleanText.trim();
   const [form, setForm] = useState<FormState>(() =>
-    displayToFormState(display, photoOnly, capturedAt)
+    displayToFormState(display, initialPhotoOnly, capturedAt)
   );
+  const photoOnly = hasPhoto && !form.evidenceNote.trim();
   const [validationError, setValidationError] = useState("");
   const validationErrorRef = useRef<HTMLParagraphElement | null>(null);
   const studentResolutionRef = useRef<HTMLDivElement | null>(null);
@@ -225,6 +229,10 @@ function InterpretationReviewPanelContent({
     parsedStudentValidation.status === "unresolved_student" ||
     parsedStudentValidation.status === "no_student";
   const isBusy = isSaving || isResolvingStudent;
+  const minimumEvidenceDate = localDateInputValue(
+    new Date(workspaceCreatedAt).getTime()
+  );
+  const maximumEvidenceDate = localDateInputValue();
 
   function updateField<K extends keyof FormState>(key: K, value: FormState[K]) {
     setForm((current) => ({ ...current, [key]: value }));
@@ -301,8 +309,11 @@ function InterpretationReviewPanelContent({
       return;
     }
 
-    const evidenceDate = new Date(`${form.evidenceDate}T12:00:00`);
-    if (!form.evidenceDate || Number.isNaN(evidenceDate.getTime())) {
+    if (
+      !form.evidenceDate ||
+      form.evidenceDate < minimumEvidenceDate ||
+      form.evidenceDate > maximumEvidenceDate
+    ) {
       showValidationError("Choose a valid evidence date before saving.");
       return;
     }
@@ -320,7 +331,7 @@ function InterpretationReviewPanelContent({
       ? buildValidatedEvidenceSummary(fields)
       : undefined;
 
-    if (evidenceNote && !hasPhoto && !summary) {
+    if (!photoOnly && !summary) {
       showValidationError("Add a summary before saving evidence.");
       return;
     }
@@ -335,7 +346,8 @@ function InterpretationReviewPanelContent({
     try {
       result = await onConfirm(fields, {
         rosterStudentId: studentValidation.studentId,
-        evidenceDate: evidenceDate.toISOString(),
+        evidenceDate: form.evidenceDate,
+        evidenceDateOffsetMinutes: new Date().getTimezoneOffset(),
         evidenceNote: evidenceNote || undefined,
         summary,
         evidenceType: fields.evidenceType || undefined,
@@ -401,6 +413,8 @@ function InterpretationReviewPanelContent({
           <input
             id={evidenceDateId}
             type="date"
+            min={minimumEvidenceDate}
+            max={maximumEvidenceDate}
             value={form.evidenceDate}
             onChange={(event) => updateField("evidenceDate", event.target.value)}
             disabled={isBusy || Boolean(savedEvidenceId)}

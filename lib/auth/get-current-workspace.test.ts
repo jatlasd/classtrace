@@ -31,6 +31,8 @@ import {
 } from "@/lib/auth/get-current-workspace";
 import { getSafeOperationStage } from "@/lib/monitoring/safe-error-diagnostic";
 
+const workspaceCreatedAt = new Date("2026-06-01T12:00:00.000Z");
+
 describe("getCurrentWorkspace", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -52,7 +54,10 @@ describe("getCurrentWorkspace", () => {
   it("resolves one app-owned teacher profile and personal workspace", async () => {
     mocks.auth.mockResolvedValue({ userId: "clerk_user_1" });
     mocks.teacherProfileUpsert.mockResolvedValue({ id: "teacher_1" });
-    mocks.workspaceUpsert.mockResolvedValue({ id: "workspace_1" });
+    mocks.workspaceUpsert.mockResolvedValue({
+      id: "workspace_1",
+      createdAt: workspaceCreatedAt,
+    });
 
     const workspace = await getCurrentWorkspace();
 
@@ -66,12 +71,13 @@ describe("getCurrentWorkspace", () => {
       where: { teacherProfileId: "teacher_1" },
       update: {},
       create: { teacherProfileId: "teacher_1" },
-      select: { id: true },
+      select: { id: true, createdAt: true },
     });
     expect(workspace).toEqual({
       clerkUserId: "clerk_user_1",
       teacherProfileId: "teacher_1",
       workspaceId: "workspace_1",
+      workspaceCreatedAt,
     });
     expect(mocks.hasAcceptedCurrentBetaAgreement).toHaveBeenCalledWith(
       "teacher_1"
@@ -96,12 +102,16 @@ describe("getCurrentWorkspace", () => {
     mocks.teacherProfileUpsert
       .mockRejectedValueOnce({ code: "P2002" })
       .mockResolvedValueOnce({ id: "teacher_1" });
-    mocks.workspaceUpsert.mockResolvedValue({ id: "workspace_1" });
+    mocks.workspaceUpsert.mockResolvedValue({
+      id: "workspace_1",
+      createdAt: workspaceCreatedAt,
+    });
 
     await expect(getCurrentWorkspace()).resolves.toEqual({
       clerkUserId: "clerk_user_1",
       teacherProfileId: "teacher_1",
       workspaceId: "workspace_1",
+      workspaceCreatedAt,
     });
     expect(mocks.teacherProfileUpsert).toHaveBeenCalledTimes(2);
     expect(mocks.workspaceUpsert).toHaveBeenCalledTimes(1);
@@ -112,12 +122,16 @@ describe("getCurrentWorkspace", () => {
     mocks.teacherProfileUpsert.mockResolvedValue({ id: "teacher_1" });
     mocks.workspaceUpsert
       .mockRejectedValueOnce({ code: "P2002" })
-      .mockResolvedValueOnce({ id: "workspace_1" });
+      .mockResolvedValueOnce({
+        id: "workspace_1",
+        createdAt: workspaceCreatedAt,
+      });
 
     await expect(getCurrentWorkspace()).resolves.toEqual({
       clerkUserId: "clerk_user_1",
       teacherProfileId: "teacher_1",
       workspaceId: "workspace_1",
+      workspaceCreatedAt,
     });
     expect(mocks.teacherProfileUpsert).toHaveBeenCalledTimes(2);
     expect(mocks.workspaceUpsert).toHaveBeenCalledTimes(2);
@@ -135,13 +149,17 @@ describe("getCurrentWorkspace", () => {
   it("allows the acknowledgement boundary to provision without prior acceptance", async () => {
     mocks.auth.mockResolvedValue({ userId: "clerk_user_1" });
     mocks.teacherProfileUpsert.mockResolvedValue({ id: "teacher_1" });
-    mocks.workspaceUpsert.mockResolvedValue({ id: "workspace_1" });
+    mocks.workspaceUpsert.mockResolvedValue({
+      id: "workspace_1",
+      createdAt: workspaceCreatedAt,
+    });
     mocks.hasAcceptedCurrentBetaAgreement.mockResolvedValue(false);
 
     await expect(getProvisionedCurrentWorkspace()).resolves.toEqual({
       clerkUserId: "clerk_user_1",
       teacherProfileId: "teacher_1",
       workspaceId: "workspace_1",
+      workspaceCreatedAt,
     });
     expect(mocks.hasAcceptedCurrentBetaAgreement).not.toHaveBeenCalled();
   });
@@ -149,7 +167,10 @@ describe("getCurrentWorkspace", () => {
   it("rejects teacher-product access without the current agreement", async () => {
     mocks.auth.mockResolvedValue({ userId: "clerk_user_1" });
     mocks.teacherProfileUpsert.mockResolvedValue({ id: "teacher_1" });
-    mocks.workspaceUpsert.mockResolvedValue({ id: "workspace_1" });
+    mocks.workspaceUpsert.mockResolvedValue({
+      id: "workspace_1",
+      createdAt: workspaceCreatedAt,
+    });
     mocks.hasAcceptedCurrentBetaAgreement.mockResolvedValue(false);
 
     await expect(getCurrentWorkspace()).rejects.toMatchObject({
@@ -161,7 +182,10 @@ describe("getCurrentWorkspace", () => {
   it("redirects app routes to the acknowledgement flow when acceptance is missing", async () => {
     mocks.auth.mockResolvedValue({ userId: "clerk_user_1" });
     mocks.teacherProfileUpsert.mockResolvedValue({ id: "teacher_1" });
-    mocks.workspaceUpsert.mockResolvedValue({ id: "workspace_1" });
+    mocks.workspaceUpsert.mockResolvedValue({
+      id: "workspace_1",
+      createdAt: workspaceCreatedAt,
+    });
     mocks.hasAcceptedCurrentBetaAgreement.mockResolvedValue(false);
 
     await expect(getCurrentAppWorkspace()).rejects.toThrow(

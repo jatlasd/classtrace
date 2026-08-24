@@ -21,6 +21,7 @@ export const INPUT_LIMITS = {
   followUpItem: 1_000,
   followUpItemsPerEvidence: 20,
   followUpTotal: 5_000,
+  evidenceFormJson: 20_000,
   evidencePhotoSourceBytes: 20 * 1024 * 1024,
   evidencePhotoStoredBytes: 1024 * 1024,
   evidencePhotoLongEdge: 2_048,

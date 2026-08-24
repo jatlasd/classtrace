@@ -9,6 +9,8 @@ type PhotoThumbnailProps = {
   className?: string;
   loading?: "eager" | "lazy";
   onError?: () => void;
+  width?: number;
+  height?: number;
 } & ({ src: string; blob?: never } | { src?: never; blob: Blob });
 
 export function PhotoThumbnail({
@@ -18,29 +20,24 @@ export function PhotoThumbnail({
   className = "",
   loading = "lazy",
   onError,
+  width,
+  height,
 }: PhotoThumbnailProps) {
   const [expanded, setExpanded] = useState(false);
+  const [objectUrl, setObjectUrl] = useState<string>();
   const triggerRef = useRef<HTMLButtonElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
-  const thumbnailRef = useRef<HTMLImageElement>(null);
-  const expandedImageRef = useRef<HTMLImageElement>(null);
-  const objectUrlRef = useRef("");
 
   useEffect(() => {
     if (!blob) return;
 
-    const objectUrl = URL.createObjectURL(blob);
-    objectUrlRef.current = objectUrl;
-    const thumbnail = thumbnailRef.current;
-    const expandedImage = expandedImageRef.current;
-    if (thumbnail) thumbnail.src = objectUrl;
-    if (expandedImage) expandedImage.src = objectUrl;
+    const nextObjectUrl = URL.createObjectURL(blob);
+    // Object URLs are external resources and must follow the Blob lifecycle.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setObjectUrl(nextObjectUrl);
 
     return () => {
-      if (thumbnail?.src === objectUrl) thumbnail.removeAttribute("src");
-      if (expandedImage?.src === objectUrl) expandedImage.removeAttribute("src");
-      objectUrlRef.current = "";
-      URL.revokeObjectURL(objectUrl);
+      URL.revokeObjectURL(nextObjectUrl);
     };
   }, [blob]);
 
@@ -50,9 +47,6 @@ export function PhotoThumbnail({
     const trigger = triggerRef.current;
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
-    if (objectUrlRef.current && expandedImageRef.current) {
-      expandedImageRef.current.src = objectUrlRef.current;
-    }
     closeButtonRef.current?.focus();
 
     function handleKeyDown(event: KeyboardEvent): void {
@@ -72,6 +66,8 @@ export function PhotoThumbnail({
     };
   }, [expanded]);
 
+  const imageSource = src ?? objectUrl;
+
   return (
     <>
       <button
@@ -85,9 +81,10 @@ export function PhotoThumbnail({
         {/* Authenticated and local object URLs cannot use Next image optimization. */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          ref={thumbnailRef}
-          src={src}
+          src={imageSource}
           alt={alt}
+          width={width}
+          height={height}
           loading={loading}
           decoding="async"
           onError={onError}
@@ -113,9 +110,10 @@ export function PhotoThumbnail({
                 {/* Authenticated and local object URLs cannot use Next image optimization. */}
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  ref={expandedImageRef}
-                  src={src}
+                  src={imageSource}
                   alt={alt}
+                  width={width}
+                  height={height}
                   decoding="async"
                   onError={onError}
                   className="max-h-[calc(100dvh-2rem)] max-w-[calc(100vw-2rem)] rounded-md bg-card object-contain sm:max-h-[calc(100dvh-4rem)] sm:max-w-[calc(100vw-4rem)]"

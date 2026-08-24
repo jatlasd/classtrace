@@ -87,7 +87,8 @@ export type SaveValidatedEvidenceDatabase = {
 
 export type SaveValidatedEvidenceInput = {
   rosterStudentId: string;
-  evidenceDate?: string;
+  evidenceDate: string;
+  evidenceDateOffsetMinutes: number;
   evidenceNote?: string;
   summary?: string;
   evidenceType?: string;
@@ -109,6 +110,7 @@ export type SaveValidatedEvidenceResult =
 
 type SaveValidatedEvidenceForWorkspaceArgs = {
   workspaceId: string;
+  workspaceCreatedAt: Date;
   input: SaveValidatedEvidenceInput;
   now?: Date;
 };
@@ -234,18 +236,54 @@ function normalizeBoundedList(
   return { success: true, values: normalized };
 }
 
-function normalizeEvidenceDate(value: unknown, fallback: Date): Date | null {
-  if (typeof value !== "string" || !value) {
-    return fallback;
-  }
+const DATE_ONLY_PATTERN = /^(\d{4})-(\d{2})-(\d{2})$/;
+const MIN_TIMEZONE_OFFSET_MINUTES = -14 * 60;
+const MAX_TIMEZONE_OFFSET_MINUTES = 14 * 60;
 
-  const parsed = new Date(value);
+function localDateKey(value: Date, offsetMinutes: number): string {
+  const local = new Date(value.getTime() - offsetMinutes * 60_000);
+  const year = local.getUTCFullYear();
+  const month = String(local.getUTCMonth() + 1).padStart(2, "0");
+  const day = String(local.getUTCDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
 
-  if (Number.isNaN(parsed.getTime())) {
+function normalizeEvidenceDate(
+  value: unknown,
+  offsetMinutes: unknown,
+  workspaceCreatedAt: Date,
+  fallback: Date
+): Date | null {
+  if (
+    typeof value !== "string" ||
+    !value ||
+    typeof offsetMinutes !== "number" ||
+    !Number.isInteger(offsetMinutes) ||
+    offsetMinutes < MIN_TIMEZONE_OFFSET_MINUTES ||
+    offsetMinutes > MAX_TIMEZONE_OFFSET_MINUTES
+  ) {
     return null;
   }
 
-  return parsed;
+  const match = DATE_ONLY_PATTERN.exec(value);
+  if (!match) return null;
+
+  const year = Number(match[1]);
+  const month = Number(match[2]);
+  const day = Number(match[3]);
+  const localNoonUtc = Date.UTC(year, month - 1, day, 12);
+  const roundTrip = new Date(localNoonUtc);
+  if (
+    roundTrip.getUTCFullYear() !== year ||
+    roundTrip.getUTCMonth() !== month - 1 ||
+    roundTrip.getUTCDate() !== day ||
+    value < localDateKey(workspaceCreatedAt, offsetMinutes) ||
+    value > localDateKey(fallback, offsetMinutes)
+  ) {
+    return null;
+  }
+
+  return new Date(localNoonUtc + offsetMinutes * 60_000);
 }
 
 export async function saveValidatedEvidenceForWorkspace(
@@ -286,8 +324,9 @@ export async function saveValidatedEvidenceForWorkspace(
   }
 
   const summary = normalizeOptionalText(args.input.summary);
+  const photoOnly = Boolean(submittedPhotoBytes) && !evidenceNote;
 
-  if (evidenceNote && !submittedPhotoBytes && !summary) {
+  if (!photoOnly && !summary) {
     return { success: false, error: "Add a summary before saving evidence." };
   }
 
@@ -300,7 +339,7 @@ export async function saveValidatedEvidenceForWorkspace(
 
   const evidenceType = normalizeOptionalText(args.input.evidenceType);
 
-  if (evidenceNote && !submittedPhotoBytes && !evidenceType) {
+  if (!photoOnly && !evidenceType) {
     return {
       success: false,
       error: "Choose an evidence type before saving evidence.",
@@ -375,7 +414,12 @@ export async function saveValidatedEvidenceForWorkspace(
   }
 
   const now = args.now ?? new Date();
-  const evidenceDate = normalizeEvidenceDate(args.input.evidenceDate, now);
+  const evidenceDate = normalizeEvidenceDate(
+    args.input.evidenceDate,
+    args.input.evidenceDateOffsetMinutes,
+    args.workspaceCreatedAt,
+    now
+  );
   if (!evidenceDate) {
     return { success: false, error: "Use a valid evidence date." };
   }

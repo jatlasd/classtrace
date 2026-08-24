@@ -57,7 +57,7 @@ function buildEvidenceRecord(overrides?: {
   validatedAt: Date;
   createdAt: Date;
   classGroup: { name: string } | null;
-  photo: { id: string } | null;
+  photo: { id: string; width: number; height: number } | null;
 } {
   return {
     id: overrides?.id ?? "evidence_1",
@@ -260,7 +260,7 @@ describe("getStudentReportRecordsForWorkspace", () => {
               name: true,
             },
           },
-          photo: { select: { id: true } },
+          photo: { select: { id: true, width: true, height: true } },
         },
       },
     ]);

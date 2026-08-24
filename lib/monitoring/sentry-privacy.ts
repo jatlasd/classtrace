@@ -19,6 +19,7 @@ const SAFE_OPERATIONS = [
   "evidence.archive",
   "evidence.delete",
   "evidence.export",
+  "evidence.photo-read",
   "evidence.save",
   "feedback.submit",
   "operator.account-search",

@@ -140,16 +140,19 @@ Before Capture, text exists only in component state. After Capture, an unvalidat
 
 The storage helpers reject malformed, mismatched, oversized, or expired data and cap draft count/size. Photo bytes are normalized and metadata-stripped locally, encrypted with a session-scoped key, and stored only in IndexedDB until validation. A draft is removed after successful validation or explicit deletion. Raw notes and unvalidated photos must not use `localStorage`, PostgreSQL, server draft storage, logs, exports, timelines, reports, analytics, or telemetry.
 
+Sign-out waits for current-tab draft cleanup and broadcasts a content-free signal so every other open teacher-product tab clears its own session manifest and photo key before the account session ends.
+
 ### Permanent evidence boundary
 
 The client submits only the reviewed Evidence note, structured fields, and optional normalized photo when the teacher validates. The server:
 
 1. Resolves the authenticated workspace.
 2. Enforces input length/count limits.
-3. Rechecks that the student is active and owned by the workspace.
-4. Rechecks the optional class relation in the same workspace.
-5. Independently validates and re-encodes any photo without image analysis.
-6. Writes the evidence record and optional photo inside the shared serializable transaction protocol.
+3. Interprets the reviewed date with a bounded browser timezone offset and rejects dates before the workspace's local creation day or after the teacher's current local day.
+4. Rechecks that the student is active and owned by the workspace.
+5. Rechecks the optional class relation in the same workspace.
+6. Independently validates and re-encodes any photo without image analysis.
+7. Writes the evidence record and optional photo inside the shared serializable transaction protocol.
 
 An unmatched mention may remain only in the temporary draft. During review,
 the teacher may match it to an active roster student or create a roster student

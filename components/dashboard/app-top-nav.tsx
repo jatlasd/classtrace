@@ -1,8 +1,13 @@
 "use client";
 
-import { SignOutButton } from "@clerk/nextjs";
+import { useClerk } from "@clerk/nextjs";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
+import {
+  clearTemporaryEvidenceDrafts,
+  subscribeToTemporaryDraftCleanup,
+} from "@/lib/evidence/temporary-draft-cleanup";
 import { isStudentProfilePath, routes } from "@/lib/routes";
 import {
   LogOut,
@@ -20,6 +25,22 @@ const ACCOUNT_LABEL = "Account";
 
 export function AppTopNav() {
   const pathname = usePathname();
+  const { signOut } = useClerk();
+  const [isSigningOut, setIsSigningOut] = useState(false);
+
+  useEffect(() => subscribeToTemporaryDraftCleanup(), []);
+
+  async function handleSignOut(): Promise<void> {
+    if (isSigningOut) return;
+
+    setIsSigningOut(true);
+    try {
+      await clearTemporaryEvidenceDrafts();
+      await signOut({ redirectUrl: routes.root });
+    } catch {
+      setIsSigningOut(false);
+    }
+  }
 
   function isActive(match: string): boolean {
     if (match === "feed") {
@@ -53,15 +74,15 @@ export function AppTopNav() {
             >
               <Settings className="size-4" />
             </Link>
-            <SignOutButton redirectUrl={routes.root}>
-              <button
-                type="button"
-                aria-label="Sign out"
-                className="flex size-11 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-              >
-                <LogOut className="size-4" strokeWidth={1.75} />
-              </button>
-            </SignOutButton>
+            <button
+              type="button"
+              aria-label="Sign out"
+              disabled={isSigningOut}
+              onClick={() => void handleSignOut()}
+              className="flex size-11 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:cursor-wait disabled:opacity-60"
+            >
+              <LogOut className="size-4" strokeWidth={1.75} />
+            </button>
           </div>
         </div>
 
@@ -105,15 +126,15 @@ export function AppTopNav() {
             <span>{ACCOUNT_LABEL}</span>
             <Settings className="size-4 text-muted-foreground" />
           </Link>
-          <SignOutButton redirectUrl={routes.root}>
-            <button
-              type="button"
-              className="inline-flex h-9 items-center gap-2 rounded-lg px-3 text-sm font-semibold text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground"
-            >
-              <LogOut className="size-4" strokeWidth={1.75} />
-              <span>Sign out</span>
-            </button>
-          </SignOutButton>
+          <button
+            type="button"
+            disabled={isSigningOut}
+            onClick={() => void handleSignOut()}
+            className="inline-flex h-9 items-center gap-2 rounded-lg px-3 text-sm font-semibold text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground disabled:cursor-wait disabled:opacity-60"
+          >
+            <LogOut className="size-4" strokeWidth={1.75} />
+            <span>Sign out</span>
+          </button>
         </div>
       </div>
     </header>

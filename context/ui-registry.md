@@ -166,8 +166,8 @@ Last imprinted: 2026-07-22
 - Use one ledger row: capture icon, compact status metadata, full-width source
   or review content, then inline actions. Do not add a nested card, shadow, or
   narrow action rail.
-- Photo-only drafts use the existing student-resolution control, keep structured fields empty unless the teacher supplies them, and may save only after one student and the evidence date are confirmed.
-- Draft photos use the shared Photo thumbnails pattern; they do not widen the ledger row or consume the viewport before the teacher chooses to expand them.
+- Photo-only drafts use the existing student-resolution control, keep structured fields empty unless the teacher supplies them, and may save only after one student and an evidence date within the workspace-created-to-today local calendar window are confirmed.
+- Draft photos use the shared Photo thumbnails pattern; they do not widen the ledger row or consume the viewport before the teacher chooses to expand them. Saved thumbnails preserve their intrinsic dimensions and expose a quiet retry action if a photo request fails.
 
 ## Public trust and support pages
 

@@ -24,6 +24,7 @@ import {
 } from "@/lib/evidence/save-validated-evidence";
 import { captureOperationalError } from "@/lib/monitoring/capture-operational-error";
 import { routes } from "@/lib/routes";
+import { INPUT_LIMITS } from "@/lib/validation/input-limits";
 
 export type SaveValidatedEvidenceActionInput = SaveValidatedEvidenceInput;
 export type SaveValidatedEvidenceActionResult = SaveValidatedEvidenceResult;
@@ -33,8 +34,6 @@ export type DeleteEvidenceActionInput = DeleteEvidenceInput;
 export type DeleteEvidenceActionResult = DeleteEvidenceResult;
 export type ExportStudentEvidenceActionInput = ExportStudentEvidenceInput;
 export type ExportStudentEvidenceActionResult = ExportStudentEvidenceResult;
-
-const MAX_EVIDENCE_FORM_JSON_LENGTH = 20_000;
 
 function isObject(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -50,6 +49,14 @@ function stringArray(value: unknown): string[] | undefined {
     : undefined;
 }
 
+function hasOptionalString(value: unknown): boolean {
+  return value === undefined || typeof value === "string";
+}
+
+function hasOptionalStringArray(value: unknown): boolean {
+  return value === undefined || stringArray(value) !== undefined;
+}
+
 async function evidenceInputFromFormData(
   formData: FormData
 ): Promise<SaveValidatedEvidenceInput | null> {
@@ -57,7 +64,7 @@ async function evidenceInputFromFormData(
   if (
     typeof serialized !== "string" ||
     serialized.length === 0 ||
-    serialized.length > MAX_EVIDENCE_FORM_JSON_LENGTH
+    serialized.length > INPUT_LIMITS.evidenceFormJson
   ) {
     return null;
   }
@@ -73,25 +80,52 @@ async function evidenceInputFromFormData(
     return null;
   }
 
+  if (
+    typeof parsed.rosterStudentId !== "string" ||
+    typeof parsed.evidenceDate !== "string" ||
+    !hasOptionalString(parsed.evidenceNote) ||
+    !hasOptionalString(parsed.summary) ||
+    !hasOptionalString(parsed.evidenceType) ||
+    !hasOptionalString(parsed.topic) ||
+    !hasOptionalString(parsed.performance) ||
+    !hasOptionalStringArray(parsed.behavior) ||
+    stringArray(parsed.tags) === undefined ||
+    !hasOptionalStringArray(parsed.followUpNotes) ||
+    typeof parsed.evidenceDateOffsetMinutes !== "number"
+  ) {
+    return null;
+  }
+
+  const tags = stringArray(parsed.tags);
+  if (!tags) {
+    return null;
+  }
+
   const photoEntry = formData.get("photo");
   let photoBytes: Uint8Array | undefined;
   if (photoEntry instanceof Blob) {
-    if (photoEntry.size === 0 || photoEntry.size > 1024 * 1024) {
+    if (
+      photoEntry.size === 0 ||
+      photoEntry.size > INPUT_LIMITS.evidencePhotoStoredBytes
+    ) {
       return null;
     }
     photoBytes = new Uint8Array(await photoEntry.arrayBuffer());
+  } else if (photoEntry !== null) {
+    return null;
   }
 
   return {
-    rosterStudentId: stringValue(parsed.rosterStudentId) ?? "",
-    evidenceDate: stringValue(parsed.evidenceDate),
+    rosterStudentId: parsed.rosterStudentId,
+    evidenceDate: parsed.evidenceDate,
+    evidenceDateOffsetMinutes: parsed.evidenceDateOffsetMinutes,
     evidenceNote: stringValue(parsed.evidenceNote),
     summary: stringValue(parsed.summary),
     evidenceType: stringValue(parsed.evidenceType),
     topic: stringValue(parsed.topic),
     performance: stringValue(parsed.performance),
     behavior: stringArray(parsed.behavior),
-    tags: stringArray(parsed.tags) ?? [],
+    tags,
     followUpNotes: stringArray(parsed.followUpNotes),
     photoBytes,
   };
@@ -108,6 +142,7 @@ export async function saveValidatedEvidence(
     }
     const result = await saveValidatedEvidenceForWorkspace({
       workspaceId: workspace.workspaceId,
+      workspaceCreatedAt: workspace.workspaceCreatedAt,
       input,
     });
 

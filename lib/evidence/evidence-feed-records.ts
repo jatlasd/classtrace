@@ -40,7 +40,7 @@ type EvidenceFeedFindManyArgs = {
         name: true;
       };
     };
-    photo: { select: { id: true } };
+    photo: { select: { id: true; width: true; height: true } };
   };
 };
 
@@ -67,7 +67,7 @@ type EvidenceFeedRecordFromDatabase = {
   classGroup: {
     name: string;
   } | null;
-  photo?: { id: string } | null;
+  photo?: { id: string; width: number; height: number } | null;
 };
 
 export type EvidenceFeedDatabase = {
@@ -89,6 +89,8 @@ export type EvidenceFeedRecord = {
   summary?: string;
   evidenceType?: string;
   hasPhoto?: boolean;
+  photoWidth?: number;
+  photoHeight?: number;
   topic?: string;
   performance?: string;
   behavior?: string;
@@ -127,12 +129,17 @@ function toFeedRecord(record: EvidenceFeedRecordFromDatabase): EvidenceFeedRecor
     studentDisplayName: record.rosterStudent.displayName,
     studentMentionHandle: record.rosterStudent.mentionHandle,
     evidenceDate: record.evidenceDate.toISOString(),
-    hasPhoto: record.photo !== null,
+    hasPhoto: Boolean(record.photo),
     tags: [...record.tags],
     followUpNeeded: record.followUpNeeded,
     validatedAt: record.validatedAt.toISOString(),
     createdAt: record.createdAt.toISOString(),
   };
+
+  if (record.photo) {
+    feedRecord.photoWidth = record.photo.width;
+    feedRecord.photoHeight = record.photo.height;
+  }
 
   const classGroupName = optionalText(record.classGroup?.name ?? null);
   const evidenceNote = optionalText(record.evidenceNote);
@@ -218,7 +225,7 @@ export async function getEvidenceFeedPageForWorkspace(
           name: true,
         },
       },
-      photo: { select: { id: true } },
+      photo: { select: { id: true, width: true, height: true } },
     },
   });
 

@@ -50,7 +50,7 @@ function buildEvidenceRecord(): {
   followUpNotes: string | null;
   validatedAt: Date;
   createdAt: Date;
-  photo: { id: string } | null;
+  photo: { id: string; width: number; height: number } | null;
 } {
   return {
     id: "evidence_1",
@@ -149,7 +149,7 @@ describe("getStudentTimelineRecordsForWorkspace", () => {
           followUpNotes: true,
           validatedAt: true,
           createdAt: true,
-          photo: { select: { id: true } },
+          photo: { select: { id: true, width: true, height: true } },
         },
       },
     ]);

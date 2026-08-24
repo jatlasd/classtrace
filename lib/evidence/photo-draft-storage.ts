@@ -10,8 +10,6 @@ const SUPPORTED_CLIENT_IMAGE_TYPES = new Set([
   "image/png",
   "image/webp",
   "image/avif",
-  "image/heic",
-  "image/heif",
 ]);
 const encoder = new TextEncoder();
 
@@ -177,7 +175,7 @@ export async function normalizeEvidencePhoto(
 
   let bitmap: ImageBitmap;
   try {
-    bitmap = await createImageBitmap(file);
+    bitmap = await createImageBitmap(file, { imageOrientation: "from-image" });
   } catch {
     return { success: false, error: "This photo could not be processed." };
   }
@@ -365,30 +363,17 @@ export async function removePhotoDraft(
   }
 }
 
-export async function prunePhotoDrafts(
-  workspaceId: string,
-  activeDraftIds: ReadonlySet<string>,
-  now = Date.now()
-): Promise<void> {
-  const hasSessionKey = Boolean(await getSessionCryptoKey(workspaceId, false));
+export async function pruneExpiredPhotoDrafts(now = Date.now()): Promise<void> {
   try {
-    const records = await withPhotoStore("readonly", (store) =>
-      requestResult(store.getAll() as IDBRequest<StoredPhotoDraft[]>)
-    );
-    const deletions = records.filter(
-      (record) =>
-        record.workspaceId !== workspaceId ||
-        record.expiresAt <= now ||
-        !activeDraftIds.has(record.draftId) ||
-        !hasSessionKey
-    );
-    await Promise.all(
-      deletions.map((record) =>
-        withPhotoStore("readwrite", async (store) => {
-          await requestResult(store.delete(record.key));
-        })
-      )
-    );
+    await withPhotoStore("readwrite", async (store) => {
+      const records = await requestResult(
+        store.getAll() as IDBRequest<StoredPhotoDraft[]>
+      );
+      const expiredRecords = records.filter((record) => record.expiresAt <= now);
+      await Promise.all(
+        expiredRecords.map((record) => requestResult(store.delete(record.key)))
+      );
+    });
   } catch {
     // Stale local data is retried at the next lifecycle boundary.
   }

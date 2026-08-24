@@ -54,7 +54,7 @@ type EvidenceRecordFindManyArgs = {
         name: true;
       };
     };
-    photo: { select: { id: true } };
+    photo: { select: { id: true; width: true; height: true } };
   };
 };
 
@@ -81,7 +81,7 @@ type ReportEvidenceFromDatabase = {
   validatedAt: Date;
   createdAt: Date;
   classGroup: { name: string } | null;
-  photo?: { id: string } | null;
+  photo?: { id: string; width: number; height: number } | null;
 };
 
 export type StudentReportDatabase = {
@@ -112,6 +112,8 @@ export type StudentReportEvidenceRecord = {
   summary?: string;
   evidenceType?: string;
   hasPhoto?: boolean;
+  photoWidth?: number;
+  photoHeight?: number;
   topic?: string;
   performance?: string;
   behavior?: string;
@@ -360,12 +362,17 @@ function toReportEvidence(
   const reportRecord: StudentReportEvidenceRecord = {
     id: record.id,
     evidenceDate: record.evidenceDate.toISOString(),
-    hasPhoto: record.photo !== null,
+    hasPhoto: Boolean(record.photo),
     tags: [...record.tags],
     followUpNeeded: record.followUpNeeded,
     validatedAt: record.validatedAt.toISOString(),
     createdAt: record.createdAt.toISOString(),
   };
+
+  if (record.photo) {
+    reportRecord.photoWidth = record.photo.width;
+    reportRecord.photoHeight = record.photo.height;
+  }
 
   const evidenceNote = optionalText(record.evidenceNote);
   const topic = optionalText(record.topic);
@@ -482,7 +489,7 @@ export async function getStudentReportRecordsForWorkspace(
           name: true,
         },
       },
-      photo: { select: { id: true } },
+      photo: { select: { id: true, width: true, height: true } },
     },
   });
 

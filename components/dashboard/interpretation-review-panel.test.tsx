@@ -68,7 +68,7 @@ describe("InterpretationReviewPanel", () => {
     });
   });
 
-  it("keeps a teacher-added photo caption independent from structured fields", async () => {
+  it("requires structured details when a teacher adds a note to photo evidence", async () => {
     const onConfirm = vi.fn().mockResolvedValue({
       success: true,
       evidenceId: "evidence_photo",
@@ -97,13 +97,16 @@ describe("InterpretationReviewPanel", () => {
     fireEvent.change(screen.getByLabelText("Evidence note"), {
       target: { value: "Mary's work sample from independent practice." },
     });
+    fireEvent.change(screen.getByLabelText("Evidence type"), {
+      target: { value: "Academic check-in" },
+    });
     fireEvent.click(screen.getByRole("button", { name: "Validate and save" }));
 
     await waitFor(() => expect(onConfirm).toHaveBeenCalledOnce());
     expect(onConfirm.mock.calls[0][1]).toMatchObject({
       evidenceNote: "Mary's work sample from independent practice.",
-      summary: undefined,
-      evidenceType: undefined,
+      summary: expect.any(String),
+      evidenceType: "Academic check-in",
     });
   });
 

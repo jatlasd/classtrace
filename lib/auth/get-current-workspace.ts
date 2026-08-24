@@ -21,6 +21,7 @@ export type CurrentWorkspace = {
   clerkUserId: string;
   teacherProfileId: string;
   workspaceId: string;
+  workspaceCreatedAt: Date;
 };
 
 type UniqueConstraintError = {
@@ -55,13 +56,14 @@ async function provisionCurrentWorkspace(
     where: { teacherProfileId: teacherProfile.id },
     update: {},
     create: { teacherProfileId: teacherProfile.id },
-    select: { id: true },
+    select: { id: true, createdAt: true },
   });
 
   return {
     clerkUserId,
     teacherProfileId: teacherProfile.id,
     workspaceId: workspace.id,
+    workspaceCreatedAt: workspace.createdAt,
   };
 }
 

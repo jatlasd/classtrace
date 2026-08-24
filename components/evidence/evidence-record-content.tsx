@@ -9,6 +9,8 @@ export type EvidenceRecordContentData = {
   summary?: string;
   evidenceType?: string;
   hasPhoto?: boolean;
+  photoWidth?: number;
+  photoHeight?: number;
   classGroupName?: string;
   topic?: string;
   performance?: string;
@@ -110,6 +112,8 @@ export function EvidenceRecordContent({
           evidenceId={record.id}
           evidenceDate={record.evidenceDate}
           loading={photoLoading}
+          width={record.photoWidth}
+          height={record.photoHeight}
           className="mt-3 break-inside-avoid"
         />
       ) : null}

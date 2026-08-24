@@ -7,7 +7,7 @@ import {
   clearPhotoDraftSessionKey,
   loadPhotoDraft,
   normalizeEvidencePhoto,
-  prunePhotoDrafts,
+  pruneExpiredPhotoDrafts,
   removePhotoDraft,
   savePhotoDraft,
   type PhotoDraft,
@@ -172,6 +172,9 @@ describe("local photo draft storage", () => {
       success: true,
       photo: { contentType: "image/webp", width: 2_048, height: 1_024 },
     });
+    expect(createImageBitmap).toHaveBeenCalledWith(expect.any(File), {
+      imageOrientation: "from-image",
+    });
     expect(close).toHaveBeenCalledOnce();
 
     const oversized = new File([new Uint8Array([1])], "large.jpg", {
@@ -189,6 +192,14 @@ describe("local photo draft storage", () => {
         })
       )
     ).resolves.toMatchObject({ success: false });
+    await expect(
+      normalizeEvidencePhoto(
+        new File([new Uint8Array([1])], "camera.heic", {
+          type: "image/heic",
+        })
+      )
+    ).resolves.toMatchObject({ success: false });
+    expect(createImageBitmap).toHaveBeenCalledOnce();
   });
 
   it("restores encrypted photo bytes only inside the same workspace session", async () => {
@@ -222,7 +233,7 @@ describe("local photo draft storage", () => {
     expect(await loadPhotoDraft("workspace_1", "draft_1", 1_000)).toBeNull();
   });
 
-  it("removes expired, deleted, malformed, and logged-out photo drafts", async () => {
+  it("removes only expired drafts during lifecycle pruning", async () => {
     await savePhotoDraft({
       workspaceId: "workspace_1",
       draftId: "expired",
@@ -256,8 +267,12 @@ describe("local photo draft storage", () => {
       expiresAt: 2_000,
       photo: photo(),
     });
-    await prunePhotoDrafts("workspace_1", new Set(), 1_000);
-    expect(records.size).toBe(0);
+    window.sessionStorage.clear();
+    await pruneExpiredPhotoDrafts(1_000);
+    expect(records.has("workspace_1:stale")).toBe(true);
+
+    await pruneExpiredPhotoDrafts(2_000);
+    expect(records.has("workspace_1:stale")).toBe(false);
 
     await savePhotoDraft({
       workspaceId: "workspace_1",
