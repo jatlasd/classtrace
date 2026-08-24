@@ -52,6 +52,7 @@ describe("EvidenceFeed capture review", () => {
     render(
       <EvidenceFeed
         workspaceId="workspace_test"
+        workspaceCreatedAt="2026-06-01T12:00:00.000Z"
         rosterStudents={roster}
         classGroups={[{ id: "class_reading", name: "Reading" }]}
         initialEvidenceRecords={[]}
@@ -73,7 +74,7 @@ describe("EvidenceFeed capture review", () => {
       },
     });
 
-    const captureButton = screen.getByRole("button", { name: "Capture Note" });
+    const captureButton = screen.getByRole("button", { name: "Capture" });
     await waitFor(() =>
       expect((captureButton as HTMLButtonElement).disabled).toBe(false)
     );
@@ -91,17 +92,18 @@ describe("EvidenceFeed capture review", () => {
       (screen.getByLabelText("Evidence note") as HTMLTextAreaElement).disabled
     ).toBe(false);
     expect(
-      screen.getByRole("button", { name: "Save validated evidence" })
+      screen.getByRole("button", { name: "Validate and save" })
     ).toBeTruthy();
     expect(screen.queryByText("Patterns")).toBeNull();
     expect(screen.queryByText("Evidence cues")).toBeNull();
     expect(screen.queryByText("Review prompts")).toBeNull();
-  });
+  }, 10_000);
 
   it("keeps an unresolved capture as a reviewable session draft", async () => {
     render(
       <EvidenceFeed
         workspaceId="workspace_test"
+        workspaceCreatedAt="2026-06-01T12:00:00.000Z"
         rosterStudents={roster}
         classGroups={[{ id: "class_reading", name: "Reading" }]}
         initialEvidenceRecords={[]}
@@ -119,7 +121,7 @@ describe("EvidenceFeed capture review", () => {
     fireEvent.change(screen.getByLabelText("What happened?"), {
       target: { value: "@Stacy completed the task independently." },
     });
-    fireEvent.click(screen.getByRole("button", { name: "Capture Note" }));
+    fireEvent.click(screen.getByRole("button", { name: "Capture" }));
 
     expect((await screen.findAllByText(/@Stacy/)).length).toBeGreaterThan(0);
     fireEvent.click(

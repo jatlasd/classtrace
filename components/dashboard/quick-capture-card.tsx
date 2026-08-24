@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { MentionsInput, Mention } from "react-mentions";
 import type { MentionsInputStyle } from "react-mentions";
 import { Button } from "@/components/ui/button";
+import { LocalPhotoPreview } from "@/components/evidence/local-photo-preview";
 import { buildNoteDraft } from "@/lib/note-processing";
 import { buildCapturePlaceholder } from "@/lib/students/build-capture-placeholder";
 import type { NoteDraft } from "@/lib/note-processing/types";
@@ -15,7 +16,15 @@ import {
 } from "@/lib/students/resolve-capture-students";
 import {
   Check,
+  Camera,
+  ImagePlus,
+  LoaderCircle,
+  X,
 } from "lucide-react";
+import {
+  normalizeEvidencePhoto,
+  type PhotoDraft,
+} from "@/lib/evidence/photo-draft-storage";
 
 const captureTextLayerStyle = {
   boxSizing: "border-box" as const,
@@ -91,8 +100,9 @@ type QuickCaptureCardProps = {
   focusRequestKey?: number;
   onDraft: (
     draft: NoteDraft,
-    identity: { id: string; capturedAt: number }
-  ) => void;
+    identity: { id: string; capturedAt: number },
+    photo?: PhotoDraft
+  ) => Promise<void> | void;
 };
 
 function resolutionMessage(
@@ -136,9 +146,16 @@ export function QuickCaptureCard({
   onDraft,
 }: QuickCaptureCardProps) {
   const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement | null>(null);
+  const choosePhotoRef = useRef<HTMLInputElement | null>(null);
+  const takePhotoRef = useRef<HTMLInputElement | null>(null);
+  const postedTimerRef = useRef<number | null>(null);
   const [markupValue, setMarkupValue] = useState("");
   const [plainText, setPlainText] = useState("");
   const [posted, setPosted] = useState(false);
+  const [photo, setPhoto] = useState<PhotoDraft | null>(null);
+  const [photoError, setPhotoError] = useState("");
+  const [isProcessingPhoto, setIsProcessingPhoto] = useState(false);
+  const photoErrorId = useId();
 
   const studentSuggestions = useMemo(
     () =>
@@ -167,10 +184,13 @@ export function QuickCaptureCard({
     studentResolution,
     trimmedPlainText.length > 0
   );
+  const hasCaptureContent = trimmedPlainText.length > 0 || photo !== null;
   const canCapture =
-    trimmedPlainText.length > 0 &&
+    hasCaptureContent &&
+    !isProcessingPhoto &&
     (studentResolution.status === "resolved_one_student" ||
-      studentResolution.status === "unresolved_student");
+      studentResolution.status === "unresolved_student" ||
+      (photo !== null && studentResolution.status === "no_student_mentioned"));
 
   useEffect(() => {
     if (focusRequestKey > 0) {
@@ -178,6 +198,15 @@ export function QuickCaptureCard({
       inputRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
     }
   }, [focusRequestKey]);
+
+  useEffect(
+    () => () => {
+      if (postedTimerRef.current !== null) {
+        window.clearTimeout(postedTimerRef.current);
+      }
+    },
+    []
+  );
 
   function handleChange(
     _event: { target: { value: string } },
@@ -188,16 +217,41 @@ export function QuickCaptureCard({
     setPlainText(newPlainTextValue);
   }
 
-  function handlePost() {
+  async function handlePhotoFile(file: File | undefined): Promise<void> {
+    if (!file) return;
+    setPhotoError("");
+    setIsProcessingPhoto(true);
+    const result = await normalizeEvidencePhoto(file);
+    setIsProcessingPhoto(false);
+    if (!result.success) {
+      setPhotoError(result.error);
+      return;
+    }
+    setPhoto(result.photo);
+  }
+
+  async function handlePost() {
     if (!canCapture) return;
-    onDraft(buildNoteDraft(trimmedPlainText), {
-      id: crypto.randomUUID(),
-      capturedAt: Date.now(),
-    });
+    await onDraft(
+      buildNoteDraft(trimmedPlainText),
+      {
+        id: crypto.randomUUID(),
+        capturedAt: Date.now(),
+      },
+      photo ?? undefined
+    );
     setPosted(true);
     setMarkupValue("");
     setPlainText("");
-    window.setTimeout(() => setPosted(false), 2000);
+    setPhoto(null);
+    setPhotoError("");
+    if (postedTimerRef.current !== null) {
+      window.clearTimeout(postedTimerRef.current);
+    }
+    postedTimerRef.current = window.setTimeout(() => {
+      setPosted(false);
+      postedTimerRef.current = null;
+    }, 2000);
   }
 
   function handleKeyDown(
@@ -264,6 +318,102 @@ export function QuickCaptureCard({
               />
             </MentionsInput>
         </div>
+
+        <div className="mt-3 border-t border-border/70 pt-3">
+          <input
+            ref={takePhotoRef}
+            type="file"
+            accept="image/jpeg,image/png,image/webp,image/avif"
+            capture="environment"
+            className="sr-only"
+            aria-label="Take photo"
+            aria-invalid={Boolean(photoError)}
+            aria-describedby={photoError ? photoErrorId : undefined}
+            onChange={(event) => void handlePhotoFile(event.target.files?.[0])}
+          />
+          <input
+            ref={choosePhotoRef}
+            type="file"
+            accept="image/jpeg,image/png,image/webp,image/avif"
+            className="sr-only"
+            aria-label="Choose photo"
+            aria-invalid={Boolean(photoError)}
+            aria-describedby={photoError ? photoErrorId : undefined}
+            onChange={(event) => void handlePhotoFile(event.target.files?.[0])}
+          />
+
+          {photo ? (
+            <div className="grid gap-3 sm:grid-cols-[7rem_1fr] sm:items-start">
+              <LocalPhotoPreview
+                blob={photo.blob}
+                alt="Selected photo evidence preview"
+                width={photo.width}
+                height={photo.height}
+              />
+              <div className="space-y-2">
+                <p className="text-sm font-medium text-foreground">Photo ready</p>
+                <p className="text-xs leading-relaxed text-muted-foreground">
+                  Check for other students or identifying details. It stays on
+                  this device until you validate and save.
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    onClick={() => choosePhotoRef.current?.click()}
+                  >
+                    <ImagePlus aria-hidden="true" className="size-4" />
+                    Replace photo
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => setPhoto(null)}
+                  >
+                    <X aria-hidden="true" className="size-4" />
+                    Remove photo
+                  </Button>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="flex flex-wrap items-center gap-2">
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                disabled={isProcessingPhoto}
+                onClick={() => takePhotoRef.current?.click()}
+              >
+                <Camera aria-hidden="true" className="size-4" />
+                Take photo
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                variant="ghost"
+                disabled={isProcessingPhoto}
+                onClick={() => choosePhotoRef.current?.click()}
+              >
+                <ImagePlus aria-hidden="true" className="size-4" />
+                Choose photo
+              </Button>
+              {isProcessingPhoto ? (
+                <span role="status" className="inline-flex items-center gap-2 text-xs text-muted-foreground">
+                  <LoaderCircle aria-hidden="true" className="size-4 animate-spin" />
+                  Processing photo…
+                </span>
+              ) : null}
+            </div>
+          )}
+          {photoError ? (
+            <p id={photoErrorId} role="alert" className="mt-2 text-sm text-destructive">
+              {photoError}
+            </p>
+          ) : null}
+        </div>
       </div>
 
       <div className="flex flex-col gap-3 border-t border-border bg-muted/15 px-5 py-3.5 sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
@@ -290,7 +440,7 @@ export function QuickCaptureCard({
         </div>
 
         <Button
-          onClick={handlePost}
+          onClick={() => void handlePost()}
           disabled={!canCapture}
           className="min-h-11 w-full rounded-lg px-5 text-sm font-semibold sm:min-h-10 sm:w-auto"
         >
@@ -300,7 +450,7 @@ export function QuickCaptureCard({
               Captured
             </>
           ) : (
-            "Capture Note"
+            "Capture"
           )}
         </Button>
       </div>

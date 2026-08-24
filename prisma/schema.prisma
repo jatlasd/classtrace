@@ -39,6 +39,7 @@ model Workspace {
   classGroups      ClassGroup[]
   rosterStudents   RosterStudent[]
   evidenceRecords  EvidenceRecord[]
+  evidencePhotos   EvidencePhoto[]
 }
 
 model ClassGroup {
@@ -85,8 +86,8 @@ model EvidenceRecord {
   classGroupId    String?
   evidenceDate    DateTime       @default(now())
   evidenceNote    String?
-  summary         String
-  evidenceType    String
+  summary         String?
+  evidenceType    String?
   topic           String?
   supportLevel    String?
   context         String?
@@ -103,11 +104,29 @@ model EvidenceRecord {
   workspace       Workspace      @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   rosterStudent   RosterStudent  @relation(fields: [workspaceId, rosterStudentId], references: [workspaceId, id], onDelete: Cascade)
   classGroup      ClassGroup?    @relation(fields: [workspaceId, classGroupId], references: [workspaceId, id], onDelete: SetNull)
+  photo           EvidencePhoto?
 
+  @@unique([workspaceId, id])
   @@index([workspaceId, createdAt])
   @@index([workspaceId, rosterStudentId])
   @@index([rosterStudentId, evidenceDate])
   @@index([classGroupId])
+}
+
+model EvidencePhoto {
+  id               String         @id @default(cuid())
+  workspaceId      String
+  evidenceRecordId String
+  imageData        Bytes
+  contentType      String
+  byteSize         Int
+  width            Int
+  height           Int
+  createdAt        DateTime       @default(now())
+  workspace        Workspace      @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  evidenceRecord   EvidenceRecord @relation(fields: [workspaceId, evidenceRecordId], references: [workspaceId, id], onDelete: Cascade)
+
+  @@unique([workspaceId, evidenceRecordId])
 }
 
 enum OperatorAuditAction {

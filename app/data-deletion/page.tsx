@@ -26,7 +26,7 @@ export default function DataDeletionPage() {
       title="Request account deletion"
       description="You can ask ClassTrace to delete your teacher account and the personal workspace connected to it. Review the scope and export anything you need before sending the request."
       sections={sections}
-      lastUpdated="July 14, 2026"
+      lastUpdated="August 21, 2026"
     >
       <PublicNote>
         Account deletion is permanent. It removes the full workspace, not one
@@ -41,8 +41,9 @@ export default function DataDeletionPage() {
         <p>
           Export any student evidence you are authorized and required to keep.
           ClassTrace provides a one-student CSV export and printable student
-          report. Store exports only in a location approved for that
-          information.
+          report. Reports include validated photos; CSV exports contain only a
+          Yes/No photo indicator and no image bytes or links. Store exports only
+          in a location approved for that information.
         </p>
         <p>
           If you only need to remove one evidence record, student, or class, use
@@ -83,7 +84,7 @@ export default function DataDeletionPage() {
         <ul>
           <li>the ClassTrace teacher profile and personal workspace;</li>
           <li>classes and roster students in that workspace;</li>
-          <li>saved and archived evidence records; and</li>
+          <li>saved and archived evidence records and their photos; and</li>
           <li>the separate Clerk sign-in account.</li>
         </ul>
         <p>
@@ -98,7 +99,7 @@ export default function DataDeletionPage() {
           action occurred. It contains the account identifiers used for the
           operation, aggregate class/student/evidence counts, outcome, and
           timestamps. It does not contain student names, evidence content, or
-          raw notes.
+          raw notes or photo metadata.
         </p>
         <p>
           A support request may remain in Resend and the operator mailbox under

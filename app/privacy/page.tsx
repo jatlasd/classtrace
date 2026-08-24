@@ -27,7 +27,7 @@ export default function PrivacyPage() {
       title="Privacy, in plain language"
       description="ClassTrace is a small teacher-first beta. This page describes what the product handles today, what it deliberately does not collect, and where its privacy limits still are."
       sections={sections}
-      lastUpdated="July 14, 2026"
+      lastUpdated="August 21, 2026"
     >
       <PublicNote>
         ClassTrace does not claim FERPA compliance, district approval, legal
@@ -48,7 +48,8 @@ export default function PrivacyPage() {
             names, mention handles, and optional school-local IDs;
           </li>
           <li>
-            evidence notes and the structured details you review and save; and
+            evidence notes, one optional validated photo per record, and the
+            structured details you review and save; and
           </li>
           <li>
             basic record dates, archive state, and the relationships needed to
@@ -57,8 +58,8 @@ export default function PrivacyPage() {
         </ul>
         <p>
           ClassTrace does not include advertising, analytics, session replay,
-          file uploads, photos, audio, or generative AI. It does not sell
-          teacher or student information.
+          audio, video, arbitrary file uploads, image analysis, or generative
+          AI. It does not sell teacher or student information.
         </p>
       </PublicInfoSection>
 
@@ -70,15 +71,21 @@ export default function PrivacyPage() {
           Before you capture, a note exists only in the page&apos;s local state.
           After capture, an unvalidated draft may remain in this browser&apos;s
           <strong> session storage</strong> until you validate it, delete it, or
-          reach the next device-local midnight. It is scoped to your workspace
-          on that browser.
+          reach the next device-local midnight. A selected photo is normalized
+          and stripped of embedded metadata on the device, then its encrypted
+          bytes may be kept in IndexedDB using a key limited to the current
+          browser-tab session. Closing the tab removes usable access to that
+          key. Drafts are scoped to your workspace on that browser.
         </p>
         <p>
           Raw capture text is not stored in the ClassTrace database, reports,
           exports, timelines, analytics, or application logs. A permanent
           evidence record is created only after you review and approve the
-          Evidence note. That reviewed note and its structured fields are then
-          saved to your workspace.
+          Evidence note or approve a photo. Photo bytes do not leave the device
+          until you choose Validate and save. The reviewed note, optional
+          structured fields, and validated photo are then saved to your
+          workspace. If local browser storage is unavailable, the current
+          preview may not survive a refresh.
         </p>
       </PublicInfoSection>
 
@@ -107,13 +114,15 @@ export default function PrivacyPage() {
       >
         <p>
           ClassTrace keeps saved workspace data until you permanently delete
-          individual records or request deletion of the account. Archived data
+          individual records or request deletion of the account. Deleting an
+          evidence record also deletes its photo. Archived data
           remains stored until it is permanently deleted. The beta does not yet
           publish a separate inactivity-based retention schedule.
         </p>
         <p>
           A completed account-deletion request removes the ClassTrace teacher
-          profile, workspace, classes, roster students, and evidence records,
+          profile, workspace, classes, roster students, evidence records, and
+          evidence photos,
           followed separately by the Clerk sign-in account. A narrow operator
           audit can remain after deletion. It records account identifiers,
           aggregate item counts, action outcome, and timestamps—not student
@@ -134,7 +143,10 @@ export default function PrivacyPage() {
           Use ClassTrace only when you are authorized to enter the information.
           Follow your school&apos;s or district&apos;s rules, limit entries to
           what is needed for student evidence, and review every draft before
-          saving. Do not use the product for emergencies or as the only copy of
+          saving. Before saving a photo, check the visible image for other
+          students, names, or identifying classroom details; removing embedded
+          metadata cannot remove information visible inside the picture. Do not
+          use the product for emergencies or as the only copy of
           a record your role requires you to preserve elsewhere.
         </p>
         <PublicActionLink href={routes.support}>

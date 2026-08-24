@@ -24,9 +24,92 @@ function buildDisplay() {
   );
 }
 
+function buildPhotoOnlyDisplay() {
+  return resolveCaptureDisplay(buildNoteDraft(""), undefined, roster);
+}
+
 afterEach(cleanup);
 
 describe("InterpretationReviewPanel", () => {
+  it("saves photo-only evidence after the teacher chooses one student", async () => {
+    const onConfirm = vi.fn().mockResolvedValue({
+      success: true,
+      evidenceId: "evidence_photo",
+      isFirstWorkspaceEvidence: false,
+    });
+
+    render(
+      <InterpretationReviewPanel
+        display={buildPhotoOnlyDisplay()}
+        hasPhoto
+        onConfirm={onConfirm}
+        onReviewLater={vi.fn()}
+        onCaptureAnother={vi.fn()}
+        rosterStudents={roster}
+        classGroups={classGroups}
+        onCreateStudent={vi.fn()}
+      />
+    );
+
+    const rosterSearch = screen.getByRole("combobox", {
+      name: "Choose roster student",
+    });
+    fireEvent.change(rosterSearch, { target: { value: "Mary" } });
+    fireEvent.keyDown(rosterSearch, { key: "Enter" });
+    fireEvent.click(screen.getByRole("button", { name: "Validate and save" }));
+
+    await waitFor(() => expect(onConfirm).toHaveBeenCalledOnce());
+    expect(onConfirm.mock.calls[0][1]).toMatchObject({
+      rosterStudentId: "student_mary",
+      evidenceNote: undefined,
+      summary: undefined,
+      evidenceType: undefined,
+      tags: [],
+    });
+  });
+
+  it("requires structured details when a teacher adds a note to photo evidence", async () => {
+    const onConfirm = vi.fn().mockResolvedValue({
+      success: true,
+      evidenceId: "evidence_photo",
+      isFirstWorkspaceEvidence: false,
+    });
+
+    render(
+      <InterpretationReviewPanel
+        display={buildPhotoOnlyDisplay()}
+        hasPhoto
+        capturedAt={new Date("2026-06-16T14:00:00.000Z").getTime()}
+        onConfirm={onConfirm}
+        onReviewLater={vi.fn()}
+        onCaptureAnother={vi.fn()}
+        rosterStudents={roster}
+        classGroups={classGroups}
+        onCreateStudent={vi.fn()}
+      />
+    );
+
+    const rosterSearch = screen.getByRole("combobox", {
+      name: "Choose roster student",
+    });
+    fireEvent.change(rosterSearch, { target: { value: "Mary" } });
+    fireEvent.keyDown(rosterSearch, { key: "Enter" });
+    fireEvent.change(screen.getByLabelText("Evidence note"), {
+      target: { value: "Mary's work sample from independent practice." },
+    });
+    fireEvent.change(screen.getByLabelText("Evidence type"), {
+      target: { value: "Academic check-in" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Validate and save" }));
+
+    await waitFor(() => expect(onConfirm).toHaveBeenCalledOnce());
+    expect(onConfirm.mock.calls[0][1]).toMatchObject({
+      evidenceNote: "Mary's work sample from independent practice.",
+      summary: expect.any(String),
+      evidenceType: "Academic check-in",
+    });
+  });
+
   it("opens with the Evidence note and structured details already editable", () => {
     const onReviewLater = vi.fn();
 
@@ -79,7 +162,7 @@ describe("InterpretationReviewPanel", () => {
       target: { value: "Teacher-approved evidence note." },
     });
     fireEvent.click(
-      screen.getByRole("button", { name: "Save validated evidence" })
+      screen.getByRole("button", { name: "Validate and save" })
     );
 
     await waitFor(() => expect(onConfirm).toHaveBeenCalledTimes(1));
@@ -129,7 +212,7 @@ describe("InterpretationReviewPanel", () => {
     );
 
     fireEvent.click(
-      screen.getByRole("button", { name: "Save validated evidence" })
+      screen.getByRole("button", { name: "Validate and save" })
     );
 
     await waitFor(() => expect(onConfirm).toHaveBeenCalledTimes(1));
@@ -168,7 +251,7 @@ describe("InterpretationReviewPanel", () => {
       />
     );
     fireEvent.click(
-      screen.getByRole("button", { name: "Save validated evidence" })
+      screen.getByRole("button", { name: "Validate and save" })
     );
 
     const error = await screen.findByText(
@@ -213,7 +296,7 @@ describe("InterpretationReviewPanel", () => {
     fireEvent.keyDown(rosterSearch, { key: "Enter" });
     expect(await screen.findByText("Student:")).toBeTruthy();
     fireEvent.click(
-      screen.getByRole("button", { name: "Save validated evidence" })
+      screen.getByRole("button", { name: "Validate and save" })
     );
 
     await waitFor(() => expect(onConfirm).toHaveBeenCalledOnce());
@@ -309,7 +392,7 @@ describe("InterpretationReviewPanel", () => {
     ).toBe("Stacy used the strategy without prompting.");
 
     fireEvent.click(
-      screen.getByRole("button", { name: "Save validated evidence" })
+      screen.getByRole("button", { name: "Validate and save" })
     );
     await waitFor(() => expect(onConfirm).toHaveBeenCalledOnce());
     expect(onConfirm.mock.calls[0][1].rosterStudentId).toBe("student_stacy");
@@ -336,7 +419,7 @@ describe("InterpretationReviewPanel", () => {
     );
 
     fireEvent.click(
-      screen.getByRole("button", { name: "Save validated evidence" })
+      screen.getByRole("button", { name: "Validate and save" })
     );
 
     expect(await screen.findByText("Evidence trail started")).toBeTruthy();

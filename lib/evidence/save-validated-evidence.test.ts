@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
+import sharp from "sharp";
 
 vi.mock("server-only", () => ({}));
 vi.mock("@/lib/db/prisma", () => ({
@@ -13,12 +14,57 @@ vi.mock("@/lib/db/prisma", () => ({
 }));
 
 import {
-  saveValidatedEvidenceForWorkspace,
+  saveValidatedEvidenceForWorkspace as saveValidatedEvidenceForWorkspaceDomain,
   type SaveValidatedEvidenceDatabase,
 } from "@/lib/evidence/save-validated-evidence";
 import { INPUT_LIMITS } from "@/lib/validation/input-limits";
 
 const now = new Date("2026-06-16T14:00:00.000Z");
+const workspaceCreatedAt = new Date("2026-06-01T12:00:00.000Z");
+type DomainArgs = Parameters<typeof saveValidatedEvidenceForWorkspaceDomain>[0];
+type TestDomainArgs = Omit<DomainArgs, "workspaceCreatedAt" | "input"> & {
+  input: Omit<
+    DomainArgs["input"],
+    "evidenceDate" | "evidenceDateOffsetMinutes"
+  > &
+    Partial<
+      Pick<
+        DomainArgs["input"],
+        "evidenceDate" | "evidenceDateOffsetMinutes"
+      >
+    >;
+};
+
+function saveValidatedEvidenceForWorkspace(
+  args: TestDomainArgs,
+  database?: SaveValidatedEvidenceDatabase
+) {
+  return saveValidatedEvidenceForWorkspaceDomain(
+    {
+      ...args,
+      workspaceCreatedAt,
+      input: {
+        ...args.input,
+        evidenceDate: args.input.evidenceDate ?? "2026-06-16",
+        evidenceDateOffsetMinutes:
+          args.input.evidenceDateOffsetMinutes ?? 240,
+      },
+    },
+    database
+  );
+}
+async function onePixelPng(): Promise<Uint8Array> {
+  return sharp({
+    create: {
+      width: 1,
+      height: 1,
+      channels: 3,
+      background: "white",
+    },
+  })
+    .png()
+    .toBuffer();
+}
 
 type StudentClassGroup = {
   id: string;
@@ -98,6 +144,102 @@ function buildDatabase(options?: {
 }
 
 describe("saveValidatedEvidenceForWorkspace", () => {
+  it("saves honest photo-only evidence without fabricated text fields", async () => {
+    const { database, calls } = buildDatabase();
+
+    const result = await saveValidatedEvidenceForWorkspace(
+      {
+        workspaceId: "workspace_1",
+        input: {
+          rosterStudentId: "student_mary",
+          evidenceDate: "2026-06-16",
+          evidenceDateOffsetMinutes: 240,
+          tags: [],
+          photoBytes: await onePixelPng(),
+        },
+        now,
+      },
+      database
+    );
+
+    expect(result).toMatchObject({ success: true, evidenceId: "evidence_1" });
+    expect(calls.create).toHaveLength(1);
+    expect(calls.create[0]).toMatchObject({
+      data: {
+        workspaceId: "workspace_1",
+        rosterStudentId: "student_mary",
+        evidenceNote: undefined,
+        summary: undefined,
+        evidenceType: undefined,
+        photo: {
+          create: {
+            workspaceId: "workspace_1",
+            contentType: "image/webp",
+            width: 1,
+            height: 1,
+          },
+        },
+      },
+    });
+  });
+
+  it("saves reviewed structured text and a photo together", async () => {
+    const { database, calls } = buildDatabase();
+
+    const result = await saveValidatedEvidenceForWorkspace(
+      {
+        workspaceId: "workspace_1",
+        input: {
+          rosterStudentId: "student_mary",
+          evidenceDate: "2026-06-16",
+          evidenceDateOffsetMinutes: 240,
+          evidenceNote: "Mary labeled the parts of the plant independently.",
+          summary: "Mary labeled the parts of the plant independently.",
+          evidenceType: "Academic check-in",
+          tags: [],
+          photoBytes: await onePixelPng(),
+        },
+        now,
+      },
+      database
+    );
+
+    expect(result).toMatchObject({ success: true, evidenceId: "evidence_1" });
+    expect(calls.create[0]).toMatchObject({
+      data: {
+        evidenceNote: "Mary labeled the parts of the plant independently.",
+        summary: "Mary labeled the parts of the plant independently.",
+        evidenceType: "Academic check-in",
+        photo: { create: { contentType: "image/webp" } },
+      },
+    });
+  });
+
+  it("rejects note and photo evidence without reviewed structured details", async () => {
+    const { database, calls } = buildDatabase();
+
+    const result = await saveValidatedEvidenceForWorkspace(
+      {
+        workspaceId: "workspace_1",
+        input: {
+          rosterStudentId: "student_mary",
+          evidenceNote: "Mary labeled the parts of the plant independently.",
+          tags: [],
+          photoBytes: await onePixelPng(),
+        },
+        now,
+      },
+      database
+    );
+
+    expect(result).toEqual({
+      success: false,
+      error: "Add a summary before saving evidence.",
+    });
+    expect(calls.findFirst).toEqual([]);
+    expect(calls.create).toEqual([]);
+  });
+
   it("saves structured evidence scoped to one active roster student", async () => {
     const { database, calls } = buildDatabase();
 
@@ -106,7 +248,8 @@ describe("saveValidatedEvidenceForWorkspace", () => {
         workspaceId: "workspace_1",
         input: {
           rosterStudentId: "student_mary",
-          evidenceDate: "2026-06-16T13:00:00.000Z",
+          evidenceDate: "2026-06-16",
+          evidenceDateOffsetMinutes: 240,
           evidenceNote: "Mary worked through the reading passage.",
           summary: "Mary - reading - Academic check-in",
           evidenceType: "Academic check-in",
@@ -154,7 +297,7 @@ describe("saveValidatedEvidenceForWorkspace", () => {
         workspaceId: "workspace_1",
         rosterStudentId: "student_mary",
         classGroupId: "class_group_1",
-        evidenceDate: new Date("2026-06-16T13:00:00.000Z"),
+        evidenceDate: new Date("2026-06-16T16:00:00.000Z"),
         evidenceNote: "Mary worked through the reading passage.",
         summary: "Mary - reading - Academic check-in",
         evidenceType: "Academic check-in",
@@ -244,7 +387,7 @@ describe("saveValidatedEvidenceForWorkspace", () => {
 
     expect(result).toEqual({
       success: false,
-      error: "Add an evidence note before saving evidence.",
+      error: "Add an evidence note or photo before saving evidence.",
     });
     expect(calls.findFirst).toEqual([]);
     expect(calls.create).toEqual([]);
@@ -647,4 +790,68 @@ describe("saveValidatedEvidenceForWorkspace", () => {
     expect(calls.findFirst).toEqual([]);
     expect(calls.create).toEqual([]);
   });
+
+  it("rejects a missing reviewed evidence date", async () => {
+    const { database, calls } = buildDatabase();
+
+    const result = await saveValidatedEvidenceForWorkspaceDomain(
+      {
+        workspaceId: "workspace_1",
+        workspaceCreatedAt,
+        input: {
+          rosterStudentId: "student_mary",
+          evidenceDate: undefined as unknown as string,
+          evidenceDateOffsetMinutes: 240,
+          evidenceNote: "Mary worked through the reading passage.",
+          summary: "Mary - reading",
+          evidenceType: "Academic check-in",
+          tags: [],
+        },
+        now,
+      },
+      database
+    );
+
+    expect(result).toEqual({
+      success: false,
+      error: "Use a valid evidence date.",
+    });
+    expect(calls.findFirst).toEqual([]);
+    expect(calls.create).toEqual([]);
+  });
+
+  it.each([
+    ["2026-05-31", 0],
+    ["2026-06-17", 0],
+    ["2026-06-16", 841],
+  ])(
+    "rejects evidence dates outside the workspace and teacher-local window",
+    async (evidenceDate, evidenceDateOffsetMinutes) => {
+      const { database, calls } = buildDatabase();
+
+      const result = await saveValidatedEvidenceForWorkspace(
+        {
+          workspaceId: "workspace_1",
+          input: {
+            rosterStudentId: "student_mary",
+            evidenceDate,
+            evidenceDateOffsetMinutes,
+            evidenceNote: "Mary worked through the reading passage.",
+            summary: "Mary - reading - Academic check-in",
+            evidenceType: "Academic check-in",
+            tags: [],
+          },
+          now,
+        },
+        database
+      );
+
+      expect(result).toEqual({
+        success: false,
+        error: "Use a valid evidence date.",
+      });
+      expect(calls.findFirst).toEqual([]);
+      expect(calls.create).toEqual([]);
+    }
+  );
 });

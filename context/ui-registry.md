@@ -122,7 +122,7 @@ File: `components/dashboard/quick-capture-card.tsx`
 - The header states the review-before-save boundary once; compact composer
   guidance explains `@` student mentions and `#tags` without repeating it as
   decorative hint controls.
-- Mention input remains text-only and offers roster-backed suggestions.
+- Mention input remains text-only and offers roster-backed suggestions. Adjacent Take photo and Choose photo controls add one temporary work-sample photo without turning capture into a general upload form.
 - The textarea and mention-highlighter layers share the same font metrics,
   padding, border, wrapping, and box sizing. Mention emphasis uses a tonal
   background without changing glyph weight or spacing.
@@ -131,6 +131,7 @@ File: `components/dashboard/quick-capture-card.tsx`
   Capture action.
 - After the workspace's first successful save, one inline success panel links to the student's timeline/report and can return focus to this composer.
 - Do not turn capture into a multi-field form.
+- A selected photo is previewed in the capture surface with Replace and Remove controls, visible local-only guidance, and a written processing state.
 
 ## Capture review
 
@@ -165,6 +166,8 @@ Last imprinted: 2026-07-22
 - Use one ledger row: capture icon, compact status metadata, full-width source
   or review content, then inline actions. Do not add a nested card, shadow, or
   narrow action rail.
+- Photo-only drafts use the existing student-resolution control, keep structured fields empty unless the teacher supplies them, and may save only after one student and an evidence date within the workspace-created-to-today local calendar window are confirmed.
+- Draft photos use the shared Photo thumbnails pattern; they do not widen the ledger row or consume the viewport before the teacher chooses to expand them. Saved thumbnails preserve their intrinsic dimensions and expose a quiet retry action if a photo request fails.
 
 ## Public trust and support pages
 
@@ -246,9 +249,29 @@ Last imprinted: 2026-07-12
 | Follow-up | top divider, muted body, foreground label |
 | Overflow | `break-words [overflow-wrap:anywhere]` |
 
-This component owns Evidence note versus legacy structured-entry copy, reviewed summary, structured chips, tags, and follow-up display across feed, timeline, and report. Do not copy that markup into a new read surface.
+This component owns Evidence note versus legacy structured-entry copy, reviewed summary, structured chips, tags, follow-up, and authenticated photo display across feed, timeline, and report. Do not copy that markup into a new read surface.
+Authenticated photos use the shared Photo thumbnails pattern. Printed reports render the full image without the interactive affordance.
 Feed, timeline, and report rows may suppress the prose structured summary when
 the same reviewed fields are already visible as chips.
+
+## Photo thumbnails
+
+File: `components/evidence/photo-thumbnail.tsx`
+
+Last updated: 2026-08-22
+
+| Property | Pattern |
+|---|---|
+| Thumbnail background | `bg-muted/20` |
+| Border | `border border-border` |
+| Border radius | `rounded-md` |
+| Expand affordance | `bg-foreground/85 text-background`; `shadow-sm` |
+| Hover state | `group-hover:bg-foreground` |
+| Focus state | `focus-visible:ring-3 focus-visible:ring-ring/30` |
+| Expanded backdrop | `bg-foreground/85`; responsive page-edge padding |
+| Close control | 44px target, `bg-card text-foreground`, visible focus ring |
+
+Draft and authenticated evidence photos use one compact square thumbnail on screen. The image uses `object-cover` for scanning; a visible icon and accessible button name disclose expansion. The focused overlay uses `object-contain`, closes from its named control, backdrop, or Escape key, and returns focus to the thumbnail. Printed reports hide the affordance and render the complete image.
 
 ## Evidence rows and timeline/report entries
 

@@ -83,7 +83,7 @@ Never accept or trust a client-provided user/workspace ID. Do not place domain r
 - Permanent evidence never includes raw capture/source text.
 - The Evidence note is stored exactly as teacher-approved after allowed trimming/validation.
 - Parser output remains a draft until validation.
-- Session draft storage goes through `lib/evidence/session-draft-storage.ts`; do not add another browser persistence path.
+- Session draft manifests go through `lib/evidence/session-draft-storage.ts`; encrypted temporary photo bytes go only through `lib/evidence/photo-draft-storage.ts`.
 
 ## React and UI
 

@@ -126,6 +126,30 @@ describe("database ownership constraints", () => {
         validatedAt: new Date(),
       },
     });
+    await expect(
+      database.evidencePhoto.create({
+        data: {
+          workspaceId: fixture.workspaceB.id,
+          evidenceRecordId: evidence.id,
+          imageData: new Uint8Array([1]),
+          contentType: "image/webp",
+          byteSize: 1,
+          width: 1,
+          height: 1,
+        },
+      })
+    ).rejects.toMatchObject({ code: "P2003" });
+    const photo = await database.evidencePhoto.create({
+      data: {
+        workspaceId: fixture.workspaceA.id,
+        evidenceRecordId: evidence.id,
+        imageData: new Uint8Array([1, 2, 3]),
+        contentType: "image/webp",
+        byteSize: 3,
+        width: 1,
+        height: 1,
+      },
+    });
     await database.classGroup.delete({ where: { id: classForDelete.id } });
     expect(
       await database.rosterStudent.findUnique({
@@ -139,11 +163,21 @@ describe("database ownership constraints", () => {
         select: { workspaceId: true, classGroupId: true },
       })
     ).toEqual({ workspaceId: fixture.workspaceA.id, classGroupId: null });
+    await database.evidenceRecord.update({
+      where: { id: evidence.id },
+      data: { archivedAt: new Date() },
+    });
+    await expect(
+      database.evidencePhoto.findUnique({ where: { id: photo.id } })
+    ).resolves.not.toBeNull();
 
     await database.rosterStudent.delete({ where: { id: studentForDelete.id } });
     expect(
       await database.evidenceRecord.findUnique({ where: { id: evidence.id } })
     ).toBeNull();
+    await expect(
+      database.evidencePhoto.findUnique({ where: { id: photo.id } })
+    ).resolves.toBeNull();
   });
 
   it("cascades whole-account data while preserving standalone operator audit rows", async () => {
@@ -177,6 +211,17 @@ describe("database ownership constraints", () => {
         summary: "Jeff - intervention",
         evidenceType: "Academic check-in",
         validatedAt: new Date(),
+      },
+    });
+    const evidencePhoto = await database.evidencePhoto.create({
+      data: {
+        workspaceId: workspace.id,
+        evidenceRecordId: evidence.id,
+        imageData: new Uint8Array([4, 5, 6]),
+        contentType: "image/webp",
+        byteSize: 3,
+        width: 1,
+        height: 1,
       },
     });
     const acceptance = await database.betaAgreementAcceptance.create({
@@ -214,6 +259,9 @@ describe("database ownership constraints", () => {
     ).resolves.toBeNull();
     await expect(
       database.evidenceRecord.findUnique({ where: { id: evidence.id } })
+    ).resolves.toBeNull();
+    await expect(
+      database.evidencePhoto.findUnique({ where: { id: evidencePhoto.id } })
     ).resolves.toBeNull();
     await expect(
       database.betaAgreementAcceptance.findUnique({

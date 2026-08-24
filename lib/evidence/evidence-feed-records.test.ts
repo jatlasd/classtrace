@@ -45,6 +45,7 @@ function buildRecord(overrides?: {
     classGroup: overrides?.classGroup === undefined
       ? { name: "Reading group" }
       : overrides.classGroup,
+    photo: null,
   };
 }
 
@@ -111,6 +112,7 @@ describe("getEvidenceFeedPageForWorkspace", () => {
               name: true,
             },
           },
+          photo: { select: { id: true, width: true, height: true } },
         },
       },
     ]);
@@ -129,6 +131,7 @@ describe("getEvidenceFeedPageForWorkspace", () => {
         evidenceNote: "used a reading strategy after one prompt",
         summary: "Mary - reading - Academic check-in",
         evidenceType: "Academic check-in",
+        hasPhoto: false,
         topic: "reading",
         performance: "worked through the passage",
         behavior: "used a strategy",
@@ -178,7 +181,7 @@ describe("getEvidenceFeedPageForWorkspace", () => {
         evidenceNote: " ",
         topic: " ",
         performance: "",
-        behavior: null,
+        behavior: " ",
         followUpNotes: "   ",
       },
     ]);

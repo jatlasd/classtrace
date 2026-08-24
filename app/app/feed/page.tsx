@@ -71,6 +71,7 @@ export default async function FeedPage({ searchParams }: FeedPageProps) {
   return (
     <EvidenceFeed
       workspaceId={workspace.workspaceId}
+      workspaceCreatedAt={workspace.workspaceCreatedAt.toISOString()}
       rosterStudents={rosterStudents}
       classGroups={classGroups}
       initialEvidenceRecords={evidencePage.records}

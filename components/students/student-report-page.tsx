@@ -139,6 +139,7 @@ function ReportEvidenceItem({ record }: ReportEvidenceItemProps) {
               includeClassGroup
               showStructuredSummary={false}
               textClassName="mt-2"
+              photoLoading="eager"
             />
           </div>
           <span className="inline-flex w-fit items-center gap-2 rounded-lg border border-validated/60 bg-validated/35 px-2.5 py-1 text-xs font-semibold text-validated-foreground">

@@ -7,7 +7,12 @@ import {
   screen,
   waitFor,
 } from "@testing-library/react";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+
+const mocks = vi.hoisted(() => ({ normalizeEvidencePhoto: vi.fn() }));
+vi.mock("@/lib/evidence/photo-draft-storage", () => ({
+  normalizeEvidencePhoto: mocks.normalizeEvidencePhoto,
+}));
 import { QuickCaptureCard } from "./quick-capture-card";
 
 const roster = [
@@ -19,7 +24,31 @@ const roster = [
   },
 ];
 
-afterEach(cleanup);
+beforeEach(() => {
+  mocks.normalizeEvidencePhoto.mockResolvedValue({
+    success: true,
+    photo: {
+      blob: new Blob([new Uint8Array([1, 2, 3])], { type: "image/webp" }),
+      contentType: "image/webp",
+      byteSize: 3,
+      width: 100,
+      height: 80,
+    },
+  });
+  Object.defineProperty(URL, "createObjectURL", {
+    configurable: true,
+    value: vi.fn(() => "blob:preview"),
+  });
+  Object.defineProperty(URL, "revokeObjectURL", {
+    configurable: true,
+    value: vi.fn(),
+  });
+});
+
+afterEach(() => {
+  cleanup();
+  vi.unstubAllGlobals();
+});
 
 describe("QuickCaptureCard mentions editor", () => {
   it("keeps the input and highlight layers on identical text metrics", () => {
@@ -84,7 +113,7 @@ describe("QuickCaptureCard mentions editor", () => {
         "Ready to capture. You'll resolve @Stacy before saving."
       )
     ).toBeTruthy();
-    const captureButton = screen.getByRole("button", { name: "Capture Note" });
+    const captureButton = screen.getByRole("button", { name: "Capture" });
     expect((captureButton as HTMLButtonElement).disabled).toBe(false);
     fireEvent.click(captureButton);
 
@@ -100,8 +129,42 @@ describe("QuickCaptureCard mentions editor", () => {
 
     expect(await screen.findByText("Choose one student for this capture.")).toBeTruthy();
     expect(
-      (screen.getByRole("button", { name: "Capture Note" }) as HTMLButtonElement)
+      (screen.getByRole("button", { name: "Capture" }) as HTMLButtonElement)
         .disabled
     ).toBe(true);
   });
+
+  it.each(["Choose photo", "Take photo"])(
+    "captures a photo-only draft from %s without making a network request",
+    async (photoInputLabel) => {
+    const onDraft = vi.fn();
+    const networkRequest = vi.fn();
+    vi.stubGlobal("fetch", networkRequest);
+    render(<QuickCaptureCard rosterStudents={roster} onDraft={onDraft} />);
+
+    fireEvent.change(screen.getByLabelText(photoInputLabel), {
+      target: {
+        files: [new File([new Uint8Array([9])], "work-sample.png", { type: "image/png" })],
+      },
+    });
+
+    expect(await screen.findByText("Photo ready")).toBeTruthy();
+    expect(
+      screen.getByRole("button", {
+        name: "Expand Selected photo evidence preview",
+      })
+    ).toBeTruthy();
+    const captureButton = screen.getByRole("button", { name: "Capture" });
+    expect((captureButton as HTMLButtonElement).disabled).toBe(false);
+    fireEvent.click(captureButton);
+
+    await waitFor(() => expect(onDraft).toHaveBeenCalledOnce());
+    expect(onDraft.mock.calls[0][0].parsed.rawNote).toBe("");
+    expect(onDraft.mock.calls[0][2]).toMatchObject({
+      contentType: "image/webp",
+      byteSize: 3,
+    });
+    expect(networkRequest).not.toHaveBeenCalled();
+    }
+  );
 });

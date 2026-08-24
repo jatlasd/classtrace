@@ -1,6 +1,6 @@
 export const SESSION_DRAFT_STORAGE_KEY = "classtrace:session-drafts:v1";
 
-const SESSION_DRAFT_VERSION = 1;
+const SESSION_DRAFT_VERSION = 2;
 const MAX_SESSION_DRAFTS = 500;
 const MAX_RAW_NOTE_LENGTH = 100_000;
 const MAX_IDENTIFIER_LENGTH = 200;
@@ -9,6 +9,7 @@ export type SessionDraftRecord = {
   id: string;
   rawNote: string;
   capturedAt: number;
+  hasPhoto: boolean;
 };
 
 export type SessionDraftStorage = Pick<
@@ -48,8 +49,9 @@ function isSessionDraftRecord(value: unknown): value is SessionDraftRecord {
   return (
     isBoundedIdentifier(value.id) &&
     typeof value.rawNote === "string" &&
-    value.rawNote.trim().length > 0 &&
+    (value.rawNote.trim().length > 0 || value.hasPhoto === true) &&
     value.rawNote.length <= MAX_RAW_NOTE_LENGTH &&
+    typeof value.hasPhoto === "boolean" &&
     typeof value.capturedAt === "number" &&
     Number.isFinite(value.capturedAt) &&
     value.capturedAt > 0

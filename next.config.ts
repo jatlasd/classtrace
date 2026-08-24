@@ -1,8 +1,18 @@
 import type { NextConfig } from "next";
 import { withSentryConfig } from "@sentry/nextjs";
 
+const allowedDevOrigin = process.env.CLASSTRACE_ALLOWED_DEV_ORIGIN?.trim();
+
 const nextConfig: NextConfig = {
-  /* config options here */
+  ...(process.env.NODE_ENV !== "production" && allowedDevOrigin
+    ? { allowedDevOrigins: [allowedDevOrigin] }
+    : undefined),
+
+  experimental: {
+    serverActions: {
+      bodySizeLimit: "2mb",
+    },
+  },
 };
 
 export default withSentryConfig(nextConfig, {

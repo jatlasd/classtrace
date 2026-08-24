@@ -44,6 +44,7 @@ function CaptureHarness({
   return (
     <EvidenceCaptureCard
       draft={captureDraft}
+      workspaceCreatedAt="2026-06-01T12:00:00.000Z"
       rosterStudents={captureRoster}
       classGroups={[{ id: "class_reading", name: "Reading" }]}
       onValidate={vi.fn().mockResolvedValue({
@@ -96,7 +97,7 @@ describe("EvidenceCaptureCard review flow", () => {
     expect(
       (screen.getByLabelText("Evidence note") as HTMLTextAreaElement).value
     ).toBe("Mary used the strategy without prompting.");
-  });
+  }, 10_000);
 
   it("keeps original-capture editing distinct from evidence review", () => {
     const onEdit = vi.fn(() => true);

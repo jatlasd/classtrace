@@ -54,6 +54,7 @@ type EvidenceRecordFindManyArgs = {
         name: true;
       };
     };
+    photo: { select: { id: true; width: true; height: true } };
   };
 };
 
@@ -69,8 +70,8 @@ type ReportEvidenceFromDatabase = {
   id: string;
   evidenceDate: Date;
   evidenceNote: string | null;
-  summary: string;
-  evidenceType: string;
+  summary: string | null;
+  evidenceType: string | null;
   topic: string | null;
   performance: string | null;
   behavior: string | null;
@@ -80,6 +81,7 @@ type ReportEvidenceFromDatabase = {
   validatedAt: Date;
   createdAt: Date;
   classGroup: { name: string } | null;
+  photo?: { id: string; width: number; height: number } | null;
 };
 
 export type StudentReportDatabase = {
@@ -107,8 +109,11 @@ export type StudentReportEvidenceRecord = {
   id: string;
   evidenceDate: string;
   evidenceNote?: string;
-  summary: string;
-  evidenceType: string;
+  summary?: string;
+  evidenceType?: string;
+  hasPhoto?: boolean;
+  photoWidth?: number;
+  photoHeight?: number;
   topic?: string;
   performance?: string;
   behavior?: string;
@@ -357,13 +362,17 @@ function toReportEvidence(
   const reportRecord: StudentReportEvidenceRecord = {
     id: record.id,
     evidenceDate: record.evidenceDate.toISOString(),
-    summary: record.summary,
-    evidenceType: record.evidenceType,
+    hasPhoto: Boolean(record.photo),
     tags: [...record.tags],
     followUpNeeded: record.followUpNeeded,
     validatedAt: record.validatedAt.toISOString(),
     createdAt: record.createdAt.toISOString(),
   };
+
+  if (record.photo) {
+    reportRecord.photoWidth = record.photo.width;
+    reportRecord.photoHeight = record.photo.height;
+  }
 
   const evidenceNote = optionalText(record.evidenceNote);
   const topic = optionalText(record.topic);
@@ -371,9 +380,17 @@ function toReportEvidence(
   const behavior = optionalText(record.behavior);
   const followUpNotes = optionalText(record.followUpNotes);
   const classGroupName = optionalText(record.classGroup?.name ?? null);
+  const summary = optionalText(record.summary);
+  const evidenceType = optionalText(record.evidenceType);
 
   if (evidenceNote) {
     reportRecord.evidenceNote = evidenceNote;
+  }
+  if (summary) {
+    reportRecord.summary = summary;
+  }
+  if (evidenceType) {
+    reportRecord.evidenceType = evidenceType;
   }
   if (topic) {
     reportRecord.topic = topic;
@@ -472,6 +489,7 @@ export async function getStudentReportRecordsForWorkspace(
           name: true,
         },
       },
+      photo: { select: { id: true, width: true, height: true } },
     },
   });
 

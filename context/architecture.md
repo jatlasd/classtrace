@@ -12,7 +12,7 @@ browser
         → Prisma → PostgreSQL
 ```
 
-There is no separate API service, job queue, analytics pipeline, file service,
+There is no separate API service, job queue, analytics pipeline, general file service,
 AI service, or shared district identity layer. The two narrow external paths
 are Settings feedback sent through Resend to the configured operator and
 privacy-scrubbed application errors and sampled traces sent to Sentry.
@@ -26,7 +26,7 @@ Clerk user
     → Workspace
       → ClassGroup
       → RosterStudent
-        → EvidenceRecord
+      → EvidenceRecord → optional EvidencePhoto
 ```
 
 - Server entry points derive the current Clerk user; they do not accept a user or workspace ID from the client.
@@ -106,7 +106,8 @@ admin, district, organization, and membership models remains in force.
 - `Workspace` is the personal teacher ownership boundary.
 - `ClassGroup` organizes roster setup.
 - `RosterStudent` is a teacher-owned student entry with a mention handle and one active class assignment during the limited beta.
-- `EvidenceRecord` stores the teacher-approved Evidence note plus reviewed structured fields. It never stores the raw capture.
+- `EvidenceRecord` stores an optional teacher-approved Evidence note plus reviewed structured fields. It never stores the raw capture.
+- `EvidencePhoto` stores one server-validated WebP for an evidence record through a composite same-workspace relation. Ordinary read models select only whether a photo exists.
 
 See `prisma/schema.prisma` and committed migrations for exact constraints.
 
@@ -115,7 +116,7 @@ See `prisma/schema.prisma` and committed migrations for exact constraints.
 ```text
 composer React state
   → Capture
-  → sessionStorage draft (optional, temporary)
+  → sessionStorage manifest + encrypted IndexedDB photo draft (optional, temporary)
   → deterministic parser/matchers
   → unmatched-student resolution (match existing or create in active class)
   → review UI
@@ -135,18 +136,23 @@ Before Capture, text exists only in component state. After Capture, an unvalidat
 - raw note
 - capture timestamp
 - device-local midnight expiry
+- whether an encrypted local photo exists
 
-The storage helper rejects malformed, mismatched, oversized, or expired data and caps draft count/size. A draft is removed after successful validation or explicit deletion. Raw notes must not use `localStorage`, PostgreSQL, server draft storage, logs, exports, timelines, reports, or analytics.
+The storage helpers reject malformed, mismatched, oversized, or expired data and cap draft count/size. Photo bytes are normalized and metadata-stripped locally, encrypted with a session-scoped key, and stored only in IndexedDB until validation. A draft is removed after successful validation or explicit deletion. Raw notes and unvalidated photos must not use `localStorage`, PostgreSQL, server draft storage, logs, exports, timelines, reports, analytics, or telemetry.
+
+Sign-out waits for current-tab draft cleanup and broadcasts a content-free signal so every other open teacher-product tab clears its own session manifest and photo key before the account session ends.
 
 ### Permanent evidence boundary
 
-The client submits only the reviewed Evidence note and structured fields. The server:
+The client submits only the reviewed Evidence note, structured fields, and optional normalized photo when the teacher validates. The server:
 
 1. Resolves the authenticated workspace.
 2. Enforces input length/count limits.
-3. Rechecks that the student is active and owned by the workspace.
-4. Rechecks the optional class relation in the same workspace.
-5. Writes inside the shared serializable transaction protocol.
+3. Interprets the reviewed date with a bounded browser timezone offset and rejects dates before the workspace's local creation day or after the teacher's current local day.
+4. Rechecks that the student is active and owned by the workspace.
+5. Rechecks the optional class relation in the same workspace.
+6. Independently validates and re-encodes any photo without image analysis.
+7. Writes the evidence record and optional photo inside the shared serializable transaction protocol.
 
 An unmatched mention may remain only in the temporary draft. During review,
 the teacher may match it to an active roster student or create a roster student
@@ -154,7 +160,7 @@ through the existing workspace-scoped student mutation. Student creation alone
 does not approve or save the evidence; the later evidence save still rechecks
 the resolved active student and class ownership.
 
-Legacy structured records may have a null Evidence note. The UI labels them honestly and never fabricates note text.
+Photo-only and legacy structured records may have a null Evidence note. Photo-only records do not receive fabricated summaries or structured fields; legacy structured records remain labeled honestly.
 
 ## Server and client responsibilities
 

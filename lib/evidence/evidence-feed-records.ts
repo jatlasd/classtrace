@@ -40,6 +40,7 @@ type EvidenceFeedFindManyArgs = {
         name: true;
       };
     };
+    photo: { select: { id: true; width: true; height: true } };
   };
 };
 
@@ -48,8 +49,8 @@ type EvidenceFeedRecordFromDatabase = {
   rosterStudentId: string;
   evidenceDate: Date;
   evidenceNote: string | null;
-  summary: string;
-  evidenceType: string;
+  summary: string | null;
+  evidenceType: string | null;
   topic: string | null;
   performance: string | null;
   behavior: string | null;
@@ -66,6 +67,7 @@ type EvidenceFeedRecordFromDatabase = {
   classGroup: {
     name: string;
   } | null;
+  photo?: { id: string; width: number; height: number } | null;
 };
 
 export type EvidenceFeedDatabase = {
@@ -84,8 +86,11 @@ export type EvidenceFeedRecord = {
   classGroupName?: string;
   evidenceDate: string;
   evidenceNote?: string;
-  summary: string;
-  evidenceType: string;
+  summary?: string;
+  evidenceType?: string;
+  hasPhoto?: boolean;
+  photoWidth?: number;
+  photoHeight?: number;
   topic?: string;
   performance?: string;
   behavior?: string;
@@ -124,13 +129,17 @@ function toFeedRecord(record: EvidenceFeedRecordFromDatabase): EvidenceFeedRecor
     studentDisplayName: record.rosterStudent.displayName,
     studentMentionHandle: record.rosterStudent.mentionHandle,
     evidenceDate: record.evidenceDate.toISOString(),
-    summary: record.summary,
-    evidenceType: record.evidenceType,
+    hasPhoto: Boolean(record.photo),
     tags: [...record.tags],
     followUpNeeded: record.followUpNeeded,
     validatedAt: record.validatedAt.toISOString(),
     createdAt: record.createdAt.toISOString(),
   };
+
+  if (record.photo) {
+    feedRecord.photoWidth = record.photo.width;
+    feedRecord.photoHeight = record.photo.height;
+  }
 
   const classGroupName = optionalText(record.classGroup?.name ?? null);
   const evidenceNote = optionalText(record.evidenceNote);
@@ -138,12 +147,20 @@ function toFeedRecord(record: EvidenceFeedRecordFromDatabase): EvidenceFeedRecor
   const performance = optionalText(record.performance);
   const behavior = optionalText(record.behavior);
   const followUpNotes = optionalText(record.followUpNotes);
+  const summary = optionalText(record.summary);
+  const evidenceType = optionalText(record.evidenceType);
 
   if (classGroupName) {
     feedRecord.classGroupName = classGroupName;
   }
   if (evidenceNote) {
     feedRecord.evidenceNote = evidenceNote;
+  }
+  if (summary) {
+    feedRecord.summary = summary;
+  }
+  if (evidenceType) {
+    feedRecord.evidenceType = evidenceType;
   }
   if (topic) {
     feedRecord.topic = topic;
@@ -208,6 +225,7 @@ export async function getEvidenceFeedPageForWorkspace(
           name: true,
         },
       },
+      photo: { select: { id: true, width: true, height: true } },
     },
   });
 

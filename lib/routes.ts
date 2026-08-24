@@ -12,6 +12,8 @@ export const routes = {
   student: (studentId: string): string => `/app/students/${studentId}`,
   studentReport: (studentId: string): string =>
     `/app/students/${studentId}/report`,
+  evidencePhoto: (evidenceId: string): string =>
+    `/app/evidence/${evidenceId}/photo`,
   settings: "/app/settings",
   operator: "/operator",
   signIn: "/sign-in",

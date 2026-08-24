@@ -1,10 +1,16 @@
 import { formatTagLabel } from "@/lib/format-tag";
 import type { ReactNode } from "react";
+import { EvidencePhoto } from "@/components/evidence/evidence-photo";
 
 export type EvidenceRecordContentData = {
   evidenceNote?: string;
-  summary: string;
-  evidenceType: string;
+  id?: string;
+  evidenceDate?: string;
+  summary?: string;
+  evidenceType?: string;
+  hasPhoto?: boolean;
+  photoWidth?: number;
+  photoHeight?: number;
   classGroupName?: string;
   topic?: string;
   performance?: string;
@@ -18,6 +24,7 @@ type EvidenceRecordContentProps = {
   includeClassGroup?: boolean;
   showStructuredSummary?: boolean;
   textClassName?: string;
+  photoLoading?: "eager" | "lazy";
 };
 
 function EvidenceChip({
@@ -48,41 +55,68 @@ export function EvidenceRecordContent({
   includeClassGroup = false,
   showStructuredSummary = true,
   textClassName = "mt-1",
+  photoLoading = "lazy",
 }: EvidenceRecordContentProps) {
   const primaryEvidenceText = record.evidenceNote ?? record.summary;
+  const hasStructuredDetails = Boolean(
+    record.evidenceType ||
+      record.topic ||
+      record.performance ||
+      record.behavior ||
+      record.tags.length > 0
+  );
 
   return (
     <>
-      <p
-        className={`${textClassName} break-words text-[15px] leading-relaxed text-foreground [overflow-wrap:anywhere]`}
-      >
-        {primaryEvidenceText}
-      </p>
-      {record.evidenceNote && showStructuredSummary ? (
+      {primaryEvidenceText ? (
+        <p
+          className={`${textClassName} break-words text-[15px] leading-relaxed text-foreground [overflow-wrap:anywhere]`}
+        >
+          {primaryEvidenceText}
+        </p>
+      ) : null}
+      {record.evidenceNote && record.summary && showStructuredSummary ? (
         <p className="mt-2 break-words text-xs leading-relaxed text-muted-foreground [overflow-wrap:anywhere]">
           <span className="font-medium text-foreground">Structured details:</span>{" "}
           {record.summary}
         </p>
-      ) : !record.evidenceNote ? (
+      ) : !record.evidenceNote && record.summary && !record.hasPhoto ? (
         <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
           Legacy structured entry. This record was saved before Evidence notes were added.
         </p>
       ) : null}
 
-      <div className="mt-3 flex flex-wrap gap-1.5">
-        {includeClassGroup && record.classGroupName ? (
-          <EvidenceChip>{record.classGroupName}</EvidenceChip>
-        ) : null}
-        {record.topic ? <EvidenceChip>{record.topic}</EvidenceChip> : null}
-        {record.performance ? <EvidenceChip>{record.performance}</EvidenceChip> : null}
-        {record.behavior ? <EvidenceChip>{record.behavior}</EvidenceChip> : null}
-        <EvidenceChip variant="evidence">{record.evidenceType}</EvidenceChip>
-        {record.tags.map((tag) => (
-          <EvidenceChip key={tag} variant="tag">
-            {formatTagLabel(tag)}
-          </EvidenceChip>
-        ))}
-      </div>
+      {hasStructuredDetails ? (
+        <div className="mt-3 flex flex-wrap gap-1.5">
+          {includeClassGroup && record.classGroupName ? (
+            <EvidenceChip>{record.classGroupName}</EvidenceChip>
+          ) : null}
+          {record.topic ? <EvidenceChip>{record.topic}</EvidenceChip> : null}
+          {record.performance ? (
+            <EvidenceChip>{record.performance}</EvidenceChip>
+          ) : null}
+          {record.behavior ? <EvidenceChip>{record.behavior}</EvidenceChip> : null}
+          {record.evidenceType ? (
+            <EvidenceChip variant="evidence">{record.evidenceType}</EvidenceChip>
+          ) : null}
+          {record.tags.map((tag) => (
+            <EvidenceChip key={tag} variant="tag">
+              {formatTagLabel(tag)}
+            </EvidenceChip>
+          ))}
+        </div>
+      ) : null}
+
+      {record.hasPhoto && record.id && record.evidenceDate ? (
+        <EvidencePhoto
+          evidenceId={record.id}
+          evidenceDate={record.evidenceDate}
+          loading={photoLoading}
+          width={record.photoWidth}
+          height={record.photoHeight}
+          className="mt-3 break-inside-avoid"
+        />
+      ) : null}
 
       {record.followUpNotes ? (
         <p className="mt-3 break-words border-t border-border/50 pt-2.5 text-xs leading-relaxed text-muted-foreground [overflow-wrap:anywhere]">

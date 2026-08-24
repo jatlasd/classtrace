@@ -40,7 +40,7 @@ describe("beta agreement persistence", () => {
       where: {
         teacherProfileId_agreementVersion: {
           teacherProfileId: "teacher_1",
-          agreementVersion: "2026-07-27",
+          agreementVersion: "2026-08-21",
         },
       },
       select: {
@@ -115,15 +115,15 @@ describe("beta agreement persistence", () => {
       where: {
         teacherProfileId_agreementVersion: {
           teacherProfileId: "teacher_1",
-          agreementVersion: "2026-07-27",
+          agreementVersion: "2026-08-21",
         },
       },
       update: {},
       create: {
         teacherProfileId: "teacher_1",
-        agreementVersion: "2026-07-27",
-        termsVersion: "2026-07-14",
-        privacyVersion: "2026-07-14",
+        agreementVersion: "2026-08-21",
+        termsVersion: "2026-08-21",
+        privacyVersion: "2026-08-21",
         acceptedAt,
         appRelease: "release_1",
       },

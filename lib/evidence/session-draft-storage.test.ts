@@ -31,11 +31,12 @@ const workspaceId = "workspace_1";
 const capturedAt = new Date(2026, 6, 10, 9, 30).getTime();
 const now = new Date(2026, 6, 10, 10, 0).getTime();
 
-function draft(overrides: Partial<{ id: string; rawNote: string; capturedAt: number }> = {}) {
+function draft(overrides: Partial<{ id: string; rawNote: string; capturedAt: number; hasPhoto: boolean }> = {}) {
   return {
     id: "draft_1",
     rawNote: "@Jeremy did thing #thing",
     capturedAt,
+    hasPhoto: false,
     ...overrides,
   };
 }
@@ -57,7 +58,7 @@ describe("session draft storage", () => {
       "workspaceId",
     ]);
     expect(payload).toMatchObject({
-      version: 1,
+      version: 2,
       workspaceId,
       expiresAt: nextLocalMidnight(now),
       drafts: [draft()],
@@ -110,15 +111,28 @@ describe("session draft storage", () => {
     storage.setItem(
       SESSION_DRAFT_STORAGE_KEY,
       JSON.stringify({
-        version: 1,
+        version: 2,
         workspaceId,
         expiresAt: nextLocalMidnight(now),
-        drafts: [draft(), { id: "draft_2", rawNote: "   ", capturedAt }],
+        drafts: [
+          draft(),
+          { id: "draft_2", rawNote: "   ", capturedAt, hasPhoto: false },
+        ],
       })
     );
 
     expect(loadSessionDrafts(storage, workspaceId, now).drafts).toEqual([draft()]);
     expect(storage.getItem(SESSION_DRAFT_STORAGE_KEY)).not.toContain("draft_2");
+  });
+
+  it("keeps an empty-note manifest only when a photo is present", () => {
+    const storage = new MemoryStorage();
+    const photoOnlyDraft = draft({ rawNote: "", hasPhoto: true });
+
+    expect(saveSessionDrafts(storage, workspaceId, [photoOnlyDraft], now)).toBe(true);
+    expect(loadSessionDrafts(storage, workspaceId, now).drafts).toEqual([
+      photoOnlyDraft,
+    ]);
   });
 
   it("purges drafts at the next device-local calendar day", () => {
