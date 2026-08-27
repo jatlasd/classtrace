@@ -198,7 +198,7 @@ function ReportEvidenceList({
       <div className="student-report-print-context mb-4">
         <h2
           id="report-evidence-heading"
-          className="font-display text-xl font-semibold text-foreground"
+          className="font-sans text-xl font-semibold text-foreground"
         >
           Evidence
         </h2>

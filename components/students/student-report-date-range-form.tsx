@@ -105,7 +105,7 @@ export function StudentReportDateRangeForm({
     <section className="student-report-screen-only mb-5 rounded-lg border border-border bg-card/60 p-4 sm:p-5">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div className="min-w-0">
-          <h2 className="font-display text-lg font-semibold text-foreground">
+          <h2 className="font-sans text-lg font-semibold text-foreground">
             Date range
           </h2>
           <p className="mt-1 text-sm leading-relaxed text-muted-foreground">

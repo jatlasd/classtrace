@@ -19,6 +19,15 @@ Source: `app/globals.css`
 | Panel radius | `rounded-card` |
 | Controls | `rounded-md` or `rounded-lg` |
 | Paper elevation | `shadow-paper` (small, active surfaces only) |
+| Identity / page title | `font-display`; authenticated titles use `text-2xl` or `text-3xl` |
+| Operational heading | `font-sans`; usually `text-base`, `text-lg`, or `text-xl` with `font-semibold` |
+
+Authenticated routes override the shared public palette inside
+`.authenticated-app`: mineral mist for `background`, near-white for `card` and
+`popover`, charcoal for foreground text, deep petrol for `primary`/`ring`,
+blue-violet for `link`, evergreen for `validated`, and brick for `destructive`.
+The override is semantic and app-scoped; public surfaces retain their existing
+warmer palette.
 
 ## App shell
 
@@ -62,7 +71,7 @@ trust and support destinations. Print views remove the footer.
 Files: `components/ui/button.tsx`, `components/ui/textarea.tsx`
 
 - Buttons use `rounded-lg`, targeted color transitions, visible focus ring, disabled opacity, and a small active press.
-- Primary uses rust without decorative shadow; outline/ghost remain visually secondary.
+- Primary uses deep petrol without decorative shadow; outline/ghost remain visually secondary.
 - Inputs use semantic border/background tokens and a visible 3 px focus ring.
 - Errors use destructive text/border plus accessible live/focus behavior.
 - Pending labels use `…`.
@@ -92,11 +101,12 @@ the panel.
 
 File: `components/settings/help-feedback-form.tsx`
 
-Last updated: 2026-07-28
+Last updated: 2026-08-27
 
 | Property | Pattern |
 |---|---|
 | Section surface | Single working surface: `rounded-card border border-border bg-card shadow-paper` |
+| Section heading | `font-sans text-lg font-semibold text-foreground` |
 | Fields | Shared 40 px roster input treatment and `Textarea`; semantic invalid border/ring |
 | Labels | `text-sm font-medium text-foreground` |
 | Guidance | Inline icon plus `text-xs leading-relaxed text-muted-foreground` |
@@ -118,7 +128,8 @@ submit to a Server Action.
 File: `components/dashboard/quick-capture-card.tsx`
 
 - `rounded-card border border-border bg-card shadow-paper`.
-- “What happened?” is the visual anchor.
+- “What happened?” is the visual anchor using `font-sans text-xl font-semibold`; it remains a working field label rather than a display-font identity moment.
+- The active surface uses `px-5 py-5`, widening to `px-6 py-6`; its footer keeps the same horizontal alignment and uses a quiet `bg-muted/15` tint.
 - The header states the review-before-save boundary once; compact composer
   guidance explains `@` student mentions and `#tags` without repeating it as
   decorative hint controls.
@@ -163,6 +174,10 @@ Last imprinted: 2026-07-22
   if review is deferred; resolving the student never saves the evidence.
 - Attempting to save while the Student field remains unresolved shows an
   accessible error and moves focus to that highlighted field.
+- Review and save-confirmation headings use the operational `font-sans`
+  hierarchy; display type remains reserved for the surrounding page title.
+- The first-save confirmation is a flat evergreen-tinted bordered panel; validation
+  color and copy communicate state without adding another lifted surface.
 - Use one ledger row: capture icon, compact status metadata, full-width source
   or review content, then inline actions. Do not add a nested card, shadow, or
   narrow action rail.
@@ -251,6 +266,8 @@ Last imprinted: 2026-07-12
 
 This component owns Evidence note versus legacy structured-entry copy, reviewed summary, structured chips, tags, follow-up, and authenticated photo display across feed, timeline, and report. Do not copy that markup into a new read surface.
 Authenticated photos use the shared Photo thumbnails pattern. Printed reports render the full image without the interactive affordance.
+The portaled expanded-photo dialog repeats the `.authenticated-app` token
+boundary so it does not fall back to the public palette under `document.body`.
 Feed, timeline, and report rows may suppress the prose structured summary when
 the same reviewed fields are already visible as chips.
 
@@ -293,6 +310,8 @@ Files: `components/dashboard/saved-evidence-row.tsx`, `components/students/stude
 - Timeline/report entries use a restrained bordered surface at the full reading
   width; they do not sit beside a duplicate explanatory card. Report entries
   avoid print splitting.
+- Evidence-list and report-filter headings use `font-sans`; student names and
+  report titles retain `font-display` as page-title moments.
 
 ## Feed controls and paging
 
@@ -300,6 +319,8 @@ File: `components/dashboard/evidence-feed-controls.tsx`
 
 - Search is a labeled native search field with a named clear control.
 - Filters are a named button group using `aria-pressed`.
+- The selected filter uses `border-border bg-muted text-foreground` without a
+  shadow; selection stays tonal and flat inside the ledger toolbar.
 - Empty states include one quiet icon, heading, explanation, and optional next action.
 - Evidence paging uses a named nav with explicit Newer/Older links and current page text.
 - The feed remains one evidence ledger. Do not add pattern summaries,
@@ -312,14 +333,20 @@ Files: `app/app/roster/page.tsx`,
 `components/roster/manual-student-entry-form.tsx`,
 `components/roster/roster-student-row.tsx`
 
-Last updated: 2026-07-20
+Last updated: 2026-08-27
 
 - Roster is a single ~880px column. Classes and students render as
   `rounded-card` ledgers with row dividers; section labels are small caps with
   a count on the trailing edge.
+- The page uses `py-7`, a `mb-6` header boundary, and `space-y-8` between
+  overview ledgers to match the authenticated reading-page rhythm.
+- Ordinary class and student ledgers are border-first and have no shadow.
+  Elevation remains only on the active first-class/first-student setup surface.
 - On the overview each class row is one whole-row link (name, student count,
   Open + chevron). A quiet **+ New class** `<details>` row ends the ledger;
   the create form is inline only when no classes exist.
+- Class names and operational roster headings use `font-sans`; the roster page
+  title retains `font-display`.
 - Inside a class, student rows are one line (initials, name, meta joined with
   `·`) plus one collapsed **Manage** toggle that reveals the edit form and
   archive/delete actions in a tonal `bg-muted/20` panel. Do not render

@@ -377,7 +377,7 @@ function InterpretationReviewPanelContent({
     <div className="mt-4 border-t border-border pt-4">
       <div className="mb-4 space-y-1">
         <p className="text-xs font-semibold text-primary">Teacher review</p>
-        <h3 className="font-display text-xl font-semibold text-foreground">
+        <h3 className="font-sans text-xl font-semibold text-foreground">
           Review before saving
         </h3>
         <p className="text-sm leading-relaxed text-muted-foreground">
@@ -611,11 +611,11 @@ function InterpretationReviewPanelContent({
         ) : savedEvidenceId &&
           isFirstWorkspaceEvidence &&
           studentValidation.status === "valid_one_student" ? (
-          <section className="rounded-card border border-validated/60 bg-validated/20 p-4 shadow-paper">
+          <section className="rounded-card border border-validated/60 bg-validated/20 p-4">
             <p className="text-xs font-semibold uppercase tracking-wider text-validated-foreground">
               Evidence trail started
             </p>
-            <h3 className="mt-1 font-display text-lg font-semibold text-foreground">
+            <h3 className="mt-1 font-sans text-lg font-semibold text-foreground">
               Saved to {studentValidation.studentName}&apos;s timeline.
             </h3>
             <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">

@@ -101,7 +101,7 @@ export function PhotoThumbnail({
               role="dialog"
               aria-modal="true"
               aria-label={`Expanded ${alt}`}
-              className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/85 p-4 sm:p-8"
+              className="authenticated-app fixed inset-0 z-50 flex items-center justify-center bg-foreground/85 p-4 sm:p-8"
               onMouseDown={(event) => {
                 if (event.target === event.currentTarget) setExpanded(false);
               }}

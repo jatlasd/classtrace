@@ -149,8 +149,33 @@
 }
 
 .authenticated-app {
+  --background: oklch(95.5% 0.008 210);
+  --foreground: oklch(24.5% 0.025 230);
+  --card: oklch(98.5% 0.004 210);
+  --card-foreground: oklch(24.5% 0.025 230);
+  --popover: oklch(98.5% 0.004 210);
+  --popover-foreground: oklch(24.5% 0.025 230);
+  --primary: oklch(43% 0.075 210);
+  --primary-foreground: oklch(98.5% 0.004 210);
+  --link: oklch(45% 0.09 260);
+  --secondary: oklch(91% 0.012 210);
+  --secondary-foreground: oklch(24.5% 0.025 230);
+  --muted: oklch(91% 0.012 210);
+  --muted-foreground: oklch(43% 0.025 220);
+  --accent: oklch(86% 0.035 285);
+  --accent-foreground: oklch(24.5% 0.025 230);
+  --destructive: oklch(45% 0.12 25);
+  --border: oklch(76% 0.016 215);
+  --input: oklch(76% 0.016 215);
+  --ring: oklch(43% 0.075 210);
+  --validated: oklch(82% 0.055 155);
+  --validated-foreground: oklch(29% 0.055 155);
+  --tape: oklch(76% 0.05 250);
+  --navy: oklch(35% 0.06 225);
+  --navy-foreground: oklch(98.5% 0.004 210);
   --radius-card: 0.75rem;
-  --shadow-paper: 0 2px 5px rgba(31, 25, 17, 0.08);
+  --shadow-paper: 0 2px 5px oklch(20% 0.02 220 / 0.1);
+  --shadow-floating: 0 8px 14px oklch(20% 0.02 220 / 0.16);
 }
 
 @layer base {

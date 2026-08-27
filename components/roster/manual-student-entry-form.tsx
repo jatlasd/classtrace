@@ -97,7 +97,7 @@ export function ManualStudentEntryForm({
     <form className="space-y-3" onSubmit={handleSubmit}>
       {showTitle ? (
         <div>
-          <h2 className="font-display text-lg font-semibold text-foreground">
+          <h2 className="font-sans text-lg font-semibold text-foreground">
             {isFirstStudent ? "Add your first student" : "Add a student"}
           </h2>
           <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">

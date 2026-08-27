@@ -205,7 +205,7 @@ function StudentTimeline({ student, records }: StudentTimelineProps) {
         <div>
           <h2
             id="student-evidence-heading"
-            className="font-display text-xl font-semibold text-foreground"
+            className="font-sans text-xl font-semibold text-foreground"
           >
             Evidence
           </h2>

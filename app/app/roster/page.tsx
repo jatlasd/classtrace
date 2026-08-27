@@ -54,7 +54,7 @@ function SectionLabel({
 }) {
   return (
     <div className="px-1">
-      <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+      <h2 className="font-sans text-xs font-semibold uppercase tracking-wider text-muted-foreground">
         {title}
       </h2>
       {description ? (
@@ -119,7 +119,7 @@ function ClassOverview({
   if (activeClasses.length === 0) {
     return (
       <section className="rounded-card border border-border bg-card p-5 shadow-paper sm:p-6">
-        <h2 className="font-display text-lg font-semibold text-foreground">
+        <h2 className="font-sans text-lg font-semibold text-foreground">
           Create your first class
         </h2>
         <p className="mt-1 max-w-prose text-sm leading-relaxed text-muted-foreground">
@@ -141,7 +141,7 @@ function ClassOverview({
           {activeClasses.length} {activeClasses.length === 1 ? "class" : "classes"}
         </p>
       </div>
-      <ul className="overflow-hidden rounded-card border border-border bg-card shadow-paper">
+      <ul className="overflow-hidden rounded-card border border-border bg-card">
         {activeClasses.map((classGroup) => {
           const studentCount = activeStudents.filter(
             (student) =>
@@ -155,7 +155,7 @@ function ClassOverview({
                 className="group flex items-center justify-between gap-4 px-4 py-4 outline-none transition-colors hover:bg-muted/40 focus-visible:bg-muted/40 sm:px-5"
               >
                 <span className="min-w-0">
-                  <span className="block break-words font-display text-base font-semibold leading-snug text-foreground [overflow-wrap:anywhere]">
+                  <span className="block break-words font-sans text-base font-semibold leading-snug text-foreground [overflow-wrap:anywhere]">
                     {classGroup.name}
                   </span>
                   <span className="mt-0.5 block text-xs text-muted-foreground">
@@ -348,8 +348,8 @@ export default async function RosterPage({ searchParams }: RosterPageProps) {
         : "Create a class and add one student before capture.";
 
   return (
-    <div className="mx-auto w-full max-w-[880px] px-4 py-8 sm:px-6">
-      <header className="mb-7 flex flex-wrap items-end justify-between gap-x-8 gap-y-4">
+    <div className="mx-auto w-full max-w-[880px] px-4 py-7 sm:px-6">
+      <header className="mb-6 flex flex-wrap items-end justify-between gap-x-8 gap-y-4">
         <div className="min-w-0">
           <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
             Roster
@@ -412,7 +412,7 @@ export default async function RosterPage({ searchParams }: RosterPageProps) {
           </Button>
         </div>
       ) : (
-        <div className="space-y-9">
+        <div className="space-y-8">
           <ClassOverview
             activeClasses={activeClasses}
             activeStudents={activeStudents}

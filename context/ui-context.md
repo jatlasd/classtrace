@@ -14,10 +14,10 @@ Priority order:
 
 ## Visual language
 
-- Warm paper background, clean card surface, dark ink, restrained rust action color.
-- Sage indicates validated evidence.
-- Blue is for links/tags, not a second primary action system.
-- Fraunces is limited to page/section headings; Inter is used for controls, labels, body, and data.
+- Authenticated routes use a cool mineral-mist background, near-white work surfaces, and charcoal ink; public routes retain their warmer editorial palette.
+- Deep petrol is reserved for primary actions, current state, and focus. Blue-violet remains limited to links and tags, not a second primary action system.
+- Muted evergreen indicates validated evidence; brick remains reserved for destructive state.
+- Fraunces is limited to ClassTrace identity and authenticated page-title moments; Inter is used for operational headings, controls, labels, body, and data.
 - Borders and tonal separation do most layout work. Shadows are small and reserved for active paper surfaces.
 - Corners are modest (`rounded-md`, `rounded-lg`, `rounded-card`); pills are for chips/status only.
 

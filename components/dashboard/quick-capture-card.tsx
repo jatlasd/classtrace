@@ -265,18 +265,18 @@ export function QuickCaptureCard({
 
   return (
     <section className="overflow-hidden rounded-card border border-border bg-card shadow-paper ring-1 ring-transparent transition-shadow focus-within:ring-primary/20">
-      <div className="px-5 pb-5 pt-5 sm:px-6 lg:px-8 lg:pb-6">
+      <div className="px-5 py-5 sm:px-6 sm:py-6">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between sm:gap-6">
           <div>
-          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            Quick capture
-          </p>
-          <label
-            htmlFor="quick-capture"
-              className="mt-1.5 block font-display text-2xl font-semibold tracking-tight text-foreground"
-          >
-            What happened?
-          </label>
+            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Quick capture
+            </p>
+            <label
+              htmlFor="quick-capture"
+              className="mt-1.5 block font-sans text-xl font-semibold tracking-tight text-foreground"
+            >
+              What happened?
+            </label>
           </div>
           <p className="max-w-xl text-sm leading-relaxed text-muted-foreground sm:text-right">
             Mention one student with{" "}
@@ -286,37 +286,37 @@ export function QuickCaptureCard({
         </div>
 
         <div className="quick-capture-mentions mt-4 rounded-lg border border-border bg-background/45 px-4 py-3 transition-colors focus-within:border-ring focus-within:bg-card focus-within:ring-3 focus-within:ring-ring/20">
-            <MentionsInput
-              inputRef={(element: HTMLInputElement | HTMLTextAreaElement | null) => {
-                inputRef.current = element;
-              }}
-              id="quick-capture"
-              name="quick-capture"
-              autoComplete="off"
-              value={markupValue}
-              onChange={handleChange}
-              onKeyDown={handleKeyDown}
-              placeholder={placeholder}
-              style={quickCaptureMentionsStyle}
-              allowSuggestionsAboveCursor
-            >
-              <Mention
-                trigger="@"
-                data={studentSuggestions}
-                markup="@[__display__](__id__)"
-                displayTransform={(id) => `@${id}`}
-                appendSpaceOnAdd
-                style={mentionHighlightStyle}
-              />
-              <Mention
-                trigger="#"
-                data={tagSuggestions}
-                markup="#[__display__](__id__)"
-                displayTransform={(id) => `#${id}`}
-                appendSpaceOnAdd
-                style={mentionHighlightStyle}
-              />
-            </MentionsInput>
+          <MentionsInput
+            inputRef={(element: HTMLInputElement | HTMLTextAreaElement | null) => {
+              inputRef.current = element;
+            }}
+            id="quick-capture"
+            name="quick-capture"
+            autoComplete="off"
+            value={markupValue}
+            onChange={handleChange}
+            onKeyDown={handleKeyDown}
+            placeholder={placeholder}
+            style={quickCaptureMentionsStyle}
+            allowSuggestionsAboveCursor
+          >
+            <Mention
+              trigger="@"
+              data={studentSuggestions}
+              markup="@[__display__](__id__)"
+              displayTransform={(id) => `@${id}`}
+              appendSpaceOnAdd
+              style={mentionHighlightStyle}
+            />
+            <Mention
+              trigger="#"
+              data={tagSuggestions}
+              markup="#[__display__](__id__)"
+              displayTransform={(id) => `#${id}`}
+              appendSpaceOnAdd
+              style={mentionHighlightStyle}
+            />
+          </MentionsInput>
         </div>
 
         <div className="mt-3 border-t border-border/70 pt-3">
@@ -416,7 +416,7 @@ export function QuickCaptureCard({
         </div>
       </div>
 
-      <div className="flex flex-col gap-3 border-t border-border bg-muted/15 px-5 py-3.5 sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
+      <div className="flex flex-col gap-3 border-t border-border bg-muted/15 px-5 py-3.5 sm:flex-row sm:items-center sm:justify-between sm:px-6">
         <div aria-live="polite">
           <p
             className={`text-sm leading-relaxed ${

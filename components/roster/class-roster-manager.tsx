@@ -54,7 +54,7 @@ export function ClassRosterManager({
     <div className="space-y-7">
       <section className="space-y-2.5">
         <div className="flex items-baseline justify-between gap-3 px-1">
-          <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          <h2 className="font-sans text-xs font-semibold uppercase tracking-wider text-muted-foreground">
             Students
           </h2>
           <p className="text-xs tabular-nums text-muted-foreground">

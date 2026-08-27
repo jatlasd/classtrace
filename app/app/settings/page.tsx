@@ -54,7 +54,7 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
         <section className="overflow-hidden rounded-card border border-border bg-card/60">
           <div className="grid lg:grid-cols-2">
             <div className="p-5 sm:p-6 lg:border-r lg:border-border">
-              <h2 className="font-display text-lg font-semibold text-foreground">
+              <h2 className="font-sans text-lg font-semibold text-foreground">
                 Account
               </h2>
               <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
@@ -68,7 +68,7 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
             </div>
 
             <div className="border-t border-border p-5 sm:p-6 lg:border-t-0">
-              <h2 className="font-display text-lg font-semibold text-foreground">
+              <h2 className="font-sans text-lg font-semibold text-foreground">
                 Workspace
               </h2>
               <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
@@ -101,7 +101,7 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
             <div>
               <h2
                 id="help-feedback-heading"
-                className="font-display text-lg font-semibold text-foreground"
+                className="font-sans text-lg font-semibold text-foreground"
               >
                 Help and feedback
               </h2>
@@ -123,12 +123,12 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
           className="border-y border-border/70 py-5"
         >
           <div className="mb-3">
-              <h2
-                id="privacy-terms-heading"
-              className="text-sm font-semibold text-foreground"
-              >
-                Privacy and beta terms
-              </h2>
+            <h2
+              id="privacy-terms-heading"
+              className="font-sans text-sm font-semibold text-foreground"
+            >
+              Privacy and beta terms
+            </h2>
             <p className="mt-1 max-w-2xl text-sm leading-relaxed text-muted-foreground">
               Review data handling, beta boundaries, support, and account
               deletion.
@@ -163,12 +163,12 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
         <section className="py-2">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-                <h2 className="font-display text-lg font-semibold text-foreground">
-                  Sign out
-                </h2>
+              <h2 className="font-sans text-lg font-semibold text-foreground">
+                Sign out
+              </h2>
               <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-                  Leave this ClassTrace session and return to the public page.
-                </p>
+                Leave this ClassTrace session and return to the public page.
+              </p>
             </div>
             <SettingsSignOutAction />
           </div>

@@ -21,7 +21,7 @@ export function RecentCapturesLabel() {
   return (
     <h2
       id="evidence-inbox-heading"
-      className="text-base font-semibold text-foreground"
+      className="font-sans text-base font-semibold text-foreground"
     >
       Recent captures and saved evidence
     </h2>

@@ -70,7 +70,7 @@ export function InboxFilterControl({
           aria-pressed={filter === option.value}
           className={`min-h-11 rounded-lg border px-3 py-2 text-sm font-medium transition-colors sm:min-h-9 ${
             filter === option.value
-              ? "border-border bg-muted text-foreground shadow-sm"
+              ? "border-border bg-muted text-foreground"
               : "border-transparent text-muted-foreground hover:bg-muted/60 hover:text-foreground"
           }`}
         >
@@ -102,7 +102,7 @@ export function FeedEmptyState({
           strokeWidth={1.75}
         />
       </div>
-      <h3 className="mt-4 font-display text-lg font-semibold text-foreground">
+      <h3 className="mt-4 font-sans text-lg font-semibold text-foreground">
         {title}
       </h3>
       <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-muted-foreground">
@@ -141,7 +141,7 @@ export function RosterRequiredState() {
       <p className="mb-1 text-xs font-semibold text-muted-foreground">
         Roster needed
       </p>
-      <h2 className="font-display text-lg font-semibold text-foreground">
+      <h2 className="font-sans text-lg font-semibold text-foreground">
         Add one student before capturing evidence
       </h2>
       <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
