@@ -43,6 +43,7 @@ describe("authenticated app layout", () => {
     const footer = screen.getByRole("contentinfo");
     const shell = main.parentElement;
 
+    expect(shell?.classList.contains("authenticated-app")).toBe(true);
     expect(shell?.classList.contains("min-h-dvh")).toBe(true);
     expect(shell?.classList.contains("flex-col")).toBe(true);
     expect(main.classList.contains("flex-1")).toBe(true);

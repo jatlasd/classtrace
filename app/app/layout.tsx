@@ -12,7 +12,7 @@ export default async function AppLayout({
 
   return (
     <ClassTraceClerkProvider>
-      <div className="flex min-h-dvh flex-col bg-background">
+      <div className="authenticated-app flex min-h-dvh flex-col bg-background">
         <a
           href="#main-content"
           className="fixed left-4 top-3 z-[70] -translate-y-20 rounded-md bg-foreground px-3 py-2 text-sm font-semibold text-background transition-transform focus:translate-y-0"

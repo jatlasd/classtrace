@@ -148,6 +148,11 @@
   --sidebar-ring: #e7bd64;
 }
 
+.authenticated-app {
+  --radius-card: 0.75rem;
+  --shadow-paper: 0 2px 5px rgba(31, 25, 17, 0.08);
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
