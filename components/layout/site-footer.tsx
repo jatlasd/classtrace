@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { NotebookPen } from "lucide-react";
+import { BrandLockup } from "@/components/layout/brand-lockup";
 import { routes } from "@/lib/routes";
 
 type SiteFooterProps = {
@@ -10,16 +10,7 @@ export function SiteFooter({ showAccessLinks = false }: SiteFooterProps) {
   return (
     <footer className="site-footer mt-auto border-t border-border/70">
       <div className="mx-auto flex max-w-[1360px] flex-col gap-4 px-4 py-5 md:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8">
-        <div className="flex items-center gap-2.5">
-          <NotebookPen
-            className="size-6 text-navy"
-            strokeWidth={2}
-            aria-hidden="true"
-          />
-          <span className="font-display text-lg font-semibold tracking-tight text-foreground">
-            ClassTrace
-          </span>
-        </div>
+        <BrandLockup size="sm" />
         <nav
           aria-label="Footer"
           className="grid w-full max-w-2xl grid-cols-2 gap-x-6 gap-y-3 sm:flex sm:w-auto sm:flex-wrap sm:items-center sm:gap-y-2"

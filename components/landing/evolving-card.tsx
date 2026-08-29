@@ -120,7 +120,7 @@ export function EvolvingCard({ phase }: { phase: number }) {
         <div className="flex items-center justify-between rounded-lg border border-border bg-card/95 px-4 py-2 shadow-paper">
           <span className="flex items-center gap-2">
             <PenLine className="size-4 text-primary" strokeWidth={2.25} />
-            <span className="font-display text-base font-semibold tracking-tight text-foreground">
+            <span className="font-sans text-base font-semibold tracking-tight text-foreground">
               ClassTrace
             </span>
           </span>
@@ -144,7 +144,7 @@ export function EvolvingCard({ phase }: { phase: number }) {
               ST
             </span>
             <div className="min-w-0 flex-1">
-              <p className="font-display text-lg font-semibold tracking-tight text-foreground">
+              <p className="font-sans text-lg font-semibold tracking-tight text-foreground">
                 Stacy
               </p>
               <p className="text-xs text-muted-foreground">
@@ -202,7 +202,7 @@ export function EvolvingCard({ phase }: { phase: number }) {
 
         <Collapse open={isComposer}>
           <div className="flex items-baseline gap-3 border-b border-border bg-muted/25 px-5 py-3">
-            <p className="font-display text-lg font-semibold tracking-tight text-foreground">
+            <p className="font-sans text-lg font-semibold tracking-tight text-foreground">
               What happened?
             </p>
             <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
@@ -216,7 +216,7 @@ export function EvolvingCard({ phase }: { phase: number }) {
             <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
               ClassTrace read this as
             </p>
-            <p className="font-display mt-0.5 text-lg font-semibold tracking-tight text-foreground">
+            <p className="font-sans mt-0.5 text-lg font-semibold tracking-tight text-foreground">
               Review before saving
             </p>
           </div>
@@ -231,7 +231,7 @@ export function EvolvingCard({ phase }: { phase: number }) {
               <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
                 Jan 22 · 11:42 AM
               </p>
-              <p className="font-display text-lg font-semibold tracking-tight text-foreground">
+              <p className="font-sans text-lg font-semibold tracking-tight text-foreground">
                 Stacy
               </p>
             </div>
@@ -248,7 +248,7 @@ export function EvolvingCard({ phase }: { phase: number }) {
 
         <div className="relative px-5 py-4">
           <Collapse open={isNote}>
-            <p className="font-hand py-2 text-[2rem] font-medium leading-tight tracking-[0.01em] text-foreground/90">
+            <p className="font-sans py-2 text-[2rem] font-medium leading-tight tracking-[0.01em] text-foreground/90">
               {RAW_NOTE_TEXT}
             </p>
           </Collapse>

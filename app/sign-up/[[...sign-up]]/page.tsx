@@ -34,7 +34,7 @@ export default async function SignUpPage(): Promise<ReactElement> {
               <p className="text-sm font-semibold text-primary">
                 Invitation-only beta
               </p>
-              <h1 className="font-display mt-2 text-3xl font-semibold tracking-tight text-foreground">
+              <h1 className="font-sans mt-2 text-3xl font-semibold tracking-tight text-foreground">
                 Complete your ClassTrace sign-up
               </h1>
               <p className="mt-3 text-sm leading-relaxed text-muted-foreground">

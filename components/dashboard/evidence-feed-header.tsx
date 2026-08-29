@@ -5,7 +5,7 @@ export function EvidenceFeedHeader() {
         <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
           Evidence feed
         </p>
-        <h1 className="mt-2 max-w-3xl font-display text-3xl font-semibold tracking-tight text-foreground">
+        <h1 className="mt-2 max-w-3xl font-sans text-3xl font-semibold tracking-tight text-foreground">
           Capture evidence
         </h1>
         <p className="mt-1 max-w-xl text-sm leading-relaxed text-muted-foreground">

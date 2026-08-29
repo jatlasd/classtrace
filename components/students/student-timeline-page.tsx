@@ -112,7 +112,7 @@ function StudentProfileHeader({
             <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               Student timeline
             </p>
-            <h1 className="mt-2 font-display text-2xl font-semibold tracking-tight text-foreground">
+            <h1 className="mt-2 font-sans text-2xl font-semibold tracking-tight text-foreground">
               {student.displayName}
             </h1>
             <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground">

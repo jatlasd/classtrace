@@ -41,7 +41,7 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
         <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
           Settings
         </p>
-        <h1 className="font-display mt-2 text-2xl font-semibold tracking-tight text-foreground">
+        <h1 className="font-sans mt-2 text-2xl font-semibold tracking-tight text-foreground">
           Account and workspace
         </h1>
         <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">

@@ -74,10 +74,10 @@ export function IndexCard({ className = "" }: { className?: string }) {
         className="-z-10 object-fill"
       />
       <TapeStrip className="-top-3 left-1/2 -translate-x-1/2 rotate-2" />
-      <p className="font-hand border-b border-destructive/25 pb-1 pl-2 text-lg leading-snug text-foreground/85">
+      <p className="font-sans border-b border-destructive/25 pb-1 pl-2 text-lg leading-snug text-foreground/85">
         before I forget —
       </p>
-      <ul className="font-hand mt-1.5 space-y-0.5 pl-2 text-[15px] leading-snug text-foreground/70">
+      <ul className="font-sans mt-1.5 space-y-0.5 pl-2 text-[15px] leading-snug text-foreground/70">
         <li>
           <span className="text-validated-foreground">✓</span> jeremy — reading
           conf.
@@ -113,7 +113,7 @@ export function StickyScrap({
         sizes="176px"
         className="-z-10 object-fill"
       />
-      <p className="font-hand relative break-words text-base leading-[1.2] text-foreground/85">
+      <p className="font-sans relative break-words text-base leading-[1.2] text-foreground/85">
         {children}
       </p>
     </div>

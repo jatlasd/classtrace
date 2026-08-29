@@ -127,14 +127,14 @@ const scenery: SceneryItem[] = [
     depth: -160,
     visibleFrom: index,
     visibleUntil: index,
-    className: `${ghost.className} font-display text-[7rem] font-semibold leading-none tracking-tight text-foreground/[0.05] xl:text-[9rem]`,
+    className: `${ghost.className} font-sans text-[7rem] font-semibold leading-none tracking-tight text-foreground/[0.05] xl:text-[9rem]`,
     node: ghost.word,
   })),
   {
     id: "clock",
     depth: -260,
     visibleUntil: 0,
-    className: "right-[13%] top-[30%] rotate-3 font-hand text-4xl text-primary/40",
+    className: "right-[13%] top-[30%] rotate-3 font-sans text-4xl text-primary/40",
     node: "11:42 AM",
   },
   {
@@ -243,7 +243,7 @@ function StoryHeading() {
       <p className="text-xs font-semibold uppercase tracking-wider text-primary">
         How it works
       </p>
-      <h2 className="mt-3 font-display text-3xl font-semibold tracking-tight text-foreground lg:text-4xl">
+      <h2 className="mt-3 font-sans text-3xl font-semibold tracking-tight text-foreground lg:text-4xl">
         Watch one note become the whole product
       </h2>
       <p className="mx-auto mt-4 max-w-xl text-[15px] leading-relaxed text-muted-foreground">
@@ -266,14 +266,14 @@ function StaticStory() {
         <li key={scene.phase.id} className="relative sm:pl-16 md:pl-20">
           <span
             aria-hidden="true"
-            className="font-hand absolute left-0 top-0 hidden size-11 items-center justify-center rounded-full border-2 border-primary bg-background text-xl font-semibold text-primary sm:flex"
+            className="font-sans absolute left-0 top-0 hidden size-11 items-center justify-center rounded-full border-2 border-primary bg-background text-xl font-semibold text-primary sm:flex"
           >
             {index + 1}
           </span>
           <p className="text-xs font-semibold uppercase tracking-wider text-primary">
             Step {index + 1} · {scene.phase.step}
           </p>
-          <h3 className="mt-2 font-display text-2xl font-semibold tracking-tight text-foreground">
+          <h3 className="mt-2 font-sans text-2xl font-semibold tracking-tight text-foreground">
             {scene.phase.title}
           </h3>
           <p className="mt-2 max-w-xl text-sm leading-relaxed text-muted-foreground">
@@ -403,7 +403,7 @@ function StickyStory() {
                 return (
                   <li key={item.id} className="relative flex items-center gap-3.5">
                     <span
-                      className={`font-hand relative flex size-[1.75rem] shrink-0 items-center justify-center rounded-full border-2 bg-background text-[15px] font-semibold transition-colors duration-300 ${
+                      className={`font-sans relative flex size-[1.75rem] shrink-0 items-center justify-center rounded-full border-2 bg-background text-[15px] font-semibold transition-colors duration-300 ${
                         isActive
                           ? "border-primary text-primary"
                           : isPassed
@@ -429,7 +429,7 @@ function StickyStory() {
               key={activePhase.id}
               className="mt-8 animate-in fade-in slide-in-from-bottom-2 border-t border-border pt-5 duration-300"
             >
-              <h3 className="font-display text-2xl font-semibold leading-snug tracking-tight text-foreground">
+              <h3 className="font-sans text-2xl font-semibold leading-snug tracking-tight text-foreground">
                 {activePhase.title}
               </h3>
               <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
@@ -445,7 +445,7 @@ function StickyStory() {
                 ref={(node) => {
                   annotationRefs.current[index] = node;
                 }}
-                className={`font-hand pointer-events-none absolute z-10 max-w-44 leading-tight transition-opacity duration-500 ${annotation.className} ${
+                className={`font-sans pointer-events-none absolute z-10 max-w-44 leading-tight transition-opacity duration-500 ${annotation.className} ${
                   annotationVisible(annotation, phase)
                     ? "opacity-100"
                     : "opacity-0"

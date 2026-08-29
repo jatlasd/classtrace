@@ -235,7 +235,7 @@ export function BetaAcknowledgementFlow({
       <header className="border-b border-border px-5 py-5 sm:px-7 sm:py-6">
         <h1
           id="beta-agreement-heading"
-          className="font-display text-2xl font-semibold tracking-tight text-foreground sm:text-3xl"
+          className="font-sans text-2xl font-semibold tracking-tight text-foreground sm:text-3xl"
         >
           Before you get started
         </h1>
@@ -249,7 +249,7 @@ export function BetaAcknowledgementFlow({
         <h2
           ref={headingRef}
           tabIndex={-1}
-          className="font-display text-xl font-semibold leading-snug text-foreground outline-none sm:text-2xl"
+          className="font-sans text-xl font-semibold leading-snug text-foreground outline-none sm:text-2xl"
         >
           {currentStepIndex + 1} of {agreementSteps.length}: {currentStep.title}
         </h2>

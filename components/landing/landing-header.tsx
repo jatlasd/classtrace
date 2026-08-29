@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { NotebookPen } from "lucide-react";
+import { BrandLockup } from "@/components/layout/brand-lockup";
 import { Button } from "@/components/ui/button";
 import { routes } from "@/lib/routes";
 
@@ -7,11 +7,8 @@ export function LandingHeader() {
   return (
     <header className="sticky top-0 z-40 border-b border-border/70 bg-background/95 backdrop-blur">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 md:px-6 lg:px-8">
-        <Link href={routes.root} className="flex items-center gap-2.5">
-          <NotebookPen className="size-7 text-navy" strokeWidth={2} aria-hidden="true" />
-          <span className="font-display text-xl font-semibold tracking-tight text-foreground">
-            ClassTrace
-          </span>
+        <Link href={routes.root}>
+          <BrandLockup size="md" />
         </Link>
         <nav aria-label="Public" className="flex items-center gap-2 sm:gap-5">
           <Link

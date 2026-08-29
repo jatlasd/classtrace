@@ -8,11 +8,11 @@ export function LandingClosingCta() {
       <div className="mx-auto max-w-3xl px-4 py-20 text-center md:px-6 lg:py-28">
         <p
           aria-hidden="true"
-          className="font-hand mx-auto -rotate-2 text-2xl leading-tight text-link"
+          className="font-sans mx-auto -rotate-2 text-2xl leading-tight text-link"
         >
           that moment from third period today?
         </p>
-        <h2 className="mt-4 font-display text-4xl font-semibold leading-[1.08] tracking-tight text-foreground sm:text-5xl">
+        <h2 className="mt-4 font-sans text-4xl font-semibold leading-[1.08] tracking-tight text-foreground sm:text-5xl">
           You&apos;re going to{" "}
           <span className="hand-underline-rust">need it later</span>.
         </h2>

@@ -17,32 +17,80 @@ Source: `app/globals.css`
 | Validated state | `validated`, `validated-foreground` |
 | Destructive state | `destructive` |
 | Panel radius | `rounded-card` |
-| Controls | `rounded-md` or `rounded-lg` |
-| Paper elevation | `shadow-paper` (small, active surfaces only) |
-| Identity / page title | `font-display`; authenticated titles use `text-2xl` or `text-3xl` |
+| Controls | `rounded-md` |
+| Surface elevation | `shadow-surface` (tight, active/floating surfaces only) |
+| Identity / page title | `font-sans`; authenticated titles use `text-2xl` or `text-3xl` |
 | Operational heading | `font-sans`; usually `text-base`, `text-lg`, or `text-xl` with `font-semibold` |
 
-Authenticated routes override the shared public palette inside
-`.authenticated-app`: mineral mist for `background`, near-white for `card` and
-`popover`, charcoal for foreground text, deep petrol for `primary`/`ring`,
-blue-violet for `link`, evergreen for `validated`, and brick for `destructive`.
-The override is semantic and app-scoped; public surfaces retain their existing
-warmer palette.
+Public and authenticated surfaces share one semantic palette: cool near-white
+for `background`, white for `card` and `popover`, charcoal/navy for foreground
+text, deep navy for `primary`, clear blue for `link` and `ring`, evergreen for
+`validated`, and brick for `destructive`. `navy` and the `sidebar-*` tokens own
+shell-specific treatments. Components consume roles rather than raw colors.
+
+`shadow-paper` remains a temporary compatibility alias for `shadow-surface`
+while older presentation components are migrated. `font-display` and
+`font-hand` have been removed from user-facing markup. New or changed surfaces
+use the surface name and the sans hierarchy and do not introduce paper styling.
+
+## Brand lockup
+
+File: `components/layout/brand-lockup.tsx`
+
+Last updated: 2026-08-27
+
+| Property | Pattern |
+|---|---|
+| Background / border | None |
+| Mark | Reserved decorative slot; invisible until supplied, with no invented fallback symbol |
+| Wordmark | `font-sans font-bold tracking-[-0.025em]` |
+| Text color | `text-foreground`; inverse uses `text-navy-foreground` |
+| Sizes | `text-base`, `text-xl`, or `text-2xl` with proportional mark/gap |
+| Spacing | `gap-2`, `gap-2.5`, or `gap-3` by size |
+| Shadow | None |
+
+Use the text-only fallback until the user supplies the final ClassTrace mark.
+Its invisible slot preserves lockup geometry for later integration. The symbol
+is decorative beside the visible wordmark. Links wrapping the lockup retain the
+visible `ClassTrace` name.
 
 ## App shell
 
-Files: `app/app/layout.tsx`, `components/dashboard/app-top-nav.tsx`,
+Files: `app/app/layout.tsx`,
+`components/dashboard/app-shell-navigation.tsx`,
+`components/dashboard/desktop-app-sidebar.tsx`,
+`components/dashboard/mobile-app-header.tsx`,
+`components/dashboard/app-navigation.ts`, and
 `components/layout/site-footer.tsx`
 
-- Sticky `bg-card/95` top bar with bottom border.
+Last updated: 2026-08-28
+
+| Property | Pattern |
+|---|---|
+| Desktop frame | Fixed `232px` `bg-sidebar` sidebar plus 56px `bg-card/95` route header |
+| Mobile frame | Sticky minimum-64px `bg-sidebar` header with safe-area padding |
+| Drawer | Left panel capped at `340px`, `bg-sidebar`, `border-sidebar-border`, `shadow-floating` |
+| Primary navigation | Capture, Students, Settings only; 44px desktop and 48px mobile rows |
+| Active state | `border-sidebar-ring bg-sidebar-accent text-sidebar-accent-foreground` plus `aria-current="page"` |
+| Inactive state | `text-sidebar-foreground/78` with tonal sidebar hover |
+| Focus | 3px `sidebar-ring/50` ring on inverse controls and links |
+| Motion | Short drawer translation/backdrop fade only when reduced motion is not requested |
+| Workspace offset | `lg:pl-[232px] lg:pt-14`; reset for report printing |
+
+- Desktop account/sign-out stays at the bottom of the sidebar. Mobile sign-out
+  and the existing trust/support links stay in the drawer's bottom region.
+- Student timelines and reports activate Students but remain contextual routes;
+  they are not global navigation items.
+- The mobile header names the current route beside the compact inverse brand
+  lockup. The modal drawer contains focus, closes from Escape or backdrop,
+  restores trigger focus, and locks body scrolling while open.
 - One `main#main-content`; child pages do not render another `main`.
 - Focus-visible skip link before navigation.
-- Primary nav is named, uses 44 px links, and sets `aria-current="page"`.
 - Every rendered route shell ends with the shared site footer. A `min-h-dvh`
-  flex column and flexing main region keep it at the viewport bottom on short
-  pages and after the content on long pages. Public pages include access links;
-  authenticated, auth-provider, operator, and error surfaces keep only the
-  shared trust and support links.
+  flex column and flexing workspace/main region keep it at the viewport bottom
+  on short pages and after the content on long pages. Public pages include
+  access links; authenticated, auth-provider, operator, and error surfaces keep
+  only the shared trust and support links.
 - Content widths: feed up to `1560px`; report around `1180px`; roster `880px`; settings/timeline narrower as content requires.
 
 ## Site footer
@@ -56,11 +104,11 @@ Last updated: 2026-07-22
 | Background | Inherits the route surface; no separate fill |
 | Border | `border-t border-border/70` |
 | Radius / shadow | None |
-| Brand text | `font-display text-lg font-semibold text-foreground` |
+| Brand text | Shared `BrandLockup` at its small size |
 | Link text | `text-sm text-muted-foreground`; access link may use `font-medium text-foreground/80` |
 | Spacing | `gap-4 px-4 py-6`; link group uses `gap-x-6 gap-y-2` |
 | Interaction | `transition-colors hover:text-foreground` |
-| Accent | `text-navy` on the shared notebook icon only |
+| Accent | None until the final supplied mark is integrated |
 
 The footer is a quiet final rule, not a card or call-to-action surface. Public
 pages may show sign-in and invited sign-up links; non-public shells expose only
@@ -70,11 +118,16 @@ trust and support destinations. Print views remove the footer.
 
 Files: `components/ui/button.tsx`, `components/ui/textarea.tsx`
 
-- Buttons use `rounded-lg`, targeted color transitions, visible focus ring, disabled opacity, and a small active press.
-- Primary uses deep petrol without decorative shadow; outline/ghost remain visually secondary.
-- Inputs use semantic border/background tokens and a visible 3 px focus ring.
+- Buttons use `rounded-md`, targeted color/border/transform transitions, visible focus rings, disabled opacity, and a small active press.
+- Primary uses deep navy without decorative shadow; outline/ghost remain visually secondary.
+- Button targets are about 44 px below `lg` and become compact at desktop widths where the selected size allows it.
+- Textareas use `bg-card`, semantic input borders, `rounded-md`, and a visible 3 px clear-blue focus ring.
 - Errors use destructive text/border plus accessible live/focus behavior.
 - Pending labels use `…`.
+
+Shared badges use one restrained rounded-rectangle chip geometry with a border,
+tonal fill, `text-xs`, and `font-medium`. Semantic validated and destructive
+variants use only their corresponding token roles.
 
 ## Inline confirmation panel
 
@@ -192,10 +245,10 @@ Last updated: 2026-07-14
 
 | Property | Pattern |
 |---|---|
-| Page background | `landing-paper-texture bg-background` |
+| Page background | `bg-background` with no texture layer |
 | Reading column | Narrow article beside a numbered in-page ledger at `lg`; naturally stacked below |
 | Dividers | `border-border` / `border-border/70`; structure uses rules rather than cards |
-| Heading text | `font-display text-foreground`; 4xl/5xl page title and 2xl section titles |
+| Heading text | Inter via the shared sans hierarchy; 4xl/5xl page title and 2xl section titles |
 | Body text | `text-[15px] leading-7 text-muted-foreground`; strong text returns to `text-foreground` |
 | Important note | Full-width `border-y border-border bg-card/50`, no radius or shadow |
 | Action link | `min-h-11 rounded-lg border border-border bg-card`; link-color hover and visible ring |
@@ -235,7 +288,7 @@ Last updated: 2026-07-27
 | Background | Page `bg-background`; active surface `bg-card`; checkbox row `bg-muted/25` |
 | Border | Surface and dividers use `border-border`; errors use semantic destructive borders |
 | Border radius | One outer `rounded-card`; internal ledger rows remain square |
-| Primary text | Headings `font-display text-foreground`; acknowledgement label `text-sm font-medium text-foreground` |
+| Primary text | Headings use the shared sans hierarchy; acknowledgement label `text-sm font-medium text-foreground` |
 | Secondary text | Body `text-[15px] leading-7 text-muted-foreground` |
 | Spacing | Surface sections `px-5 py-6`, widening to `px-7 py-7`; content uses `space-y-3` |
 | Interaction | Native checkbox with visible semantic focus ring; shared primary Button at `min-h-11` |
@@ -310,8 +363,8 @@ Files: `components/dashboard/saved-evidence-row.tsx`, `components/students/stude
 - Timeline/report entries use a restrained bordered surface at the full reading
   width; they do not sit beside a duplicate explanatory card. Report entries
   avoid print splitting.
-- Evidence-list and report-filter headings use `font-sans`; student names and
-  report titles retain `font-display` as page-title moments.
+- Evidence-list, report-filter, student-name, and report-title headings resolve
+  to the shared sans hierarchy.
 
 ## Feed controls and paging
 
@@ -345,8 +398,8 @@ Last updated: 2026-08-27
 - On the overview each class row is one whole-row link (name, student count,
   Open + chevron). A quiet **+ New class** `<details>` row ends the ledger;
   the create form is inline only when no classes exist.
-- Class names and operational roster headings use `font-sans`; the roster page
-  title retains `font-display`.
+- Class names, operational roster headings, and the roster page title resolve
+  to the shared sans hierarchy.
 - Inside a class, student rows are one line (initials, name, meta joined with
   `·`) plus one collapsed **Manage** toggle that reveals the edit form and
   archive/delete actions in a tonal `bg-muted/20` panel. Do not render

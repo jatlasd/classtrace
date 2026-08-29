@@ -354,7 +354,7 @@ export default async function RosterPage({ searchParams }: RosterPageProps) {
           <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
             Roster
           </p>
-          <h1 className="break-words font-display text-3xl font-semibold tracking-tight text-foreground [overflow-wrap:anywhere]">
+          <h1 className="break-words font-sans text-3xl font-semibold tracking-tight text-foreground [overflow-wrap:anywhere]">
             {selectedClass
               ? selectedClass.name
               : view === "archived"

@@ -23,7 +23,7 @@ export default function PublicNotFound() {
           <p className="text-xs font-semibold text-muted-foreground">
             Page not found
           </p>
-          <h1 className="mt-2 font-display text-2xl font-semibold text-foreground">
+          <h1 className="mt-2 font-sans text-2xl font-semibold text-foreground">
             This ClassTrace page is not available
           </h1>
           <p className="mt-2 text-sm leading-relaxed text-muted-foreground">

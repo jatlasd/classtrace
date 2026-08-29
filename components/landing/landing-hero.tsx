@@ -49,7 +49,7 @@ export function LandingHero() {
         <p className="animate-in fade-in slide-in-from-bottom-2 duration-500 text-xs font-semibold uppercase tracking-[0.2em] text-primary">
           Student evidence capture for teachers
         </p>
-        <h1 className="mx-auto mt-5 max-w-3xl animate-in fade-in slide-in-from-bottom-3 font-display text-[2.6rem] font-semibold leading-[1.08] tracking-tight text-foreground duration-700 sm:text-6xl lg:text-[4.25rem]">
+        <h1 className="mx-auto mt-5 max-w-3xl animate-in fade-in slide-in-from-bottom-3 font-sans text-[2.6rem] font-semibold leading-[1.08] tracking-tight text-foreground duration-700 sm:text-6xl lg:text-[4.25rem]">
           The note you lose today is the evidence you&apos;ll need in March.
         </h1>
         <p className="mx-auto mt-6 max-w-xl animate-in fade-in slide-in-from-bottom-3 text-base leading-relaxed text-muted-foreground duration-700 [animation-delay:120ms] [animation-fill-mode:backwards]">
@@ -83,7 +83,7 @@ export function LandingHero() {
       <div className="relative mx-auto max-w-2xl px-6 pb-6 md:px-0">
         <p
           aria-hidden="true"
-          className="font-hand mb-3 -rotate-2 pl-2 text-left text-xl leading-tight text-link sm:pl-0"
+          className="font-sans mb-3 -rotate-2 pl-2 text-left text-xl leading-tight text-link sm:pl-0"
         >
           it starts as forty seconds between classes…
         </p>
@@ -93,7 +93,7 @@ export function LandingHero() {
           </div>
         </ParallaxDrift>
         <div className="mt-8 flex flex-col items-center gap-1 pb-2 text-center">
-          <p aria-hidden="true" className="font-hand text-xl text-primary">
+          <p aria-hidden="true" className="font-sans text-xl text-primary">
             watch this note become evidence
           </p>
           <Link
@@ -105,7 +105,7 @@ export function LandingHero() {
             </span>
             <span
               aria-hidden="true"
-              className="font-hand text-2xl leading-none transition-transform group-hover:translate-y-0.5"
+              className="font-sans text-2xl leading-none transition-transform group-hover:translate-y-0.5"
             >
               ↓
             </span>

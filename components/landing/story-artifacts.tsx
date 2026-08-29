@@ -51,7 +51,7 @@ export function RawNoteArt({ className = "" }: { className?: string }) {
         height={34}
         className="absolute -top-3 left-1/2 h-7 w-24 -translate-x-1/2 rotate-1"
       />
-      <p className="font-hand relative py-1 text-[1.9rem] font-medium leading-[1.05] tracking-[0.01em] text-foreground/90 sm:text-[2.15rem]">
+      <p className="font-sans relative py-1 text-[1.9rem] font-medium leading-[1.05] tracking-[0.01em] text-foreground/90 sm:text-[2.15rem]">
         {RAW_NOTE_TEXT}
       </p>
     </figure>
@@ -69,7 +69,7 @@ export function CaptureComposerArt() {
           <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
             Quick capture
           </p>
-          <p className="font-display mt-1.5 text-xl font-semibold tracking-tight text-foreground">
+          <p className="font-sans mt-1.5 text-xl font-semibold tracking-tight text-foreground">
             What happened?
           </p>
           <p className="mt-2.5 text-xs leading-relaxed text-muted-foreground">
@@ -131,7 +131,7 @@ export function ReviewPanelArt() {
       <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
         ClassTrace read this as
       </p>
-      <p className="font-display mt-1 text-xl font-semibold tracking-tight text-foreground">
+      <p className="font-sans mt-1 text-xl font-semibold tracking-tight text-foreground">
         Review before saving
       </p>
 
@@ -189,7 +189,7 @@ export function ValidatedRecordArt() {
           <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
             Jan 22 · 11:42 AM
           </p>
-          <p className="font-display mt-0.5 text-xl font-semibold tracking-tight text-foreground">
+          <p className="font-sans mt-0.5 text-xl font-semibold tracking-tight text-foreground">
             Stacy
           </p>
         </div>
@@ -260,7 +260,7 @@ export function StudentTimelineArt() {
           ST
         </span>
         <div className="min-w-0 flex-1">
-          <p className="font-display text-xl font-semibold tracking-tight text-foreground">
+          <p className="font-sans text-xl font-semibold tracking-tight text-foreground">
             Stacy
           </p>
           <p className="text-xs text-muted-foreground">@stacy · Math Support</p>

@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
-import { ArrowRight, NotebookPen } from "lucide-react";
+import { ArrowRight } from "lucide-react";
+import { BrandLockup } from "@/components/layout/brand-lockup";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { routes } from "@/lib/routes";
 
@@ -25,7 +26,7 @@ export function PublicInfoPage({
   lastUpdated,
 }: PublicInfoPageProps) {
   return (
-    <div className="landing-paper-texture relative flex min-h-dvh flex-col bg-background">
+    <div className="relative flex min-h-dvh flex-col bg-background">
       <a
         href="#main-content"
         className="fixed left-4 top-3 z-[70] -translate-y-20 rounded-md bg-foreground px-3 py-2 text-sm font-semibold text-background transition-transform focus:translate-y-0"
@@ -35,15 +36,8 @@ export function PublicInfoPage({
 
       <header className="border-b border-border/70 bg-background/95">
         <div className="mx-auto flex min-h-16 max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-3 md:px-6 lg:px-8">
-          <Link href={routes.root} className="flex items-center gap-2.5">
-            <NotebookPen
-              className="size-7 text-navy"
-              strokeWidth={2}
-              aria-hidden="true"
-            />
-            <span className="font-display text-xl font-semibold tracking-tight text-foreground">
-              ClassTrace
-            </span>
+          <Link href={routes.root}>
+            <BrandLockup size="md" />
           </Link>
           <nav aria-label="Public" className="flex items-center gap-4">
             <Link
@@ -92,7 +86,7 @@ export function PublicInfoPage({
 
           <article className="min-w-0">
             <header className="border-b border-border pb-8">
-              <h1 className="font-display text-4xl font-semibold leading-tight tracking-tight text-foreground sm:text-5xl">
+              <h1 className="font-sans text-4xl font-semibold leading-tight tracking-tight text-foreground sm:text-5xl">
                 {title}
               </h1>
               <p className="mt-5 max-w-2xl text-base leading-7 text-muted-foreground">
@@ -134,7 +128,7 @@ export function PublicInfoSection({
     >
       <h2
         id={id + "-heading"}
-        className="font-display text-2xl font-semibold tracking-tight text-foreground"
+        className="font-sans text-2xl font-semibold tracking-tight text-foreground"
       >
         {title}
       </h2>

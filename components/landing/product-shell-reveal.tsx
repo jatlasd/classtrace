@@ -46,7 +46,7 @@ function ProductShellArt() {
       <div className="flex items-center justify-between gap-4 border-b border-border bg-card/95 px-5 py-3">
         <span className="flex items-center gap-2.5">
           <PenLine className="size-4 text-primary" strokeWidth={2.25} />
-          <span className="font-display text-lg font-semibold tracking-tight text-foreground">
+          <span className="font-sans text-lg font-semibold tracking-tight text-foreground">
             ClassTrace
           </span>
         </span>
@@ -72,7 +72,7 @@ function ProductShellArt() {
           <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
             Evidence feed
           </p>
-          <p className="font-display mt-1 text-xl font-semibold tracking-tight text-foreground">
+          <p className="font-sans mt-1 text-xl font-semibold tracking-tight text-foreground">
             Capture, check, and file student evidence
           </p>
         </div>
@@ -83,7 +83,7 @@ function ProductShellArt() {
               <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
                 Quick capture
               </p>
-              <p className="font-display mt-1 text-lg font-semibold tracking-tight text-foreground">
+              <p className="font-sans mt-1 text-lg font-semibold tracking-tight text-foreground">
                 What happened?
               </p>
             </div>
@@ -188,7 +188,7 @@ export function ProductShellReveal() {
           <p className="text-xs font-semibold uppercase tracking-wider text-primary">
             The whole product
           </p>
-          <h2 className="mt-3 font-display text-3xl font-semibold tracking-tight text-foreground lg:text-4xl">
+          <h2 className="mt-3 font-sans text-3xl font-semibold tracking-tight text-foreground lg:text-4xl">
             A calm evidence inbox — and that&apos;s the point.
           </h2>
           <p className="mx-auto mt-4 max-w-xl text-[15px] leading-relaxed text-muted-foreground">
@@ -216,7 +216,7 @@ export function ProductShellReveal() {
                   className="size-5 text-primary"
                   strokeWidth={1.75}
                 />
-                <h3 className="mt-3 font-display text-lg font-semibold text-foreground">
+                <h3 className="mt-3 font-sans text-lg font-semibold text-foreground">
                   {fact.title}
                 </h3>
                 <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">

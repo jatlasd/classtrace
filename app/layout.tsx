@@ -1,19 +1,9 @@
 import type { Metadata } from "next";
-import { Caveat, Fraunces, Inter } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
-
-const fraunces = Fraunces({
-  variable: "--font-display",
-  subsets: ["latin"],
-});
 
 const inter = Inter({
   variable: "--font-body",
-  subsets: ["latin"],
-});
-
-const caveat = Caveat({
-  variable: "--font-hand",
   subsets: ["latin"],
 });
 
@@ -31,9 +21,9 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${fraunces.variable} ${inter.variable} ${caveat.variable} h-full antialiased`}
+      className={`${inter.variable} h-full antialiased`}
     >
-      <body className="paper-grain min-h-full flex flex-col font-sans">
+      <body className="flex min-h-full flex-col bg-background font-sans text-foreground">
         {children}
       </body>
     </html>

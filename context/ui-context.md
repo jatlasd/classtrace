@@ -14,21 +14,26 @@ Priority order:
 
 ## Visual language
 
-- Authenticated routes use a cool mineral-mist background, near-white work surfaces, and charcoal ink; public routes retain their warmer editorial palette.
-- Deep petrol is reserved for primary actions, current state, and focus. Blue-violet remains limited to links and tags, not a second primary action system.
+- Public and authenticated routes share one cool near-white canvas, white work surfaces, charcoal/navy ink, and cool gray borders and secondary text.
+- Deep navy is reserved for the application shell, primary actions, and strongest emphasis. Clear medium blue is reserved for links, focus, and selected state rather than becoming a second primary action system.
 - Muted evergreen indicates validated evidence; brick remains reserved for destructive state.
-- Fraunces is limited to ClassTrace identity and authenticated page-title moments; Inter is used for operational headings, controls, labels, body, and data.
-- Borders and tonal separation do most layout work. Shadows are small and reserved for active paper surfaces.
-- Corners are modest (`rounded-md`, `rounded-lg`, `rounded-card`); pills are for chips/status only.
+- Inter is the sole user-facing type family. Weight, size, spacing, and color create identity and page hierarchy.
+- Borders and tonal separation do most layout work. Shadows are tight, cool, and reserved for genuinely floating or focused surfaces.
+- Corners are modest (`rounded-md`, `rounded-card`); pills are for chips/status only.
+- The shared brand lockup remains text-only until the user supplies the final mark. Do not invent a temporary symbol.
 
 Use semantic tokens from `app/globals.css`. Do not introduce raw palette utilities or hex values in components.
 
 ## App shell and hierarchy
 
-- Authenticated routes share one top navigation and one `main` landmark.
+- Authenticated routes share one responsive application shell and one `main`
+  landmark: a fixed navy sidebar at `lg` and above, and a sticky navy header
+  with a modal navigation drawer below `lg`.
 - A keyboard skip link targets `#main-content`.
 - Active navigation uses `aria-current="page"` and restrained visual emphasis.
 - Capture is the first navigation/action concept.
+- Mobile navigation contains focus, closes from Escape or the backdrop, returns
+  focus to its trigger, and prevents background scrolling while open.
 - Do not add fake search, notification, review, reporting, or admin navigation.
 
 The feed begins with its page header and prominent quick-capture composer. The class roster exists to organize students; it must not displace capture as the product’s center.
@@ -88,4 +93,4 @@ Do not use AI, insights, intelligence, compliance, district-approved, case-manag
 - No new one-off chip, evidence, form, or button vocabulary when a shared pattern exists.
 - No placeholder controls for future features.
 
-The public landing page may be warmer and more editorial than the app, but it must remain text-only, truthful about product behavior, reduced-motion safe, and free of external decorative texture requests.
+The public landing page may use more generous composition than the app, but it shares the same crisp blue, navy, white, and sans foundation. It must remain truthful about product behavior, reduced-motion safe, and free of decorative texture requests.

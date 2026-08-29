@@ -17,7 +17,7 @@ const roles = [
 export function LandingAudience() {
   return (
     <section className="mx-auto max-w-5xl px-4 py-16 text-center md:px-6 lg:px-8 lg:py-20">
-      <h2 className="font-display text-2xl font-semibold tracking-tight text-foreground lg:text-3xl">
+      <h2 className="font-sans text-2xl font-semibold tracking-tight text-foreground lg:text-3xl">
         Built for the people expected to remember everything.
       </h2>
       <ul className="mx-auto mt-10 flex max-w-3xl flex-wrap items-center justify-center gap-x-5 gap-y-6">
@@ -29,7 +29,7 @@ export function LandingAudience() {
               className={`relative ${index % 2 === 0 ? "-rotate-1" : "rotate-1"}`}
             >
               <span
-                className={`font-hand relative isolate inline-flex min-h-14 items-center px-6 py-2 text-foreground ${role.className ?? "text-lg"}`}
+                className={`font-sans relative isolate inline-flex min-h-14 items-center px-6 py-2 text-foreground ${role.className ?? "text-lg"}`}
               >
                 <Image
                   src={`/svg/landing/paper-label-${role.asset}.svg?v=3`}

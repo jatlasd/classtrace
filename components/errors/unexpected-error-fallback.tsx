@@ -85,7 +85,7 @@ export function UnexpectedErrorFallback({
             </p>
             <h1
               id="unexpected-error-heading"
-              className="mt-2 font-display text-2xl font-semibold tracking-tight text-foreground"
+              className="mt-2 font-sans text-2xl font-semibold tracking-tight text-foreground"
             >
               Something went wrong
             </h1>

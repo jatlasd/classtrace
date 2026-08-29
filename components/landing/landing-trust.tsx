@@ -28,7 +28,7 @@ export function LandingTrust() {
     <section className="bg-sidebar text-sidebar-foreground">
       <div className="mx-auto max-w-5xl px-4 py-16 md:px-6 lg:px-8 lg:py-24">
         <div className="mx-auto max-w-3xl text-center">
-          <h2 className="font-display text-3xl font-semibold tracking-tight lg:text-4xl">
+          <h2 className="font-sans text-3xl font-semibold tracking-tight lg:text-4xl">
             This is not another platform your district bought.
           </h2>
           <p className="mt-4 text-[15px] leading-relaxed text-sidebar-foreground/80">
@@ -52,7 +52,7 @@ export function LandingTrust() {
                   sizes="240px"
                   className="-z-10 object-fill"
                 />
-                <span className="font-hand relative text-lg text-foreground">
+                <span className="font-sans relative text-lg text-foreground">
                   {item}
                 </span>
               </Reveal>
@@ -63,7 +63,7 @@ export function LandingTrust() {
         <dl className="mx-auto mt-14 grid max-w-4xl gap-10 text-center sm:grid-cols-3 sm:gap-8 sm:text-left">
           {promises.map((promise, index) => (
             <Reveal key={promise.title} delay={index * 120}>
-              <dt className="font-display text-lg font-semibold text-sidebar-primary">
+              <dt className="font-sans text-lg font-semibold text-sidebar-primary">
                 {promise.title}
               </dt>
               <dd className="mt-2 text-sm leading-relaxed text-sidebar-foreground/80">
@@ -73,7 +73,7 @@ export function LandingTrust() {
           ))}
         </dl>
 
-        <p className="font-hand mt-14 text-center text-xl text-sidebar-primary lg:text-2xl">
+        <p className="font-sans mt-14 text-center text-xl text-sidebar-primary lg:text-2xl">
           Your roster is yours. Your evidence is yours.{" "}
           <span className="underline decoration-sidebar-primary/70 decoration-2 underline-offset-4">
             One teacher, one workspace.

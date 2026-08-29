@@ -39,7 +39,7 @@ export default async function OperatorPage() {
 
       <main className="mx-auto w-full max-w-[1040px] flex-1 px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
         <header className="mb-8 max-w-3xl">
-          <h1 className="font-display text-3xl font-semibold tracking-tight text-foreground">
+          <h1 className="font-sans text-3xl font-semibold tracking-tight text-foreground">
             Account administration
           </h1>
           <p className="mt-3 max-w-[70ch] text-sm leading-relaxed text-muted-foreground">
