@@ -39,7 +39,7 @@ These are engineering boundaries, not claims of FERPA compliance or district app
 - Prisma 7 with PostgreSQL
 - Resend for outbound beta-support email
 - Sentry for privacy-scrubbed error monitoring and sampled tracing
-- Vitest and Testing Library
+- Vitest, Testing Library, and Playwright
 
 ## Local development
 
@@ -77,6 +77,7 @@ The default `onboarding@resend.dev` sender can deliver only to the email associa
 | `npm run lint` | Run ESLint |
 | `npm run test` | Run the normal test suite |
 | `npm run test:coverage` | Run the coverage-enforced test suite |
+| `npm run test:e2e` | Run Clerk-authenticated Playwright visual QA |
 | `npm run test:db` | Reset a disposable database, replay migrations, and run integration tests |
 | `npm run build` | Create a production build |
 | `npm run db:migrate` | Create or apply development migrations |
@@ -84,6 +85,8 @@ The default `onboarding@resend.dev` sender can deliver only to the email associa
 | `npm run db:studio` | Open Prisma Studio |
 
 `npm run test:db` is deliberately opt-in and destructive. It requires a separate `TEST_DATABASE_URL`, refuses the configured `DATABASE_URL`, and requires `TEST_DATABASE_RESET_ALLOWED=1`.
+
+For authenticated visual QA, set `E2E_CLERK_USER_EMAIL` to an existing user in the configured Clerk development instance and install Chromium once with `npx playwright install chromium`. The Playwright setup project signs that user in through Clerk, writes ignored reusable state under `playwright/.auth/`, and then opens the protected Settings page headlessly.
 
 CI runs install, lint, coverage-enforced tests, and a production build. Database integration tests remain a separate gate until a dedicated disposable CI database is configured.
 
