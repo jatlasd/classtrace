@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { archiveEvidence, deleteEvidence } from "@/actions/evidence";
 import { EvidenceRecordContent } from "@/components/evidence/evidence-record-content";
+import { EvidencePhoto } from "@/components/evidence/evidence-photo";
 import { Button } from "@/components/ui/button";
 import type { EvidenceFeedRecord } from "@/lib/evidence/evidence-feed-records";
 import { routes } from "@/lib/routes";
@@ -61,6 +62,9 @@ export function SavedEvidenceRow({
   const [deleteError, setDeleteError] = useState("");
   const [isPending, startTransition] = useTransition();
   const evidenceDate = formatEvidenceDate(record.evidenceDate);
+  const contentRecord = record.hasPhoto
+    ? { ...record, hasPhoto: false }
+    : record;
 
   function handleArchive(): void {
     setArchiveError("");
@@ -99,13 +103,13 @@ export function SavedEvidenceRow({
       aria-label={`Saved evidence for ${record.studentDisplayName} on ${evidenceDate.label}`}
       className="border-b border-border transition-colors hover:bg-muted/20 last:border-b-0"
     >
-      <div className="grid gap-3 px-4 py-5 sm:grid-cols-[64px_minmax(0,1fr)] sm:gap-5 md:px-6">
+      <div className="grid gap-3 px-3 py-3 sm:grid-cols-[3rem_minmax(0,1fr)] sm:gap-4 sm:px-4">
         <time
           dateTime={record.evidenceDate}
           aria-label={evidenceDate.label}
-          className="flex items-baseline gap-1.5 text-muted-foreground sm:flex-col sm:items-start sm:gap-0.5 sm:border-r sm:border-border/70 sm:pr-4"
+          className="flex items-baseline gap-1.5 text-muted-foreground sm:flex-col sm:items-start sm:gap-0.5 sm:border-r sm:border-border/70 sm:pr-3"
         >
-          <span className="text-sm font-semibold leading-none text-foreground">
+          <span className="text-xs font-semibold leading-none text-foreground">
             {evidenceDate.month
               ? `${evidenceDate.month} ${evidenceDate.day}`
               : evidenceDate.day}
@@ -115,63 +119,65 @@ export function SavedEvidenceRow({
           ) : null}
         </time>
 
-        <div className="min-w-0">
-          <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
-            <Link
-              href={routes.student(record.rosterStudentId)}
-              className="rounded-sm text-sm font-semibold text-foreground underline-offset-2 hover:text-link hover:underline focus-visible:ring-2 focus-visible:ring-ring/30"
-            >
-              {record.studentDisplayName}
-            </Link>
-            {record.classGroupName ? (
-              <span className="text-xs text-muted-foreground">
-                {record.classGroupName}
-              </span>
-            ) : null}
-          </div>
+        <div className="min-w-0 lg:grid lg:grid-cols-[minmax(0,1fr)_auto] lg:gap-4">
+          <div className="relative min-w-0">
+            <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 lg:pr-36">
+              <Link
+                href={routes.student(record.rosterStudentId)}
+                className="rounded-sm text-sm font-semibold text-foreground underline-offset-2 hover:text-link hover:underline focus-visible:ring-2 focus-visible:ring-ring/30"
+              >
+                {record.studentDisplayName}
+              </Link>
+              {record.classGroupName ? (
+                <span className="text-xs text-muted-foreground">
+                  {record.classGroupName}
+                </span>
+              ) : null}
+            </div>
 
-          <EvidenceRecordContent
-            record={record}
-            showStructuredSummary={false}
-            textClassName="mt-2"
-          />
+            <EvidenceRecordContent
+              record={contentRecord}
+              compact
+              showStructuredSummary={false}
+              textClassName="mt-1"
+            />
 
-          <div className="mt-3 flex flex-wrap items-center gap-1">
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              className="min-h-11 text-muted-foreground sm:min-h-9"
-              disabled={isPending}
-              onClick={() => {
-                setIsConfirmingArchive(true);
-                setIsConfirmingDelete(false);
-                setArchiveError("");
-                setDeleteError("");
-              }}
-              aria-label={`Archive evidence for ${record.studentDisplayName}`}
-            >
-              <Archive aria-hidden="true" className="size-3.5" />
-              Archive
-            </Button>
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              className="min-h-11 text-destructive hover:text-destructive sm:min-h-9"
-              disabled={isPending}
-              onClick={() => {
-                setIsConfirmingDelete(true);
-                setIsConfirmingArchive(false);
-                setArchiveError("");
-                setDeleteError("");
-              }}
-              aria-label={`Delete evidence for ${record.studentDisplayName}`}
-            >
-              <Trash2 aria-hidden="true" className="size-3.5" />
-              Delete
-            </Button>
-          </div>
+            <div className="mt-2 flex shrink-0 flex-wrap items-center gap-0.5 lg:absolute lg:right-0 lg:top-0 lg:mt-0">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="min-h-11 px-2 text-muted-foreground sm:min-h-8"
+                  disabled={isPending}
+                  onClick={() => {
+                    setIsConfirmingArchive(true);
+                    setIsConfirmingDelete(false);
+                    setArchiveError("");
+                    setDeleteError("");
+                  }}
+                  aria-label={`Archive evidence for ${record.studentDisplayName}`}
+                >
+                  <Archive aria-hidden="true" className="size-3.5" />
+                  Archive
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="min-h-11 px-2 text-destructive hover:text-destructive sm:min-h-8"
+                  disabled={isPending}
+                  onClick={() => {
+                    setIsConfirmingDelete(true);
+                    setIsConfirmingArchive(false);
+                    setArchiveError("");
+                    setDeleteError("");
+                  }}
+                  aria-label={`Delete evidence for ${record.studentDisplayName}`}
+                >
+                  <Trash2 aria-hidden="true" className="size-3.5" />
+                  Delete
+                </Button>
+            </div>
 
           {isConfirmingArchive ? (
             <div className="mt-3 space-y-3 border-y border-border bg-muted/20 px-3 py-3">
@@ -250,6 +256,17 @@ export function SavedEvidenceRow({
             <p className="mt-2 text-xs leading-relaxed text-destructive" role="alert">
               {deleteError}
             </p>
+          ) : null}
+          </div>
+
+          {record.hasPhoto ? (
+            <EvidencePhoto
+              evidenceId={record.id}
+              evidenceDate={record.evidenceDate}
+              width={record.photoWidth}
+              height={record.photoHeight}
+              className="mt-3 !h-24 !w-full lg:mt-0 lg:!h-20 lg:!w-24"
+            />
           ) : null}
         </div>
       </div>

@@ -13,11 +13,13 @@ type DetailRowProps = {
 
 function DetailRow({ label, value }: DetailRowProps) {
   return (
-    <div className="grid gap-1 border-t border-border/60 py-3 sm:grid-cols-[180px_minmax(0,1fr)] sm:gap-4">
-      <dt className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+    <div className="grid gap-0.5 border-t border-border/60 py-2.5">
+      <dt className="text-[11px] font-medium text-muted-foreground">
         {label}
       </dt>
-      <dd className="min-w-0 text-sm font-medium text-foreground">{value}</dd>
+      <dd className="min-w-0 break-words text-sm font-medium text-foreground [overflow-wrap:anywhere]">
+        {value}
+      </dd>
     </div>
   );
 }
@@ -36,62 +38,24 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
   const initialErrorReference = normalizeErrorReference(query.errorReference);
 
   return (
-    <div className="mx-auto w-full max-w-[920px] px-4 py-7 sm:px-6 lg:px-8">
-      <header className="mb-6 border-b border-border pb-6">
-        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-          Settings
-        </p>
-        <h1 className="font-sans mt-2 text-2xl font-semibold tracking-tight text-foreground">
+    <div className="mx-auto w-full max-w-[1180px] px-3 py-4 sm:px-5 sm:py-5">
+      <header className="mb-4 border-b border-border pb-4">
+        <h1 className="font-sans text-lg font-semibold tracking-tight text-foreground">
           Account and workspace
         </h1>
-        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">
+        <p className="mt-1 max-w-2xl text-xs leading-relaxed text-muted-foreground">
           Review the account signed in to ClassTrace and the personal teacher
           workspace connected to it.
         </p>
       </header>
 
-      <div className="space-y-5">
-        <section className="overflow-hidden rounded-card border border-border bg-card/60">
-          <div className="grid lg:grid-cols-2">
-            <div className="p-5 sm:p-6 lg:border-r lg:border-border">
-              <h2 className="font-sans text-lg font-semibold text-foreground">
-                Account
-              </h2>
-              <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-                Sign-in details are managed by the account provider you used to
-                enter ClassTrace.
-              </p>
-              <dl className="mt-4">
-                <DetailRow label="Signed in as" value={settings.accountName} />
-                <DetailRow label="Email" value={settings.accountEmail} />
-              </dl>
-            </div>
-
-            <div className="border-t border-border p-5 sm:p-6 lg:border-t-0">
-              <h2 className="font-sans text-lg font-semibold text-foreground">
-                Workspace
-              </h2>
-              <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-                ClassTrace keeps this as your personal teacher workspace for
-                roster students and validated evidence.
-              </p>
-              <dl className="mt-4">
-                <DetailRow label="Workspace" value={settings.workspaceName} />
-                <DetailRow
-                  label="Teacher profile"
-                  value={settings.teacherDisplayName}
-                />
-              </dl>
-            </div>
-          </div>
-        </section>
-
+      <div className="grid items-start gap-4 xl:grid-cols-[minmax(0,1fr)_19rem]">
         <section
           aria-labelledby="help-feedback-heading"
-          className="rounded-card border border-border bg-card p-5 shadow-paper sm:p-6"
+          className="rounded-lg border border-border bg-card shadow-surface"
         >
-          <div className="mb-5 flex items-start gap-3">
-            <span className="flex size-10 shrink-0 items-center justify-center rounded-md border border-border bg-muted/50 text-primary">
+          <div className="flex items-start gap-3 border-b border-border bg-muted/20 px-4 py-3 sm:px-5">
+            <span className="flex size-8 shrink-0 items-center justify-center rounded-md border border-border bg-card text-primary">
               <MessageCircleQuestion
                 className="size-4"
                 strokeWidth={1.75}
@@ -105,74 +69,106 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
               >
                 Help and feedback
               </h2>
-              <p className="mt-1 max-w-2xl text-sm leading-relaxed text-muted-foreground">
+              <p className="mt-0.5 max-w-2xl text-xs leading-relaxed text-muted-foreground">
                 Tell us what broke, what felt confusing, or what would make
                 ClassTrace more useful.
               </p>
             </div>
           </div>
 
-          <HelpFeedbackForm
-            initialReplyEmail={settings.replyEmail}
-            initialErrorReference={initialErrorReference}
-          />
-        </section>
-
-        <section
-          aria-labelledby="privacy-terms-heading"
-          className="border-y border-border/70 py-5"
-        >
-          <div className="mb-3">
-            <h2
-              id="privacy-terms-heading"
-              className="font-sans text-sm font-semibold text-foreground"
-            >
-              Privacy and beta terms
-            </h2>
-            <p className="mt-1 max-w-2xl text-sm leading-relaxed text-muted-foreground">
-              Review data handling, beta boundaries, support, and account
-              deletion.
-            </p>
+          <div className="px-4 py-4 sm:px-5 sm:py-5">
+            <HelpFeedbackForm
+              initialReplyEmail={settings.replyEmail}
+              initialErrorReference={initialErrorReference}
+            />
           </div>
-
-          <nav aria-label="Privacy and account information">
-            <ul className="grid gap-x-6 sm:grid-cols-2">
-              {[
-                { label: "Privacy", href: routes.privacy },
-                { label: "Beta terms", href: routes.terms },
-                { label: "Support", href: routes.support },
-                { label: "Account deletion", href: routes.dataDeletion },
-              ].map((item) => (
-                <li key={item.href}>
-                  <Link
-                    href={item.href}
-                    className="flex min-h-11 items-center justify-between gap-4 border-t border-border/60 py-2.5 text-sm font-medium text-foreground transition-colors hover:text-link"
-                  >
-                    <span>{item.label}</span>
-                    <ExternalLink
-                      className="size-4 shrink-0 text-muted-foreground"
-                      aria-hidden="true"
-                    />
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </nav>
         </section>
 
-        <section className="py-2">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <aside className="space-y-4" aria-label="Account details and resources">
+          <section className="overflow-hidden rounded-lg border border-border bg-card">
+            <div className="px-4 py-3">
+              <h2 className="font-sans text-sm font-semibold text-foreground">
+                Account
+              </h2>
+              <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">
+                Sign-in details are managed by your account provider.
+              </p>
+              <dl className="mt-3">
+                <DetailRow label="Signed in as" value={settings.accountName} />
+                <DetailRow label="Email" value={settings.accountEmail} />
+              </dl>
+            </div>
+
+            <div className="border-t border-border px-4 py-3">
+              <h2 className="font-sans text-sm font-semibold text-foreground">
+                Workspace
+              </h2>
+              <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">
+                Your personal roster and validated evidence workspace.
+              </p>
+              <dl className="mt-3">
+                <DetailRow label="Workspace" value={settings.workspaceName} />
+                <DetailRow
+                  label="Teacher profile"
+                  value={settings.teacherDisplayName}
+                />
+              </dl>
+            </div>
+          </section>
+
+          <section
+            aria-labelledby="privacy-terms-heading"
+            className="overflow-hidden rounded-lg border border-border bg-card"
+          >
+            <div className="border-b border-border px-4 py-3">
+              <h2
+                id="privacy-terms-heading"
+                className="font-sans text-sm font-semibold text-foreground"
+              >
+                Privacy and beta terms
+              </h2>
+              <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">
+                Data handling, support, and account boundaries.
+              </p>
+            </div>
+
+            <nav aria-label="Privacy and account information">
+              <ul>
+                {[
+                  { label: "Privacy", href: routes.privacy },
+                  { label: "Beta terms", href: routes.terms },
+                  { label: "Support", href: routes.support },
+                  { label: "Account deletion", href: routes.dataDeletion },
+                ].map((item) => (
+                  <li key={item.href} className="border-b border-border last:border-b-0">
+                    <Link
+                      href={item.href}
+                      className="flex min-h-10 items-center justify-between gap-4 px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted/40 hover:text-link"
+                    >
+                      <span>{item.label}</span>
+                      <ExternalLink
+                        className="size-3.5 shrink-0 text-muted-foreground"
+                        aria-hidden="true"
+                      />
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+          </section>
+
+          <section className="flex items-center justify-between gap-4 border-y border-border py-3">
             <div>
-              <h2 className="font-sans text-lg font-semibold text-foreground">
+              <h2 className="font-sans text-sm font-semibold text-foreground">
                 Sign out
               </h2>
-              <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-                Leave this ClassTrace session and return to the public page.
+              <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">
+                Leave this ClassTrace session.
               </p>
             </div>
             <SettingsSignOutAction />
-          </div>
-        </section>
+          </section>
+        </aside>
       </div>
     </div>
   );

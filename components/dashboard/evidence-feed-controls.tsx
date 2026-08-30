@@ -20,7 +20,7 @@ export function EvidenceSearchControl({
   onQueryChange: (query: string) => void;
 }) {
   return (
-    <div className="relative min-w-0 flex-1 sm:max-w-[300px]">
+    <div className="relative min-w-0 flex-1 sm:max-w-[280px]">
       <input
         type="search"
         name="evidence-search"
@@ -29,7 +29,7 @@ export function EvidenceSearchControl({
         onChange={(event) => onQueryChange(event.target.value)}
         placeholder="Search this page…"
         aria-label="Search evidence on this page"
-        className="min-h-11 w-full rounded-lg border border-border bg-background/50 py-2 pl-9 pr-9 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:bg-card focus-visible:ring-3 focus-visible:ring-ring/20 sm:min-h-10"
+        className="min-h-11 w-full rounded-md border border-border bg-background/40 py-2 pl-9 pr-9 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:bg-card focus-visible:ring-3 focus-visible:ring-ring/20 sm:min-h-9"
       />
       <Search
         aria-hidden="true"
@@ -60,7 +60,7 @@ export function InboxFilterControl({
     <div
       role="group"
       aria-label="Filter evidence inbox"
-      className="flex flex-wrap gap-1.5"
+      className="flex flex-wrap gap-1"
     >
       {filterOptions.map((option) => (
         <button
@@ -68,7 +68,7 @@ export function InboxFilterControl({
           type="button"
           onClick={() => onFilterChange(option.value)}
           aria-pressed={filter === option.value}
-          className={`min-h-11 rounded-lg border px-3 py-2 text-sm font-medium transition-colors sm:min-h-9 ${
+          className={`min-h-11 rounded-md border px-3 py-2 text-sm font-medium transition-colors sm:min-h-9 ${
             filter === option.value
               ? "border-border bg-muted text-foreground"
               : "border-transparent text-muted-foreground hover:bg-muted/60 hover:text-foreground"

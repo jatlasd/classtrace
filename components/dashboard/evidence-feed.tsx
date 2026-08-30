@@ -39,6 +39,7 @@ import {
   type FeedItem,
 } from "@/lib/evidence/evidence-feed-filtering";
 import type { EvidenceFeedRecord } from "@/lib/evidence/evidence-feed-records";
+import { formatTagLabel } from "@/lib/format-tag";
 import {
   isCurrentLocalDay,
   loadSessionDrafts,
@@ -62,7 +63,7 @@ import {
   type CaptureRosterStudent,
   type CaptureStudentResolution,
 } from "@/lib/students/resolve-capture-students";
-import { ArrowDownUp } from "lucide-react";
+import { ArrowDownUp, CheckCircle2, Tags, UserRound } from "lucide-react";
 
 type EvidenceFeedProps = {
   workspaceId: string;
@@ -128,6 +129,108 @@ function studentResolutionErrorMessage(
   }
 
   return "Choose one student for this capture before saving this edit.";
+}
+
+function EvidenceFeedRail({
+  students,
+  tags,
+  draftCount,
+  onTagSelect,
+}: {
+  students: CaptureRosterStudent[];
+  tags: string[];
+  draftCount: number;
+  onTagSelect: (tag: string) => void;
+}) {
+  return (
+    <aside aria-label="Feed context" className="hidden space-y-3 xl:block">
+      <section className="overflow-hidden rounded-card border border-border bg-card shadow-surface">
+        <div className="flex items-center justify-between gap-3 border-b border-border px-4 py-3">
+          <h2 className="text-sm font-semibold text-foreground">Students</h2>
+          <span className="text-xs tabular-nums text-muted-foreground">
+            {students.length}
+          </span>
+        </div>
+        <ul>
+          {students.slice(0, 5).map((student) => (
+            <li key={student.id} className="border-b border-border/70 last:border-b-0">
+              <Link
+                href={routes.student(student.id)}
+                className="flex min-h-14 items-center gap-3 px-4 py-2.5 outline-none transition-colors hover:bg-muted/35 focus-visible:bg-muted/35 focus-visible:ring-3 focus-visible:ring-ring/20"
+              >
+                <span className="flex size-8 shrink-0 items-center justify-center rounded-md bg-secondary text-secondary-foreground">
+                  <UserRound aria-hidden="true" className="size-4" />
+                </span>
+                <span className="min-w-0">
+                  <span className="block truncate text-sm font-medium text-foreground">
+                    {student.displayName}
+                  </span>
+                  <span className="mt-0.5 block truncate text-xs text-muted-foreground">
+                    {student.classGroupName ?? `@${student.mentionHandle}`}
+                  </span>
+                </span>
+              </Link>
+            </li>
+          ))}
+        </ul>
+        <Link
+          href={routes.roster}
+          className="flex min-h-10 items-center px-4 text-xs font-medium text-link outline-none transition-colors hover:bg-muted/35 hover:underline focus-visible:ring-3 focus-visible:ring-ring/20"
+        >
+          View all students
+        </Link>
+      </section>
+
+      <section className="rounded-card border border-border bg-card px-4 py-3 shadow-surface">
+        <div className="flex items-center gap-2">
+          <Tags aria-hidden="true" className="size-4 text-muted-foreground" />
+          <h2 className="text-sm font-semibold text-foreground">Recent tags</h2>
+        </div>
+        {tags.length > 0 ? (
+          <div className="mt-3 flex flex-wrap gap-1.5">
+            {tags.map((tag) => (
+              <button
+                key={tag}
+                type="button"
+                onClick={() => onTagSelect(tag)}
+                className="rounded-md border border-border bg-muted/50 px-2 py-1 text-xs font-medium text-link outline-none transition-colors hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/20"
+              >
+                {formatTagLabel(tag)}
+              </button>
+            ))}
+          </div>
+        ) : (
+          <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+            Tags from saved evidence will appear here.
+          </p>
+        )}
+      </section>
+
+      <section className="rounded-card border border-border bg-card px-4 py-3 shadow-surface">
+        <div className="flex items-center justify-between gap-3">
+          <h2 className="text-sm font-semibold text-foreground">Draft review</h2>
+          <span className="rounded-md bg-accent px-2 py-1 text-xs font-semibold tabular-nums text-accent-foreground">
+            {draftCount}
+          </span>
+        </div>
+        <ul className="mt-3 space-y-2.5">
+          {[
+            "One roster student",
+            "Evidence note, photo, or both",
+            "Teacher review before save",
+          ].map((item) => (
+            <li key={item} className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
+              <CheckCircle2
+                aria-hidden="true"
+                className="mt-0.5 size-3.5 shrink-0 text-validated-foreground"
+              />
+              {item}
+            </li>
+          ))}
+        </ul>
+      </section>
+    </aside>
+  );
 }
 
 export function EvidenceFeed({
@@ -355,6 +458,15 @@ export function EvidenceFeed({
 
     return activeEvidenceRecords;
   }, [filter, hiddenSavedEvidenceIds, initialEvidenceRecords, searchQuery]);
+
+  const recentTags = useMemo(
+    () =>
+      [...new Set(initialEvidenceRecords.flatMap((record) => record.tags))].slice(
+        0,
+        8
+      ),
+    [initialEvidenceRecords]
+  );
 
   const hasAnyFeedItems =
     activeDraftItems.length > 0 || initialEvidenceRecords.length > 0;
@@ -631,6 +743,10 @@ export function EvidenceFeed({
     updateFeedUrl(searchQuery, nextFilter, "push");
   }
 
+  function handleTagSelect(tag: string): void {
+    handleSearchQueryChange(formatTagLabel(tag));
+  }
+
   function evidencePageHref(page: number): string {
     const params = new URLSearchParams();
     if (page > 1) params.set("page", String(page));
@@ -720,98 +836,109 @@ export function EvidenceFeed({
   }
 
   return (
-    <div className="mx-auto w-full max-w-[1360px] px-4 py-5 sm:px-6 lg:px-8">
+    <div className="mx-auto w-full max-w-[1560px] px-3 py-3 sm:px-4 lg:px-5 lg:py-4">
       <EvidenceFeedHeader />
 
-      <section className="mt-5" aria-label="Capture desk">
-        {rosterSetupNeeded ? (
-          <RosterRequiredState />
-        ) : (
-          <QuickCaptureCard
-            rosterStudents={activeRosterStudents}
-            focusRequestKey={composerFocusRequestKey}
-            onDraft={handleDraft}
-          />
-        )}
-      </section>
+      <div className="grid items-start gap-3 xl:grid-cols-[minmax(0,1fr)_16.5rem]">
+        <div className="min-w-0 space-y-3">
+          <section aria-label="Capture desk">
+            {rosterSetupNeeded ? (
+              <RosterRequiredState />
+            ) : (
+              <QuickCaptureCard
+                rosterStudents={activeRosterStudents}
+                focusRequestKey={composerFocusRequestKey}
+                onDraft={handleDraft}
+              />
+            )}
+          </section>
 
-      <section
-        className="mt-5 overflow-hidden rounded-card border border-border bg-card"
-        aria-labelledby="evidence-inbox-heading"
-      >
-        <div className="space-y-4 border-b border-border bg-card px-4 py-4 sm:px-6">
-          <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
-            <div className="min-w-0">
-              <RecentCapturesLabel />
-              <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs leading-relaxed text-muted-foreground">
-                <span>
-                  {hasVisibleFeedItems
-                    ? feedItemCountLabel(visibleFeedItemCount)
-                    : "Drafts and saved evidence will appear here."}
-                </span>
-                <span aria-hidden="true">·</span>
-                <span className="inline-flex items-center gap-1.5">
-                  <ArrowDownUp aria-hidden="true" className="size-3.5" />
-                  Newest first
-                </span>
-              </p>
-            </div>
-            <EvidenceSearchControl
-              query={searchQuery}
-              onQueryChange={handleSearchQueryChange}
-            />
-          </div>
-
-          <InboxFilterControl
-            filter={filter}
-            onFilterChange={handleFilterChange}
-          />
-        </div>
-
-        {captureEditError ? (
-          <p
-            ref={captureEditErrorRef}
-            role="alert"
-            tabIndex={-1}
-            className="border-b border-border bg-muted/30 px-4 py-3 text-sm text-destructive outline-none focus-visible:ring-3 focus-visible:ring-ring/30 sm:px-6"
+          <section
+            className="min-w-0 overflow-hidden rounded-card border border-border bg-card shadow-surface"
+            aria-labelledby="evidence-inbox-heading"
           >
-            {captureEditError}
-          </p>
-        ) : null}
+            <div className="space-y-3 border-b border-border bg-card px-3 py-3 sm:px-4">
+              <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                <div className="min-w-0">
+                  <RecentCapturesLabel />
+                  <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs leading-relaxed text-muted-foreground">
+                    <span>
+                      {hasVisibleFeedItems
+                        ? feedItemCountLabel(visibleFeedItemCount)
+                        : "Drafts and saved evidence will appear here."}
+                    </span>
+                    <span aria-hidden="true">·</span>
+                    <span className="inline-flex items-center gap-1.5">
+                      <ArrowDownUp aria-hidden="true" className="size-3.5" />
+                      Newest first
+                    </span>
+                  </p>
+                </div>
+                <EvidenceSearchControl
+                  query={searchQuery}
+                  onQueryChange={handleSearchQueryChange}
+                />
+              </div>
 
-        <div>
-          {renderFeedList()}
-          {filter !== "needs_review" &&
-          (hasNewerEvidence || hasOlderEvidence) ? (
-            <nav
-              aria-label="Evidence pages"
-              className="flex items-center justify-between gap-3 border-t border-border px-4 py-4 sm:px-6"
-            >
-              <div>
-                {hasNewerEvidence ? (
-                  <Button asChild variant="outline" size="sm">
-                    <Link href={evidencePageHref(evidencePage - 1)}>
-                      Newer evidence
-                    </Link>
-                  </Button>
-                ) : null}
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Page {evidencePage}
+              <InboxFilterControl
+                filter={filter}
+                onFilterChange={handleFilterChange}
+              />
+            </div>
+
+            {captureEditError ? (
+              <p
+                ref={captureEditErrorRef}
+                role="alert"
+                tabIndex={-1}
+                className="border-b border-border bg-muted/30 px-4 py-3 text-sm text-destructive outline-none focus-visible:ring-3 focus-visible:ring-ring/30 sm:px-6"
+              >
+                {captureEditError}
               </p>
-              <div>
-                {hasOlderEvidence ? (
-                  <Button asChild variant="outline" size="sm">
-                    <Link href={evidencePageHref(evidencePage + 1)}>
-                      Older evidence
-                    </Link>
-                  </Button>
-                ) : null}
-              </div>
-            </nav>
-          ) : null}
+            ) : null}
+
+            <div>
+              {renderFeedList()}
+              {filter !== "needs_review" &&
+              (hasNewerEvidence || hasOlderEvidence) ? (
+                <nav
+                  aria-label="Evidence pages"
+                  className="flex items-center justify-between gap-3 border-t border-border px-4 py-4 sm:px-6"
+                >
+                  <div>
+                    {hasNewerEvidence ? (
+                      <Button asChild variant="outline" size="sm">
+                        <Link href={evidencePageHref(evidencePage - 1)}>
+                          Newer evidence
+                        </Link>
+                      </Button>
+                    ) : null}
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Page {evidencePage}
+                  </p>
+                  <div>
+                    {hasOlderEvidence ? (
+                      <Button asChild variant="outline" size="sm">
+                        <Link href={evidencePageHref(evidencePage + 1)}>
+                          Older evidence
+                        </Link>
+                      </Button>
+                    ) : null}
+                  </div>
+                </nav>
+              ) : null}
+            </div>
+          </section>
         </div>
-      </section>
+
+        <EvidenceFeedRail
+          students={activeRosterStudents}
+          tags={recentTags}
+          draftCount={activeDraftItems.filter(needsReview).length}
+          onTagSelect={handleTagSelect}
+        />
+      </div>
     </div>
   );
 }

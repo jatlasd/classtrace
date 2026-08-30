@@ -49,17 +49,17 @@ const quickCaptureMentionsStyle: MentionsInputStyle = {
   },
   "&multiLine": {
     control: {
-      minHeight: 76,
+      minHeight: 42,
     },
     highlighter: {
       ...captureTextLayerStyle,
-      minHeight: 76,
+      minHeight: 42,
       overflow: "hidden",
     },
     input: {
       ...captureTextLayerStyle,
       outline: 0,
-      minHeight: 76,
+      minHeight: 42,
       overflow: "auto",
       resize: "none",
     },
@@ -264,28 +264,22 @@ export function QuickCaptureCard({
   }
 
   return (
-    <section className="overflow-hidden rounded-card border border-border bg-card shadow-paper ring-1 ring-transparent transition-shadow focus-within:ring-primary/20">
-      <div className="px-5 py-5 sm:px-6 sm:py-6">
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between sm:gap-6">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              Quick capture
-            </p>
-            <label
-              htmlFor="quick-capture"
-              className="mt-1.5 block font-sans text-xl font-semibold tracking-tight text-foreground"
-            >
-              What happened?
-            </label>
-          </div>
-          <p className="max-w-xl text-sm leading-relaxed text-muted-foreground sm:text-right">
-            Mention one student with{" "}
-            <span className="font-semibold text-link">@</span>. Add context with{" "}
-            <span className="font-semibold text-validated-foreground">#tags</span>.
+    <section className="overflow-hidden rounded-card border border-border bg-card shadow-surface ring-1 ring-transparent transition-shadow focus-within:ring-ring/20">
+      <div className="px-4 pt-3 sm:px-5">
+        <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+          <label
+            htmlFor="quick-capture"
+            className="font-sans text-sm font-semibold text-foreground"
+          >
+            What happened?
+          </label>
+          <p className="text-xs text-muted-foreground">
+            Mention one student with <span className="font-semibold text-link">@</span>
+            <span className="hidden sm:inline"> and add context with #tags</span>.
           </p>
         </div>
 
-        <div className="quick-capture-mentions mt-4 rounded-lg border border-border bg-background/45 px-4 py-3 transition-colors focus-within:border-ring focus-within:bg-card focus-within:ring-3 focus-within:ring-ring/20">
+        <div className="quick-capture-mentions mt-2 rounded-md border border-input bg-background/35 px-3 py-2.5 transition-colors focus-within:border-ring focus-within:bg-card focus-within:ring-3 focus-within:ring-ring/20">
           <MentionsInput
             inputRef={(element: HTMLInputElement | HTMLTextAreaElement | null) => {
               inputRef.current = element;
@@ -319,31 +313,30 @@ export function QuickCaptureCard({
           </MentionsInput>
         </div>
 
-        <div className="mt-3 border-t border-border/70 pt-3">
-          <input
-            ref={takePhotoRef}
-            type="file"
-            accept="image/jpeg,image/png,image/webp,image/avif"
-            capture="environment"
-            className="sr-only"
-            aria-label="Take photo"
-            aria-invalid={Boolean(photoError)}
-            aria-describedby={photoError ? photoErrorId : undefined}
-            onChange={(event) => void handlePhotoFile(event.target.files?.[0])}
-          />
-          <input
-            ref={choosePhotoRef}
-            type="file"
-            accept="image/jpeg,image/png,image/webp,image/avif"
-            className="sr-only"
-            aria-label="Choose photo"
-            aria-invalid={Boolean(photoError)}
-            aria-describedby={photoError ? photoErrorId : undefined}
-            onChange={(event) => void handlePhotoFile(event.target.files?.[0])}
-          />
+        <input
+          ref={takePhotoRef}
+          type="file"
+          accept="image/jpeg,image/png,image/webp,image/avif"
+          capture="environment"
+          className="sr-only"
+          aria-label="Take photo"
+          aria-invalid={Boolean(photoError)}
+          aria-describedby={photoError ? photoErrorId : undefined}
+          onChange={(event) => void handlePhotoFile(event.target.files?.[0])}
+        />
+        <input
+          ref={choosePhotoRef}
+          type="file"
+          accept="image/jpeg,image/png,image/webp,image/avif"
+          className="sr-only"
+          aria-label="Choose photo"
+          aria-invalid={Boolean(photoError)}
+          aria-describedby={photoError ? photoErrorId : undefined}
+          onChange={(event) => void handlePhotoFile(event.target.files?.[0])}
+        />
 
-          {photo ? (
-            <div className="grid gap-3 sm:grid-cols-[7rem_1fr] sm:items-start">
+        {photo ? (
+          <div className="mt-2 grid gap-3 border-t border-border/60 py-3 sm:grid-cols-[6rem_1fr] sm:items-start">
               <LocalPhotoPreview
                 blob={photo.blob}
                 alt="Selected photo evidence preview"
@@ -377,72 +370,65 @@ export function QuickCaptureCard({
                   </Button>
                 </div>
               </div>
-            </div>
-          ) : (
-            <div className="flex flex-wrap items-center gap-2">
-              <Button
-                type="button"
-                size="sm"
-                variant="outline"
-                disabled={isProcessingPhoto}
-                onClick={() => takePhotoRef.current?.click()}
-              >
-                <Camera aria-hidden="true" className="size-4" />
-                Take photo
-              </Button>
-              <Button
-                type="button"
-                size="sm"
-                variant="ghost"
-                disabled={isProcessingPhoto}
-                onClick={() => choosePhotoRef.current?.click()}
-              >
-                <ImagePlus aria-hidden="true" className="size-4" />
-                Choose photo
-              </Button>
-              {isProcessingPhoto ? (
-                <span role="status" className="inline-flex items-center gap-2 text-xs text-muted-foreground">
-                  <LoaderCircle aria-hidden="true" className="size-4 animate-spin" />
-                  Processing photo…
-                </span>
-              ) : null}
-            </div>
-          )}
-          {photoError ? (
-            <p id={photoErrorId} role="alert" className="mt-2 text-sm text-destructive">
-              {photoError}
-            </p>
-          ) : null}
-        </div>
+          </div>
+        ) : null}
+        {photoError ? (
+          <p id={photoErrorId} role="alert" className="my-2 text-sm text-destructive">
+            {photoError}
+          </p>
+        ) : null}
       </div>
 
-      <div className="flex flex-col gap-3 border-t border-border bg-muted/15 px-5 py-3.5 sm:flex-row sm:items-center sm:justify-between sm:px-6">
-        <div aria-live="polite">
+      <div className="flex flex-col gap-2 border-t border-border bg-muted/20 px-3 py-2 sm:flex-row sm:items-center sm:px-4">
+        {!photo ? (
+          <div className="flex flex-wrap items-center gap-1">
+            <Button
+              type="button"
+              size="sm"
+              variant="ghost"
+              className="text-muted-foreground"
+              disabled={isProcessingPhoto}
+              onClick={() => takePhotoRef.current?.click()}
+            >
+              <Camera aria-hidden="true" className="size-4" />
+              Take photo
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant="ghost"
+              disabled={isProcessingPhoto}
+              onClick={() => choosePhotoRef.current?.click()}
+            >
+              <ImagePlus aria-hidden="true" className="size-4" />
+              Choose photo
+            </Button>
+            {isProcessingPhoto ? (
+              <span role="status" className="inline-flex items-center gap-2 text-xs text-muted-foreground">
+                <LoaderCircle aria-hidden="true" className="size-4 animate-spin" />
+                Processing photo…
+              </span>
+            ) : null}
+          </div>
+        ) : null}
+
+        <div aria-live="polite" className="min-w-0 flex-1 sm:text-right">
           <p
-            className={`text-sm leading-relaxed ${
+            className={`${guidance ? "text-xs leading-relaxed" : "sr-only"} ${
               guidance?.tone === "error"
                 ? "text-destructive"
                 : "text-muted-foreground"
             }`}
           >
-            {guidance ? (
-              guidance.text
-            ) : (
-              <>
-                Capture creates a draft for review.
-                <span className="hidden sm:inline">
-                  {" "}
-                  Press Ctrl or ⌘ + Enter.
-                </span>
-              </>
-            )}
+            {guidance?.text ?? "Capture creates a draft for review."}
           </p>
         </div>
 
         <Button
           onClick={() => void handlePost()}
           disabled={!canCapture}
-          className="min-h-11 w-full rounded-lg px-5 text-sm font-semibold sm:min-h-10 sm:w-auto"
+          size="sm"
+          className="min-h-11 w-full shrink-0 px-5 text-sm font-semibold sm:min-h-9 sm:w-auto"
         >
           {posted ? (
             <>

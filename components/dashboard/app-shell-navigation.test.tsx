@@ -58,9 +58,26 @@ describe("AppShellNavigation", () => {
         "aria-current"
       )
     ).toBe(false);
-    expect(screen.getAllByText("Evidence feed").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Feed").length).toBeGreaterThan(0);
+    expect(screen.getByText("All evidence")).toBeTruthy();
     expect(screen.queryByRole("link", { name: "Dashboard" })).toBeNull();
     expect(screen.queryByRole("link", { name: "Reports" })).toBeNull();
+  });
+
+  it("pairs authenticated routes with truthful compact context labels", () => {
+    mocks.pathname = "/app/roster";
+    const rosterRender = render(<AppShellNavigation />);
+    expect(screen.getByText("All classes")).toBeTruthy();
+    rosterRender.unmount();
+
+    mocks.pathname = "/app/settings";
+    const settingsRender = render(<AppShellNavigation />);
+    expect(screen.getByText("Account")).toBeTruthy();
+    settingsRender.unmount();
+
+    mocks.pathname = "/app/students/student_mary/report";
+    render(<AppShellNavigation />);
+    expect(screen.getByText("Printable evidence")).toBeTruthy();
   });
 
   it("contains focus in the mobile drawer and restores focus on Escape", async () => {

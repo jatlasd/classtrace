@@ -131,8 +131,8 @@ export function HelpFeedbackForm({
     : undefined;
 
   return (
-    <form className="space-y-5" onSubmit={handleSubmit} noValidate>
-      <div className="grid gap-5 sm:grid-cols-2">
+    <form className="space-y-4" onSubmit={handleSubmit} noValidate>
+      <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-1.5">
           <label
             htmlFor="feedback-type"
@@ -234,7 +234,7 @@ export function HelpFeedbackForm({
             setDescription(event.target.value);
             clearFieldError("description");
           }}
-          className="min-h-32 resize-y"
+          className="min-h-28 resize-y"
           placeholder="What happened, and what were you trying to do?"
           aria-invalid={Boolean(fieldErrors.description)}
           aria-describedby={[

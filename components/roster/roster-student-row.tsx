@@ -55,17 +55,17 @@ export function RosterStudentRow({
 
   return (
     <li className="border-b border-border last:border-b-0">
-      <div className="flex flex-wrap items-center gap-x-3 gap-y-2 px-4 py-3 sm:px-5">
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-2 px-4 py-2.5 sm:px-5">
         <Link
           href={routes.student(student.id)}
           aria-label={`Open ${student.displayName} timeline`}
           className="-m-1.5 flex min-w-0 flex-1 basis-56 items-center gap-3 rounded-md p-1.5 outline-none transition-colors hover:bg-muted/50 focus-visible:ring-3 focus-visible:ring-ring/20"
         >
-          <span className="flex size-9 shrink-0 items-center justify-center rounded-md border border-border bg-muted/50 text-[11px] font-bold text-foreground">
+          <span className="flex size-8 shrink-0 items-center justify-center rounded-md border border-border bg-muted/50 text-[10px] font-bold text-foreground">
             {studentInitials(student.displayName)}
           </span>
           <span className="min-w-0">
-            <span className="block break-words font-medium leading-snug text-foreground [overflow-wrap:anywhere]">
+            <span className="block break-words text-sm font-medium leading-snug text-foreground [overflow-wrap:anywhere]">
               {student.displayName}
             </span>
             <span className="mt-0.5 block break-words text-xs text-muted-foreground [overflow-wrap:anywhere]">

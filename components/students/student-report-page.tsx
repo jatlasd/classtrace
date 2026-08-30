@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { ReactElement } from "react";
-import { Circle, FileText } from "lucide-react";
+import { Check, FileText } from "lucide-react";
 import { EvidenceRecordContent } from "@/components/evidence/evidence-record-content";
 import { Button } from "@/components/ui/button";
 import { StudentReportDateRangeForm } from "@/components/students/student-report-date-range-form";
@@ -78,8 +78,8 @@ function ReportHeader({
   ].filter(Boolean);
 
   return (
-    <header className="mb-6 border-b border-border pb-6">
-      <div className="student-report-screen-only mb-4 flex flex-wrap items-center justify-between gap-3">
+    <header className="mb-4 border-b border-border pb-4">
+      <div className="student-report-screen-only mb-3 flex flex-wrap items-center justify-between gap-3">
         <Button asChild variant="ghost" size="sm" className="-ml-2">
           <Link href={routes.student(student.id)}>Back to timeline</Link>
         </Button>
@@ -91,25 +91,22 @@ function ReportHeader({
         </div>
       </div>
 
-      <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div className="min-w-0">
-          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            Student report
-          </p>
-          <h1 className="mt-2 font-sans text-2xl font-semibold tracking-tight text-foreground">
+          <h1 className="font-sans text-lg font-semibold tracking-tight text-foreground">
             Evidence report for {student.displayName}
           </h1>
-          <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground">
+          <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
             <span>@{student.mentionHandle}</span>
             {metadata.map((item) => (
-              <span key={item} className="border-l border-border pl-3">
+              <span key={item} className="border-l border-border pl-2">
                 {item}
               </span>
             ))}
           </div>
         </div>
 
-        <div className="text-sm sm:text-right">
+        <div className="text-xs sm:text-right">
           <p className="text-muted-foreground">
             <span className="font-semibold tabular-nums text-foreground">
               {evidenceCount}
@@ -127,26 +124,30 @@ function ReportHeader({
 
 function ReportEvidenceItem({ record }: ReportEvidenceItemProps) {
   return (
-    <li>
-      <article className="student-report-entry rounded-lg border border-border bg-card p-4">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-          <div className="min-w-0">
-            <p className="text-sm font-medium text-foreground">
-              {formatReportDate(record.evidenceDate)}
-            </p>
+    <li className="border-b border-border last:border-b-0">
+      <article className="student-report-entry grid gap-3 px-4 py-3 sm:grid-cols-[9.5rem_minmax(0,1fr)_auto] sm:px-5">
+        <div className="flex items-start justify-between gap-3 sm:block">
+          <p className="text-xs font-medium tabular-nums text-muted-foreground">
+            {formatReportDate(record.evidenceDate)}
+          </p>
+          <span className="inline-flex w-fit items-center gap-1.5 rounded-md border border-validated/60 bg-validated/35 px-2 py-0.5 text-[11px] font-semibold text-validated-foreground sm:hidden">
+            <Check className="size-3" aria-hidden="true" />
+            Validated
+          </span>
+        </div>
+        <div className="min-w-0">
             <EvidenceRecordContent
               record={record}
               includeClassGroup
               showStructuredSummary={false}
-              textClassName="mt-2"
               photoLoading="eager"
+              compact
             />
-          </div>
-          <span className="inline-flex w-fit items-center gap-2 rounded-lg border border-validated/60 bg-validated/35 px-2.5 py-1 text-xs font-semibold text-validated-foreground">
-            <Circle className="size-2 fill-current" />
-            Validated
-          </span>
         </div>
+        <span className="hidden w-fit items-center gap-1.5 self-start rounded-md border border-validated/60 bg-validated/35 px-2 py-0.5 text-[11px] font-semibold text-validated-foreground sm:inline-flex">
+          <Check className="size-3" aria-hidden="true" />
+          Validated
+        </span>
       </article>
     </li>
   );
@@ -195,14 +196,14 @@ function ReportEvidenceList({
       className="student-report-print-root"
       aria-labelledby="report-evidence-heading"
     >
-      <div className="student-report-print-context mb-4">
+      <div className="student-report-print-context mb-2 px-1">
         <h2
           id="report-evidence-heading"
-          className="font-sans text-xl font-semibold text-foreground"
+          className="font-sans text-sm font-semibold text-foreground"
         >
           Evidence
         </h2>
-        <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+        <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">
           Ordered from oldest to newest for reporting.
         </p>
       </div>
@@ -212,7 +213,7 @@ function ReportEvidenceList({
             dateRange={dateRange}
           />
         ) : (
-          <ol className="space-y-4">
+          <ol className="overflow-hidden rounded-lg border border-border bg-card">
             {records.map((record) => (
               <ReportEvidenceItem key={record.id} record={record} />
             ))}
@@ -229,7 +230,7 @@ export function StudentReportPage({
   dateRange,
 }: StudentReportPageProps): ReactElement {
   return (
-    <div className="student-report-page mx-auto w-full max-w-[980px] px-4 py-7 sm:px-6 lg:px-8">
+    <div className="student-report-page mx-auto w-full max-w-[1180px] px-3 py-4 sm:px-5 sm:py-5">
       <ReportHeader
         student={student}
         evidenceCount={evidenceRecords.length}

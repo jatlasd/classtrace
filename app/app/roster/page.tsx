@@ -53,12 +53,12 @@ function SectionLabel({
   description?: string;
 }) {
   return (
-    <div className="px-1">
-      <h2 className="font-sans text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+    <div>
+      <h2 className="font-sans text-sm font-semibold text-foreground">
         {title}
       </h2>
       {description ? (
-        <p className="mt-1 max-w-prose text-sm leading-relaxed text-muted-foreground">
+        <p className="mt-0.5 max-w-prose text-xs leading-relaxed text-muted-foreground">
           {description}
         </p>
       ) : null}
@@ -141,7 +141,7 @@ function ClassOverview({
           {activeClasses.length} {activeClasses.length === 1 ? "class" : "classes"}
         </p>
       </div>
-      <ul className="overflow-hidden rounded-card border border-border bg-card">
+      <ul className="overflow-hidden rounded-lg border border-border bg-card">
         {activeClasses.map((classGroup) => {
           const studentCount = activeStudents.filter(
             (student) =>
@@ -152,10 +152,10 @@ function ClassOverview({
             <li key={classGroup.id} className="border-b border-border">
               <Link
                 href={classHref(classGroup.id)}
-                className="group flex items-center justify-between gap-4 px-4 py-4 outline-none transition-colors hover:bg-muted/40 focus-visible:bg-muted/40 sm:px-5"
+                className="group flex min-h-14 items-center justify-between gap-4 px-4 py-3 outline-none transition-colors hover:bg-muted/40 focus-visible:bg-muted/40 sm:px-5"
               >
                 <span className="min-w-0">
-                  <span className="block break-words font-sans text-base font-semibold leading-snug text-foreground [overflow-wrap:anywhere]">
+                  <span className="block break-words font-sans text-sm font-semibold leading-snug text-foreground [overflow-wrap:anywhere]">
                     {classGroup.name}
                   </span>
                   <span className="mt-0.5 block text-xs text-muted-foreground">
@@ -224,7 +224,7 @@ function ArchivedClassesView({
           No archived classes yet.
         </p>
       ) : (
-        <ul className="overflow-hidden rounded-card border border-border bg-card/60">
+        <ul className="overflow-hidden rounded-lg border border-border bg-card/60">
           {archivedClasses.map((classGroup) => (
             <li
               key={classGroup.id}
@@ -348,30 +348,27 @@ export default async function RosterPage({ searchParams }: RosterPageProps) {
         : "Create a class and add one student before capture.";
 
   return (
-    <div className="mx-auto w-full max-w-[880px] px-4 py-7 sm:px-6">
-      <header className="mb-6 flex flex-wrap items-end justify-between gap-x-8 gap-y-4">
+    <div className="mx-auto w-full max-w-[1100px] px-3 py-4 sm:px-5 sm:py-5">
+      <header className="mb-4 flex flex-wrap items-end justify-between gap-x-8 gap-y-3 border-b border-border pb-4">
         <div className="min-w-0">
-          <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            Roster
-          </p>
-          <h1 className="break-words font-sans text-3xl font-semibold tracking-tight text-foreground [overflow-wrap:anywhere]">
+          <h1 className="break-words font-sans text-lg font-semibold tracking-tight text-foreground [overflow-wrap:anywhere]">
             {selectedClass
               ? selectedClass.name
               : view === "archived"
                 ? "Archived classes"
                 : "Students by class"}
           </h1>
-          <p className="mt-2 max-w-prose text-sm leading-relaxed text-muted-foreground">
+          <p className="mt-1 max-w-prose text-xs leading-relaxed text-muted-foreground">
             Add and manage students inside each class. Your roster is private
             to your ClassTrace workspace.
           </p>
         </div>
         {isOverview ? (
-          <div className="pb-1">
+          <div>
             {readyForCapture ? (
               <Link
                 href={routes.feed}
-                className="inline-flex min-h-10 items-center gap-1.5 rounded-lg text-sm font-medium text-primary underline-offset-4 outline-none transition-colors hover:underline focus-visible:ring-3 focus-visible:ring-ring/30"
+                className="inline-flex min-h-9 items-center gap-1.5 rounded-md px-2 text-sm font-medium text-link outline-none transition-colors hover:bg-muted/50 focus-visible:ring-3 focus-visible:ring-ring/30"
               >
                 {classReadiness.activeStudentCount}{" "}
                 {classReadiness.activeStudentCount === 1
@@ -412,7 +409,7 @@ export default async function RosterPage({ searchParams }: RosterPageProps) {
           </Button>
         </div>
       ) : (
-        <div className="space-y-8">
+        <div className="space-y-6">
           <ClassOverview
             activeClasses={activeClasses}
             activeStudents={activeStudents}
@@ -424,7 +421,7 @@ export default async function RosterPage({ searchParams }: RosterPageProps) {
                 title="Needs class"
                 description="Assign these students to an active class before capture is ready."
               />
-              <ul className="overflow-hidden rounded-card border border-border bg-card/60">
+              <ul className="overflow-hidden rounded-lg border border-border bg-card/60">
                 {unassignedStudents.map((student) => (
                   <RosterStudentRow
                     key={student.id}
@@ -442,7 +439,7 @@ export default async function RosterPage({ searchParams }: RosterPageProps) {
                 title="Archived students"
                 description="Restore a student when they return. Their saved evidence stays attached to the same record."
               />
-              <ul className="overflow-hidden rounded-card border border-border bg-card/60">
+              <ul className="overflow-hidden rounded-lg border border-border bg-card/60">
                 {archivedStudents.map((student) => (
                   <ArchivedStudentRow
                     key={student.id}

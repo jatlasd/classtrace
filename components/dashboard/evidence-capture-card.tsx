@@ -155,15 +155,15 @@ function CaptureIcon({
 }) {
   if (status === "validated") {
     return (
-      <span className="flex size-11 items-center justify-center rounded-lg border border-validated/50 bg-validated/35 text-validated-foreground">
-        <CheckCircle2 className="size-5" strokeWidth={1.75} />
+      <span className="flex size-9 items-center justify-center rounded-md border border-validated/50 bg-validated/35 text-validated-foreground">
+        <CheckCircle2 className="size-4" strokeWidth={1.75} />
       </span>
     );
   }
 
   return (
-    <span className="flex size-11 items-center justify-center rounded-lg border border-accent/40 bg-accent/15 text-primary">
-      <ClipboardCheck className="size-5" strokeWidth={1.75} />
+    <span className="flex size-9 items-center justify-center rounded-md border border-accent/40 bg-accent/15 text-primary">
+      <ClipboardCheck className="size-4" strokeWidth={1.75} />
     </span>
   );
 }
@@ -338,11 +338,11 @@ export function EvidenceCaptureCard({
 
   return (
     <article className="border-b border-border last:border-b-0">
-      <div className="grid gap-4 px-4 py-5 sm:grid-cols-[48px_minmax(0,1fr)] md:px-6">
+      <div className="grid gap-3 px-3 py-3 sm:grid-cols-[2.25rem_minmax(0,1fr)] sm:px-4">
         <CaptureIcon status={display.validationStatus} />
 
         <div className="min-w-0">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
             <div className="flex flex-wrap items-center gap-2">
               <StatusPill
                 status={display.validationStatus}
@@ -501,7 +501,7 @@ export function EvidenceCaptureCard({
           ) : null}
 
           {!isEditing && !reviewOpen ? (
-            <div className="mt-4 space-y-3">
+            <div className="mt-2.5 space-y-2.5">
               {draft.parsed.rawNote.trim() ? (
                 <NoteContent text={draft.parsed.rawNote} />
               ) : (
@@ -573,7 +573,7 @@ export function EvidenceCaptureCard({
               ) : null}
 
               {isPending ? (
-                <div className="border-t border-border/50 pt-3">
+                <div className="border-t border-border/50 pt-2.5">
                   <Button
                     type="button"
                     size="sm"

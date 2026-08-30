@@ -63,11 +63,11 @@ Files: `app/app/layout.tsx`,
 `components/dashboard/app-navigation.ts`, and
 `components/layout/site-footer.tsx`
 
-Last updated: 2026-08-28
+Last updated: 2026-08-30
 
 | Property | Pattern |
 |---|---|
-| Desktop frame | Fixed `232px` `bg-sidebar` sidebar plus 56px `bg-card/95` route header |
+| Desktop frame | Fixed `w-52` `bg-sidebar` sidebar plus 56px `bg-card/95` route header |
 | Mobile frame | Sticky minimum-64px `bg-sidebar` header with safe-area padding |
 | Drawer | Left panel capped at `340px`, `bg-sidebar`, `border-sidebar-border`, `shadow-floating` |
 | Primary navigation | Capture, Students, Settings only; 44px desktop and 48px mobile rows |
@@ -75,12 +75,17 @@ Last updated: 2026-08-28
 | Inactive state | `text-sidebar-foreground/78` with tonal sidebar hover |
 | Focus | 3px `sidebar-ring/50` ring on inverse controls and links |
 | Motion | Short drawer translation/backdrop fade only when reduced motion is not requested |
-| Workspace offset | `lg:pl-[232px] lg:pt-14`; reset for report printing |
+| Workspace offset | `lg:pl-52 lg:pt-14`; reset for report printing |
 
 - Desktop account/sign-out stays at the bottom of the sidebar. Mobile sign-out
   and the existing trust/support links stay in the drawer's bottom region.
 - Student timelines and reports activate Students but remain contextual routes;
   they are not global navigation items.
+- The feed route header pairs **Feed** with the quiet **All evidence** context
+  label. It does not add fake global search, notifications, or settings controls.
+- Other authenticated route headers use the same quiet context slot: **All
+  classes** for Students, **Account** for Settings, **Evidence** for a student
+  timeline, and **Printable evidence** for a report.
 - The mobile header names the current route beside the compact inverse brand
   lockup. The modal drawer contains focus, closes from Escape or backdrop,
   restores trigger focus, and locks body scrolling while open.
@@ -154,11 +159,11 @@ the panel.
 
 File: `components/settings/help-feedback-form.tsx`
 
-Last updated: 2026-08-27
+Last updated: 2026-08-30
 
 | Property | Pattern |
 |---|---|
-| Section surface | Single working surface: `rounded-card border border-border bg-card shadow-paper` |
+| Section surface | Main working surface: `rounded-lg border border-border bg-card shadow-surface` |
 | Section heading | `font-sans text-lg font-semibold text-foreground` |
 | Fields | Shared 40 px roster input treatment and `Textarea`; semantic invalid border/ring |
 | Labels | `text-sm font-medium text-foreground` |
@@ -167,7 +172,7 @@ Last updated: 2026-08-27
 | Form status | Full border with semantic destructive/validated tint; error receives focus |
 | Attached reference | `border-y border-border/70`; selectable monospace value; non-editable |
 | Submit action | Shared primary `Button`, 40 px high, pending label uses an ellipsis |
-| Spacing | `space-y-5`; paired short fields stack below `sm` |
+| Spacing | `space-y-4`; paired short fields stack below `sm` |
 
 The form keeps diagnostic metadata out of editable controls. Validation and
 delivery failures preserve teacher-entered values, while success clears only
@@ -176,13 +181,20 @@ broke** and attach one validated reference; successful delivery removes it from
 state and the URL. Use this status/focus pattern for future Settings forms that
 submit to a Server Action.
 
+At `xl`, Settings uses one main feedback surface beside a `19rem` context rail.
+The rail contains real account/workspace details, trust links, and sign-out in
+compact ruled sections. Below `xl`, the rail follows the form. Do not turn these
+details into metrics, tabs, or a settings card grid.
+
 ## Quick capture
 
 File: `components/dashboard/quick-capture-card.tsx`
 
-- `rounded-card border border-border bg-card shadow-paper`.
-- “What happened?” is the visual anchor using `font-sans text-xl font-semibold`; it remains a working field label rather than a display-font identity moment.
-- The active surface uses `px-5 py-5`, widening to `px-6 py-6`; its footer keeps the same horizontal alignment and uses a quiet `bg-muted/15` tint.
+- `rounded-card border border-border bg-card shadow-surface`, spanning the main
+  feed column above the evidence ledger.
+- “What happened?” remains a visible `text-sm font-semibold` working label.
+- The active surface uses compact `px-4`/`px-5` horizontal rhythm, a 42px
+  writing area, and a ruled `bg-muted/20` action footer.
 - The header states the review-before-save boundary once; compact composer
   guidance explains `@` student mentions and `#tags` without repeating it as
   decorative hint controls.
@@ -190,12 +202,33 @@ File: `components/dashboard/quick-capture-card.tsx`
 - The textarea and mention-highlighter layers share the same font metrics,
   padding, border, wrapping, and box sizing. Mention emphasis uses a tonal
   background without changing glyph weight or spacing.
-- Footer is the single live guidance line: it shows the quiet draft/keyboard
-  hint when empty, then swaps in student-resolution feedback beside the clear
-  Capture action.
+- The footer keeps photo controls and the Capture action on one desktop line.
+  Its live guidance becomes visible when student resolution needs feedback;
+  the default draft boundary remains available to assistive technology.
 - After the workspace's first successful save, one inline success panel links to the student's timeline/report and can return focus to this composer.
 - Do not turn capture into a multi-field form.
 - A selected photo is previewed in the capture surface with Replace and Remove controls, visible local-only guidance, and a written processing state.
+
+## Evidence feed composition
+
+Files: `components/dashboard/evidence-feed.tsx`,
+`components/dashboard/evidence-feed-header.tsx`, and
+`components/dashboard/saved-evidence-row.tsx`
+
+Last updated: 2026-08-30
+
+- The feed page uses a dense responsive workspace. At `xl`, the main
+  capture-and-ledger column sits beside a `16.5rem` real-data context rail;
+  below `xl`, capture and the ledger remain the only visible column.
+- The inbox owns its heading, count/order metadata, search, and filters in one
+  ruled header. It remains a single ledger rather than a collection of cards.
+- Saved rows use the compact evidence-content density, keep validation implicit,
+  and prioritize date, student, class, evidence, tags, and explicit actions.
+  At `lg`, actions align with row metadata and real evidence photos occupy a
+  compact right-hand thumbnail slot. Draft rows carry explicit review state.
+- The desktop context rail uses active roster links, functional recent-tag
+  filters, and the current draft count with the three save boundaries. It does
+  not introduce metrics, alerts, follow-up queues, or unsupported features.
 
 ## Capture review
 
@@ -360,9 +393,11 @@ Files: `components/dashboard/saved-evidence-row.tsx`, `components/students/stude
   inline confirmations; archive precedes permanent delete.
 - Timeline and report headers label class context explicitly (`Class …`) rather
   than relying on slash-separated metadata.
-- Timeline/report entries use a restrained bordered surface at the full reading
-  width; they do not sit beside a duplicate explanatory card. Report entries
-  avoid print splitting.
+- Timeline/report pages use compact `1100px`/`1180px` work areas and a shallow
+  identity header. Entries share one bordered ledger with row dividers, a fixed
+  date column from `sm`, compact evidence content, and an explicit validated
+  chip. On mobile, the date and validated state sit above the evidence. Report
+  entries avoid print splitting.
 - Evidence-list, report-filter, student-name, and report-title headings resolve
   to the shared sans hierarchy.
 
@@ -386,13 +421,13 @@ Files: `app/app/roster/page.tsx`,
 `components/roster/manual-student-entry-form.tsx`,
 `components/roster/roster-student-row.tsx`
 
-Last updated: 2026-08-27
+Last updated: 2026-08-30
 
-- Roster is a single ~880px column. Classes and students render as
-  `rounded-card` ledgers with row dividers; section labels are small caps with
-  a count on the trailing edge.
-- The page uses `py-7`, a `mb-6` header boundary, and `space-y-8` between
-  overview ledgers to match the authenticated reading-page rhythm.
+- Roster is a single `1100px` work area. Classes and students render as
+  `rounded-lg` ledgers with row dividers; section labels use compact sentence
+  case with a count on the trailing edge.
+- The page uses compact `py-4`/`py-5`, a shallow `mb-4` header boundary, and
+  `space-y-6` between overview ledgers to match the evidence workspace density.
 - Ordinary class and student ledgers are border-first and have no shadow.
   Elevation remains only on the active first-class/first-student setup surface.
 - On the overview each class row is one whole-row link (name, student count,

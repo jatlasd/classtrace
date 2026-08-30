@@ -31,6 +31,19 @@ export function AppShellNavigation() {
     }
   }
 
+  const routeContext =
+    pathname === routes.feed
+      ? "All evidence"
+      : pathname === routes.roster
+        ? "All classes"
+        : pathname === routes.settings
+          ? "Account"
+          : pathname.endsWith("/report")
+            ? "Printable evidence"
+            : pathname.startsWith(`${routes.studentsPrefix}/`)
+              ? "Evidence"
+              : null;
+
   return (
     <div className="app-shell-navigation">
       <DesktopAppSidebar
@@ -43,10 +56,15 @@ export function AppShellNavigation() {
         isSigningOut={isSigningOut}
         onSignOut={() => void handleSignOut()}
       />
-      <header className="app-shell-route-header fixed left-[232px] right-0 top-0 z-40 hidden h-14 items-center border-b border-border bg-card/95 px-6 backdrop-blur lg:flex">
+      <header className="app-shell-route-header fixed left-52 right-0 top-0 z-40 hidden h-14 items-center border-b border-border bg-card/95 px-5 backdrop-blur lg:flex">
         <p className="text-sm font-semibold text-foreground">
           {getAppRouteLabel(pathname)}
         </p>
+        {routeContext ? (
+          <p className="ml-4 border-l border-border pl-4 text-sm font-medium text-muted-foreground">
+            {routeContext}
+          </p>
+        ) : null}
       </header>
     </div>
   );

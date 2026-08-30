@@ -15,12 +15,12 @@ export default async function AppLayout({
       <div className="authenticated-app flex min-h-dvh flex-col bg-background">
         <a
           href="#main-content"
-          className="fixed left-4 top-3 z-[90] -translate-y-20 rounded-md bg-foreground px-3 py-2 text-sm font-semibold text-background transition-transform focus:translate-y-0 lg:left-[248px]"
+          className="fixed left-4 top-3 z-[90] -translate-y-20 rounded-md bg-foreground px-3 py-2 text-sm font-semibold text-background transition-transform focus:translate-y-0 lg:left-56"
         >
           Skip to main content
         </a>
         <AppShellNavigation />
-        <div className="app-shell-workspace flex min-h-0 flex-1 flex-col lg:pl-[232px] lg:pt-14">
+        <div className="app-shell-workspace flex min-h-0 flex-1 flex-col lg:pl-52 lg:pt-14">
           <main
             id="main-content"
             tabIndex={-1}

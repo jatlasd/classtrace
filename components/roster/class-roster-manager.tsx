@@ -22,7 +22,7 @@ type ClassRosterManagerProps = {
 };
 
 const UTILITY_SUMMARY_CLASS_NAME =
-  "flex min-h-12 cursor-pointer list-none items-center gap-2 py-2 text-sm font-medium text-foreground outline-none transition-colors hover:text-primary focus-visible:ring-3 focus-visible:ring-ring/20 [&::-webkit-details-marker]:hidden";
+  "flex min-h-11 cursor-pointer list-none items-center gap-2 py-2 text-sm font-medium text-foreground outline-none transition-colors hover:text-primary focus-visible:ring-3 focus-visible:ring-ring/20 [&::-webkit-details-marker]:hidden";
 
 export function ClassRosterManager({
   classGroupId,
@@ -51,10 +51,10 @@ export function ClassRosterManager({
   }
 
   return (
-    <div className="space-y-7">
+    <div className="space-y-5">
       <section className="space-y-2.5">
         <div className="flex items-baseline justify-between gap-3 px-1">
-          <h2 className="font-sans text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          <h2 className="font-sans text-sm font-semibold text-foreground">
             Students
           </h2>
           <p className="text-xs tabular-nums text-muted-foreground">
@@ -63,7 +63,7 @@ export function ClassRosterManager({
         </div>
 
         {students.length === 0 ? (
-          <div className="rounded-card border border-border bg-card p-5 shadow-paper sm:p-6">
+          <div className="rounded-lg border border-border bg-card p-4 sm:p-5">
             <p className="font-medium text-foreground">
               No students in this class yet.
             </p>
@@ -82,7 +82,7 @@ export function ClassRosterManager({
           </div>
         ) : (
           <ul
-            className="overflow-hidden rounded-card border border-border bg-card/60"
+            className="overflow-hidden rounded-lg border border-border bg-card"
             aria-label={`${students.length} ${
               students.length === 1 ? "student" : "students"
             } in ${className}`}

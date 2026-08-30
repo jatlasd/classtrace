@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { ReactElement } from "react";
-import { Circle, Clock3 } from "lucide-react";
+import { Check, Clock3 } from "lucide-react";
 import { EvidenceRecordContent } from "@/components/evidence/evidence-record-content";
 import { StudentEvidenceExportAction } from "@/components/students/student-evidence-export-action";
 import { Button } from "@/components/ui/button";
@@ -88,8 +88,8 @@ function StudentProfileHeader({
   ].filter(Boolean);
 
   return (
-    <header className="mb-6 border-b border-border pb-6">
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+    <header className="mb-4 border-b border-border pb-4">
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
         <Button asChild variant="ghost" size="sm" className="-ml-2">
           <Link href={routes.roster}>Back to roster</Link>
         </Button>
@@ -103,22 +103,19 @@ function StudentProfileHeader({
         </div>
       </div>
 
-      <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex min-w-0 items-start gap-4">
-          <div className="flex size-14 shrink-0 items-center justify-center rounded-md border border-border bg-muted/50 text-sm font-bold text-foreground">
+          <div className="flex size-10 shrink-0 items-center justify-center rounded-md border border-border bg-muted/50 text-xs font-bold text-foreground">
             {studentInitials(student.displayName)}
           </div>
           <div className="min-w-0">
-            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              Student timeline
-            </p>
-            <h1 className="mt-2 font-sans text-2xl font-semibold tracking-tight text-foreground">
+            <h1 className="font-sans text-lg font-semibold tracking-tight text-foreground">
               {student.displayName}
             </h1>
-            <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground">
+            <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
               <span>@{student.mentionHandle}</span>
               {metadata.map((item) => (
-                <span key={item} className="border-l border-border pl-3">
+                <span key={item} className="border-l border-border pl-2">
                   {item}
                 </span>
               ))}
@@ -126,8 +123,8 @@ function StudentProfileHeader({
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-3 sm:justify-end">
-          <p className="text-sm text-muted-foreground">
+        <div className="flex flex-wrap items-center gap-2 sm:justify-end">
+          <p className="mr-1 text-xs text-muted-foreground">
             <span className="font-semibold tabular-nums text-foreground">
               {evidenceCount}
             </span>{" "}
@@ -148,29 +145,28 @@ function StudentTimelineEvidenceItem({
   record,
 }: StudentTimelineEvidenceItemProps) {
   return (
-    <li className="relative pl-8">
-      <span
-        className="absolute left-0 top-5 flex size-4 items-center justify-center rounded-full border border-validated/60 bg-validated"
-        aria-hidden="true"
-      >
-        <span className="size-1.5 rounded-full bg-validated-foreground" />
-      </span>
-      <article className="rounded-lg border border-border bg-card p-4">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-          <div>
-            <p className="text-sm font-medium text-foreground">
-              {formatTimelineDate(record.evidenceDate)}
-            </p>
-            <EvidenceRecordContent
-              record={record}
-              showStructuredSummary={false}
-            />
-          </div>
-          <span className="inline-flex w-fit items-center gap-2 rounded-lg border border-validated/60 bg-validated/35 px-2.5 py-1 text-xs font-semibold text-validated-foreground">
-            <Circle className="size-2 fill-current" />
+    <li className="border-b border-border last:border-b-0">
+      <article className="grid gap-3 px-4 py-3 sm:grid-cols-[8.5rem_minmax(0,1fr)_auto] sm:px-5">
+        <div className="flex items-start justify-between gap-3 sm:block">
+          <p className="text-xs font-medium tabular-nums text-muted-foreground">
+            {formatTimelineDate(record.evidenceDate)}
+          </p>
+          <span className="inline-flex w-fit items-center gap-1.5 rounded-md border border-validated/60 bg-validated/35 px-2 py-0.5 text-[11px] font-semibold text-validated-foreground sm:hidden">
+            <Check className="size-3" aria-hidden="true" />
             Validated
           </span>
         </div>
+        <div className="min-w-0">
+          <EvidenceRecordContent
+            record={record}
+            showStructuredSummary={false}
+            compact
+          />
+        </div>
+        <span className="hidden w-fit items-center gap-1.5 self-start rounded-md border border-validated/60 bg-validated/35 px-2 py-0.5 text-[11px] font-semibold text-validated-foreground sm:inline-flex">
+          <Check className="size-3" aria-hidden="true" />
+          Validated
+        </span>
       </article>
     </li>
   );
@@ -201,15 +197,15 @@ function StudentTimelineEmptyState({
 function StudentTimeline({ student, records }: StudentTimelineProps) {
   return (
     <section aria-labelledby="student-evidence-heading">
-      <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
+      <div className="mb-2 flex flex-wrap items-end justify-between gap-3 px-1">
         <div>
           <h2
             id="student-evidence-heading"
-            className="font-sans text-xl font-semibold text-foreground"
+            className="font-sans text-sm font-semibold text-foreground"
           >
             Evidence
           </h2>
-          <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+          <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">
             Newest evidence appears first.
           </p>
         </div>
@@ -218,7 +214,7 @@ function StudentTimeline({ student, records }: StudentTimelineProps) {
         {records.length === 0 ? (
           <StudentTimelineEmptyState student={student} />
         ) : (
-          <ol className="space-y-4 border-l border-border">
+          <ol className="overflow-hidden rounded-lg border border-border bg-card">
             {records.map((record) => (
               <StudentTimelineEvidenceItem key={record.id} record={record} />
             ))}
@@ -234,7 +230,7 @@ export function StudentTimelinePage({
   evidenceRecords,
 }: StudentTimelinePageProps): ReactElement {
   return (
-    <div className="mx-auto w-full max-w-[980px] px-4 py-7 sm:px-6 lg:px-8">
+    <div className="mx-auto w-full max-w-[1100px] px-3 py-4 sm:px-5 sm:py-5">
       <StudentProfileHeader
         student={student}
         evidenceCount={evidenceRecords.length}

@@ -102,13 +102,13 @@ export function StudentReportDateRangeForm({
   }
 
   return (
-    <section className="student-report-screen-only mb-5 rounded-lg border border-border bg-card/60 p-4 sm:p-5">
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+    <section className="student-report-screen-only mb-4 rounded-lg border border-border bg-card px-4 py-3 sm:px-5">
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
         <div className="min-w-0">
-          <h2 className="font-sans text-lg font-semibold text-foreground">
+          <h2 className="font-sans text-sm font-semibold text-foreground">
             Date range
           </h2>
-          <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+          <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">
             Leave dates blank to include all stored evidence for this student.
           </p>
         </div>

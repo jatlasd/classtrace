@@ -19,7 +19,7 @@ export function DesktopAppSidebar({
   pathname,
 }: DesktopAppSidebarProps) {
   return (
-    <aside className="app-shell-sidebar fixed inset-y-0 left-0 z-50 hidden w-[232px] flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground lg:flex">
+    <aside className="app-shell-sidebar fixed inset-y-0 left-0 z-50 hidden w-52 flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground lg:flex">
       <div className="flex h-16 items-center border-b border-sidebar-border px-5">
         <Link
           href={routes.feed}
