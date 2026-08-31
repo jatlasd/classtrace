@@ -68,7 +68,7 @@ function WorkflowPreview({ kind }: { kind: PreviewKind }) {
               </p>
               <div className="mt-3 flex items-center justify-between gap-3">
                 <span className="flex items-center gap-1.5 text-[9px] text-muted-foreground"><Camera className="size-3" /> Add one photo</span>
-                <span className="rounded-md bg-navy px-3 py-2 text-[9px] font-semibold text-navy-foreground">Capture note</span>
+                <span className="rounded-md bg-primary px-3 py-2 text-[9px] font-semibold text-primary-foreground">Capture note</span>
               </div>
             </div>
           </div>
@@ -99,7 +99,7 @@ function WorkflowPreview({ kind }: { kind: PreviewKind }) {
             </div>
             <div className="flex items-center justify-between border-t border-border bg-muted/20 px-4 py-3">
               <span className="flex items-center gap-1.5 text-[8px] text-muted-foreground"><CheckCircle2 className="size-3 text-validated-foreground" /> You approve the final record</span>
-              <span className="rounded-md bg-navy px-3 py-2 text-[9px] font-semibold text-navy-foreground">Save evidence</span>
+              <span className="rounded-md bg-primary px-3 py-2 text-[9px] font-semibold text-primary-foreground">Save evidence</span>
             </div>
           </div>
         </div>
@@ -132,14 +132,13 @@ function WorkflowPreview({ kind }: { kind: PreviewKind }) {
 
 export function LandingHowItWorks() {
   return (
-    <section id="how-it-works" className="scroll-mt-20 bg-card">
+    <section id="how-it-works" aria-labelledby="how-it-works-heading" className="scroll-mt-20 border-b border-border/70 bg-card">
       <div className="mx-auto max-w-[1180px] px-4 py-12 md:px-6 lg:px-8 lg:py-16">
-        <div className="text-center">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-link">How it works</p>
-          <h2 className="mt-2 text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+        <div className="mx-auto max-w-2xl text-center">
+          <h2 id="how-it-works-heading" className="text-3xl font-bold tracking-[-0.03em] text-balance text-foreground sm:text-[2.5rem]">
             One path from “I should remember that” to a useful record
           </h2>
-          <p className="mx-auto mt-3 max-w-2xl text-[15px] leading-7 text-muted-foreground">
+          <p className="mx-auto mt-4 max-w-2xl text-[15px] leading-7 text-pretty text-muted-foreground">
             ClassTrace separates quick capture from permanent evidence, so speed
             never replaces teacher review.
           </p>
@@ -148,12 +147,12 @@ export function LandingHowItWorks() {
           {steps.map((step, index) => (
             <li key={step.title} className="grid items-center gap-8 lg:grid-cols-2 lg:gap-14">
               <div className={cn("max-w-lg", index % 2 === 1 && "lg:order-2")}>
-                <p className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-link">
-                  <span className="flex size-6 items-center justify-center rounded-full bg-accent text-[10px]">{index + 1}</span>
+                <p className="flex items-center gap-3 text-sm font-semibold text-primary">
+                  <span className="flex size-7 items-center justify-center rounded-full border border-primary text-xs tabular-nums">{index + 1}</span>
                   {step.eyebrow}
                 </p>
-                <h3 className="mt-3 text-2xl font-bold leading-tight tracking-tight text-foreground sm:text-[2rem]">{step.title}</h3>
-                <p className="mt-4 text-[15px] leading-7 text-muted-foreground">{step.body}</p>
+                <h3 className="mt-4 text-2xl font-bold leading-tight tracking-[-0.025em] text-balance text-foreground sm:text-[2rem]">{step.title}</h3>
+                <p className="mt-4 text-[15px] leading-7 text-pretty text-muted-foreground">{step.body}</p>
                 <ul className="mt-5 space-y-2.5">
                   {step.points.map((point) => (
                     <li key={point} className="flex items-center gap-2.5 text-sm font-medium text-foreground">

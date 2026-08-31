@@ -6,22 +6,22 @@ import {
 
 export function LandingResponsive() {
   return (
-    <section className="bg-card px-4 py-10 md:px-6 lg:px-8 lg:py-12">
-      <div className="mx-auto grid max-w-[1280px] items-center gap-8 overflow-hidden rounded-card border border-border bg-accent/55 px-6 py-8 sm:px-8 lg:grid-cols-[0.66fr_1.34fr] lg:gap-10 lg:px-12 lg:py-10">
+    <section aria-labelledby="responsive-heading" className="overflow-hidden border-b border-sidebar-border bg-navy px-4 py-14 text-navy-foreground md:px-6 lg:px-8 lg:py-16">
+      <div className="mx-auto grid max-w-[1280px] items-center gap-10 lg:grid-cols-[0.66fr_1.34fr] lg:gap-14">
         <div className="max-w-sm">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-link">One responsive workspace</p>
-          <h2 className="mt-2 text-2xl font-bold leading-tight tracking-tight text-foreground">
+          <p className="text-sm font-semibold text-sidebar-ring">One responsive workspace</p>
+          <h2 id="responsive-heading" className="mt-4 text-3xl font-bold leading-tight tracking-[-0.03em] text-balance text-navy-foreground">
             Capture between classes. Review wherever you settle in.
           </h2>
-          <p className="mt-3 text-sm leading-6 text-muted-foreground">
+          <p className="mt-4 text-sm leading-7 text-pretty text-navy-foreground/70">
             ClassTrace adapts from phone to desktop without changing the evidence workflow or adding another app to manage.
           </p>
-          <ul className="mt-5 space-y-2 text-xs font-medium text-foreground">
+          <ul className="mt-6 space-y-3 text-xs font-medium text-navy-foreground">
             <li className="flex items-center gap-2">
-              <Smartphone aria-hidden="true" className="size-4 text-link" /> Responsive capture and review
+              <Smartphone aria-hidden="true" className="size-4 text-sidebar-ring" /> Responsive capture and review
             </li>
             <li className="flex items-center gap-2">
-              <MonitorCheck aria-hidden="true" className="size-4 text-link" /> Full feed, timelines, and reports on desktop
+              <MonitorCheck aria-hidden="true" className="size-4 text-sidebar-ring" /> Full feed, timelines, and reports on desktop
             </li>
           </ul>
         </div>

@@ -86,7 +86,7 @@ export function LandingProductPreview({
     >
       <div className="flex h-9 items-center justify-between border-b border-border bg-card px-3">
         <div className="flex items-center gap-2 text-[10px] font-bold text-foreground">
-          <span className="flex size-4 items-center justify-center rounded-sm bg-link text-[8px] text-primary-foreground">
+          <span className="flex size-4 items-center justify-center rounded-sm bg-primary text-[8px] text-primary-foreground">
             CT
           </span>
           ClassTrace
@@ -147,7 +147,7 @@ export function LandingProductPreview({
                 <span className="text-[8px] text-muted-foreground">
                   Ready to capture for Stacy.
                 </span>
-                <span className="rounded-md bg-navy px-2.5 py-1.5 text-[8px] font-semibold text-navy-foreground">
+                <span className="rounded-md bg-primary px-2.5 py-1.5 text-[8px] font-semibold text-primary-foreground">
                   Capture note
                 </span>
               </div>
@@ -193,7 +193,7 @@ export function LandingMobilePreview() {
             <span className="font-semibold text-link">@stacy</span> used her calm-down strategy independently.
           </p>
           <div className="mt-2 flex justify-end">
-            <span className="rounded-md bg-navy px-2 py-1 text-[8px] font-semibold text-navy-foreground">Capture</span>
+            <span className="rounded-md bg-primary px-2 py-1 text-[8px] font-semibold text-primary-foreground">Capture</span>
           </div>
         </div>
         <div className="mt-3 overflow-hidden rounded-md border border-border bg-card">

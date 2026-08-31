@@ -6,29 +6,27 @@ import { routes } from "@/lib/routes";
 
 export function LandingHero() {
   return (
-    <section className="border-b border-border/70 bg-card">
-      <div className="mx-auto grid max-w-[1360px] items-center gap-10 px-4 py-12 md:px-6 lg:grid-cols-[0.78fr_1.22fr] lg:gap-10 lg:px-8 lg:py-16 xl:grid-cols-[0.72fr_1.28fr]">
+    <section className="border-b border-sidebar-border bg-navy text-navy-foreground">
+      <div className="mx-auto grid max-w-[1360px] items-center gap-12 px-4 py-14 md:px-6 lg:grid-cols-[0.78fr_1.22fr] lg:gap-12 lg:px-8 lg:py-20 xl:grid-cols-[0.72fr_1.28fr]">
         <div className="max-w-xl">
-          <p className="inline-flex rounded-full bg-accent px-3 py-1 text-[11px] font-semibold text-link">
+          <p className="text-sm font-semibold text-navy-foreground/68">
             Student evidence capture for teachers
           </p>
-          <h1 className="mt-5 text-[2.65rem] font-bold leading-[1.04] tracking-[-0.045em] text-foreground sm:text-5xl lg:text-[3.25rem]">
-            Turn classroom moments into{" "}
-            <span className="text-link">evidence you can use.</span>
+          <h1 className="mt-5 text-[2.75rem] font-bold leading-[1.03] tracking-[-0.04em] text-balance text-navy-foreground sm:text-[3.4rem] lg:text-[3.85rem]">
+            Turn classroom moments into evidence you can use.
           </h1>
-          <p className="mt-5 max-w-lg text-[15px] leading-7 text-muted-foreground">
+          <p className="mt-6 max-w-lg text-[15px] leading-7 text-pretty text-navy-foreground/72">
             Capture a quick observation or work-sample photo, review the record,
             and keep it organized under the right student for timelines,
             reports, and exports.
           </p>
-          <p className="mt-3 max-w-lg text-sm font-medium leading-6 text-foreground">
+          <p className="mt-4 max-w-lg text-sm font-medium leading-6 text-navy-foreground">
             ClassTrace is currently an invitation-only beta for individual
             teachers.
           </p>
           <div className="mt-7 flex flex-wrap gap-3">
             <Button
               asChild
-              variant="navy"
               className="h-11 px-6 text-sm"
             >
               <Link href={routes.signUp} prefetch={false}>
@@ -39,18 +37,18 @@ export function LandingHero() {
             <Button
               asChild
               variant="outline"
-              className="h-11 px-5 text-sm"
+              className="h-11 border-sidebar-border bg-transparent px-5 text-sm text-navy-foreground hover:bg-sidebar-accent hover:text-navy-foreground"
             >
               <Link href="#how-it-works">
-                <PlayCircle aria-hidden="true" className="size-4 text-link" />
+                <PlayCircle aria-hidden="true" className="size-4 text-navy-foreground/72" />
                 See how it works
               </Link>
             </Button>
           </div>
-          <p className="mt-4 flex items-center gap-2 text-xs text-muted-foreground">
+          <p className="mt-5 flex items-center gap-2 text-xs text-navy-foreground/64">
             <CheckCircle2
               aria-hidden="true"
-              className="size-3.5 text-validated-foreground"
+              className="size-3.5 text-sidebar-ring"
             />
             Teacher-reviewed · One student per saved record
           </p>

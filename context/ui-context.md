@@ -14,11 +14,11 @@ Priority order:
 
 ## Visual language
 
-- Public and authenticated routes share one cool near-white canvas, white work surfaces, charcoal/navy ink, and cool gray borders and secondary text.
-- Deep navy is reserved for the application shell, primary actions, and strongest emphasis. Clear medium blue is reserved for links, focus, and selected state rather than becoming a second primary action system.
+- Public and authenticated routes share one chalk-neutral, deep-ink, rust, mineral-blue, and sage semantic palette. Public pages use the colors more compositionally; authenticated routes keep them restrained around the teacher's work.
+- Deep ink is reserved for the authenticated application shell and the landing page's committed hero/showcase fields. Rust is reserved for capture, primary actions, focus, and rare current-state emphasis. Mineral blue is reserved for links and product organization rather than general decoration.
 - Muted evergreen indicates validated evidence; brick remains reserved for destructive state.
 - Inter is the sole user-facing type family. Weight, size, spacing, and color create identity and page hierarchy.
-- Borders and tonal separation do most layout work. Shadows are tight, cool, and reserved for genuinely floating or focused surfaces.
+- Borders and tonal separation do most layout work. Shadows are tight, palette-tinted, and reserved for genuinely floating or focused surfaces.
 - Corners are modest (`rounded-md`, `rounded-card`); pills are for chips/status only.
 - The shared brand lockup remains text-only until the user supplies the final mark. Do not invent a temporary symbol.
 
@@ -93,4 +93,4 @@ Do not use AI, insights, intelligence, compliance, district-approved, case-manag
 - No new one-off chip, evidence, form, or button vocabulary when a shared pattern exists.
 - No placeholder controls for future features.
 
-The public landing page may use more generous composition than the app, but it shares the same crisp blue, navy, white, and sans foundation. It must remain truthful about product behavior, reduced-motion safe, and free of decorative texture requests.
+The public landing page may use more generous composition and committed dark fields than the app, but it remains sans-serif, border-led, and structurally connected to the product. It must remain truthful about product behavior, reduced-motion safe, and free of paper textures, classroom decoration, handwritten elements, doodles, tape, gradients, or scrapbook styling.

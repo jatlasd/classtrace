@@ -30,18 +30,22 @@ const features = [
 
 export function LandingFeatures() {
   return (
-    <section id="features" className="scroll-mt-20 border-y border-border/70 bg-background">
-      <div className="mx-auto max-w-[1180px] px-4 py-11 md:px-6 lg:px-8 lg:py-12">
-        <div className="text-center">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-link">Built for the way you teach</p>
-          <h2 className="mt-2 text-2xl font-bold tracking-tight text-foreground">The record stays useful after the bell</h2>
+    <section id="features" aria-labelledby="features-heading" className="scroll-mt-20 border-y border-border/70 bg-background">
+      <div className="mx-auto grid max-w-[1180px] gap-10 px-4 py-14 md:px-6 lg:grid-cols-[0.72fr_1.28fr] lg:gap-20 lg:px-8 lg:py-20">
+        <div className="max-w-sm">
+          <h2 id="features-heading" className="text-3xl font-bold leading-tight tracking-[-0.03em] text-balance text-foreground">
+            The record stays useful after the bell.
+          </h2>
+          <p className="mt-4 text-[15px] leading-7 text-muted-foreground">
+            The essentials for moving from a quick classroom moment to evidence you can retrieve later.
+          </p>
         </div>
-        <ul className="mt-8 grid overflow-hidden rounded-card border border-border bg-card shadow-surface sm:grid-cols-2 lg:grid-cols-5">
+        <ul className="border-t border-border">
           {features.map((feature) => (
-            <li key={feature.title} className="border-b border-border p-5 last:border-b-0 sm:border-r lg:border-b-0 lg:last:border-r-0">
-              <feature.icon aria-hidden="true" className="size-5 text-link" strokeWidth={1.75} />
-              <h3 className="mt-3 text-xs font-semibold text-foreground">{feature.title}</h3>
-              <p className="mt-1.5 text-[11px] leading-4 text-muted-foreground">{feature.body}</p>
+            <li key={feature.title} className="grid grid-cols-[2rem_1fr] gap-4 border-b border-border py-4 sm:grid-cols-[2rem_0.7fr_1.3fr] sm:items-center sm:gap-5">
+              <feature.icon aria-hidden="true" className="size-5 text-primary" strokeWidth={1.75} />
+              <h3 className="text-sm font-semibold text-foreground">{feature.title}</h3>
+              <p className="col-start-2 text-sm leading-6 text-muted-foreground sm:col-start-3">{feature.body}</p>
             </li>
           ))}
         </ul>
