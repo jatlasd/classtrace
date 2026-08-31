@@ -9,9 +9,11 @@ describe("public landing page", () => {
   const markup = renderToStaticMarkup(<Home />);
 
   it("presents the supported capture-to-retrieval workflow", () => {
-    expect(markup).toContain("Capture student evidence without the");
-    expect(markup).toContain("Review before saving");
-    expect(markup).toContain("Student timelines");
+    expect(markup).toContain("Turn classroom moments into");
+    expect(markup).toContain("The hard part is not noticing");
+    expect(markup).toContain("A ten-second note keeps the context attached");
+    expect(markup).toContain("You approve the record");
+    expect(markup).toContain("Walk in with a record, not a recollection");
     expect(markup).toContain("Reports and export");
     expect(markup).toContain('id="how-it-works"');
     expect(markup).toContain('id="features"');

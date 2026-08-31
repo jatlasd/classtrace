@@ -317,9 +317,10 @@ Last updated: 2026-08-31
 | Accent | Clear blue for links, icons, emphasis, and focus; navy for primary actions and the closing CTA |
 | Spacing | Compact section rhythm (`py-10`–`py-14`) with a larger two-column hero |
 
-- The landing page follows a product-first sequence: navigation, two-column
-  hero and truthful product preview, four benefits, three-step workflow, five
-  capabilities, responsive showcase, and closing invitation CTA.
+- The landing page follows a problem-to-product sequence: navigation, a direct
+  value proposition with truthful product preview, the classroom documentation
+  gap, three alternating capture/review/retrieve stories with focused previews,
+  five supporting capabilities, responsive showcase, and closing invitation CTA.
 - Product previews are decorative but reuse real ClassTrace vocabulary and
   approved fictional names. They do not imply analytics, parent communication,
   native mobile apps, pricing, AI, or other unsupported capabilities.

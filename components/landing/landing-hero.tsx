@@ -10,15 +10,16 @@ export function LandingHero() {
       <div className="mx-auto grid max-w-[1360px] items-center gap-10 px-4 py-12 md:px-6 lg:grid-cols-[0.78fr_1.22fr] lg:gap-10 lg:px-8 lg:py-16 xl:grid-cols-[0.72fr_1.28fr]">
         <div className="max-w-xl">
           <p className="inline-flex rounded-full bg-accent px-3 py-1 text-[11px] font-semibold text-link">
-            For teachers, by a teacher
+            Student evidence capture for teachers
           </p>
           <h1 className="mt-5 text-[2.65rem] font-bold leading-[1.04] tracking-[-0.045em] text-foreground sm:text-5xl lg:text-[3.25rem]">
-            Capture student evidence without the{" "}
-            <span className="text-link">mental filing cabinet.</span>
+            Turn classroom moments into{" "}
+            <span className="text-link">evidence you can use.</span>
           </h1>
           <p className="mt-5 max-w-lg text-[15px] leading-7 text-muted-foreground">
-            Record the classroom moment while it is fresh, review what will be
-            saved, and find trustworthy evidence by student when you need it.
+            Capture a quick observation or work-sample photo, review the record,
+            and keep it organized under the right student for timelines,
+            reports, and exports.
           </p>
           <p className="mt-3 max-w-lg text-sm font-medium leading-6 text-foreground">
             ClassTrace is currently an invitation-only beta for individual
