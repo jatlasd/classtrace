@@ -12,14 +12,8 @@
   --color-link: var(--link);
   --color-validated: var(--validated);
   --color-validated-foreground: var(--validated-foreground);
-  --color-tape: var(--tape);
   --color-navy: var(--navy);
   --color-navy-foreground: var(--navy-foreground);
-  --color-audience-blue: var(--audience-blue);
-  --color-audience-gold: var(--audience-gold);
-  --color-audience-rose: var(--audience-rose);
-  --color-audience-lavender: var(--audience-lavender);
-  --color-audience-tan: var(--audience-tan);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -80,14 +74,8 @@
   --ring: #1d5fd1;
   --validated: #dcece3;
   --validated-foreground: #1b5b39;
-  --tape: #b6c8dc;
   --navy: #0f2748;
   --navy-foreground: #f8fbff;
-  --audience-blue: #dbeafe;
-  --audience-gold: #f4ead1;
-  --audience-rose: #f4dddd;
-  --audience-lavender: #e8e3f8;
-  --audience-tan: #ebe7e1;
   --chart-1: #1d5fd1;
   --chart-2: #17365f;
   --chart-3: #2f7d55;
@@ -130,14 +118,8 @@
   --ring: #8dbdff;
   --validated: #244f3c;
   --validated-foreground: #b8ebce;
-  --tape: #607a99;
   --navy: #0a1c35;
   --navy-foreground: #edf4fc;
-  --audience-blue: #29486f;
-  --audience-gold: #5d5031;
-  --audience-rose: #5b3c42;
-  --audience-lavender: #463f65;
-  --audience-tan: #494641;
   --sidebar: #0a1c35;
   --sidebar-foreground: #dce8f6;
   --sidebar-primary: #edf4fc;
@@ -185,36 +167,6 @@
   .rounded-b-card {
     border-bottom-left-radius: var(--radius-card);
     border-bottom-right-radius: var(--radius-card);
-  }
-  .tape-tab {
-    background-color: color-mix(in srgb, var(--tape) 75%, transparent);
-    border: 1px solid color-mix(in srgb, var(--tape) 40%, transparent);
-  }
-  .landing-story-sticky {
-    display: none;
-  }
-  .hand-underline-blue {
-    text-decoration: underline;
-    text-decoration-color: var(--link);
-    text-decoration-thickness: 2px;
-    text-underline-offset: 4px;
-    text-decoration-style: wavy;
-  }
-  .hand-underline-rust {
-    text-decoration: underline;
-    text-decoration-color: var(--primary);
-    text-decoration-thickness: 2px;
-    text-underline-offset: 4px;
-    text-decoration-style: wavy;
-  }
-}
-
-@media (min-width: 64rem) and (prefers-reduced-motion: no-preference) {
-  .landing-story-static {
-    display: none;
-  }
-  .landing-story-sticky {
-    display: block;
   }
 }
 

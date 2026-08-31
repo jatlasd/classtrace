@@ -292,23 +292,44 @@ These static Server Component pages share one public header/footer and one
 future policy or support information; do not turn trust content into a card
 grid, add legal-looking decoration, or introduce client JavaScript.
 
-## Invitation-only public and sign-up copy
+## Public landing page
 
-Files: `components/landing/landing-header.tsx`,
+Files: `app/page.tsx`, `components/landing/landing-header.tsx`,
 `components/landing/landing-hero.tsx`,
-`components/landing/landing-closing-cta.tsx`,
-`components/layout/site-footer.tsx`,
-`app/sign-up/[[...sign-up]]/page.tsx`
+`components/landing/landing-product-preview.tsx`,
+`components/landing/landing-benefits.tsx`,
+`components/landing/landing-how-it-works.tsx`,
+`components/landing/landing-features.tsx`,
+`components/landing/landing-responsive.tsx`,
+`components/landing/landing-closing-cta.tsx`, and
+`components/layout/site-footer.tsx`
 
-Last updated: 2026-07-20
+Last updated: 2026-08-31
 
+| Property | Pattern |
+|---|---|
+| Background | Alternating `bg-card` and `bg-background`; blue-tinted responsive showcase uses `bg-accent/55` |
+| Frame | `1180px` maximum for the header and benefit strip, a wider `1360px` hero for the product preview, and a `1280px` responsive showcase |
+| Heading | Inter, bold, tight tracking; hero uses 2.65rem–3.25rem and may use `text-link` for one phrase |
+| Supporting text | `text-[15px] leading-7 text-muted-foreground`; compact feature copy uses 11–12px with deliberate line height |
+| Border / radius | `border-border`; modest `rounded-card` only on the product preview, feature ledger, responsive showcase, and closing CTA |
+| Elevation | `shadow-floating` only on product previews; `shadow-surface` on compact active surfaces |
+| Accent | Clear blue for links, icons, emphasis, and focus; navy for primary actions and the closing CTA |
+| Spacing | Compact section rhythm (`py-10`–`py-14`) with a larger two-column hero |
+
+- The landing page follows a product-first sequence: navigation, two-column
+  hero and truthful product preview, four benefits, three-step workflow, five
+  capabilities, responsive showcase, and closing invitation CTA.
+- Product previews are decorative but reuse real ClassTrace vocabulary and
+  approved fictional names. They do not imply analytics, parent communication,
+  native mobile apps, pricing, AI, or other unsupported capabilities.
 - Public calls to action name invited sign-up instead of implying open account
-  creation.
-- The landing hero states that the beta is invitation-only near its primary
-  action.
+  creation. Existing-user sign-in stays visually secondary but available.
+- The page uses Server Components only, has one `main#main-content`, and keeps
+  visible keyboard focus, semantic sections, and a mobile layout without
+  horizontal overflow.
 - `/sign-up` remains available for Clerk invitation links and introduces the
   provider flow with the same invitation-only language.
-- Existing-user sign-in stays visually secondary but always available.
 
 ## Beta acknowledgement flow
 

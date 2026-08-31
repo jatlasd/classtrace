@@ -1,115 +1,61 @@
 import Link from "next/link";
+import { ArrowRight, CheckCircle2, PlayCircle } from "lucide-react";
+import { LandingProductPreview } from "@/components/landing/landing-product-preview";
 import { Button } from "@/components/ui/button";
-import {
-  CoffeeRing,
-  IndexCard,
-  StickyScrap,
-} from "@/components/landing/landing-ephemera";
-import { RawNoteArt } from "@/components/landing/story-artifacts";
-import { ParallaxDrift } from "@/components/landing/scroll-motion";
 import { routes } from "@/lib/routes";
 
 export function LandingHero() {
   return (
-    <section className="relative overflow-x-clip">
-      <div aria-hidden="true" className="absolute inset-0 hidden lg:block">
-        <ParallaxDrift
-          depth={-52}
-          className="absolute left-[4%] top-24 xl:left-[8%]"
-        >
-          <IndexCard className="relative -rotate-6" />
-        </ParallaxDrift>
-        <ParallaxDrift
-          depth={-34}
-          className="absolute right-[4%] top-36 xl:right-[8%]"
-        >
-          <StickyScrap className="relative rotate-3" variant="blue">
-            IEP meeting moved to Thursday
-          </StickyScrap>
-        </ParallaxDrift>
-        <ParallaxDrift
-          depth={-70}
-          className="absolute right-[10%] top-[26rem] xl:right-[14%]"
-        >
-          <StickyScrap className="relative -rotate-2" variant="rose">
-            &ldquo;can you show growth over time?&rdquo;
-          </StickyScrap>
-        </ParallaxDrift>
-        <CoffeeRing
-          className="absolute left-[13%] top-[24rem] size-24 -rotate-12"
-          variant="full"
-        />
-        <CoffeeRing
-          className="absolute right-[22%] top-16 size-14 rotate-6"
-          variant="arc"
-        />
-      </div>
-
-      <div className="relative mx-auto max-w-4xl px-4 pb-10 pt-16 text-center md:px-6 lg:pt-24">
-        <p className="animate-in fade-in slide-in-from-bottom-2 duration-500 text-xs font-semibold uppercase tracking-[0.2em] text-primary">
-          Student evidence capture for teachers
-        </p>
-        <h1 className="mx-auto mt-5 max-w-3xl animate-in fade-in slide-in-from-bottom-3 font-sans text-[2.6rem] font-semibold leading-[1.08] tracking-tight text-foreground duration-700 sm:text-6xl lg:text-[4.25rem]">
-          The note you lose today is the evidence you&apos;ll need in March.
-        </h1>
-        <p className="mx-auto mt-6 max-w-xl animate-in fade-in slide-in-from-bottom-3 text-base leading-relaxed text-muted-foreground duration-700 [animation-delay:120ms] [animation-fill-mode:backwards]">
-          ClassTrace turns the moment you almost forgot into a validated,
-          student-specific evidence record — captured in seconds, reviewed by
-          you, and filed where you can find it again.
-        </p>
-        <p className="mx-auto mt-4 max-w-xl text-sm font-medium leading-relaxed text-foreground">
-          ClassTrace is currently an invitation-only beta. Sign-up is available
-          only to invited teachers.
-        </p>
-        <div className="mt-9 flex animate-in fade-in slide-in-from-bottom-3 flex-wrap items-center justify-center gap-4 duration-700 [animation-delay:220ms] [animation-fill-mode:backwards]">
-          <Button
-            asChild
-            className="h-12 rounded-md px-8 text-[15px] font-semibold"
-          >
-            <Link href={routes.signUp} prefetch={false}>
-              Complete invited sign-up
-            </Link>
-          </Button>
-          <Link
-            href={routes.signIn}
-            prefetch={false}
-            className="rounded-md px-2 py-2 text-sm font-medium text-link underline-offset-4 transition-colors hover:text-foreground hover:underline"
-          >
-            Sign in
-          </Link>
-        </div>
-      </div>
-
-      <div className="relative mx-auto max-w-2xl px-6 pb-6 md:px-0">
-        <p
-          aria-hidden="true"
-          className="font-sans mb-3 -rotate-2 pl-2 text-left text-xl leading-tight text-link sm:pl-0"
-        >
-          it starts as forty seconds between classes…
-        </p>
-        <ParallaxDrift depth={-30}>
-          <div className="animate-in fade-in slide-in-from-bottom-6 duration-700 [animation-delay:320ms] [animation-fill-mode:backwards]">
-            <RawNoteArt />
-          </div>
-        </ParallaxDrift>
-        <div className="mt-8 flex flex-col items-center gap-1 pb-2 text-center">
-          <p aria-hidden="true" className="font-sans text-xl text-primary">
-            watch this note become evidence
+    <section className="border-b border-border/70 bg-card">
+      <div className="mx-auto grid max-w-[1360px] items-center gap-10 px-4 py-12 md:px-6 lg:grid-cols-[0.78fr_1.22fr] lg:gap-10 lg:px-8 lg:py-16 xl:grid-cols-[0.72fr_1.28fr]">
+        <div className="max-w-xl">
+          <p className="inline-flex rounded-full bg-accent px-3 py-1 text-[11px] font-semibold text-link">
+            For teachers, by a teacher
           </p>
-          <Link
-            href="#how-it-works"
-            className="group mt-1 inline-flex flex-col items-center gap-1 rounded-md px-3 py-1.5 text-sm font-medium text-link transition-colors hover:text-foreground"
-          >
-            <span className="border-b border-current pb-0.5">
-              Follow the note
-            </span>
-            <span
-              aria-hidden="true"
-              className="font-sans text-2xl leading-none transition-transform group-hover:translate-y-0.5"
+          <h1 className="mt-5 text-[2.65rem] font-bold leading-[1.04] tracking-[-0.045em] text-foreground sm:text-5xl lg:text-[3.25rem]">
+            Capture student evidence without the{" "}
+            <span className="text-link">mental filing cabinet.</span>
+          </h1>
+          <p className="mt-5 max-w-lg text-[15px] leading-7 text-muted-foreground">
+            Record the classroom moment while it is fresh, review what will be
+            saved, and find trustworthy evidence by student when you need it.
+          </p>
+          <p className="mt-3 max-w-lg text-sm font-medium leading-6 text-foreground">
+            ClassTrace is currently an invitation-only beta for individual
+            teachers.
+          </p>
+          <div className="mt-7 flex flex-wrap gap-3">
+            <Button
+              asChild
+              variant="navy"
+              className="h-11 px-6 text-sm"
             >
-              ↓
-            </span>
-          </Link>
+              <Link href={routes.signUp} prefetch={false}>
+                Complete invited sign-up
+                <ArrowRight aria-hidden="true" className="size-4" />
+              </Link>
+            </Button>
+            <Button
+              asChild
+              variant="outline"
+              className="h-11 px-5 text-sm"
+            >
+              <Link href="#how-it-works">
+                <PlayCircle aria-hidden="true" className="size-4 text-link" />
+                See how it works
+              </Link>
+            </Button>
+          </div>
+          <p className="mt-4 flex items-center gap-2 text-xs text-muted-foreground">
+            <CheckCircle2
+              aria-hidden="true"
+              className="size-3.5 text-validated-foreground"
+            />
+            Teacher-reviewed · One student per saved record
+          </p>
+        </div>
+        <div className="min-w-0 lg:py-1">
+          <LandingProductPreview />
         </div>
       </div>
     </section>

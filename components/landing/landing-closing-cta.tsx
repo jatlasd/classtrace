@@ -4,43 +4,24 @@ import { routes } from "@/lib/routes";
 
 export function LandingClosingCta() {
   return (
-    <section className="relative overflow-x-clip border-t border-border/70 bg-card/40">
-      <div className="mx-auto max-w-3xl px-4 py-20 text-center md:px-6 lg:py-28">
-        <p
-          aria-hidden="true"
-          className="font-sans mx-auto -rotate-2 text-2xl leading-tight text-link"
-        >
-          that moment from third period today?
-        </p>
-        <h2 className="mt-4 font-sans text-4xl font-semibold leading-[1.08] tracking-tight text-foreground sm:text-5xl">
-          You&apos;re going to{" "}
-          <span className="hand-underline-rust">need it later</span>.
-        </h2>
-        <p className="mx-auto mt-6 max-w-md text-base leading-relaxed text-muted-foreground">
-          If you received a beta invitation, complete sign-up and start with
-          one student. Capture one moment. Build the record before you need it,
-          so the next conversation does not start from memory.
-        </p>
-        <div className="mt-9 flex justify-center">
-          <Button
-            asChild
-            className="h-12 min-w-60 rounded-md px-8 text-[15px] font-semibold"
-          >
-            <Link href={routes.signUp} prefetch={false}>
-              Complete invited sign-up
-            </Link>
+    <section className="bg-card px-4 pb-8 pt-3 md:px-6 lg:px-8">
+      <div className="mx-auto flex max-w-[880px] flex-col items-center justify-between gap-5 rounded-card bg-navy px-6 py-6 text-center text-navy-foreground sm:flex-row sm:text-left lg:px-10">
+        <div>
+          <h2 className="text-xl font-semibold tracking-tight sm:text-2xl">
+            Ready to stop reconstructing from memory?
+          </h2>
+          <p className="mt-1 text-sm text-navy-foreground/75">
+            Invited teachers can set up a roster and capture the first record in minutes.
+          </p>
+        </div>
+        <div className="flex shrink-0 flex-wrap justify-center gap-2">
+          <Button asChild variant="outline" className="h-10 border-card bg-card px-5 text-xs text-foreground">
+            <Link href={routes.signUp} prefetch={false}>Invited sign-up</Link>
+          </Button>
+          <Button asChild variant="ghost" className="h-10 px-4 text-xs text-navy-foreground hover:bg-sidebar-accent hover:text-navy-foreground">
+            <Link href={routes.signIn} prefetch={false}>Sign in</Link>
           </Button>
         </div>
-        <p className="mt-4 text-sm text-muted-foreground">
-          Already tracing?{" "}
-          <Link
-            href={routes.signIn}
-            prefetch={false}
-            className="font-medium text-link underline-offset-4 hover:underline"
-          >
-            Sign in
-          </Link>
-        </p>
       </div>
     </section>
   );

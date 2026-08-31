@@ -225,8 +225,12 @@ describe("Unit 23 privacy and safety copy guardrails", () => {
   });
 
   it("preserves cautious landing boundaries and teacher-validation language", () => {
-    const landingBoundary = readFileSync(
-      join(projectRoot, "components", "landing", "landing-trust.tsx"),
+    const landingHero = readFileSync(
+      join(projectRoot, "components", "landing", "landing-hero.tsx"),
+      "utf8"
+    );
+    const landingFeatures = readFileSync(
+      join(projectRoot, "components", "landing", "landing-features.tsx"),
       "utf8"
     );
     const reviewPanel = readFileSync(
@@ -239,8 +243,10 @@ describe("Unit 23 privacy and safety copy guardrails", () => {
       "utf8"
     );
 
-    expect(landingBoundary).toContain("Not an IEP generator");
-    expect(landingBoundary).toContain("Not an admin dashboard");
+    expect(landingHero).toContain("invitation-only beta");
+    expect(landingHero).toContain("Teacher-reviewed");
+    expect(landingFeatures).toContain("One evidence photo");
+    expect(landingFeatures).toContain("without creating a file repository");
     expect(reviewPanel).toContain("Review before saving");
     expect(reviewPanel).toContain("Save validated evidence");
   });
