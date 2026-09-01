@@ -42,7 +42,7 @@ function PreviewFrame({ children, label }: { children: ReactNode; label: string 
     <div aria-hidden="true" className="overflow-hidden rounded-card border border-border bg-background shadow-floating">
       <div className="flex h-10 items-center justify-between border-b border-border bg-card px-4">
         <div className="flex items-center gap-2 text-[10px] font-bold text-foreground">
-          <span className="flex size-4 items-center justify-center rounded-sm bg-link text-[8px] text-primary-foreground">CT</span>
+          <span className="flex size-4 items-center justify-center rounded-sm bg-primary text-[8px] text-primary-foreground">CT</span>
           ClassTrace
         </div>
         <span className="text-[9px] font-medium text-muted-foreground">{label}</span>
@@ -147,8 +147,8 @@ export function LandingHowItWorks() {
           {steps.map((step, index) => (
             <li key={step.title} className="grid items-center gap-8 lg:grid-cols-2 lg:gap-14">
               <div className={cn("max-w-lg", index % 2 === 1 && "lg:order-2")}>
-                <p className="flex items-center gap-3 text-sm font-semibold text-primary">
-                  <span className="flex size-7 items-center justify-center rounded-full border border-primary text-xs tabular-nums">{index + 1}</span>
+                <p className="flex items-center gap-3 text-sm font-semibold text-link">
+                  <span className="flex size-7 items-center justify-center rounded-full border border-link/35 text-xs tabular-nums">{index + 1}</span>
                   {step.eyebrow}
                 </p>
                 <h3 className="mt-4 text-2xl font-bold leading-tight tracking-[-0.025em] text-balance text-foreground sm:text-[2rem]">{step.title}</h3>

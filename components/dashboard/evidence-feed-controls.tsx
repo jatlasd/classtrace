@@ -95,7 +95,7 @@ export function FeedEmptyState({
 }) {
   return (
     <div className="px-6 py-10 text-center sm:px-10">
-      <div className="mx-auto flex size-12 items-center justify-center rounded-lg border border-border bg-muted/40 text-primary">
+      <div className="mx-auto flex size-12 items-center justify-center rounded-lg border border-border bg-muted/40 text-link">
         <ClipboardCheck
           aria-hidden="true"
           className="size-5"

@@ -14,9 +14,9 @@ Priority order:
 
 ## Visual language
 
-- Public and authenticated routes share one chalk-neutral, deep-ink, rust, mineral-blue, and sage semantic palette. Public pages use the colors more compositionally; authenticated routes keep them restrained around the teacher's work.
-- Deep ink is reserved for the authenticated application shell and the landing page's committed hero/showcase fields. Rust is reserved for capture, primary actions, focus, and rare current-state emphasis. Mineral blue is reserved for links and product organization rather than general decoration.
-- Muted evergreen indicates validated evidence; brick remains reserved for destructive state.
+- Public and authenticated routes share one cool-surface, indigo, and mint semantic palette. Public pages use the colors more compositionally; authenticated routes keep them restrained around the teacher's work.
+- Indigo ground owns public navigation, hero/showcase fields, and active app navigation. Bright mint is reserved for primary action fills and emphasis on indigo; it always takes dark mint ink. Deep mint is reserved for links, focus, tags, and thin icons on light surfaces.
+- Soft mint with deep-mint foreground indicates validated evidence; red remains reserved for destructive state.
 - Inter is the sole user-facing type family. Weight, size, spacing, and color create identity and page hierarchy.
 - Borders and tonal separation do most layout work. Shadows are tight, palette-tinted, and reserved for genuinely floating or focused surfaces.
 - Corners are modest (`rounded-md`, `rounded-card`); pills are for chips/status only.
@@ -27,7 +27,7 @@ Use semantic tokens from `app/globals.css`. Do not introduce raw palette utiliti
 ## App shell and hierarchy
 
 - Authenticated routes share one responsive application shell and one `main`
-  landmark: a fixed navy sidebar at `lg` and above, and a sticky navy header
+  landmark: a fixed muted-surface sidebar at `lg` and above, and a sticky muted-surface header
   with a modal navigation drawer below `lg`.
 - A keyboard skip link targets `#main-content`.
 - Active navigation uses `aria-current="page"` and restrained visual emphasis.

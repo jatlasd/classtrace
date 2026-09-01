@@ -34,7 +34,7 @@ export function LandingBenefits() {
         <ol className="border-t border-border">
           {benefits.map((benefit, index) => (
             <li key={benefit.title} className="grid grid-cols-[2.5rem_1fr] gap-4 border-b border-border py-5 sm:grid-cols-[3rem_0.75fr_1.25fr] sm:gap-5">
-              <span className="pt-0.5 text-xs font-semibold tabular-nums text-primary">
+              <span className="pt-0.5 text-xs font-semibold tabular-nums text-link">
                 {String(index + 1).padStart(2, "0")}
               </span>
               <h3 className="text-sm font-semibold text-foreground">{benefit.title}</h3>

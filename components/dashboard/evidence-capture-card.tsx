@@ -84,8 +84,8 @@ type ValidatedEvidenceSaveResult =
 const chipStyles = {
   default: "border-border bg-card text-foreground",
   student: "border-border bg-secondary text-foreground",
-  tag: "border-border bg-muted/60 text-link",
-  evidence: "border-primary/25 bg-primary/10 text-primary",
+  tag: "border-border bg-transparent text-muted-foreground",
+  evidence: "border-border bg-accent-soft/50 text-link",
   unresolved:
     "border-accent/50 bg-accent/25 text-foreground",
 };
@@ -111,7 +111,7 @@ function Chip({
 function StudentAvatar({ student }: { student: StudentMentionDisplay }) {
   return (
     <span
-      className={`mr-1.5 inline-flex size-4 items-center justify-center rounded-full text-[9px] font-bold text-white ${student.colorClass}`}
+      className={`mr-1.5 inline-flex size-4 items-center justify-center rounded-full text-[9px] font-bold text-link ${student.colorClass}`}
     >
       {student.initials}
     </span>
@@ -162,7 +162,7 @@ function CaptureIcon({
   }
 
   return (
-    <span className="flex size-9 items-center justify-center rounded-md border border-accent/40 bg-accent/15 text-primary">
+    <span className="flex size-9 items-center justify-center rounded-md border border-link/25 bg-accent-soft/50 text-link">
       <ClipboardCheck className="size-4" strokeWidth={1.75} />
     </span>
   );
@@ -195,7 +195,7 @@ function StatusPill({
 
   return (
     <span className="inline-flex items-center gap-2 rounded-lg border border-accent/40 bg-accent/20 px-2.5 py-1 text-xs font-semibold text-foreground">
-      <Circle className="size-2 fill-current text-primary" />
+      <Circle className="size-2 fill-current text-link" />
       Needs review
     </span>
   );

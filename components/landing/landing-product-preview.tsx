@@ -33,7 +33,7 @@ function EvidenceRows({ compact = false }: { compact?: boolean }) {
     <div className="divide-y divide-border">
       {previewEvidence.slice(0, compact ? 1 : 2).map((record) => (
         <article key={record.student} className="flex gap-3 px-3 py-3.5">
-          <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-accent text-[10px] font-bold text-link">
+          <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-accent-soft text-[10px] font-bold text-link">
             {record.initials}
           </span>
           <div className="min-w-0 flex-1">

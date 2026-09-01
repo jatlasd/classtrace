@@ -4,77 +4,75 @@
   "title": "Design System: ClassTrace",
   "extensions": {
     "colorMeta": {
-      "rust-capture": {
+      "indigo-ground": {
         "role": "primary",
-        "displayName": "Rust Capture",
-        "canonical": "#b85a32",
-        "tonalRamp": ["oklch(15% 0.06 38)", "oklch(28% 0.08 38)", "oklch(40% 0.10 38)", "oklch(52% 0.12 38)", "oklch(64% 0.10 38)", "oklch(76% 0.075 38)", "oklch(88% 0.045 38)", "oklch(95% 0.025 38)"]
+        "displayName": "Indigo Ground",
+        "canonical": "#1a2444"
       },
-      "paper-background": {
+      "indigo-raised": {
         "role": "neutral",
-        "displayName": "Paper Background",
-        "canonical": "#f3eadc",
-        "tonalRamp": ["oklch(15% 0.015 75)", "oklch(28% 0.018 75)", "oklch(42% 0.020 75)", "oklch(56% 0.022 75)", "oklch(70% 0.024 75)", "oklch(82% 0.026 75)", "oklch(91% 0.024 75)", "oklch(96% 0.021 75)"]
+        "displayName": "Indigo Raised",
+        "canonical": "#2e3a63"
       },
-      "clean-paper": {
+      "surface": {
         "role": "neutral",
-        "displayName": "Clean Paper",
-        "canonical": "#fbf7ed",
-        "tonalRamp": ["oklch(16% 0.012 80)", "oklch(30% 0.014 80)", "oklch(44% 0.016 80)", "oklch(58% 0.018 80)", "oklch(72% 0.020 80)", "oklch(84% 0.019 80)", "oklch(93% 0.016 80)", "oklch(98% 0.012 80)"]
+        "displayName": "Surface",
+        "canonical": "#f7f9f8"
+      },
+      "surface-muted": {
+        "role": "neutral",
+        "displayName": "Muted Surface",
+        "canonical": "#eaeeec"
+      },
+      "surface-raised": {
+        "role": "neutral",
+        "displayName": "Raised Surface",
+        "canonical": "#fcfdfc"
       },
       "ink": {
         "role": "neutral",
         "displayName": "Ink",
-        "canonical": "#182536",
-        "tonalRamp": ["oklch(14% 0.035 250)", "oklch(24% 0.035 250)", "oklch(34% 0.035 250)", "oklch(46% 0.030 250)", "oklch(60% 0.025 250)", "oklch(74% 0.020 250)", "oklch(86% 0.015 250)", "oklch(96% 0.010 250)"]
-      },
-      "muted-paper": {
-        "role": "neutral",
-        "displayName": "Muted Paper",
-        "canonical": "#ebe3d6",
-        "tonalRamp": ["oklch(16% 0.012 75)", "oklch(30% 0.014 75)", "oklch(44% 0.016 75)", "oklch(58% 0.018 75)", "oklch(72% 0.018 75)", "oklch(84% 0.016 75)", "oklch(91% 0.014 75)", "oklch(96% 0.010 75)"]
+        "canonical": "#141a2e"
       },
       "muted-ink": {
         "role": "neutral",
         "displayName": "Muted Ink",
-        "canonical": "#5d554a",
-        "tonalRamp": ["oklch(15% 0.012 75)", "oklch(27% 0.014 75)", "oklch(39% 0.016 75)", "oklch(51% 0.014 75)", "oklch(64% 0.012 75)", "oklch(76% 0.010 75)", "oklch(88% 0.008 75)", "oklch(96% 0.006 75)"]
+        "canonical": "#5c6480"
       },
-      "ledger-rule": {
+      "on-ground": {
         "role": "neutral",
-        "displayName": "Ledger Rule",
-        "canonical": "#ddd0be",
-        "tonalRamp": ["oklch(16% 0.012 70)", "oklch(30% 0.014 70)", "oklch(44% 0.016 70)", "oklch(58% 0.018 70)", "oklch(72% 0.018 70)", "oklch(84% 0.016 70)", "oklch(91% 0.014 70)", "oklch(96% 0.010 70)"]
+        "displayName": "On Ground",
+        "canonical": "#eff2f0"
       },
-      "evidence-link": {
-        "role": "secondary",
-        "displayName": "Evidence Link",
-        "canonical": "#2c526f",
-        "tonalRamp": ["oklch(15% 0.045 235)", "oklch(28% 0.055 235)", "oklch(40% 0.060 235)", "oklch(52% 0.055 235)", "oklch(66% 0.045 235)", "oklch(78% 0.032 235)", "oklch(90% 0.020 235)", "oklch(96% 0.012 235)"]
+      "on-ground-muted": {
+        "role": "neutral",
+        "displayName": "Muted On Ground",
+        "canonical": "#c3cbda"
       },
-      "sage-validated": {
-        "role": "secondary",
-        "displayName": "Sage Validated",
-        "canonical": "#c7d4a6",
-        "tonalRamp": ["oklch(15% 0.040 125)", "oklch(28% 0.050 125)", "oklch(42% 0.055 125)", "oklch(56% 0.055 125)", "oklch(70% 0.050 125)", "oklch(82% 0.040 125)", "oklch(90% 0.030 125)", "oklch(96% 0.018 125)"]
-      },
-      "gold-note": {
-        "role": "tertiary",
-        "displayName": "Gold Desk Note",
-        "canonical": "#e7bd64",
-        "tonalRamp": ["oklch(16% 0.055 82)", "oklch(30% 0.075 82)", "oklch(44% 0.095 82)", "oklch(58% 0.110 82)", "oklch(72% 0.090 82)", "oklch(84% 0.065 82)", "oklch(92% 0.040 82)", "oklch(97% 0.022 82)"]
-      },
-      "destructive-rust": {
+      "mint-action": {
         "role": "primary",
-        "displayName": "Destructive Rust",
-        "canonical": "#a33d2e",
-        "tonalRamp": ["oklch(14% 0.060 32)", "oklch(26% 0.080 32)", "oklch(38% 0.100 32)", "oklch(50% 0.120 32)", "oklch(64% 0.095 32)", "oklch(78% 0.065 32)", "oklch(89% 0.040 32)", "oklch(96% 0.020 32)"]
+        "displayName": "Mint Action",
+        "canonical": "#84d9c3"
       },
-      "deep-navy": {
+      "mint-action-ink": {
+        "role": "neutral",
+        "displayName": "Mint Action Ink",
+        "canonical": "#10231f"
+      },
+      "mint-deep": {
         "role": "secondary",
-        "displayName": "Deep Navy",
-        "canonical": "#1d2f4b",
-        "tonalRamp": ["oklch(14% 0.050 255)", "oklch(25% 0.060 255)", "oklch(36% 0.070 255)", "oklch(48% 0.065 255)", "oklch(62% 0.050 255)", "oklch(76% 0.035 255)", "oklch(88% 0.022 255)", "oklch(96% 0.012 255)"]
+        "displayName": "Deep Mint",
+        "canonical": "#146b5e"
+      },
+      "mint-soft": {
+        "role": "secondary",
+        "displayName": "Soft Mint",
+        "canonical": "#d6e6e0"
+      },
+      "destructive": {
+        "role": "primary",
+        "displayName": "Destructive",
+        "canonical": "#a33d2e"
       }
     },
     "typographyMeta": {

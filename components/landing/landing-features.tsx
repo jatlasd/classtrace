@@ -43,7 +43,7 @@ export function LandingFeatures() {
         <ul className="border-t border-border">
           {features.map((feature) => (
             <li key={feature.title} className="grid grid-cols-[2rem_1fr] gap-4 border-b border-border py-4 sm:grid-cols-[2rem_0.7fr_1.3fr] sm:items-center sm:gap-5">
-              <feature.icon aria-hidden="true" className="size-5 text-primary" strokeWidth={1.75} />
+              <feature.icon aria-hidden="true" className="size-5 text-link" strokeWidth={1.75} />
               <h3 className="text-sm font-semibold text-foreground">{feature.title}</h3>
               <p className="col-start-2 text-sm leading-6 text-muted-foreground sm:col-start-3">{feature.body}</p>
             </li>

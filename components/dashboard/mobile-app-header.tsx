@@ -98,7 +98,7 @@ export function MobileAppHeader({
             aria-label="ClassTrace capture"
             className="shrink-0 rounded-md outline-none focus-visible:ring-3 focus-visible:ring-sidebar-ring/50"
           >
-            <BrandLockup size="sm" tone="inverse" />
+            <BrandLockup size="sm" />
           </Link>
           <span aria-hidden="true" className="h-5 w-px shrink-0 bg-sidebar-border" />
           <span className="truncate text-xs font-semibold text-sidebar-foreground/72">
@@ -113,7 +113,7 @@ export function MobileAppHeader({
           aria-expanded={isOpen}
           aria-haspopup="dialog"
           onClick={() => setIsOpen(true)}
-          className="flex size-11 shrink-0 items-center justify-center rounded-md text-sidebar-foreground outline-none transition-colors hover:bg-sidebar-accent focus-visible:ring-3 focus-visible:ring-sidebar-ring/50"
+          className="flex size-11 shrink-0 items-center justify-center rounded-md text-sidebar-foreground outline-none transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-3 focus-visible:ring-sidebar-ring/50"
         >
           <Menu aria-hidden="true" className="size-5" strokeWidth={2} />
         </button>
@@ -145,7 +145,7 @@ export function MobileAppHeader({
                 type="button"
                 aria-label="Close navigation menu"
                 onClick={closeMenu}
-                className="flex size-11 items-center justify-center rounded-md text-sidebar-foreground outline-none transition-colors hover:bg-sidebar-accent focus-visible:ring-3 focus-visible:ring-sidebar-ring/50"
+                className="flex size-11 items-center justify-center rounded-md text-sidebar-foreground outline-none transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-3 focus-visible:ring-sidebar-ring/50"
               >
                 <X aria-hidden="true" className="size-5" strokeWidth={2} />
               </button>
@@ -162,7 +162,7 @@ export function MobileAppHeader({
                       href={item.href}
                       aria-current={active ? "page" : undefined}
                       onClick={closeMenu}
-                      className={`flex min-h-12 items-center gap-3 rounded-md border-l-2 px-3 text-sm font-semibold outline-none transition-colors focus-visible:ring-3 focus-visible:ring-sidebar-ring/50 ${
+                      className={`flex min-h-12 items-center gap-3 rounded-md border px-3 text-sm font-semibold outline-none transition-colors focus-visible:ring-3 focus-visible:ring-sidebar-ring/50 ${
                         active
                           ? "border-sidebar-ring bg-sidebar-accent text-sidebar-accent-foreground"
                           : "border-transparent text-sidebar-foreground/80 hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground"
@@ -170,7 +170,7 @@ export function MobileAppHeader({
                     >
                       <item.icon
                         aria-hidden="true"
-                        className="size-5 shrink-0"
+                        className={`size-5 shrink-0 ${active ? "text-primary" : ""}`}
                         strokeWidth={active ? 2.2 : 1.8}
                       />
                       <span>{item.label}</span>

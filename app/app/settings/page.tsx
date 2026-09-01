@@ -55,7 +55,7 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
           className="rounded-lg border border-border bg-card shadow-surface"
         >
           <div className="flex items-start gap-3 border-b border-border bg-muted/20 px-4 py-3 sm:px-5">
-            <span className="flex size-8 shrink-0 items-center justify-center rounded-md border border-border bg-card text-primary">
+            <span className="flex size-8 shrink-0 items-center justify-center rounded-md border border-border bg-card text-link">
               <MessageCircleQuestion
                 className="size-4"
                 strokeWidth={1.75}

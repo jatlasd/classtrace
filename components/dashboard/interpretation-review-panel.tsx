@@ -376,7 +376,7 @@ function InterpretationReviewPanelContent({
   return (
     <div className="mt-4 border-t border-border pt-4">
       <div className="mb-4 space-y-1">
-        <p className="text-xs font-semibold text-primary">Teacher review</p>
+        <p className="text-xs font-semibold text-link">Teacher review</p>
         <h3 className="font-sans text-xl font-semibold text-foreground">
           Review before saving
         </h3>

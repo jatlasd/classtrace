@@ -346,7 +346,7 @@ export function StudentResolutionField({
               onError("");
             }}
           >
-            <UserPlus aria-hidden="true" className="size-4 text-primary" />
+            <UserPlus aria-hidden="true" className="size-4 text-link" />
             Add @{handle} as a new student
           </Button>
           ) : null}

@@ -31,7 +31,7 @@ export default async function SignUpPage(): Promise<ReactElement> {
         <main className="flex flex-1 items-center justify-center px-4 py-8">
           <div className="w-full max-w-md">
             <header className="mb-6 text-center">
-              <p className="text-sm font-semibold text-primary">
+              <p className="text-sm font-semibold text-link">
                 Invitation-only beta
               </p>
               <h1 className="font-sans mt-2 text-3xl font-semibold tracking-tight text-foreground">

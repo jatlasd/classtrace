@@ -6,16 +6,16 @@ import { routes } from "@/lib/routes";
 
 export function LandingHero() {
   return (
-    <section className="border-b border-sidebar-border bg-navy text-navy-foreground">
+    <section className="border-b border-navy-foreground/10 bg-navy text-navy-foreground">
       <div className="mx-auto grid max-w-[1360px] items-center gap-12 px-4 py-14 md:px-6 lg:grid-cols-[0.78fr_1.22fr] lg:gap-12 lg:px-8 lg:py-20 xl:grid-cols-[0.72fr_1.28fr]">
         <div className="max-w-xl">
-          <p className="text-sm font-semibold text-navy-foreground/68">
+          <p className="text-sm font-semibold text-primary">
             Student evidence capture for teachers
           </p>
           <h1 className="mt-5 text-[2.75rem] font-bold leading-[1.03] tracking-[-0.04em] text-balance text-navy-foreground sm:text-[3.4rem] lg:text-[3.85rem]">
             Turn classroom moments into evidence you can use.
           </h1>
-          <p className="mt-6 max-w-lg text-[15px] leading-7 text-pretty text-navy-foreground/72">
+          <p className="mt-6 max-w-lg text-[15px] leading-7 text-pretty text-ground-muted">
             Capture a quick observation or work-sample photo, review the record,
             and keep it organized under the right student for timelines,
             reports, and exports.
@@ -40,12 +40,12 @@ export function LandingHero() {
               className="h-11 border-sidebar-border bg-transparent px-5 text-sm text-navy-foreground hover:bg-sidebar-accent hover:text-navy-foreground"
             >
               <Link href="#how-it-works">
-                <PlayCircle aria-hidden="true" className="size-4 text-navy-foreground/72" />
+                <PlayCircle aria-hidden="true" className="size-4 text-ground-muted" />
                 See how it works
               </Link>
             </Button>
           </div>
-          <p className="mt-5 flex items-center gap-2 text-xs text-navy-foreground/64">
+          <p className="mt-5 flex items-center gap-2 text-xs text-ground-muted">
             <CheckCircle2
               aria-hidden="true"
               className="size-3.5 text-sidebar-ring"

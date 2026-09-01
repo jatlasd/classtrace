@@ -4,7 +4,7 @@ import { routes } from "@/lib/routes";
 
 export function LandingClosingCta() {
   return (
-    <section className="border-b border-primary bg-primary px-4 py-10 text-primary-foreground md:px-6 lg:px-8 lg:py-12">
+    <section className="border-b border-primary-foreground/10 bg-primary px-4 py-10 text-primary-foreground md:px-6 lg:px-8 lg:py-12">
       <div className="mx-auto flex max-w-[1180px] flex-col items-start justify-between gap-7 sm:flex-row sm:items-center">
         <div>
           <h2 className="text-2xl font-bold tracking-[-0.025em] sm:text-3xl">

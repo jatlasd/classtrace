@@ -160,14 +160,14 @@ export function OperatorConsole() {
     message?.tone === "error"
       ? "border-destructive/30 bg-destructive/10 text-destructive"
       : message?.tone === "warning"
-        ? "border-primary/30 bg-primary/10 text-foreground"
+        ? "border-link/30 bg-accent-soft/50 text-foreground"
         : "border-validated/30 bg-validated/10 text-foreground";
 
   return (
     <div className="space-y-7">
       <section aria-labelledby="account-search-heading">
         <div className="flex items-start gap-3">
-          <Search className="mt-0.5 size-5 shrink-0 text-primary" aria-hidden="true" />
+          <Search className="mt-0.5 size-5 shrink-0 text-link" aria-hidden="true" />
           <div>
             <h2 id="account-search-heading" className="text-lg font-semibold text-foreground">
               Find one account
@@ -227,7 +227,7 @@ export function OperatorConsole() {
                 </p>
               </div>
               <span className="inline-flex w-fit items-center gap-1.5 rounded-full border border-border bg-muted/60 px-2.5 py-1 text-xs font-medium text-muted-foreground">
-                <ShieldCheck className="size-3.5 text-primary" aria-hidden="true" />
+                <ShieldCheck className="size-3.5 text-link" aria-hidden="true" />
                 Exact match
               </span>
             </div>

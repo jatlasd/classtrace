@@ -26,7 +26,7 @@ export function DesktopAppSidebar({
           aria-label="ClassTrace capture"
           className="rounded-md outline-none focus-visible:ring-3 focus-visible:ring-sidebar-ring/50"
         >
-          <BrandLockup size="md" tone="inverse" />
+          <BrandLockup size="md" />
         </Link>
       </div>
 
@@ -43,7 +43,7 @@ export function DesktopAppSidebar({
                 key={item.label}
                 href={item.href}
                 aria-current={active ? "page" : undefined}
-                className={`flex h-11 items-center gap-3 rounded-md border-l-2 px-3 text-sm font-semibold outline-none transition-colors focus-visible:ring-3 focus-visible:ring-sidebar-ring/50 ${
+                className={`flex h-11 items-center gap-3 rounded-md border px-3 text-sm font-semibold outline-none transition-colors focus-visible:ring-3 focus-visible:ring-sidebar-ring/50 ${
                   active
                     ? "border-sidebar-ring bg-sidebar-accent text-sidebar-accent-foreground"
                     : "border-transparent text-sidebar-foreground/78 hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground"
@@ -51,7 +51,7 @@ export function DesktopAppSidebar({
               >
                 <item.icon
                   aria-hidden="true"
-                  className="size-[18px] shrink-0"
+                  className={`size-[18px] shrink-0 ${active ? "text-primary" : ""}`}
                   strokeWidth={active ? 2.2 : 1.8}
                 />
                 <span>{item.label}</span>

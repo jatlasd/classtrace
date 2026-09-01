@@ -39,9 +39,9 @@ function EvidenceChip({
 }) {
   const className =
     variant === "tag"
-      ? "border-border bg-muted/60 text-link"
+      ? "border-border bg-transparent text-muted-foreground"
       : variant === "evidence"
-        ? "border-primary/25 bg-primary/10 text-primary"
+        ? "border-border bg-accent-soft/50 text-link"
         : "border-border bg-card text-foreground";
 
   return (

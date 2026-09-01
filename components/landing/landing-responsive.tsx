@@ -6,14 +6,14 @@ import {
 
 export function LandingResponsive() {
   return (
-    <section aria-labelledby="responsive-heading" className="overflow-hidden border-b border-sidebar-border bg-navy px-4 py-14 text-navy-foreground md:px-6 lg:px-8 lg:py-16">
+    <section aria-labelledby="responsive-heading" className="overflow-hidden border-b border-navy-foreground/10 bg-navy px-4 py-14 text-navy-foreground md:px-6 lg:px-8 lg:py-16">
       <div className="mx-auto grid max-w-[1280px] items-center gap-10 lg:grid-cols-[0.66fr_1.34fr] lg:gap-14">
         <div className="max-w-sm">
           <p className="text-sm font-semibold text-sidebar-ring">One responsive workspace</p>
           <h2 id="responsive-heading" className="mt-4 text-3xl font-bold leading-tight tracking-[-0.03em] text-balance text-navy-foreground">
             Capture between classes. Review wherever you settle in.
           </h2>
-          <p className="mt-4 text-sm leading-7 text-pretty text-navy-foreground/70">
+          <p className="mt-4 text-sm leading-7 text-pretty text-ground-muted">
             ClassTrace adapts from phone to desktop without changing the evidence workflow or adding another app to manage.
           </p>
           <ul className="mt-6 space-y-3 text-xs font-medium text-navy-foreground">

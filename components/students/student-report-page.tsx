@@ -163,7 +163,7 @@ function ReportEmptyState({
 
   return (
     <div className="border border-border bg-card/60 p-5 text-sm leading-relaxed text-muted-foreground">
-      <div className="mb-3 flex size-10 items-center justify-center rounded-md border border-border bg-muted/50 text-primary">
+      <div className="mb-3 flex size-10 items-center justify-center rounded-md border border-border bg-muted/50 text-link">
         <FileText className="size-5" strokeWidth={1.75} />
       </div>
       {isFiltered || dateRange.status === "invalid" ? (

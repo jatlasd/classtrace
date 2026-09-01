@@ -2,18 +2,20 @@
 name: ClassTrace
 description: A calm evidence ledger for teacher-reviewed student observations.
 colors:
-  rust-capture: "#b85a32"
-  paper-background: "#f3eadc"
-  clean-paper: "#fbf7ed"
-  ink: "#182536"
-  muted-paper: "#ebe3d6"
-  muted-ink: "#5d554a"
-  ledger-rule: "#ddd0be"
-  evidence-link: "#2c526f"
-  sage-validated: "#c7d4a6"
-  gold-note: "#e7bd64"
-  destructive-rust: "#a33d2e"
-  deep-navy: "#1d2f4b"
+  indigo-ground: "#1a2444"
+  indigo-raised: "#2e3a63"
+  ink: "#141a2e"
+  muted-ink: "#5c6480"
+  on-ground: "#eff2f0"
+  on-ground-muted: "#c3cbda"
+  surface: "#f7f9f8"
+  surface-muted: "#eaeeec"
+  surface-raised: "#fcfdfc"
+  mint-action: "#84d9c3"
+  mint-action-ink: "#10231f"
+  mint-deep: "#146b5e"
+  mint-soft: "#d6e6e0"
+  destructive: "#a33d2e"
 typography:
   display:
     fontFamily: "Fraunces, Georgia, serif"
@@ -56,14 +58,14 @@ spacing:
   2xl: "1.5rem"
 components:
   button-primary:
-    backgroundColor: "{colors.rust-capture}"
-    textColor: "{colors.clean-paper}"
+    backgroundColor: "{colors.mint-action}"
+    textColor: "{colors.mint-action-ink}"
     typography: "{typography.label}"
     rounded: "{rounded.lg}"
     padding: "0 0.625rem"
     height: "2rem"
   button-outline:
-    backgroundColor: "{colors.clean-paper}"
+    backgroundColor: "{colors.surface-raised}"
     textColor: "{colors.ink}"
     typography: "{typography.label}"
     rounded: "{rounded.lg}"
@@ -71,32 +73,32 @@ components:
     height: "2rem"
   button-destructive:
     backgroundColor: "#a33d2e1a"
-    textColor: "{colors.destructive-rust}"
+    textColor: "{colors.destructive}"
     typography: "{typography.label}"
     rounded: "{rounded.lg}"
     padding: "0 0.625rem"
     height: "2rem"
   input:
-    backgroundColor: "#f3eadc80"
+    backgroundColor: "{colors.surface-muted}"
     textColor: "{colors.ink}"
     typography: "{typography.label}"
     rounded: "{rounded.md}"
     padding: "0 0.75rem"
     height: "2.5rem"
-  paper-surface:
-    backgroundColor: "{colors.clean-paper}"
+  work-surface:
+    backgroundColor: "{colors.surface-raised}"
     textColor: "{colors.ink}"
     rounded: "{rounded.card}"
     padding: "1.25rem"
   evidence-chip:
-    backgroundColor: "{colors.muted-paper}"
-    textColor: "{colors.evidence-link}"
+    backgroundColor: "{colors.mint-soft}"
+    textColor: "{colors.mint-deep}"
     typography: "{typography.metadata}"
     rounded: "{rounded.pill}"
     padding: "0.125rem 0.625rem"
   nav-item-active:
-    backgroundColor: "{colors.clean-paper}"
-    textColor: "{colors.ink}"
+    backgroundColor: "{colors.indigo-ground}"
+    textColor: "{colors.on-ground}"
     typography: "{typography.label}"
     rounded: "{rounded.lg}"
     padding: "0 0.75rem"
@@ -112,8 +114,8 @@ components:
 ClassTrace should feel like a well-kept evidence ledger open on a teacher's
 desk: humane without being themed, structured without becoming institutional,
 and quiet enough that the observation remains the most important thing on the
-screen. Warm paper tones soften the working environment while ink-forward type,
-rules, and ledger rows make saved evidence easy to scan and trust.
+screen. Cool near-white surfaces keep the workspace clear while indigo structure,
+ink-forward type, and ledger rows make saved evidence easy to scan and trust.
 
 This is product UI, so familiarity is an asset. Controls use standard
 affordances, interaction state is explicit, and motion communicates change
@@ -126,57 +128,54 @@ scanning rather than adding panels.
 
 - Capture-first hierarchy with one prominent working surface.
 - Evidence-led ledgers separated by rules instead of interchangeable card grids.
-- Warm paper, dark ink, rare rust action, and sage validation.
+- Cool quiet surfaces, indigo structure, mint action, and deep-mint validation.
 - Familiar controls with visible focus, explicit error, and reduced-motion states.
 - Compact teacher language with no invented analytics or automation concepts.
 
 ## Colors
 
-The palette is restrained and role-driven: warm neutral surfaces, strong ink,
-one rust action color, blue for navigation through evidence, and sage for
-teacher-validated state.
+The palette is restrained and role-driven: cool neutral surfaces, strong indigo
+ink, one mint action color, and a deeper mint for readable links, icons, and
+teacher-validated state on light surfaces.
 
 ### Primary
 
-- **Rust Capture:** The scarce action color for the main action, current-state
-  emphasis, and focus hierarchy.
+- **Mint Action:** The scarce bright color for primary action fills and emphasis
+  on dark indigo surfaces. It always takes dark mint ink, never white text.
 
 ### Secondary
 
-- **Evidence Link:** Blue is reserved for links and organizational tags. It is
-  not a competing primary-action system.
-- **Sage Validated:** Sage marks teacher-validated evidence and always appears
+- **Deep Mint:** Deep mint is reserved for links, tags, focus, and thin icons on
+  light surfaces because the brighter action mint does not meet text contrast.
+- **Mint Validated:** Mint marks teacher-validated evidence and always appears
   with an icon or the word “Validated.”
-- **Deep Navy:** A strong alternate action and shell color used only where the
-  existing component vocabulary calls for it.
+- **Indigo Ground:** Indigo owns public hero/navigation fields and active
+  navigation. Raised indigo is reserved for structure inside those dark fields.
 
 ### Tertiary
 
-- **Gold Desk Note:** A restrained supporting accent for instructional context,
-  never a success or primary-action color.
-- **Destructive Rust:** Permanent or high-consequence actions use their own
-  semantic red-rust role rather than the primary action color.
+- **Destructive:** Permanent or high-consequence actions retain a distinct red
+  role rather than borrowing mint action or validation color.
 
 ### Neutral
 
-- **Paper Background:** The ambient workspace beneath authenticated and public
-  surfaces.
-- **Clean Paper:** The active reading and working surface for capture, review,
-  roster, and recovery.
+- **Surface:** The ambient workspace beneath authenticated and public surfaces.
+- **Raised Surface:** The active reading and working surface for capture,
+  review, roster, and recovery.
 - **Ink:** Primary text, labels, and key metadata.
-- **Muted Paper:** Quiet grouping, hover, and secondary structural tone.
+- **Muted Surface:** Quiet grouping, hover, inset fields, and sidebar structure.
 - **Muted Ink:** Supporting copy that still meets AA contrast.
 - **Ledger Rule:** Borders and dividers that organize rows without decorative
   depth.
 
 ### Named Rules
 
-**The Rust Rarity Rule.** Rust belongs to primary actions, active indicators,
-and focus states. If rust appears everywhere, the hierarchy is broken.
+**The Mint Contrast Rule.** Bright mint belongs on primary action backgrounds or
+as text/icons on indigo. Bright mint never carries white text and never appears
+as text or a thin stroke on a light surface; use deep mint there.
 
-**The Validation Is Sage Rule.** Validated evidence uses sage plus explicit
-text or iconography. Never substitute loud success green, blue information
-styling, or gold celebration.
+**The Validation Is Mint Rule.** Validated evidence uses a soft mint surface,
+deep-mint foreground, and explicit text or iconography.
 
 **The No Rainbow Tags Rule.** Tags organize evidence; they are not decoration.
 Use the shared muted, bordered chip vocabulary.
@@ -217,13 +216,13 @@ metadata role.
 ## Elevation
 
 ClassTrace is border-first and only lightly lifted. Ledger rules and tonal
-surfaces explain most relationships. The two shadows simulate restrained paper
+surfaces explain most relationships. The two shadows simulate restrained surface
 separation on a single active surface or a genuinely floating element; they are
 never a default applied to every row.
 
 ### Shadow Vocabulary
 
-- **Paper** (`0 3px 8px rgba(31, 25, 17, 0.12)`): The quick-capture composer,
+- **Surface** (`0 2px 6px rgba(20, 26, 46, 0.10)`): The quick-capture composer,
   one active evidence ledger, deliberate empty/recovery surfaces, and
   print-safe evidence entries.
 - **Floating** (`0 8px 14px rgba(31, 25, 17, 0.18)`): Rare overlays and public
@@ -232,7 +231,7 @@ never a default applied to every row.
 ### Named Rules
 
 **The Border-First Rule.** If a border or divider explains the relationship,
-use it and stop. Shadow is reserved for active paper separation.
+use it and stop. Shadow is reserved for active surface separation.
 
 **The One Lifted Surface Rule.** A workflow may have one dominant lifted
 surface. Nested shadows and stacks of floating cards are forbidden.
@@ -243,12 +242,12 @@ surface. Nested shadows and stacks of floating cards are forbidden.
 
 - **Shape:** Modestly curved controls using the shared large radius
   (0.5625rem); tags alone become pills.
-- **Primary:** Rust background with clean-paper text. The default primitive is
+- **Primary:** Mint background with dark mint ink. The default primitive is
   2rem high; important forms may use the established 2.5rem treatment.
 - **Hover / Focus:** Hover changes only semantic color. Focus adds the ring
   color with a 3px visible ring. Active press moves down 1px. Disabled controls
   remain visible at reduced opacity and reject interaction.
-- **Secondary / Ghost:** Outline uses a clean-paper surface and ledger border;
+- **Secondary / Ghost:** Outline uses a raised surface and ledger border;
   ghost uses a muted tonal hover with no decorative border.
 - **Destructive:** A low-opacity destructive surface with destructive text.
   Consequence copy and confirmation remain in the same reading context.
@@ -256,7 +255,8 @@ surface. Nested shadows and stacks of floating cards are forbidden.
 ### Chips
 
 - **Style:** Full-pill, 1px bordered, 12px medium type, and compact horizontal
-  padding. Evidence type uses a rust tint; tags use muted paper with link blue.
+  padding. Evidence type uses a soft-mint tint; tags use a transparent surface
+  with muted ink and the shared line.
 - **State:** Chips display organization or state. They do not masquerade as
   buttons unless the component is explicitly a filter with `aria-pressed`.
 
@@ -264,9 +264,9 @@ surface. Nested shadows and stacks of floating cards are forbidden.
 
 - **Corner Style:** Active work surfaces use the shared card radius (1.125rem).
   Ledger rows inside them remain square and are separated by rules.
-- **Background:** Clean paper for active surfaces; partial muted-paper tints for
+- **Background:** Raised near-white for active surfaces; muted cool tints for
   secondary structure.
-- **Shadow Strategy:** Use the paper shadow only for the single dominant work
+- **Shadow Strategy:** Use the surface shadow only for the single dominant work
   surface; otherwise rely on a ledger border.
 - **Border:** One ledger-rule border around a true container; dividers separate
   rows.
@@ -275,7 +275,7 @@ surface. Nested shadows and stacks of floating cards are forbidden.
 ### Inputs / Fields
 
 - **Style:** Visible label, 2.5rem control height, 0.5rem radius, ledger border,
-  and a half-strength paper background.
+  and a muted-surface background.
 - **Focus:** Ring-colored border plus a visible 3px low-opacity ring.
 - **Error / Disabled:** `aria-invalid` pairs destructive border/ring with an
   adjacent accessible error. Disabled fields preserve legibility and reject
@@ -284,9 +284,9 @@ surface. Nested shadows and stacks of floating cards are forbidden.
 ### Navigation
 
 Authenticated navigation uses 44px-high, rounded text-and-icon links. Inactive
-items use muted ink and a tonal hover; the active item returns to ink, gives its
-icon rust emphasis, sets `aria-current="page"`, and may use a restrained 2px
-desktop underline. Mobile controls wrap without horizontal scrolling.
+items use muted indigo ink and a tonal hover; the active item uses an indigo
+ground, on-ground text, and a mint icon while retaining `aria-current="page"`.
+Mobile controls wrap without horizontal scrolling.
 
 ### Evidence Ledger
 
@@ -303,8 +303,9 @@ secondary analytics surface.
 - **Do** keep capture visually primary and ask for exactly one student.
 - **Do** render evidence and roster data as ledgers when scanning matters.
 - **Do** use the semantic roles declared in `app/globals.css`.
-- **Do** reserve rust for primary action, current state, and focus hierarchy.
-- **Do** pair sage validation with the word “Validated” or a meaningful icon.
+- **Do** reserve bright mint for action fills and dark-surface emphasis.
+- **Do** use deep mint for light-surface links, focus, text, and thin icons.
+- **Do** pair mint validation with the word “Validated” or a meaningful icon.
 - **Do** use familiar controls, visible labels, AA contrast, named landmarks,
   non-color state cues, and reduced-motion alternatives.
 - **Do** keep archive calmer and easier to choose than permanent delete.

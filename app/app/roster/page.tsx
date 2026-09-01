@@ -172,7 +172,7 @@ function ClassOverview({
         })}
         <li>
           <details className="group">
-            <summary className="flex min-h-12 cursor-pointer list-none items-center gap-2 px-4 text-sm font-medium text-primary outline-none transition-colors hover:bg-muted/40 focus-visible:bg-muted/40 sm:px-5 [&::-webkit-details-marker]:hidden">
+            <summary className="flex min-h-12 cursor-pointer list-none items-center gap-2 px-4 text-sm font-medium text-link outline-none transition-colors hover:bg-muted/40 focus-visible:bg-muted/40 sm:px-5 [&::-webkit-details-marker]:hidden">
               <Plus className="size-4" aria-hidden="true" />
               New class
             </summary>
