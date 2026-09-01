@@ -20,13 +20,13 @@ colors:
   destructive: "#a33d2e"
 typography:
   display:
-    fontFamily: "Fraunces, Georgia, serif"
+    fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif"
     fontSize: "1.5rem"
     fontWeight: 600
     lineHeight: 1.2
     letterSpacing: "-0.025em"
   headline:
-    fontFamily: "Fraunces, Georgia, serif"
+    fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif"
     fontSize: "1.125rem"
     fontWeight: 600
     lineHeight: 1.4
@@ -49,7 +49,7 @@ rounded:
   sm: "0.375rem"
   md: "0.5rem"
   lg: "0.5625rem"
-  card: "1.125rem"
+  card: "0.625rem"
   pill: "9999px"
 spacing:
   xs: "0.25rem"
@@ -184,14 +184,14 @@ Use the shared muted, bordered chip vocabulary.
 
 ## Typography
 
-**Display Font:** Fraunces (with Georgia fallback)  
-**Body Font:** Inter (with system sans-serif fallback)  
-**Label/Mono Font:** Inter for labels; the system monospace stack only for
-reference identifiers and counters.
+**Display, Body, and Label Font:** Inter (with system sans-serif fallback)
+**Mono Font:** The system monospace stack is reserved for reference identifiers
+and counters.
 
-**Character:** Fraunces gives page and section headings a humane editorial
-voice. Inter keeps every working control, label, evidence record, and metadata
-line direct and highly legible.
+**Character:** One clear sans-serif family keeps public messaging, working
+controls, evidence records, and metadata direct and highly legible. Weight,
+scale, tracking, and spacing create hierarchy without introducing a decorative
+display face.
 
 ### Hierarchy
 
@@ -208,8 +208,8 @@ line direct and highly legible.
 
 ### Named Rules
 
-**The Labels Stay Sans Rule.** Buttons, form labels, navigation, metadata, and
-data use Inter. Fraunces never appears inside a working control.
+**The Single Sans Rule.** Buttons, headings, form labels, navigation, metadata,
+and data use Inter. Mono appears only for genuine identifiers or counters.
 
 **The Evidence Reads First Rule.** Teacher-approved evidence uses the primary
 ink color at 15px with relaxed leading. Supporting structure steps down to the
@@ -265,7 +265,7 @@ surface. Nested shadows and stacks of floating cards are forbidden.
 
 ### Cards / Containers
 
-- **Corner Style:** Active work surfaces use the shared card radius (1.125rem).
+- **Corner Style:** Active work surfaces use the shared card radius (0.625rem).
   Ledger rows inside them remain square and are separated by rules.
 - **Background:** Raised near-white for active surfaces; muted cool tints for
   secondary structure.
