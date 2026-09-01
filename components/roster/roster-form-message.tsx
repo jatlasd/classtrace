@@ -33,7 +33,7 @@ export function RosterFormMessage({
           tabIndex={tone === "error" ? -1 : undefined}
           className={
             tone === "error"
-              ? "text-destructive outline-none focus-visible:ring-3 focus-visible:ring-ring/30"
+              ? "text-destructive outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
               : "text-muted-foreground"
           }
         >

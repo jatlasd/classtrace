@@ -9,7 +9,7 @@ export function LandingResponsive() {
     <section aria-labelledby="responsive-heading" className="overflow-hidden border-b border-navy-foreground/10 bg-navy px-4 py-14 text-navy-foreground md:px-6 lg:px-8 lg:py-16">
       <div className="mx-auto grid max-w-[1280px] items-center gap-10 lg:grid-cols-[0.66fr_1.34fr] lg:gap-14">
         <div className="max-w-sm">
-          <p className="text-sm font-semibold text-sidebar-ring">One responsive workspace</p>
+          <p className="text-sm font-semibold text-mint">One responsive workspace</p>
           <h2 id="responsive-heading" className="mt-4 text-3xl font-bold leading-tight tracking-[-0.03em] text-balance text-navy-foreground">
             Capture between classes. Review wherever you settle in.
           </h2>
@@ -18,10 +18,10 @@ export function LandingResponsive() {
           </p>
           <ul className="mt-6 space-y-3 text-xs font-medium text-navy-foreground">
             <li className="flex items-center gap-2">
-              <Smartphone aria-hidden="true" className="size-4 text-sidebar-ring" /> Responsive capture and review
+              <Smartphone aria-hidden="true" className="size-4 text-mint" /> Responsive capture and review
             </li>
             <li className="flex items-center gap-2">
-              <MonitorCheck aria-hidden="true" className="size-4 text-sidebar-ring" /> Full feed, timelines, and reports on desktop
+              <MonitorCheck aria-hidden="true" className="size-4 text-mint" /> Full feed, timelines, and reports on desktop
             </li>
           </ul>
         </div>

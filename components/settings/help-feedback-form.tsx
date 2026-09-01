@@ -277,8 +277,8 @@ export function HelpFeedbackForm({
           tabIndex={message.tone === "error" ? -1 : undefined}
           className={
             message.tone === "error"
-              ? "border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive outline-none focus-visible:ring-3 focus-visible:ring-ring/30"
-              : "border border-validated/30 bg-validated/10 px-3 py-2 text-sm text-foreground"
+              ? "border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+              : "border border-border bg-card px-3 py-2 text-sm text-foreground"
           }
         >
           {message.text}

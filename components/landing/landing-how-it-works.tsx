@@ -42,7 +42,7 @@ function PreviewFrame({ children, label }: { children: ReactNode; label: string 
     <div aria-hidden="true" className="overflow-hidden rounded-card border border-border bg-background shadow-floating">
       <div className="flex h-10 items-center justify-between border-b border-border bg-card px-4">
         <div className="flex items-center gap-2 text-[10px] font-bold text-foreground">
-          <span className="flex size-4 items-center justify-center rounded-sm bg-primary text-[8px] text-primary-foreground">CT</span>
+          <span className="flex size-4 items-center justify-center rounded-sm bg-navy text-[8px] text-mint">CT</span>
           ClassTrace
         </div>
         <span className="text-[9px] font-medium text-muted-foreground">{label}</span>
@@ -67,7 +67,7 @@ function WorkflowPreview({ kind }: { kind: PreviewKind }) {
                 <span className="font-semibold text-link">@stacy</span> used her calm-down strategy independently during the math transition <span className="font-semibold text-link">#strategy</span>
               </p>
               <div className="mt-3 flex items-center justify-between gap-3">
-                <span className="flex items-center gap-1.5 text-[9px] text-muted-foreground"><Camera className="size-3" /> Add one photo</span>
+                <span className="flex items-center gap-1.5 rounded-md border border-border px-2 py-1.5 text-[9px] text-muted-foreground"><Camera className="size-3" /> Add one photo</span>
                 <span className="rounded-md bg-primary px-3 py-2 text-[9px] font-semibold text-primary-foreground">Capture note</span>
               </div>
             </div>
@@ -82,8 +82,8 @@ function WorkflowPreview({ kind }: { kind: PreviewKind }) {
       <PreviewFrame label="Teacher review">
         <div className="bg-background p-5 sm:p-6">
           <div className="overflow-hidden rounded-lg border border-border bg-card">
-            <div className="flex items-center gap-3 border-b border-border bg-accent/45 px-4 py-3">
-              <span className="flex size-7 items-center justify-center rounded-full bg-validated/70 text-validated-foreground"><UserRoundCheck className="size-3.5" /></span>
+            <div className="flex items-center gap-3 border-b border-border bg-card px-4 py-3">
+              <span className="flex size-7 items-center justify-center rounded-full border border-border text-muted-foreground"><UserRoundCheck className="size-3.5" /></span>
               <div>
                 <p className="text-[10px] font-semibold text-foreground">Stacy · Math Support</p>
                 <p className="text-[8px] text-muted-foreground">One resolved roster student</p>
@@ -132,7 +132,7 @@ function WorkflowPreview({ kind }: { kind: PreviewKind }) {
 
 export function LandingHowItWorks() {
   return (
-    <section id="how-it-works" aria-labelledby="how-it-works-heading" className="scroll-mt-20 border-b border-border/70 bg-card">
+    <section id="how-it-works" aria-labelledby="how-it-works-heading" className="scroll-mt-20 border-b border-border/70 bg-background">
       <div className="mx-auto max-w-[1180px] px-4 py-12 md:px-6 lg:px-8 lg:py-16">
         <div className="mx-auto max-w-2xl text-center">
           <h2 id="how-it-works-heading" className="text-3xl font-bold tracking-[-0.03em] text-balance text-foreground sm:text-[2.5rem]">
@@ -156,7 +156,7 @@ export function LandingHowItWorks() {
                 <ul className="mt-5 space-y-2.5">
                   {step.points.map((point) => (
                     <li key={point} className="flex items-center gap-2.5 text-sm font-medium text-foreground">
-                      <span className="flex size-5 items-center justify-center rounded-full bg-validated/70 text-validated-foreground"><Check className="size-3" strokeWidth={2.4} /></span>
+                      <span className="flex size-5 items-center justify-center rounded-full border border-border text-muted-foreground"><Check className="size-3" strokeWidth={2.4} /></span>
                       {point}
                     </li>
                   ))}

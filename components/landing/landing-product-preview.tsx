@@ -33,7 +33,7 @@ function EvidenceRows({ compact = false }: { compact?: boolean }) {
     <div className="divide-y divide-border">
       {previewEvidence.slice(0, compact ? 1 : 2).map((record) => (
         <article key={record.student} className="flex gap-3 px-3 py-3.5">
-          <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-accent-soft text-[10px] font-bold text-link">
+          <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-secondary text-[10px] font-bold text-foreground">
             {record.initials}
           </span>
           <div className="min-w-0 flex-1">
@@ -52,7 +52,7 @@ function EvidenceRows({ compact = false }: { compact?: boolean }) {
               {record.tags.map((tag) => (
                 <span
                   key={tag}
-                  className="rounded-full border border-border bg-muted/50 px-1.5 py-0.5 text-[8px] font-medium text-muted-foreground"
+                  className="rounded-full border border-border bg-transparent px-1.5 py-0.5 text-[8px] font-medium text-muted-foreground"
                 >
                   {tag}
                 </span>
@@ -86,7 +86,7 @@ export function LandingProductPreview({
     >
       <div className="flex h-9 items-center justify-between border-b border-border bg-card px-3">
         <div className="flex items-center gap-2 text-[10px] font-bold text-foreground">
-          <span className="flex size-4 items-center justify-center rounded-sm bg-primary text-[8px] text-primary-foreground">
+          <span className="flex size-4 items-center justify-center rounded-sm bg-navy text-[8px] text-mint">
             CT
           </span>
           ClassTrace
@@ -123,7 +123,7 @@ export function LandingProductPreview({
                 Capture, review, and retrieve
               </h2>
             </div>
-            <span className="rounded-md border border-border bg-card px-2 py-1 text-[8px] font-medium text-muted-foreground">
+            <span className="rounded-md border border-border bg-transparent px-2 py-1 text-[8px] font-medium text-muted-foreground">
               All evidence
             </span>
           </div>

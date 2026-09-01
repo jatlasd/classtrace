@@ -4,17 +4,19 @@ description: A calm evidence ledger for teacher-reviewed student observations.
 colors:
   indigo-ground: "#1a2444"
   indigo-raised: "#2e3a63"
+  page: "#ffffff"
   ink: "#141a2e"
   muted-ink: "#5c6480"
   on-ground: "#eff2f0"
   on-ground-muted: "#c3cbda"
+  on-ground-faint: "#8792ad"
   surface: "#f7f9f8"
   surface-muted: "#eaeeec"
-  surface-raised: "#fcfdfc"
-  mint-action: "#84d9c3"
-  mint-action-ink: "#10231f"
-  mint-deep: "#146b5e"
-  mint-soft: "#d6e6e0"
+  mint: "#84d9c3"
+  mint-ink: "#10231f"
+  action: "#1a2444"
+  on-action: "#f7f9f8"
+  action-hover: "#243055"
   destructive: "#a33d2e"
 typography:
   display:
@@ -58,14 +60,14 @@ spacing:
   2xl: "1.5rem"
 components:
   button-primary:
-    backgroundColor: "{colors.mint-action}"
-    textColor: "{colors.mint-action-ink}"
+    backgroundColor: "{colors.action}"
+    textColor: "{colors.on-action}"
     typography: "{typography.label}"
     rounded: "{rounded.lg}"
     padding: "0 0.625rem"
     height: "2rem"
   button-outline:
-    backgroundColor: "{colors.surface-raised}"
+    backgroundColor: "transparent"
     textColor: "{colors.ink}"
     typography: "{typography.label}"
     rounded: "{rounded.lg}"
@@ -86,13 +88,13 @@ components:
     padding: "0 0.75rem"
     height: "2.5rem"
   work-surface:
-    backgroundColor: "{colors.surface-raised}"
+    backgroundColor: "{colors.surface}"
     textColor: "{colors.ink}"
     rounded: "{rounded.card}"
     padding: "1.25rem"
   evidence-chip:
-    backgroundColor: "{colors.mint-soft}"
-    textColor: "{colors.mint-deep}"
+    backgroundColor: "transparent"
+    textColor: "{colors.muted-ink}"
     typography: "{typography.metadata}"
     rounded: "{rounded.pill}"
     padding: "0.125rem 0.625rem"
@@ -128,27 +130,28 @@ scanning rather than adding panels.
 
 - Capture-first hierarchy with one prominent working surface.
 - Evidence-led ledgers separated by rules instead of interchangeable card grids.
-- Cool quiet surfaces, indigo structure, mint action, and deep-mint validation.
+- White and cool surfaces, indigo action, and mint confined to indigo fields.
 - Familiar controls with visible focus, explicit error, and reduced-motion states.
 - Compact teacher language with no invented analytics or automation concepts.
 
 ## Colors
 
-The palette is restrained and role-driven: cool neutral surfaces, strong indigo
-ink, one mint action color, and a deeper mint for readable links, icons, and
-teacher-validated state on light surfaces.
+The palette is restrained and role-driven: white and cool neutral light
+surfaces, indigo action and structure, and mint used only as a brand signature
+inside indigo ground fields.
 
 ### Primary
 
-- **Mint Action:** The scarce bright color for primary action fills and emphasis
-  on dark indigo surfaces. It always takes dark mint ink, never white text.
+- **Indigo Action:** Primary actions and focus on light surfaces use indigo with
+  a near-white foreground.
 
 ### Secondary
 
-- **Deep Mint:** Deep mint is reserved for links, tags, focus, and thin icons on
-  light surfaces because the brighter action mint does not meet text contrast.
-- **Mint Validated:** Mint marks teacher-validated evidence and always appears
-  with an icon or the word “Validated.”
+- **Mint Signature:** Mint is reserved for labels, invited-sign-up actions,
+  rules, and icon strokes inside indigo fields. It never appears directly on a
+  light surface.
+- **Neutral Validation:** Teacher-validated evidence uses ink-muted icons or
+  bordered neutral treatments plus explicit text.
 - **Indigo Ground:** Indigo owns public hero/navigation fields and active
   navigation. Raised indigo is reserved for structure inside those dark fields.
 
@@ -170,12 +173,11 @@ teacher-validated state on light surfaces.
 
 ### Named Rules
 
-**The Mint Contrast Rule.** Bright mint belongs on primary action backgrounds or
-as text/icons on indigo. Bright mint never carries white text and never appears
-as text or a thin stroke on a light surface; use deep mint there.
+**The Mint Ground Rule.** Mint belongs to indigo ground fields. It never appears
+directly on a light surface as a fill, text color, or icon stroke.
 
-**The Validation Is Mint Rule.** Validated evidence uses a soft mint surface,
-deep-mint foreground, and explicit text or iconography.
+**The Validation Stays Neutral Rule.** Validated evidence uses an unfilled or
+cool-neutral bordered treatment with ink-muted foreground and explicit copy.
 
 **The No Rainbow Tags Rule.** Tags organize evidence; they are not decoration.
 Use the shared muted, bordered chip vocabulary.
@@ -242,10 +244,11 @@ surface. Nested shadows and stacks of floating cards are forbidden.
 
 - **Shape:** Modestly curved controls using the shared large radius
   (0.5625rem); tags alone become pills.
-- **Primary:** Mint background with dark mint ink. The default primitive is
+- **Primary:** Indigo background with near-white text on light surfaces. Dark
+  indigo sections explicitly opt into mint with mint ink. The default primitive is
   2rem high; important forms may use the established 2.5rem treatment.
-- **Hover / Focus:** Hover changes only semantic color. Focus adds the ring
-  color with a 3px visible ring. Active press moves down 1px. Disabled controls
+- **Hover / Focus:** Hover changes only semantic color. Focus adds a 2px action
+  ring with a 2px offset. Active press moves down 1px. Disabled controls
   remain visible at reduced opacity and reject interaction.
 - **Secondary / Ghost:** Outline uses a raised surface and ledger border;
   ghost uses a muted tonal hover with no decorative border.
@@ -255,8 +258,8 @@ surface. Nested shadows and stacks of floating cards are forbidden.
 ### Chips
 
 - **Style:** Full-pill, 1px bordered, 12px medium type, and compact horizontal
-  padding. Evidence type uses a soft-mint tint; tags use a transparent surface
-  with muted ink and the shared line.
+  padding. Evidence types and tags use transparent surfaces, muted ink, and the
+  shared line.
 - **State:** Chips display organization or state. They do not masquerade as
   buttons unless the component is explicitly a filter with `aria-pressed`.
 
@@ -276,7 +279,8 @@ surface. Nested shadows and stacks of floating cards are forbidden.
 
 - **Style:** Visible label, 2.5rem control height, 0.5rem radius, ledger border,
   and a muted-surface background.
-- **Focus:** Ring-colored border plus a visible 3px low-opacity ring.
+- **Focus:** Ring-colored border plus a visible 2px action ring with a 2px
+  offset.
 - **Error / Disabled:** `aria-invalid` pairs destructive border/ring with an
   adjacent accessible error. Disabled fields preserve legibility and reject
   interaction.
@@ -303,9 +307,9 @@ secondary analytics surface.
 - **Do** keep capture visually primary and ask for exactly one student.
 - **Do** render evidence and roster data as ledgers when scanning matters.
 - **Do** use the semantic roles declared in `app/globals.css`.
-- **Do** reserve bright mint for action fills and dark-surface emphasis.
-- **Do** use deep mint for light-surface links, focus, text, and thin icons.
-- **Do** pair mint validation with the word “Validated” or a meaningful icon.
+- **Do** reserve mint for deliberate emphasis inside indigo fields.
+- **Do** use indigo action and ink links/icons on light surfaces.
+- **Do** pair neutral validation styling with the word “Validated” or a meaningful icon.
 - **Do** use familiar controls, visible labels, AA contrast, named landmarks,
   non-color state cues, and reduced-motion alternatives.
 - **Do** keep archive calmer and easier to choose than permanent delete.

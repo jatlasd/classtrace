@@ -59,7 +59,7 @@ export function ArchivedRosterStudentActions({
               value={classGroupId}
               onChange={(event) => setClassGroupId(event.target.value)}
               disabled={isPending}
-              className="mt-1 h-9 w-full rounded-md border border-border bg-background/50 px-2 text-sm text-foreground outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/20"
+              className="mt-1 h-9 w-full rounded-md border border-border bg-background/50 px-2 text-sm text-foreground outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             >
               {activeClasses.map((classGroup) => (
                 <option key={classGroup.id} value={classGroup.id}>

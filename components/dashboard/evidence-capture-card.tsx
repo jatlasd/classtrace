@@ -85,9 +85,9 @@ const chipStyles = {
   default: "border-border bg-card text-foreground",
   student: "border-border bg-secondary text-foreground",
   tag: "border-border bg-transparent text-muted-foreground",
-  evidence: "border-border bg-accent-soft/50 text-link",
+  evidence: "border-border bg-transparent text-foreground",
   unresolved:
-    "border-accent/50 bg-accent/25 text-foreground",
+    "border-border bg-transparent text-foreground",
 };
 
 function Chip({
@@ -155,14 +155,14 @@ function CaptureIcon({
 }) {
   if (status === "validated") {
     return (
-      <span className="flex size-9 items-center justify-center rounded-md border border-validated/50 bg-validated/35 text-validated-foreground">
+      <span className="flex size-9 items-center justify-center rounded-md border border-border text-muted-foreground">
         <CheckCircle2 className="size-4" strokeWidth={1.75} />
       </span>
     );
   }
 
   return (
-    <span className="flex size-9 items-center justify-center rounded-md border border-link/25 bg-accent-soft/50 text-link">
+    <span className="flex size-9 items-center justify-center rounded-md border border-border text-muted-foreground">
       <ClipboardCheck className="size-4" strokeWidth={1.75} />
     </span>
   );
@@ -177,7 +177,7 @@ function StatusPill({
 }) {
   if (status === "validated") {
     return (
-      <span className="inline-flex items-center gap-2 rounded-lg border border-validated/60 bg-validated/35 px-2.5 py-1 text-xs font-semibold text-validated-foreground">
+      <span className="inline-flex items-center gap-2 rounded-lg border border-border px-2.5 py-1 text-xs font-semibold text-muted-foreground">
         <Circle className="size-2 fill-current" />
         Validated
       </span>
@@ -186,7 +186,7 @@ function StatusPill({
 
   if (!needsReview) {
     return (
-      <span className="inline-flex items-center gap-2 rounded-lg border border-validated/50 bg-validated/25 px-2.5 py-1 text-xs font-semibold text-validated-foreground">
+      <span className="inline-flex items-center gap-2 rounded-lg border border-border px-2.5 py-1 text-xs font-semibold text-muted-foreground">
         <Circle className="size-2 fill-current" />
         Ready to review
       </span>
@@ -194,7 +194,7 @@ function StatusPill({
   }
 
   return (
-    <span className="inline-flex items-center gap-2 rounded-lg border border-accent/40 bg-accent/20 px-2.5 py-1 text-xs font-semibold text-foreground">
+    <span className="inline-flex items-center gap-2 rounded-lg border border-border px-2.5 py-1 text-xs font-semibold text-foreground">
       <Circle className="size-2 fill-current text-link" />
       Needs review
     </span>
@@ -536,7 +536,7 @@ export function EvidenceCaptureCard({
               ) : null}
 
               {hasUnresolvedMentions ? (
-                <div className="rounded-md border border-accent/40 bg-accent/15 px-3 py-2.5">
+                <div className="rounded-md border border-border bg-card px-3 py-2.5">
                   <p className="text-xs leading-relaxed text-foreground">
                     {unresolvedMentions.length === 1 ? (
                       <>

@@ -7,18 +7,12 @@ import { BrandLockup } from "./brand-lockup";
 afterEach(cleanup);
 
 describe("BrandLockup", () => {
-  it("renders the temporary text-only lockup", () => {
+  it("renders the default light-surface logo tile", () => {
     const { container } = render(<BrandLockup />);
 
     expect(screen.getByText("ClassTrace")).toBeTruthy();
-    expect(
-      container.querySelector('[data-slot="brand-mark"]')?.hasAttribute("data-empty")
-    ).toBe(true);
-    expect(
-      container.querySelector('[data-slot="brand-mark"]')?.classList.contains(
-        "invisible"
-      )
-    ).toBe(true);
+    expect(screen.getByText("CT")).toBeTruthy();
+    expect(container.querySelector('[data-slot="brand-mark"] .bg-navy')).toBeTruthy();
   });
 
   it("accepts a decorative future mark without changing the wordmark", () => {
@@ -31,9 +25,6 @@ describe("BrandLockup", () => {
     expect(
       container.querySelector('[data-slot="brand-mark"]')?.getAttribute("aria-hidden")
     ).toBe("true");
-    expect(
-      container.querySelector('[data-slot="brand-mark"]')?.hasAttribute("data-empty")
-    ).toBe(false);
     expect(
       container.querySelector('[data-slot="brand-lockup"]')?.classList.contains(
         "text-navy-foreground"

@@ -192,7 +192,7 @@ function ClassOverview({
         <div className="px-1">
           <Link
             href={archivedClassesHref()}
-            className="inline-flex min-h-9 items-center gap-1 rounded-md text-sm text-muted-foreground underline-offset-2 outline-none transition-colors hover:text-foreground hover:underline focus-visible:ring-3 focus-visible:ring-ring/20"
+            className="inline-flex min-h-9 items-center gap-1 rounded-md text-sm text-muted-foreground underline-offset-2 outline-none transition-colors hover:text-foreground hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
           >
             View archived classes
           </Link>
@@ -368,7 +368,7 @@ export default async function RosterPage({ searchParams }: RosterPageProps) {
             {readyForCapture ? (
               <Link
                 href={routes.feed}
-                className="inline-flex min-h-9 items-center gap-1.5 rounded-md px-2 text-sm font-medium text-link outline-none transition-colors hover:bg-muted/50 focus-visible:ring-3 focus-visible:ring-ring/30"
+                className="inline-flex min-h-9 items-center gap-1.5 rounded-md px-2 text-sm font-medium text-link outline-none transition-colors hover:bg-muted/50 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
               >
                 {classReadiness.activeStudentCount}{" "}
                 {classReadiness.activeStudentCount === 1

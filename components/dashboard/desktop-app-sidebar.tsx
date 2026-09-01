@@ -24,7 +24,7 @@ export function DesktopAppSidebar({
         <Link
           href={routes.feed}
           aria-label="ClassTrace capture"
-          className="rounded-md outline-none focus-visible:ring-3 focus-visible:ring-sidebar-ring/50"
+          className="rounded-md outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
         >
           <BrandLockup size="md" />
         </Link>
@@ -43,7 +43,7 @@ export function DesktopAppSidebar({
                 key={item.label}
                 href={item.href}
                 aria-current={active ? "page" : undefined}
-                className={`flex h-11 items-center gap-3 rounded-md border px-3 text-sm font-semibold outline-none transition-colors focus-visible:ring-3 focus-visible:ring-sidebar-ring/50 ${
+                className={`flex h-11 items-center gap-3 rounded-md border px-3 text-sm font-semibold outline-none transition-colors focus-visible:ring-2 focus-visible:ring-sidebar-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
                   active
                     ? "border-sidebar-ring bg-sidebar-accent text-sidebar-accent-foreground"
                     : "border-transparent text-sidebar-foreground/78 hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground"
@@ -51,7 +51,7 @@ export function DesktopAppSidebar({
               >
                 <item.icon
                   aria-hidden="true"
-                  className={`size-[18px] shrink-0 ${active ? "text-primary" : ""}`}
+                  className={`size-[18px] shrink-0 ${active ? "text-mint" : ""}`}
                   strokeWidth={active ? 2.2 : 1.8}
                 />
                 <span>{item.label}</span>
@@ -69,7 +69,7 @@ export function DesktopAppSidebar({
           type="button"
           disabled={isSigningOut}
           onClick={onSignOut}
-          className="flex h-11 w-full items-center gap-3 rounded-md px-3 text-sm font-semibold text-sidebar-foreground/78 outline-none transition-colors hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground focus-visible:ring-3 focus-visible:ring-sidebar-ring/50 disabled:cursor-wait disabled:opacity-60"
+          className="flex h-11 w-full items-center gap-3 rounded-md px-3 text-sm font-semibold text-sidebar-foreground/78 outline-none transition-colors hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground focus-visible:ring-2 focus-visible:ring-sidebar-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-wait disabled:opacity-60"
         >
           <LogOut aria-hidden="true" className="size-[18px]" strokeWidth={1.8} />
           <span>{isSigningOut ? "Signing out…" : "Sign out"}</span>

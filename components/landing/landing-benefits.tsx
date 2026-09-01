@@ -19,26 +19,26 @@ const benefits = [
 
 export function LandingBenefits() {
   return (
-    <section aria-labelledby="problem-heading" className="border-b border-border/70 bg-background">
+    <section aria-labelledby="problem-heading" className="border-b border-navy-foreground/10 bg-navy text-navy-foreground">
       <div className="mx-auto grid max-w-[1180px] gap-10 px-4 py-14 md:px-6 lg:grid-cols-[0.9fr_1.1fr] lg:gap-20 lg:px-8 lg:py-20">
         <div className="max-w-xl">
-          <h2 id="problem-heading" className="text-3xl font-bold leading-tight tracking-[-0.03em] text-balance text-foreground sm:text-[2.5rem]">
+          <h2 id="problem-heading" className="text-3xl font-bold leading-tight tracking-[-0.03em] text-balance text-navy-foreground sm:text-[2.5rem]">
             The hard part is not noticing. It is keeping the moment from getting lost.
           </h2>
-          <p className="mt-5 max-w-lg text-[15px] leading-7 text-pretty text-muted-foreground">
+          <p className="mt-5 max-w-lg text-[15px] leading-7 text-pretty text-ground-muted">
             A useful observation can disappear between the next transition and the
             next meeting. ClassTrace gives it one dependable path from classroom
             moment to student record.
           </p>
         </div>
-        <ol className="border-t border-border">
+        <ol className="border-t border-navy-foreground/10">
           {benefits.map((benefit, index) => (
-            <li key={benefit.title} className="grid grid-cols-[2.5rem_1fr] gap-4 border-b border-border py-5 sm:grid-cols-[3rem_0.75fr_1.25fr] sm:gap-5">
-              <span className="pt-0.5 text-xs font-semibold tabular-nums text-link">
+            <li key={benefit.title} className="grid grid-cols-[2.5rem_1fr] gap-4 border-b border-navy-foreground/10 py-5 sm:grid-cols-[3rem_0.75fr_1.25fr] sm:gap-5">
+              <span className="pt-0.5 text-xs font-semibold tabular-nums text-mint">
                 {String(index + 1).padStart(2, "0")}
               </span>
-              <h3 className="text-sm font-semibold text-foreground">{benefit.title}</h3>
-              <p className="col-start-2 text-sm leading-6 text-muted-foreground sm:col-start-3">
+              <h3 className="text-sm font-semibold text-navy-foreground">{benefit.title}</h3>
+              <p className="col-start-2 text-sm leading-6 text-ground-muted sm:col-start-3">
                 {benefit.body}
               </p>
             </li>

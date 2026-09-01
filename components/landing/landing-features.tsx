@@ -31,15 +31,8 @@ const features = [
 export function LandingFeatures() {
   return (
     <section id="features" aria-labelledby="features-heading" className="scroll-mt-20 border-y border-border/70 bg-background">
-      <div className="mx-auto grid max-w-[1180px] gap-10 px-4 py-14 md:px-6 lg:grid-cols-[0.72fr_1.28fr] lg:gap-20 lg:px-8 lg:py-20">
-        <div className="max-w-sm">
-          <h2 id="features-heading" className="text-3xl font-bold leading-tight tracking-[-0.03em] text-balance text-foreground">
-            The record stays useful after the bell.
-          </h2>
-          <p className="mt-4 text-[15px] leading-7 text-muted-foreground">
-            The essentials for moving from a quick classroom moment to evidence you can retrieve later.
-          </p>
-        </div>
+      <div className="mx-auto grid max-w-[1180px] gap-10 px-4 py-14 md:px-6 lg:grid-cols-[1.28fr_0.72fr] lg:gap-20 lg:px-8 lg:py-20">
+
         <ul className="border-t border-border">
           {features.map((feature) => (
             <li key={feature.title} className="grid grid-cols-[2rem_1fr] gap-4 border-b border-border py-4 sm:grid-cols-[2rem_0.7fr_1.3fr] sm:items-center sm:gap-5">
@@ -49,6 +42,14 @@ export function LandingFeatures() {
             </li>
           ))}
         </ul>
+                <div className="max-w-sm">
+          <h2 id="features-heading" className="text-3xl font-bold leading-tight tracking-[-0.03em] text-balance text-foreground">
+            The record stays useful after the bell.
+          </h2>
+          <p className="mt-4 text-[15px] leading-7 text-muted-foreground">
+            The essentials for moving from a quick classroom moment to evidence you can retrieve later.
+          </p>
+        </div>
       </div>
     </section>
   );

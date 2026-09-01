@@ -14,7 +14,7 @@ Source: `app/globals.css`
 | Border | `border-border` |
 | Primary action/focus | `primary`, `ring` |
 | Link/tag | `link` |
-| Quiet mint surface | `accent-soft` |
+| Mint on indigo only | `mint`, `mint-ink` |
 | Muted text on indigo | `ground-muted` |
 | Validated state | `validated`, `validated-foreground` |
 | Destructive state | `destructive` |
@@ -24,13 +24,13 @@ Source: `app/globals.css`
 | Identity / page title | `font-sans`; authenticated titles use `text-2xl` or `text-3xl` |
 | Operational heading | `font-sans`; usually `text-base`, `text-lg`, or `text-xl` with `font-semibold` |
 
-Public and authenticated surfaces share one semantic palette: cool near-white
-surfaces for `background`, `card`, and `popover`; indigo ink and ground fields;
-mint for `primary`; deep mint for `link` and light-surface `ring`; soft mint for
-`validated`; and a distinct red for `destructive`. `navy` remains a compatibility
-name for the indigo ground, while `sidebar-*` owns shell-specific treatments.
-Components consume roles rather than raw colors. Bright mint never appears as
-text or a thin stroke on light surfaces and never takes white text.
+Public and authenticated surfaces share one semantic palette: white page
+backgrounds, cool neutral work surfaces, indigo actions and ground fields, ink
+links/icons, and a distinct red for `destructive`. Mint appears only inside an
+indigo field, where it may mark a primary invitation, icon, label, or small logo
+tile and always takes `mint-ink` when used as a fill. `navy` remains a
+compatibility name for the indigo ground, while `sidebar-*` owns shell-specific
+treatments. Components consume roles rather than raw colors.
 
 `shadow-paper` remains a temporary compatibility alias for `shadow-surface`
 while older presentation components are migrated. `font-display` and
@@ -46,17 +46,16 @@ Last updated: 2026-08-27
 | Property | Pattern |
 |---|---|
 | Background / border | None |
-| Mark | Reserved decorative slot; invisible until supplied, with no invented fallback symbol |
+| Mark | Compact `CT` tile; mint/dark-ink on indigo, indigo/mint on light |
 | Wordmark | `font-sans font-bold tracking-[-0.025em]` |
 | Text color | `text-foreground`; inverse uses `text-navy-foreground` |
 | Sizes | `text-base`, `text-xl`, or `text-2xl` with proportional mark/gap |
 | Spacing | `gap-2`, `gap-2.5`, or `gap-3` by size |
 | Shadow | None |
 
-Use the text-only fallback until the user supplies the final ClassTrace mark.
-Its invisible slot preserves lockup geometry for later integration. The symbol
-is decorative beside the visible wordmark. Links wrapping the lockup retain the
-visible `ClassTrace` name.
+The compact tile is decorative beside the visible wordmark. A supplied future
+mark may replace it without changing the wordmark contract. Links wrapping the
+lockup retain the visible `ClassTrace` name.
 
 ## App shell
 
@@ -77,7 +76,7 @@ Last updated: 2026-08-30
 | Primary navigation | Capture, Students, Settings only; 44px desktop and 48px mobile rows |
 | Active state | Full `border-sidebar-ring bg-sidebar-accent text-sidebar-accent-foreground`, mint icon, plus `aria-current="page"` |
 | Inactive state | `text-sidebar-foreground/78` with tonal sidebar hover |
-| Focus | 3px `sidebar-ring/50` ring on inverse controls and links |
+| Focus | Indigo focus treatment on the light shell; mint focus treatment inside indigo public fields |
 | Motion | Short drawer translation/backdrop fade only when reduced motion is not requested |
 | Workspace offset | `lg:pl-52 lg:pt-14`; reset for report printing |
 
@@ -110,11 +109,11 @@ Last updated: 2026-07-22
 
 | Property | Pattern |
 |---|---|
-| Background | Inherits the route surface; no separate fill |
-| Border | `border-t border-border/70` |
+| Background | Inherits the route surface by default; public landing uses inverse `bg-navy` |
+| Border | Light `border-border/70`; inverse `border-navy-foreground/10` |
 | Radius / shadow | None |
 | Brand text | Shared `BrandLockup` at its small size |
-| Link text | `text-sm text-muted-foreground`; access link may use `font-medium text-foreground/80` |
+| Link text | Light uses muted ink; inverse uses `ground-muted` with on-ground/mint hover |
 | Spacing | `gap-4 px-4 py-6`; link group uses `gap-x-6 gap-y-2` |
 | Interaction | `transition-colors hover:text-foreground` |
 | Accent | None until the final supplied mark is integrated |
@@ -128,9 +127,9 @@ trust and support destinations. Print views remove the footer.
 Files: `components/ui/button.tsx`, `components/ui/textarea.tsx`
 
 - Buttons use `rounded-md`, targeted color/border/transform transitions, visible focus rings, disabled opacity, and a small active press.
-- Primary uses mint with dark mint ink and no decorative shadow; outline/ghost remain visually secondary. Indigo remains available through the `navy` variant only for shell-adjacent or inverse contexts.
+- Primary uses indigo with near-white text on light surfaces and no decorative shadow; dark landing sections explicitly use mint with dark mint ink. Outline/ghost remain visually secondary.
 - Button targets are about 44 px below `lg` and become compact at desktop widths where the selected size allows it.
-- Textareas use `bg-card`, semantic input borders, `rounded-md`, and a visible 3 px deep-mint focus ring.
+- Textareas use `bg-card`, semantic input borders, `rounded-md`, and an indigo focus treatment.
 - Errors use destructive text/border plus accessible live/focus behavior.
 - Pending labels use `…`.
 
@@ -251,8 +250,8 @@ Last imprinted: 2026-07-22
 - Editing the original capture is a separate, explicitly labeled action. Draft
   deletion opens the shared inline confirmation panel, moves focus to the
   destructive confirmation, and supports Cancel or Escape before deleting.
-- One unmatched mention may enter review. Its Student field uses an
-  accent-tinted border-y panel with a searchable roster combobox instead of a
+- One unmatched mention may enter review. Its Student field uses a neutral
+  bordered panel with a searchable roster combobox instead of a
   native resolution dropdown or a full roster list. The compact field exposes
   at most five matching students, supports keyboard selection, and keeps inline
   student creation as a quiet secondary action. The search uses the shared
@@ -260,14 +259,15 @@ Last imprinted: 2026-07-22
   `border-border`, and `rounded-md`, with `bg-muted` for the active result and
   `text-muted-foreground` for handles. The teacher may add a student with an
   editable name, fixed captured handle, and required class. A
-  successful match collapses to one validated-tint row and remains reflected
+  successful match collapses to one neutral bordered row and remains reflected
   if review is deferred; resolving the student never saves the evidence.
 - Attempting to save while the Student field remains unresolved shows an
   accessible error and moves focus to that highlighted field.
 - Review and save-confirmation headings use the operational `font-sans`
   hierarchy; display type remains reserved for the surrounding page title.
-- The first-save confirmation is a flat soft-mint bordered panel; validation
-  color and copy communicate state without adding another lifted surface.
+- The first-save confirmation is a flat neutral bordered panel; validation
+  copy and a muted-ink icon communicate state without adding another lifted
+  surface or an accent wash.
 - Use one ledger row: capture icon, compact status metadata, full-width source
   or review content, then inline actions. Do not add a nested card, shadow, or
   narrow action rail.
@@ -312,18 +312,18 @@ Last updated: 2026-08-31
 
 | Property | Pattern |
 |---|---|
-| Background | Shared OKLCH tokens; committed indigo `bg-navy` header, hero, and responsive showcase; cool `bg-background` / `bg-card` reading sections; full-width mint closing CTA |
+| Background | Indigo `bg-navy` header/hero, responsive showcase, closing CTA, and footer; white `bg-background` reading sections with cool `bg-card` work surfaces |
 | Frame | `1180px` maximum for the header and benefit strip, a wider `1360px` hero for the product preview, and a `1280px` responsive showcase |
 | Heading | Inter, bold, balanced, and no tighter than `tracking-[-0.04em]`; hero uses 2.75rem–3.85rem, section headings use 1.875rem–2.5rem |
 | Supporting text | `text-[15px] leading-7 text-pretty`; compact preview copy remains 8–12px with deliberate line height |
 | Border / radius | Ledger sections use `border-border` rules without cards; `rounded-card` remains on product previews only |
 | Elevation | Shared palette-tinted `shadow-floating` (`0 8px 14px`) only on product previews; `shadow-surface` only inside previewed product work surfaces |
-| Accent | Mint `bg-primary` with `text-primary-foreground` for invitation and capture; bright mint `text-primary` only on indigo; deep-mint `text-link` for ordered emphasis, light-surface icons, and preview navigation; soft/deep mint for validation |
+| Accent | Mint appears only within indigo fields for invitation CTAs, labels, and icon strokes. Light sections use indigo `bg-primary`, ink `text-link`, neutral avatars/status icons, and unfilled bordered chips |
 | Spacing | Editorial section rhythm (`py-14`–`py-20`) with two-column problem, workflow, feature-ledger, and responsive compositions |
 
 - The landing page follows a problem-to-product sequence: navigation, a direct
-  value proposition with truthful product preview, the classroom documentation
-  gap, three alternating capture/review/retrieve stories with focused previews,
+  value proposition with truthful product preview, three capture/review/retrieve
+  stories with focused previews, the indigo classroom-documentation gap band,
   five supporting capabilities, responsive showcase, and closing invitation CTA.
 - The documentation gap is an ordered four-row ledger, and supporting
   capabilities are a single feature ledger. Do not revert either section to an
@@ -378,7 +378,7 @@ Last imprinted: 2026-07-12
 | Secondary structure | `text-xs leading-relaxed text-muted-foreground` |
 | Chips | `rounded-full border px-2.5 py-0.5 text-xs font-medium` |
 | Tag | `bg-muted/60 text-link` |
-| Evidence type | `border-primary/25 bg-primary/10 text-primary` |
+| Evidence type | `border-border bg-transparent text-muted-foreground` |
 | Follow-up | top divider, muted body, foreground label |
 | Overflow | `break-words [overflow-wrap:anywhere]` |
 
@@ -402,7 +402,7 @@ Last updated: 2026-08-22
 | Border radius | `rounded-md` |
 | Expand affordance | `bg-foreground/85 text-background`; `shadow-sm` |
 | Hover state | `group-hover:bg-foreground` |
-| Focus state | `focus-visible:ring-3 focus-visible:ring-ring/30` |
+| Focus state | `focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2` |
 | Expanded backdrop | `bg-foreground/85`; responsive page-edge padding |
 | Close control | 44px target, `bg-card text-foreground`, visible focus ring |
 

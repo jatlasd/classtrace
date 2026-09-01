@@ -9,7 +9,9 @@ describe("public landing page", () => {
   const markup = renderToStaticMarkup(<Home />);
 
   it("presents the supported capture-to-retrieval workflow", () => {
-    expect(markup).toContain("Turn classroom moments into");
+    expect(markup).toContain(
+      "Capture student evidence without the mental filing cabinet."
+    );
     expect(markup).toContain("The hard part is not noticing");
     expect(markup).toContain("A ten-second note keeps the context attached");
     expect(markup).toContain("You approve the record");

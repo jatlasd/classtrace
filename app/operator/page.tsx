@@ -28,7 +28,7 @@ export default async function OperatorPage() {
           </div>
           <Link
             href={routes.app}
-            className="inline-flex h-9 shrink-0 items-center gap-2 rounded-lg px-3 text-sm font-semibold text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+            className="inline-flex h-9 shrink-0 items-center gap-2 rounded-lg px-3 text-sm font-semibold text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
           >
             <ArrowLeft className="size-4" aria-hidden="true" />
             <span className="hidden sm:inline">Return to app</span>

@@ -15,12 +15,12 @@ Priority order:
 ## Visual language
 
 - Public and authenticated routes share one cool-surface, indigo, and mint semantic palette. Public pages use the colors more compositionally; authenticated routes keep them restrained around the teacher's work.
-- Indigo ground owns public navigation, hero/showcase fields, and active app navigation. Bright mint is reserved for primary action fills and emphasis on indigo; it always takes dark mint ink. Deep mint is reserved for links, focus, tags, and thin icons on light surfaces.
-- Soft mint with deep-mint foreground indicates validated evidence; red remains reserved for destructive state.
+- Indigo ground owns public navigation, hero/showcase fields, the closing invitation, and active app navigation. Mint is a brand signature used only inside those indigo fields; it always takes dark mint ink when used as a fill.
+- Light surfaces use white, cool neutral surfaces, indigo actions, and ink links/icons. Validation uses ink-muted icons or bordered neutral treatments rather than mint or pastel washes; red remains reserved for destructive state.
 - Inter is the sole user-facing type family. Weight, size, spacing, and color create identity and page hierarchy.
 - Borders and tonal separation do most layout work. Shadows are tight, palette-tinted, and reserved for genuinely floating or focused surfaces.
 - Corners are modest (`rounded-md`, `rounded-card`); pills are for chips/status only.
-- The shared brand lockup remains text-only until the user supplies the final mark. Do not invent a temporary symbol.
+- The shared brand lockup uses the approved compact `CT` tile: mint with dark letters on indigo, and indigo with mint letters on light surfaces.
 
 Use semantic tokens from `app/globals.css`. Do not introduce raw palette utilities or hex values in components.
 

@@ -151,7 +151,7 @@ function StudentTimelineEvidenceItem({
           <p className="text-xs font-medium tabular-nums text-muted-foreground">
             {formatTimelineDate(record.evidenceDate)}
           </p>
-          <span className="inline-flex w-fit items-center gap-1.5 rounded-md border border-validated/60 bg-validated/35 px-2 py-0.5 text-[11px] font-semibold text-validated-foreground sm:hidden">
+          <span className="inline-flex w-fit items-center gap-1.5 rounded-md border border-border px-2 py-0.5 text-[11px] font-semibold text-muted-foreground sm:hidden">
             <Check className="size-3" aria-hidden="true" />
             Validated
           </span>
@@ -163,7 +163,7 @@ function StudentTimelineEvidenceItem({
             compact
           />
         </div>
-        <span className="hidden w-fit items-center gap-1.5 self-start rounded-md border border-validated/60 bg-validated/35 px-2 py-0.5 text-[11px] font-semibold text-validated-foreground sm:inline-flex">
+        <span className="hidden w-fit items-center gap-1.5 self-start rounded-md border border-border px-2 py-0.5 text-[11px] font-semibold text-muted-foreground sm:inline-flex">
           <Check className="size-3" aria-hidden="true" />
           Validated
         </span>

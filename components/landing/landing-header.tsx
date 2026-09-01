@@ -9,7 +9,7 @@ export function LandingHeader() {
       <div className="mx-auto flex h-14 max-w-[1180px] items-center justify-between px-4 md:px-6 lg:px-8">
         <Link
           href={routes.root}
-          className="rounded-md focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-sidebar-ring/50"
+          className="rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-mint focus-visible:ring-offset-2 focus-visible:ring-offset-navy"
         >
           <BrandLockup size="sm" tone="inverse" />
         </Link>
@@ -38,7 +38,7 @@ export function LandingHeader() {
           >
             Sign in
           </Link>
-          <Button asChild className="h-9 px-4 text-xs">
+          <Button asChild className="h-9 bg-mint px-4 text-xs text-mint-ink hover:bg-[var(--mint-hover)] focus-visible:border-mint focus-visible:ring-mint focus-visible:ring-offset-navy">
             <Link href={routes.signUp} prefetch={false}>
               Invited sign-up
             </Link>

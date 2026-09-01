@@ -433,11 +433,7 @@ function InterpretationReviewPanelContent({
           <div
             ref={studentResolutionRef}
             tabIndex={-1}
-            className={`space-y-3 border-y px-3 py-3 outline-none focus-visible:ring-3 focus-visible:ring-ring/30 sm:col-span-2 sm:px-4 ${
-              resolvedStudentOverride
-                ? "border-validated/50 bg-validated/15"
-                : "border-accent/50 bg-accent/15"
-            }`}
+            className="space-y-3 border-y border-border bg-card px-3 py-3 outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background sm:col-span-2 sm:px-4"
           >
             {resolvedStudentOverride ? (
               <div className="flex flex-wrap items-center justify-between gap-3">
@@ -604,15 +600,15 @@ function InterpretationReviewPanelContent({
             ref={validationErrorRef}
             role="alert"
             tabIndex={-1}
-            className="text-sm text-destructive outline-none focus-visible:ring-3 focus-visible:ring-ring/30"
+            className="text-sm text-destructive outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
           >
             {validationError}
           </p>
         ) : savedEvidenceId &&
           isFirstWorkspaceEvidence &&
           studentValidation.status === "valid_one_student" ? (
-          <section className="rounded-card border border-validated/60 bg-validated/20 p-4">
-            <p className="text-xs font-semibold uppercase tracking-wider text-validated-foreground">
+          <section className="rounded-card border border-border bg-card p-4">
+            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               Evidence trail started
             </p>
             <h3 className="mt-1 font-sans text-lg font-semibold text-foreground">
@@ -639,7 +635,7 @@ function InterpretationReviewPanelContent({
             </div>
           </section>
         ) : savedEvidenceId ? (
-          <p className="text-sm text-validated-foreground">
+          <p className="text-sm text-muted-foreground">
             Validated evidence saved.
           </p>
         ) : isSaving ? (

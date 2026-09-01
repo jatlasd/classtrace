@@ -41,7 +41,7 @@ function EvidenceChip({
     variant === "tag"
       ? "border-border bg-transparent text-muted-foreground"
       : variant === "evidence"
-        ? "border-border bg-accent-soft/50 text-link"
+        ? "border-border bg-transparent text-foreground"
         : "border-border bg-card text-foreground";
 
   return (

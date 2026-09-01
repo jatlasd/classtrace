@@ -159,9 +159,7 @@ export function OperatorConsole() {
   const messageClassName =
     message?.tone === "error"
       ? "border-destructive/30 bg-destructive/10 text-destructive"
-      : message?.tone === "warning"
-        ? "border-link/30 bg-accent-soft/50 text-foreground"
-        : "border-validated/30 bg-validated/10 text-foreground";
+      : "border-border bg-card text-foreground";
 
   return (
     <div className="space-y-7">

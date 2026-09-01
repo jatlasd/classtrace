@@ -10,8 +10,12 @@
   --font-sans: var(--font-body), ui-sans-serif, system-ui, sans-serif;
   --font-mono: ui-monospace, monospace;
   --color-link: var(--link);
-  --color-accent-soft: var(--accent-soft);
+  --color-mint: var(--mint);
+  --color-mint-ink: var(--mint-ink);
+  --color-mint-rule: var(--mint-rule);
+  --color-mint-dim: var(--mint-dim);
   --color-ground-muted: var(--on-ground-muted);
+  --color-ground-faint: var(--on-ground-faint);
   --color-validated: var(--validated);
   --color-validated-foreground: var(--validated-foreground);
   --color-navy: var(--navy);
@@ -55,47 +59,53 @@
 }
 
 :root {
-  --ground: oklch(0.2692 0.0612 268.95);
-  --ground-raised: oklch(0.3588 0.073 270.09);
-  --ink: oklch(0.2228 0.0402 270.23);
-  --ink-muted: oklch(0.5072 0.0457 272.27);
-  --on-ground: oklch(0.9583 0.0041 157.18);
-  --on-ground-muted: oklch(0.8405 0.0227 263.18);
-  --surface: oklch(0.9803 0.0025 165.08);
-  --surface-2: oklch(0.9455 0.005 165);
-  --surface-3: oklch(0.993 0.0017 145.56);
-  --line: oklch(0.2692 0.0612 268.95 / 0.12);
-  --line-on-ground: oklch(0.9583 0.0041 157.18 / 0.09);
-  --accent: oklch(0.8249 0.089 175.61);
-  --accent-hover: oklch(0.7808 0.0962 174.95);
-  --accent-ink: oklch(0.2383 0.0263 178.85);
-  --accent-deep: oklch(0.4758 0.0805 179.9);
-  --accent-soft: oklch(0.9113 0.0188 171.47);
-  --background: var(--surface);
+  --ground: #1a2444;
+  --ground-raised: #2e3a63;
+  --page: #ffffff;
+  --ink: #141a2e;
+  --ink-muted: #5c6480;
+  --on-ground: #eff2f0;
+  --on-ground-muted: #c3cbda;
+  --on-ground-faint: #8792ad;
+  --surface: #f7f9f8;
+  --surface-2: #eaeeec;
+  --line: rgb(26 36 68 / 0.12);
+  --line-on-ground: rgb(239 242 240 / 0.12);
+  --mint: #84d9c3;
+  --mint-hover: #6fccb4;
+  --mint-ink: #10231f;
+  --mint-rule: rgb(132 217 195 / 0.4);
+  --mint-dim: rgb(132 217 195 / 0.3);
+  --action: var(--ground);
+  --on-action: var(--surface);
+  --action-hover: #243055;
+  --background: var(--page);
   --foreground: var(--ink);
-  --card: var(--surface-3);
+  --card: var(--surface);
   --card-foreground: var(--ink);
-  --popover: var(--surface-3);
+  --popover: var(--page);
   --popover-foreground: var(--ink);
-  --primary: var(--accent);
-  --primary-foreground: var(--accent-ink);
-  --link: var(--accent-deep);
+  --primary: var(--action);
+  --primary-foreground: var(--on-action);
+  --primary-hover: var(--action-hover);
+  --link: var(--ink);
   --secondary: var(--surface-2);
   --secondary-foreground: var(--ink);
   --muted: var(--surface-2);
   --muted-foreground: var(--ink-muted);
-  --accent-foreground: var(--accent-ink);
+  --accent: var(--surface-2);
+  --accent-foreground: var(--ink);
   --destructive: oklch(0.48 0.17 28);
   --border: var(--line);
   --input: oklch(0.2692 0.0612 268.95 / 0.24);
-  --ring: var(--accent-deep);
-  --validated: var(--accent-soft);
-  --validated-foreground: var(--accent-deep);
+  --ring: var(--action);
+  --validated: var(--surface);
+  --validated-foreground: var(--ink-muted);
   --navy: var(--ground);
   --navy-foreground: var(--on-ground);
-  --chart-1: var(--accent-deep);
+  --chart-1: var(--action);
   --chart-2: var(--ground);
-  --chart-3: var(--accent);
+  --chart-3: var(--ink-muted);
   --chart-4: var(--ground-raised);
   --chart-5: var(--ink-muted);
   --radius: 0.5rem;
@@ -110,7 +120,7 @@
   --sidebar-accent: var(--ground);
   --sidebar-accent-foreground: var(--on-ground);
   --sidebar-border: var(--line);
-  --sidebar-ring: var(--accent-deep);
+  --sidebar-ring: var(--action);
 }
 
 .dark {
@@ -120,20 +130,22 @@
   --card-foreground: var(--on-ground);
   --popover: var(--ground-raised);
   --popover-foreground: var(--on-ground);
-  --primary: var(--accent);
-  --primary-foreground: var(--accent-ink);
-  --link: var(--accent);
+  --primary: var(--mint);
+  --primary-foreground: var(--mint-ink);
+  --primary-hover: var(--mint-hover);
+  --link: var(--on-ground);
   --secondary: var(--ground-raised);
   --secondary-foreground: var(--on-ground);
   --muted: var(--ground-raised);
   --muted-foreground: var(--on-ground-muted);
-  --accent-foreground: var(--accent-ink);
+  --accent: var(--ground-raised);
+  --accent-foreground: var(--on-ground);
   --destructive: oklch(0.68 0.14 28);
   --border: var(--line-on-ground);
   --input: oklch(0.9583 0.0041 157.18 / 0.22);
-  --ring: var(--accent);
-  --validated: var(--accent-deep);
-  --validated-foreground: var(--accent);
+  --ring: var(--mint);
+  --validated: var(--ground-raised);
+  --validated-foreground: var(--on-ground-muted);
   --navy: var(--ground);
   --navy-foreground: var(--on-ground);
   --sidebar: var(--ground);
@@ -143,7 +155,7 @@
   --sidebar-accent: var(--ground-raised);
   --sidebar-accent-foreground: var(--on-ground);
   --sidebar-border: var(--line-on-ground);
-  --sidebar-ring: var(--accent);
+  --sidebar-ring: var(--mint);
 }
 
 @layer base {

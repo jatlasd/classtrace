@@ -59,7 +59,7 @@ export function RosterStudentRow({
         <Link
           href={routes.student(student.id)}
           aria-label={`Open ${student.displayName} timeline`}
-          className="-m-1.5 flex min-w-0 flex-1 basis-56 items-center gap-3 rounded-md p-1.5 outline-none transition-colors hover:bg-muted/50 focus-visible:ring-3 focus-visible:ring-ring/20"
+          className="-m-1.5 flex min-w-0 flex-1 basis-56 items-center gap-3 rounded-md p-1.5 outline-none transition-colors hover:bg-muted/50 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
         >
           <span className="flex size-8 shrink-0 items-center justify-center rounded-md border border-border bg-muted/50 text-[10px] font-bold text-foreground">
             {studentInitials(student.displayName)}

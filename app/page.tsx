@@ -26,13 +26,13 @@ export default function Home() {
       <LandingHeader />
       <main id="main-content" tabIndex={-1} className="flex-1 outline-none">
         <LandingHero />
-        <LandingBenefits />
         <LandingHowItWorks />
+        <LandingBenefits />
         <LandingFeatures />
         <LandingResponsive />
         <LandingClosingCta />
       </main>
-      <SiteFooter showAccessLinks />
+      <SiteFooter showAccessLinks tone="inverse" />
     </div>
   );
 }

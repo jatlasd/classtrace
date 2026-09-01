@@ -264,7 +264,7 @@ export function BetaAcknowledgementFlow({
             checked={isChecked}
             disabled={isPending}
             onChange={(event) => setIsChecked(event.target.checked)}
-            className="mt-0.5 size-5 shrink-0 rounded border-border accent-primary outline-none focus-visible:ring-3 focus-visible:ring-ring/40 disabled:cursor-not-allowed"
+            className="mt-0.5 size-5 shrink-0 rounded border-border accent-primary outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed"
           />
           <span>{currentStep.checkboxLabel}</span>
         </label>
@@ -274,7 +274,7 @@ export function BetaAcknowledgementFlow({
             ref={errorRef}
             role="alert"
             tabIndex={-1}
-            className="mt-4 border border-destructive/30 bg-destructive/5 px-3 py-3 text-sm text-destructive outline-none focus-visible:ring-3 focus-visible:ring-destructive/20"
+            className="mt-4 border border-destructive/30 bg-destructive/5 px-3 py-3 text-sm text-destructive outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
           >
             {error}
           </div>

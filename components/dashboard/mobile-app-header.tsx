@@ -96,7 +96,7 @@ export function MobileAppHeader({
           <Link
             href={routes.feed}
             aria-label="ClassTrace capture"
-            className="shrink-0 rounded-md outline-none focus-visible:ring-3 focus-visible:ring-sidebar-ring/50"
+            className="shrink-0 rounded-md outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
           >
             <BrandLockup size="sm" />
           </Link>
@@ -113,7 +113,7 @@ export function MobileAppHeader({
           aria-expanded={isOpen}
           aria-haspopup="dialog"
           onClick={() => setIsOpen(true)}
-          className="flex size-11 shrink-0 items-center justify-center rounded-md text-sidebar-foreground outline-none transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-3 focus-visible:ring-sidebar-ring/50"
+          className="flex size-11 shrink-0 items-center justify-center rounded-md text-sidebar-foreground outline-none transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 focus-visible:ring-sidebar-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
         >
           <Menu aria-hidden="true" className="size-5" strokeWidth={2} />
         </button>
@@ -145,7 +145,7 @@ export function MobileAppHeader({
                 type="button"
                 aria-label="Close navigation menu"
                 onClick={closeMenu}
-                className="flex size-11 items-center justify-center rounded-md text-sidebar-foreground outline-none transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-3 focus-visible:ring-sidebar-ring/50"
+                className="flex size-11 items-center justify-center rounded-md text-sidebar-foreground outline-none transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 focus-visible:ring-sidebar-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
               >
                 <X aria-hidden="true" className="size-5" strokeWidth={2} />
               </button>
@@ -162,7 +162,7 @@ export function MobileAppHeader({
                       href={item.href}
                       aria-current={active ? "page" : undefined}
                       onClick={closeMenu}
-                      className={`flex min-h-12 items-center gap-3 rounded-md border px-3 text-sm font-semibold outline-none transition-colors focus-visible:ring-3 focus-visible:ring-sidebar-ring/50 ${
+                      className={`flex min-h-12 items-center gap-3 rounded-md border px-3 text-sm font-semibold outline-none transition-colors focus-visible:ring-2 focus-visible:ring-sidebar-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
                         active
                           ? "border-sidebar-ring bg-sidebar-accent text-sidebar-accent-foreground"
                           : "border-transparent text-sidebar-foreground/80 hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground"
@@ -170,7 +170,7 @@ export function MobileAppHeader({
                     >
                       <item.icon
                         aria-hidden="true"
-                        className={`size-5 shrink-0 ${active ? "text-primary" : ""}`}
+                        className={`size-5 shrink-0 ${active ? "text-mint" : ""}`}
                         strokeWidth={active ? 2.2 : 1.8}
                       />
                       <span>{item.label}</span>
@@ -182,16 +182,16 @@ export function MobileAppHeader({
 
             <div className="border-t border-sidebar-border px-4 py-4">
               <nav aria-label="Trust and support" className="grid grid-cols-2 gap-x-4 gap-y-1">
-                <Link href={routes.privacy} onClick={closeMenu} className="flex min-h-11 items-center text-xs font-medium text-sidebar-foreground/68 outline-none hover:text-sidebar-primary focus-visible:ring-3 focus-visible:ring-sidebar-ring/50">
+                <Link href={routes.privacy} onClick={closeMenu} className="flex min-h-11 items-center text-xs font-medium text-sidebar-foreground/68 outline-none hover:text-sidebar-primary focus-visible:ring-2 focus-visible:ring-sidebar-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background">
                   Privacy
                 </Link>
-                <Link href={routes.terms} onClick={closeMenu} className="flex min-h-11 items-center text-xs font-medium text-sidebar-foreground/68 outline-none hover:text-sidebar-primary focus-visible:ring-3 focus-visible:ring-sidebar-ring/50">
+                <Link href={routes.terms} onClick={closeMenu} className="flex min-h-11 items-center text-xs font-medium text-sidebar-foreground/68 outline-none hover:text-sidebar-primary focus-visible:ring-2 focus-visible:ring-sidebar-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background">
                   Beta terms
                 </Link>
-                <Link href={routes.support} onClick={closeMenu} className="flex min-h-11 items-center text-xs font-medium text-sidebar-foreground/68 outline-none hover:text-sidebar-primary focus-visible:ring-3 focus-visible:ring-sidebar-ring/50">
+                <Link href={routes.support} onClick={closeMenu} className="flex min-h-11 items-center text-xs font-medium text-sidebar-foreground/68 outline-none hover:text-sidebar-primary focus-visible:ring-2 focus-visible:ring-sidebar-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background">
                   Support
                 </Link>
-                <Link href={routes.dataDeletion} onClick={closeMenu} className="flex min-h-11 items-center text-xs font-medium text-sidebar-foreground/68 outline-none hover:text-sidebar-primary focus-visible:ring-3 focus-visible:ring-sidebar-ring/50">
+                <Link href={routes.dataDeletion} onClick={closeMenu} className="flex min-h-11 items-center text-xs font-medium text-sidebar-foreground/68 outline-none hover:text-sidebar-primary focus-visible:ring-2 focus-visible:ring-sidebar-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background">
                   Account deletion
                 </Link>
               </nav>
@@ -199,7 +199,7 @@ export function MobileAppHeader({
                 type="button"
                 disabled={isSigningOut}
                 onClick={onSignOut}
-                className="mt-3 flex min-h-12 w-full items-center gap-3 rounded-md border border-sidebar-border px-3 text-sm font-semibold text-sidebar-foreground outline-none transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-3 focus-visible:ring-sidebar-ring/50 disabled:cursor-wait disabled:opacity-60"
+                className="mt-3 flex min-h-12 w-full items-center gap-3 rounded-md border border-sidebar-border px-3 text-sm font-semibold text-sidebar-foreground outline-none transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 focus-visible:ring-sidebar-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-wait disabled:opacity-60"
               >
                 <LogOut aria-hidden="true" className="size-5" strokeWidth={1.8} />
                 <span>{isSigningOut ? "Signing out…" : "Sign out"}</span>

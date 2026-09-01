@@ -4,7 +4,7 @@ import type {
   StudentMentionRef,
 } from "@/lib/students/student-mention-display";
 
-const STUDENT_AVATAR_COLOR = "bg-accent-soft";
+const STUDENT_AVATAR_COLOR = "bg-secondary";
 
 function normalizeMention(value: string): string {
   return value.replace(/^@/, "").trim().toLowerCase();

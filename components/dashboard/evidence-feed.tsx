@@ -156,7 +156,7 @@ function EvidenceFeedRail({
             <li key={student.id} className="border-b border-border/70 last:border-b-0">
               <Link
                 href={routes.student(student.id)}
-                className="flex min-h-14 items-center gap-3 px-4 py-2.5 outline-none transition-colors hover:bg-muted/35 focus-visible:bg-muted/35 focus-visible:ring-3 focus-visible:ring-ring/20"
+                className="flex min-h-14 items-center gap-3 px-4 py-2.5 outline-none transition-colors hover:bg-muted/35 focus-visible:bg-muted/35 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
               >
                 <span className="flex size-8 shrink-0 items-center justify-center rounded-md bg-secondary text-secondary-foreground">
                   <UserRound aria-hidden="true" className="size-4" />
@@ -175,7 +175,7 @@ function EvidenceFeedRail({
         </ul>
         <Link
           href={routes.roster}
-          className="flex min-h-10 items-center px-4 text-xs font-medium text-link outline-none transition-colors hover:bg-muted/35 hover:underline focus-visible:ring-3 focus-visible:ring-ring/20"
+          className="flex min-h-10 items-center px-4 text-xs font-medium text-link outline-none transition-colors hover:bg-muted/35 hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
         >
           View all students
         </Link>
@@ -193,7 +193,7 @@ function EvidenceFeedRail({
                 key={tag}
                 type="button"
                 onClick={() => onTagSelect(tag)}
-                className="rounded-md border border-border bg-muted/50 px-2 py-1 text-xs font-medium text-link outline-none transition-colors hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/20"
+                className="rounded-md border border-border bg-muted/50 px-2 py-1 text-xs font-medium text-link outline-none transition-colors hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
               >
                 {formatTagLabel(tag)}
               </button>
@@ -891,7 +891,7 @@ export function EvidenceFeed({
                 ref={captureEditErrorRef}
                 role="alert"
                 tabIndex={-1}
-                className="border-b border-border bg-muted/30 px-4 py-3 text-sm text-destructive outline-none focus-visible:ring-3 focus-visible:ring-ring/30 sm:px-6"
+                className="border-b border-border bg-muted/30 px-4 py-3 text-sm text-destructive outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background sm:px-6"
               >
                 {captureEditError}
               </p>

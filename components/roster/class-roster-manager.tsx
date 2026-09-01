@@ -22,7 +22,7 @@ type ClassRosterManagerProps = {
 };
 
 const UTILITY_SUMMARY_CLASS_NAME =
-  "flex min-h-11 cursor-pointer list-none items-center gap-2 py-2 text-sm font-medium text-foreground outline-none transition-colors hover:text-link focus-visible:ring-3 focus-visible:ring-ring/20 [&::-webkit-details-marker]:hidden";
+  "flex min-h-11 cursor-pointer list-none items-center gap-2 py-2 text-sm font-medium text-foreground outline-none transition-colors hover:text-link focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background [&::-webkit-details-marker]:hidden";
 
 export function ClassRosterManager({
   classGroupId,
@@ -97,7 +97,7 @@ export function ClassRosterManager({
             ))}
             <li>
               <details className="group/add">
-                <summary className="flex min-h-12 cursor-pointer list-none items-center gap-2 px-4 text-sm font-medium text-link outline-none transition-colors hover:bg-muted/40 focus-visible:ring-3 focus-visible:ring-ring/20 sm:px-5 [&::-webkit-details-marker]:hidden">
+                <summary className="flex min-h-12 cursor-pointer list-none items-center gap-2 px-4 text-sm font-medium text-link outline-none transition-colors hover:bg-muted/40 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background sm:px-5 [&::-webkit-details-marker]:hidden">
                   <Plus className="size-4" aria-hidden="true" />
                   Add student
                 </summary>

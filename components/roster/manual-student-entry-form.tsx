@@ -139,7 +139,7 @@ export function ManualStudentEntryForm({
       </div>
 
       <details className="group">
-        <summary className="-mx-1 flex min-h-9 w-fit cursor-pointer list-none items-center gap-1 rounded-md px-1 text-xs font-medium text-muted-foreground outline-none transition-colors hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/20 [&::-webkit-details-marker]:hidden">
+        <summary className="-mx-1 flex min-h-9 w-fit cursor-pointer list-none items-center gap-1 rounded-md px-1 text-xs font-medium text-muted-foreground outline-none transition-colors hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background [&::-webkit-details-marker]:hidden">
           <ChevronRight
             className="size-3.5 transition-transform group-open:rotate-90"
             aria-hidden="true"

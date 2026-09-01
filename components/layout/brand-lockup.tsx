@@ -30,6 +30,18 @@ export function BrandLockup({
   ...props
 }: BrandLockupProps) {
   const classes = sizeClasses[size];
+  const defaultMark = (
+    <span
+      className={cn(
+        "flex size-full items-center justify-center rounded-sm text-[0.42em] font-bold tracking-normal",
+        tone === "inverse"
+          ? "bg-mint text-mint-ink"
+          : "bg-navy text-mint"
+      )}
+    >
+      CT
+    </span>
+  );
 
   return (
     <span
@@ -44,15 +56,13 @@ export function BrandLockup({
     >
       <span
         data-slot="brand-mark"
-        data-empty={mark ? undefined : ""}
         aria-hidden="true"
         className={cn(
           "flex shrink-0 items-center justify-center [&>svg]:size-full",
-          classes.mark,
-          mark ? null : "invisible"
+          classes.mark
         )}
       >
-        {mark}
+        {mark ?? defaultMark}
       </span>
       <span data-slot="brand-wordmark">ClassTrace</span>
     </span>

@@ -29,7 +29,7 @@ export function EvidenceSearchControl({
         onChange={(event) => onQueryChange(event.target.value)}
         placeholder="Search this page…"
         aria-label="Search evidence on this page"
-        className="min-h-11 w-full rounded-md border border-border bg-background/40 py-2 pl-9 pr-9 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:bg-card focus-visible:ring-3 focus-visible:ring-ring/20 sm:min-h-9"
+        className="min-h-11 w-full rounded-md border border-border bg-background/40 py-2 pl-9 pr-9 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:bg-card focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background sm:min-h-9"
       />
       <Search
         aria-hidden="true"

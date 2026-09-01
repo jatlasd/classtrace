@@ -44,7 +44,7 @@ export function EvidencePhoto({
         </p>
         <button
           type="button"
-          className="rounded-md text-xs font-medium text-link underline-offset-4 outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/30"
+          className="rounded-md text-xs font-medium text-link underline-offset-4 outline-none hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
           onClick={() => {
             setRetryKey((current) => current + 1);
             setUnavailable(false);

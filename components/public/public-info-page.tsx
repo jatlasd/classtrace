@@ -148,7 +148,7 @@ export function PublicActionLink({ href, children }: PublicActionLinkProps) {
   return (
     <Link
       href={href}
-      className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-border bg-card px-4 py-2.5 text-sm font-semibold text-foreground transition-colors hover:border-link/50 hover:text-link focus-visible:ring-3 focus-visible:ring-ring/30 focus-visible:outline-none"
+      className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-border bg-card px-4 py-2.5 text-sm font-semibold text-foreground transition-colors hover:border-link/50 hover:text-link focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:outline-none"
     >
       {children}
       <ArrowRight className="size-4" aria-hidden="true" />
