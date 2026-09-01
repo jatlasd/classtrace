@@ -41,6 +41,10 @@ These are engineering boundaries, not claims of FERPA compliance or district app
 - Sentry for privacy-scrubbed error monitoring and sampled tracing
 - Vitest, Testing Library, and Playwright
 
+The `package.json` overrides for Next.js transitive `postcss` and `sharp`
+dependencies keep those bundled packages on security-patched versions until the
+framework's pinned dependency versions catch up.
+
 ## Local development
 
 Prerequisites:
