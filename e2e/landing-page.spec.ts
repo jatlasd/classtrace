@@ -9,10 +9,12 @@ test("renders the public landing page without desktop or mobile overflow", async
   await expect(
     page.getByRole("heading", {
       level: 1,
-      name: "Turn classroom moments into evidence you can use.",
+      name: "Turn messy capture into teacher-validated evidence.",
     })
   ).toBeVisible();
-  await expect(page.getByRole("link", { name: "See how it works" })).toBeVisible();
+  await expect(
+    page.locator("main").getByRole("link", { name: "How it works" })
+  ).toBeVisible();
   await expect(page.locator("main#main-content")).toBeVisible();
   expect(
     await page.evaluate(
@@ -31,7 +33,7 @@ test("renders the public landing page without desktop or mobile overflow", async
   await expect(
     page.getByRole("heading", {
       level: 1,
-      name: "Turn classroom moments into evidence you can use.",
+      name: "Turn messy capture into teacher-validated evidence.",
     })
   ).toBeVisible();
   expect(

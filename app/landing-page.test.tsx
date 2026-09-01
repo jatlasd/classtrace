@@ -9,14 +9,20 @@ describe("public landing page", () => {
   const markup = renderToStaticMarkup(<Home />);
 
   it("presents the supported capture-to-retrieval workflow", () => {
+    expect(markup).toContain("Turn messy capture into teacher-validated evidence.");
     expect(markup).toContain("Say goodbye to the mental filing cabinet.");
     expect(markup).toContain("The hard part is not noticing");
     expect(markup).toContain("A ten-second note keeps the context attached");
     expect(markup).toContain("You approve the record");
     expect(markup).toContain("Walk in with a record, not a recollection");
     expect(markup).toContain("Reports and export");
+    expect(markup).toContain("You review the draft before anything is saved.");
     expect(markup).toContain('id="how-it-works"');
     expect(markup).toContain('id="features"');
+    const featuresMarkup = markup.slice(markup.indexOf('id="features"'));
+    expect(featuresMarkup.indexOf("The record stays useful after the bell.")).toBeLessThan(
+      featuresMarkup.indexOf("Evidence feed"),
+    );
   });
 
   it("keeps every access action aligned with the invitation-only beta", () => {

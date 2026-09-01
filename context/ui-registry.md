@@ -308,7 +308,7 @@ Files: `app/page.tsx`, `components/landing/landing-header.tsx`,
 `components/landing/landing-closing-cta.tsx`, and
 `components/layout/site-footer.tsx`
 
-Last updated: 2026-08-31
+Last updated: 2026-09-01
 
 | Property | Pattern |
 |---|---|
@@ -324,10 +324,11 @@ Last updated: 2026-08-31
 - The landing page follows a problem-to-product sequence: navigation, a direct
   value proposition with truthful product preview, three capture/review/retrieve
   stories with focused previews, the indigo classroom-documentation gap band,
-  five supporting capabilities, responsive showcase, and closing invitation CTA.
-- The documentation gap is an ordered four-row ledger, and supporting
-  capabilities are a single feature ledger. Do not revert either section to an
-  interchangeable icon-card grid.
+  four supporting capabilities, responsive showcase, and closing invitation CTA.
+- The documentation gap is an ordered four-row ledger. Supporting capabilities
+  are a heading-first feature ledger: the section point precedes the rows in
+  DOM and visual order. Do not revert either section to an interchangeable
+  icon-card grid.
 - Personality comes from committed indigo fields, restrained mint, typography,
   rules, and spacing. Do not add paper textures, sticky notes, doodles,
   handwritten type, classroom props, decorative gradients, or bouncy motion.

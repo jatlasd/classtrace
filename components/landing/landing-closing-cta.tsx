@@ -6,12 +6,16 @@ export function LandingClosingCta() {
   return (
     <section className="border-b border-navy-foreground/10 bg-navy px-4 py-10 text-navy-foreground md:px-6 lg:px-8 lg:py-12">
       <div className="mx-auto flex max-w-[1180px] flex-col items-start justify-between gap-7 sm:flex-row sm:items-center">
-        <div>
-          <h2 className="text-2xl font-bold tracking-[-0.025em] sm:text-3xl">
+        <div className="min-w-0 max-w-xl">
+          <h2 className="text-2xl font-bold tracking-[-0.025em] text-balance sm:text-3xl">
             Ready to stop reconstructing from memory?
           </h2>
-          <p className="mt-2 text-sm text-ground-muted">
+          <p className="mt-2 text-sm leading-6 text-pretty text-ground-muted">
             Invited teachers can set up a roster and capture the first record in minutes.
+          </p>
+          <p className="mt-3 text-sm leading-6 text-pretty text-ground-muted">
+            Invitation-only. You review the draft before anything is saved. One
+            teacher-owned workspace.
           </p>
         </div>
         <div className="flex shrink-0 flex-wrap gap-2">
