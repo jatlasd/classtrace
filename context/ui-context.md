@@ -8,7 +8,7 @@ Priority order:
 
 1. Quick capture
 2. Clear teacher review
-3. Scannable evidence feed
+3. Scannable evidence feed and direct evidence retrieval
 4. Student timeline/reporting
 5. Roster and settings support
 
@@ -31,7 +31,8 @@ Use semantic tokens from `app/globals.css`. Do not introduce raw palette utiliti
   with a modal navigation drawer below `lg`.
 - A keyboard skip link targets `#main-content`.
 - Active navigation uses `aria-current="page"` and restrained visual emphasis.
-- Capture is the first navigation/action concept.
+- Primary navigation is Capture, Explore, Students, then Settings. Capture
+  remains the first navigation/action concept.
 - Mobile navigation contains focus, closes from Escape or the backdrop, returns
   focus to its trigger, and prevents background scrolling while open.
 - Do not add fake search, notification, review, reporting, or admin navigation.
@@ -53,7 +54,12 @@ The feed begins with its page header and prominent quick-capture composer. The c
 - Invalid controls use `aria-invalid` when the error belongs to that control.
 - Dynamic error summaries use a live region and receive focus when the teacher needs to act on them.
 - Pending buttons use a real ellipsis (`…`) and remain explicit about the action.
-- Search/filter state lives in the URL. Evidence pagination is explicit and bounded.
+- Feed search/filter state lives in the URL. Explore questions remain transient
+  client state and run only through **Show results**. Evidence pagination is
+  explicit and bounded.
+- Explore uses one sentence-like question surface followed by complete-result
+  counts and evidence-ledger rows. It does not use metric cards, charts, or
+  analytics-dashboard chrome.
 - The first successful workspace save may show one inline retrieval payoff with timeline, report, and capture-another actions.
 - Do not hide a destructive action behind an unrelated icon or ambiguous menu affordance.
 
@@ -78,7 +84,7 @@ The feed begins with its page header and prominent quick-capture composer. The c
 
 ## Copy
 
-Use direct teacher language: Capture, What happened?, Review before saving, Evidence note, Student, Class, Tags, Follow-up, Timeline, Report, Archive, Delete.
+Use direct teacher language: Capture, Explore evidence, Show results, What happened?, Review before saving, Evidence note, Student, Class, Tags, Follow-up, Timeline, Report, Archive, Delete.
 
 Do not use AI, insights, intelligence, compliance, district-approved, case-management platform, automation, or generated-document language.
 

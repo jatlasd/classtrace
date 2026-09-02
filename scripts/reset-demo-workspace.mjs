@@ -1,4 +1,5 @@
 import { pathToFileURL } from "node:url";
+import { readFile } from "node:fs/promises";
 import { PrismaPg } from "@prisma/adapter-pg";
 import {
   DEMO_DATABASE_IDENTITY,
@@ -156,12 +157,56 @@ async function insertEvidence(client, workspaceId, dataset) {
   }
 }
 
+async function insertEvidencePhotos(client, workspaceId, dataset) {
+  const evidenceById = new Map(
+    dataset.evidence.map((record) => [record.id, record])
+  );
+
+  for (const photo of dataset.photos) {
+    const imageData = await readFile(
+      new URL(`./demo-assets/${photo.assetFilename}`, import.meta.url)
+    );
+    if (
+      imageData.length === 0 ||
+      imageData.length > 1024 * 1024 ||
+      imageData.subarray(0, 4).toString("ascii") !== "RIFF" ||
+      imageData.subarray(8, 12).toString("ascii") !== "WEBP"
+    ) {
+      throw new DemoResetError("A canonical demo photo asset is invalid.");
+    }
+
+    const evidence = evidenceById.get(photo.evidenceId);
+    if (!evidence) {
+      throw new DemoResetError("A canonical demo photo relation is invalid.");
+    }
+
+    await client.query(
+      `INSERT INTO "EvidencePhoto" (
+         id, "workspaceId", "evidenceRecordId", "imageData", "contentType",
+         "byteSize", width, height, "createdAt"
+       ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+      [
+        photo.id,
+        workspaceId,
+        photo.evidenceId,
+        imageData,
+        photo.contentType,
+        imageData.length,
+        photo.width,
+        photo.height,
+        evidence.createdAt,
+      ]
+    );
+  }
+}
+
 async function verifyResetInsideTransaction(client, workspaceId, expected) {
   const result = await client.query(
     `SELECT
        (SELECT COUNT(*)::int FROM "ClassGroup" WHERE "workspaceId" = $1) AS "classCount",
        (SELECT COUNT(*)::int FROM "RosterStudent" WHERE "workspaceId" = $1) AS "studentCount",
        (SELECT COUNT(*)::int FROM "EvidenceRecord" WHERE "workspaceId" = $1) AS "evidenceCount",
+       (SELECT COUNT(*)::int FROM "EvidencePhoto" WHERE "workspaceId" = $1) AS "photoCount",
        (
          SELECT COUNT(*)::int
          FROM "RosterStudent" student
@@ -199,6 +244,7 @@ async function verifyResetInsideTransaction(client, workspaceId, expected) {
     counts?.classCount !== expected.classCount ||
     counts?.studentCount !== expected.studentCount ||
     counts?.evidenceCount !== expected.evidenceCount ||
+    counts?.photoCount !== expected.photoCount ||
     counts?.invalidStudentRelations !== 0 ||
     counts?.invalidEvidenceRelations !== 0
   ) {
@@ -224,6 +270,7 @@ async function executeResetAttempt({
     await insertClasses(client, workspaceId, dataset);
     await insertStudents(client, workspaceId, dataset);
     await insertEvidence(client, workspaceId, dataset);
+    await insertEvidencePhotos(client, workspaceId, dataset);
     await verifyResetInsideTransaction(client, workspaceId, summary);
     await client.query("COMMIT");
     return summary;
@@ -311,7 +358,7 @@ async function main() {
   console.log(`Demo dataset: ${summary.version}`);
   console.log("Canonical demo workspace reset complete.");
   console.log(
-    `Counts: ${summary.classCount} classes, ${summary.studentCount} students, ${summary.evidenceCount} evidence records.`
+    `Counts: ${summary.classCount} classes, ${summary.studentCount} students, ${summary.evidenceCount} evidence records, ${summary.photoCount} evidence photos.`
   );
   console.log(
     `Evidence dates: ${summary.earliestEvidenceDate.slice(0, 10)} through ${summary.latestEvidenceDate.slice(0, 10)}.`

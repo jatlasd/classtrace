@@ -34,6 +34,8 @@ export function AppShellNavigation() {
   const routeContext =
     pathname === routes.feed
       ? "All evidence"
+      : pathname === routes.explore
+        ? "Saved evidence"
       : pathname === routes.roster
         ? "All classes"
         : pathname === routes.settings

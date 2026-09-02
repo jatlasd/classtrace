@@ -3,7 +3,7 @@
 ClassTrace is a teacher-first student evidence capture app. It helps an individual teacher turn a quick classroom observation into a structured draft, review it, and save trustworthy evidence to one roster student.
 
 ```text
-quick capture → deterministic draft → teacher review → saved evidence → timeline/report
+quick capture → deterministic draft → teacher review → saved evidence → Explore/timeline/report
 ```
 
 ClassTrace is currently an invitation-only limited beta. It is not represented as production-ready, compliant, district-approved, or suitable as a system of record.
@@ -15,7 +15,7 @@ ClassTrace is currently an invitation-only limited beta. It is not represented a
 - Resolves exactly one roster student before evidence can be saved.
 - Uses deterministic parsing to suggest structured fields.
 - Requires teacher review before permanent save.
-- Provides a bounded feed, student timeline, printable report, and one-student CSV export.
+- Provides a bounded feed, explicit multi-condition Explore retrieval, student timeline, printable report, and one-student CSV export.
 - Supports intentional archive and permanent-delete flows.
 
 ClassTrace is not a gradebook, SIS, IEP writer, parent communication tool, admin dashboard, analytics product, file repository, or generative-AI system.

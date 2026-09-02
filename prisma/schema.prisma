@@ -107,10 +107,10 @@ model EvidenceRecord {
   photo           EvidencePhoto?
 
   @@unique([workspaceId, id])
-  @@index([workspaceId, createdAt])
-  @@index([workspaceId, rosterStudentId])
-  @@index([rosterStudentId, evidenceDate])
-  @@index([classGroupId])
+  @@index([workspaceId, evidenceDate(sort: Desc), createdAt(sort: Desc)], map: "EvidenceRecord_workspace_evidence_sort_idx")
+  @@index([workspaceId, rosterStudentId, evidenceDate(sort: Desc), createdAt(sort: Desc)], map: "EvidenceRecord_workspace_student_sort_idx")
+  @@index([workspaceId, classGroupId, evidenceDate(sort: Desc), createdAt(sort: Desc)], map: "EvidenceRecord_workspace_class_sort_idx")
+  @@index([tags], type: Gin, map: "EvidenceRecord_tags_gin_idx")
 }
 
 model EvidencePhoto {

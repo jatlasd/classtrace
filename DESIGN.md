@@ -153,6 +153,7 @@ routes keep the same colors quieter around capture, review, and retrieval.
 **Key Characteristics:**
 
 - Capture-first hierarchy with one prominent working surface.
+- Explicit sentence-like retrieval questions above evidence-led result ledgers.
 - Evidence-led ledgers separated by rules instead of interchangeable card grids.
 - Cool Paper / Cool Surface workspace, Deep Indigo action, Seafoam Mint only
   inside indigo fields.
@@ -253,13 +254,15 @@ and data use Inter. Mono appears only for genuine identifiers or counters.
 Authenticated routes share one shell: a fixed Quiet Surface sidebar (`13rem` /
 `w-52`) from `lg` up, a sticky Quiet Surface header below `lg`, and a 3.5rem
 route header on desktop (`bg-card/95` with a light blur). Primary navigation is
-Capture, Students, and Settings only. Workspace offset is `lg:pl-52 lg:pt-14`,
-reset for print.
+Capture, Explore, Students, and Settings, in that order. Capture remains the
+first action concept; Explore is the direct saved-evidence retrieval route.
+Workspace offset is `lg:pl-52 lg:pt-14`, reset for print.
 
 Content widths are observed, not aspirational:
 
 - Feed: `1560px`, with a `16.5rem` context rail from `xl`
-- Report and Settings: `1180px`; Settings adds a `19rem` context rail from `xl`
+- Explore, Report, and Settings: `1180px`; Settings adds a `19rem` context rail
+  from `xl`
 - Roster: `1100px`
 - Public pages: about `1180px`, hero up to `1360px`
 
@@ -401,6 +404,23 @@ confirmation stay explicit. Rows never become nested cards or a secondary
 analytics surface. Inline confirmation is a flat ruled panel inside the row
 (Quiet Surface, or Alert Red tint when destructive), not a modal.
 
+### Explore question and results
+
+Explore turns a bounded retrieval question into the existing evidence-ledger
+language. One lightly lifted work surface begins with the sentence-like
+**Show me [Evidence or Students] from [date]** controls. Optional conditions
+occupy full-width ruled rows with visible labels; student, class, and tag values
+use searchable keyboard multi-selects with named removal controls.
+
+Changing a question does not silently replace the current results. A concise
+status states whether results match, the question changed, or an update is
+pending, and only the explicit **Show results** action applies it. Below the
+builder, one quiet ruled header carries complete matching-record and
+represented-student counts. Evidence results reuse the shared evidence content
+in newest-first ledger rows; student results use alphabetical expandable rows
+with inspectable, paged supporting evidence. The question remains transient,
+and mobile stacks the same sequence into one column with a full-width action.
+
 ### Motion
 
 Drawer backdrop fades in `160ms`; the panel slides `180ms`. Both run only when
@@ -414,6 +434,8 @@ decorative motion.
 
 - **Do** keep capture visually primary and ask for exactly one student.
 - **Do** render evidence and roster data as ledgers when scanning matters.
+- **Do** keep multi-condition evidence retrieval in one explicit question
+  surface followed by complete counts and ruled results.
 - **Do** use the semantic roles declared in `app/globals.css`.
 - **Do** reserve Seafoam Mint for deliberate emphasis inside Deep Indigo fields.
 - **Do** use Deep Indigo action and Slate Ink links/icons on light surfaces.
@@ -428,6 +450,7 @@ decorative motion.
 
 - **Don't** make ClassTrace look like an enterprise dashboard, a decorative
   classroom theme, a generic teacher notebook, or a card-grid analytics product.
+- **Don't** turn Explore into metric cards, charts, or database-filter chrome.
 - **Don't** use ornamental school imagery, fake controls, dashboard metrics,
   glass effects, gradient text, noisy textures, excessive cards, or invented
   affordances that compete with capture and review.

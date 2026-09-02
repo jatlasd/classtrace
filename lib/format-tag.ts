@@ -1,5 +1,5 @@
 export function normalizeTag(tag: string): string {
-  return tag.replace(/^#/, "").trim();
+  return tag.trim().replace(/^#/, "").trim();
 }
 
 export function formatTagLabel(tag: string): string {

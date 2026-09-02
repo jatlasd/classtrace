@@ -277,7 +277,23 @@ These limits protect resource usage and database hygiene; they are not substitut
 ## Feed and reporting
 
 - The global evidence feed reads at most 50 records plus one lookahead row and exposes explicit newer/older page navigation.
-- Search and filter state is represented in the URL; it filters the currently loaded page and survives refresh/back navigation.
+- Feed search and filter state is represented in the URL; it filters the currently loaded page and survives refresh/back navigation.
+- Explore Evidence uses a versioned direct filter with only result view,
+  student IDs, normalized tag any/all/exclude values, one local-calendar date
+  rule, class IDs, and a photo-presence rule. Unsaved conditions remain client
+  state, are not encoded in the URL, and reach the server only through an
+  explicit **Show results** action.
+- Explore derives evidence rows, alphabetized student groups, complete counts,
+  and expanded supporting evidence from the same authenticated
+  workspace-scoped predicate. Evidence pages contain 25 rows, student pages 20
+  groups, and supporting-evidence pages 10 rows, each with one lookahead row.
+- Explore excludes archived evidence and evidence for archived students. Its
+  class filter means the class relation stored at validation; referenced
+  archived classes remain selectable while active evidence uses them, and a
+  deleted class relation does not exclude otherwise matching evidence.
+- Query definitions, selected IDs, tags, evidence content, and photo bytes are
+  not logged or sent to telemetry. Query evaluation checks only the owned photo
+  relation and reuses authenticated photo delivery for results.
 - Student timelines and reports remain student- and workspace-scoped.
 - Report date boundaries include the browser’s offset for each boundary so daylight-saving changes and non-UTC teachers are interpreted correctly.
 - CSV export uses only validated records for the requested owned student.
@@ -313,6 +329,14 @@ These limits protect resource usage and database hygiene; they are not substitut
 | Vercel Development | `DATABASE_URL` targets `classtrace_dev` | Applicable Clerk, operator, route, Resend, and Sentry variables | Never set |
 | Vercel Preview | `DATABASE_URL` targets `classtrace_dev` | Applicable Clerk, operator, route, Resend, and Sentry variables | Never set |
 | Vercel Production | `DATABASE_URL` targets the `classtrace` project, `production` branch, `neondb` database | Applicable Clerk, operator, route, Resend, and Sentry variables; build-only `SENTRY_AUTH_TOKEN` | Never set |
+
+The explicit `demo:reset:local` operator command may replace the contents of
+one confirmed Clerk development workspace with the canonical fictional demo
+dataset. It uses only `.env.local` `DATABASE_URL`, requires a Clerk `sk_test_`
+key and an explicit command confirmation, verifies the live Neon identity inside
+the reset transaction, permits only `classtrace_dev`, and refuses the canonical
+production project, branch, and database. The separate production demo reset
+keeps its dedicated URL, account, and exact production identity contract.
 
 Production data is never copied or branched into non-production. Verify a
 database target by project, branch, and database name without printing the

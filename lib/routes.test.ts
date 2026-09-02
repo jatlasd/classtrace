@@ -7,6 +7,7 @@ describe("routes", () => {
     expect(routes.app).toBe("/app");
     expect(routes.betaAcknowledgements).toBe("/beta-acknowledgements");
     expect(routes.feed).toBe("/app/feed");
+    expect(routes.explore).toBe("/app/explore");
     expect(routes.roster).toBe("/app/roster");
     expect(routes.studentsPrefix).toBe("/app/students");
     expect(routes.student("jeremy")).toBe("/app/students/jeremy");

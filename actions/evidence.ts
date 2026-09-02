@@ -148,6 +148,7 @@ export async function saveValidatedEvidence(
 
     if (result.success) {
       revalidatePath(routes.feed);
+      revalidatePath(routes.explore);
       revalidatePath(routes.student(input.rosterStudentId));
       revalidatePath(routes.studentReport(input.rosterStudentId));
     }
@@ -171,6 +172,7 @@ export async function archiveEvidence(
 
     if (result.success) {
       revalidatePath(routes.feed);
+      revalidatePath(routes.explore);
       revalidatePath(routes.student(result.rosterStudentId));
       revalidatePath(routes.studentReport(result.rosterStudentId));
     }
@@ -194,6 +196,7 @@ export async function deleteEvidence(
 
     if (result.success) {
       revalidatePath(routes.feed);
+      revalidatePath(routes.explore);
       revalidatePath(routes.student(result.rosterStudentId));
       revalidatePath(routes.studentReport(result.rosterStudentId));
     }

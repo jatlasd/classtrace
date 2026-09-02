@@ -84,10 +84,14 @@ describe("evidence Server Actions", () => {
     expect(mocks.revalidatePath).toHaveBeenNthCalledWith(1, "/app/feed");
     expect(mocks.revalidatePath).toHaveBeenNthCalledWith(
       2,
-      "/app/students/student_mary"
+      "/app/explore"
     );
     expect(mocks.revalidatePath).toHaveBeenNthCalledWith(
       3,
+      "/app/students/student_mary"
+    );
+    expect(mocks.revalidatePath).toHaveBeenNthCalledWith(
+      4,
       "/app/students/student_mary/report"
     );
   });
@@ -182,6 +186,7 @@ describe("evidence Server Actions", () => {
       input: { evidenceId: "evidence_2" },
     });
     expect(mocks.revalidatePath).toHaveBeenCalledWith("/app/feed");
+    expect(mocks.revalidatePath).toHaveBeenCalledWith("/app/explore");
     expect(mocks.revalidatePath).toHaveBeenCalledWith(
       "/app/students/student_mary"
     );
