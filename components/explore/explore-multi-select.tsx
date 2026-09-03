@@ -1,7 +1,7 @@
 "use client";
 
 import { Search, X } from "lucide-react";
-import { useId, useMemo, useRef, useState, type RefObject } from "react";
+import { useEffect, useId, useMemo, useRef, useState, type RefObject } from "react";
 
 export type ExploreSelectOption = {
   id: string;
@@ -56,6 +56,11 @@ export function ExploreMultiSelect({
 
   const boundedActiveIndex = Math.min(activeIndex, Math.max(available.length - 1, 0));
   const activeOption = available[boundedActiveIndex];
+  const activeOptionId = isOpen && activeOption ? `${listboxId}-${activeOption.id}` : undefined;
+
+  useEffect(() => {
+    if (activeOptionId) document.getElementById(activeOptionId)?.scrollIntoView({ block: "nearest" });
+  }, [activeOptionId]);
 
   function selectOption(option: ExploreSelectOption): void {
     onChange([...selectedIds, option.id]);
@@ -86,7 +91,7 @@ export function ExploreMultiSelect({
             {selected.map((option) => (
               <span
                 key={option.id}
-                className="inline-flex min-h-7 max-w-full items-center gap-0.5 rounded-full border border-border bg-muted/40 pl-1.5 text-xs font-medium text-foreground"
+                className="inline-flex min-h-7 max-w-full items-center gap-0.5 rounded-full border border-border bg-muted pl-1.5 text-xs font-medium text-foreground"
               >
                 <span className="min-w-0 break-words [overflow-wrap:anywhere]">
                   {option.label}
@@ -95,7 +100,7 @@ export function ExploreMultiSelect({
                   type="button"
                   aria-label={`Remove ${option.label}`}
                   onClick={() => removeOption(option.id)}
-                  className="flex size-7 shrink-0 items-center justify-center rounded-full text-muted-foreground outline-none transition-colors hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
+                  className="flex size-11 shrink-0 items-center justify-center rounded-full text-muted-foreground outline-none transition-colors hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring lg:size-7"
                 >
                   <X aria-hidden="true" className="size-3" />
                 </button>
@@ -103,7 +108,7 @@ export function ExploreMultiSelect({
             ))}
           </div>
         ) : null}
-        <div className="flex min-h-7 items-center gap-1.5">
+        <div className="flex min-h-[34px] items-center gap-1.5 lg:min-h-[26px]">
           <Search aria-hidden="true" className="size-3.5 shrink-0 text-muted-foreground" />
           <input
             ref={resolvedInputRef}
@@ -114,9 +119,7 @@ export function ExploreMultiSelect({
             aria-autocomplete="list"
             aria-expanded={isOpen}
             aria-controls={listboxId}
-            aria-activedescendant={
-              isOpen && activeOption ? `${listboxId}-${activeOption.id}` : undefined
-            }
+            aria-activedescendant={activeOptionId}
             value={search}
             placeholder={placeholder}
             onFocus={() => setIsOpen(true)}
@@ -131,7 +134,7 @@ export function ExploreMultiSelect({
                 event.preventDefault();
                 setIsOpen(true);
                 setActiveIndex((index) =>
-                  available.length === 0 ? 0 : (index + 1) % available.length
+                  !isOpen || available.length === 0 ? 0 : (index + 1) % available.length
                 );
               } else if (event.key === "ArrowUp") {
                 event.preventDefault();
@@ -141,9 +144,9 @@ export function ExploreMultiSelect({
                     ? 0
                     : (index - 1 + available.length) % available.length
                 );
-              } else if (event.key === "Enter" && isOpen && activeOption) {
+              } else if (event.key === "Enter") {
                 event.preventDefault();
-                selectOption(activeOption);
+                if (isOpen && activeOption) selectOption(activeOption);
               } else if (event.key === "Escape") {
                 event.preventDefault();
                 setIsOpen(false);
@@ -178,13 +181,16 @@ export function ExploreMultiSelect({
                 key={option.id}
                 id={`${listboxId}-${option.id}`}
                 type="button"
+                tabIndex={-1}
                 role="option"
                 aria-selected="false"
                 onMouseDown={(event) => event.preventDefault()}
                 onMouseEnter={() => setActiveIndex(index)}
                 onClick={() => selectOption(option)}
-                className={`flex min-h-9 w-full items-center gap-2 rounded-md px-2 py-1 text-left outline-none transition-colors lg:min-h-8 ${
-                  index === boundedActiveIndex ? "bg-muted text-foreground" : "text-foreground"
+                className={`flex min-h-11 w-full items-center gap-2 rounded-md px-2 py-1 text-left outline-none transition-colors lg:min-h-9 ${
+                  index === boundedActiveIndex
+                    ? "bg-primary text-primary-foreground"
+                    : "text-foreground"
                 }`}
               >
                 <span className="min-w-0">
@@ -192,7 +198,13 @@ export function ExploreMultiSelect({
                     {option.label}
                   </span>
                   {option.description ? (
-                    <span className="mt-0.5 block break-words text-xs text-muted-foreground [overflow-wrap:anywhere]">
+                    <span
+                      className={`mt-0.5 block break-words text-xs [overflow-wrap:anywhere] ${
+                        index === boundedActiveIndex
+                          ? "text-ground-muted"
+                          : "text-muted-foreground"
+                      }`}
+                    >
                       {option.description}
                     </span>
                   ) : null}

@@ -13,7 +13,7 @@ vi.mock("@/actions/explore-evidence", () => ({
   runExploreSupportingEvidenceQuery: mocks.runExploreSupportingEvidenceQuery,
 }));
 vi.mock("@/components/evidence/evidence-photo", () => ({
-  EvidencePhoto: ({ evidenceId }: { evidenceId: string }) => (
+  EvidencePhoto: ({ evidenceId }: { evidenceId: string; }) => (
     <div>Photo for {evidenceId}</div>
   ),
 }));
@@ -97,14 +97,16 @@ const options = {
   ],
 };
 
-function renderPage(initialResults: ExploreQueryResults = evidenceResults) {
-  return render(
+function renderPage(initialResults: ExploreQueryResults = evidenceResults, open = true) {
+  const rendered = render(
     <ExploreEvidencePage
-      initialQuery={DEFAULT_EXPLORE_QUERY}
+      initialQuery={{ ...DEFAULT_EXPLORE_QUERY, resultView: initialResults.view }}
       initialResults={initialResults}
       options={options}
     />
   );
+  if (open) fireEvent.click(screen.getByRole("button", { name: /^Filters/ }));
+  return rendered;
 }
 
 function selectChoice(label: string, search: string) {
@@ -119,6 +121,7 @@ afterEach(cleanup);
 describe("ExploreEvidencePage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    Element.prototype.scrollIntoView = vi.fn();
     mocks.runExploreEvidenceQuery.mockResolvedValue({
       success: true,
       results: evidenceResults,
@@ -133,29 +136,26 @@ describe("ExploreEvidencePage", () => {
     });
   });
 
-  it("starts with the sentence, standing fields, and supporting record", () => {
-    renderPage();
+  it("starts with evidence and keeps filtering optional", () => {
+    renderPage(evidenceResults, false);
+    expect(screen.getByRole("heading", { name: "All evidence" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Evidence" }).getAttribute("aria-pressed")).toBe("true");
+    expect(screen.queryByRole("region", { name: "Filter evidence" })).toBeNull();
+    expect(screen.getByText(/record/, { selector: "p[aria-live]" }).textContent).toContain("1 record");
+    expect(screen.getByText("used a reading strategy independently")).toBeTruthy();
+    expect(screen.getByRole("link", { name: "Mary" }).getAttribute("href")).toBe("/app/students/student_mary");
+    expect(mocks.runExploreEvidenceQuery).not.toHaveBeenCalled();
+  });
 
-    expect(screen.getByRole("heading", { name: "Explore evidence" })).toBeTruthy();
-    expect(screen.getByText("Ask a question of your saved evidence.")).toBeTruthy();
-    expect((screen.getByLabelText("Result view") as HTMLSelectElement).value).toBe(
-      "evidence"
-    );
-    expect((screen.getByLabelText("Date") as HTMLSelectElement).value).toBe("all");
+  it("reveals all available filters without running a query", () => {
+    renderPage();
+    expect(screen.getByRole("region", { name: "Filter evidence" })).toBeTruthy();
     expect(screen.getByLabelText("Student")).toBeTruthy();
     expect(screen.getByLabelText("Tags")).toBeTruthy();
-    expect(screen.getByLabelText("Class")).toBeTruthy();
+    expect(screen.getByLabelText("Class at capture")).toBeTruthy();
+    expect((screen.getByLabelText("Date") as HTMLSelectElement).value).toBe("all");
     expect((screen.getByLabelText("Photo") as HTMLSelectElement).value).toBe("either");
-    expect(screen.queryByLabelText("Add a condition")).toBeNull();
-    expect(screen.queryByRole("button", { name: "Add condition" })).toBeNull();
-    expect(screen.getByRole("button", { name: "Show results" })).toBeTruthy();
-    const countSummary = screen.getByText("matching record", { exact: false });
-    expect(countSummary.textContent).toContain("1 matching record");
-    expect(countSummary.textContent).toContain("1 student");
-    expect(screen.getByText("used a reading strategy independently")).toBeTruthy();
-    expect(screen.getByRole("link", { name: "Mary" }).getAttribute("href")).toBe(
-      "/app/students/student_mary"
-    );
+    expect(mocks.runExploreEvidenceQuery).not.toHaveBeenCalled();
   });
 
   it("lets keyboard users search, select, and remove a student without querying until requested", async () => {
@@ -179,8 +179,9 @@ describe("ExploreEvidencePage", () => {
       "student_mary",
     ]);
 
+    fireEvent.click(screen.getByRole("button", { name: /^Filters/ }));
     fireEvent.click(screen.getByRole("button", { name: "Remove Mary" }));
-    expect(document.activeElement).toBe(studentInput);
+    expect(document.activeElement).toBe(screen.getByLabelText("Student"));
   });
 
   it("treats an unchanged Photo field as unconstrained", async () => {
@@ -192,6 +193,7 @@ describe("ExploreEvidencePage", () => {
     await waitFor(() => expect(mocks.runExploreEvidenceQuery).toHaveBeenCalledTimes(1));
     expect(mocks.runExploreEvidenceQuery.mock.calls[0][0].query.photo).toBe("with");
 
+    fireEvent.click(screen.getByRole("button", { name: /^Filters/ }));
     fireEvent.change(screen.getByLabelText("Photo"), {
       target: { value: "either" },
     });
@@ -240,10 +242,10 @@ describe("ExploreEvidencePage", () => {
 
   it("keeps exclude off-stage until Without is opened", async () => {
     renderPage();
-    expect(screen.queryByLabelText("Without")).toBeNull();
-    fireEvent.click(screen.getByRole("button", { name: "Without…" }));
+    expect(screen.queryByLabelText("Without tags")).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "Exclude tags…" }));
 
-    selectChoice("Without", "read");
+    selectChoice("Without tags", "read");
     fireEvent.click(screen.getByRole("button", { name: "Update results" }));
     await waitFor(() => expect(mocks.runExploreEvidenceQuery).toHaveBeenCalledTimes(1));
     expect(mocks.runExploreEvidenceQuery.mock.calls[0][0].query.tags.exclude).toEqual([
@@ -253,9 +255,9 @@ describe("ExploreEvidencePage", () => {
 
   it("collapses Without and returns focus to Tags", () => {
     renderPage();
-    fireEvent.click(screen.getByRole("button", { name: "Without…" }));
+    fireEvent.click(screen.getByRole("button", { name: "Exclude tags…" }));
     fireEvent.click(screen.getByRole("button", { name: "Remove without tags" }));
-    expect(screen.queryByLabelText("Without")).toBeNull();
+    expect(screen.queryByLabelText("Without tags")).toBeNull();
     expect(document.activeElement).toBe(screen.getByLabelText("Tags"));
   });
 
@@ -317,9 +319,7 @@ describe("ExploreEvidencePage", () => {
       .mockResolvedValueOnce({ success: false, error: "Unable to update results." })
       .mockResolvedValueOnce({ success: true, results: evidenceResults });
     renderPage();
-    fireEvent.change(screen.getByLabelText("Result view"), {
-      target: { value: "students" },
-    });
+    selectChoice("Student", "Mary");
     fireEvent.click(screen.getByRole("button", { name: "Update results" }));
 
     expect((await screen.findByRole("alert")).textContent).toContain(
@@ -327,14 +327,12 @@ describe("ExploreEvidencePage", () => {
     );
     expect(screen.getByText("used a reading strategy independently")).toBeTruthy();
     const retryButton = screen.getByRole("button", {
-      name: "Retry this question",
+      name: "Retry",
     }) as HTMLButtonElement;
     await waitFor(() => expect(retryButton.disabled).toBe(false));
     fireEvent.click(retryButton);
     await waitFor(() => expect(mocks.runExploreEvidenceQuery).toHaveBeenCalledTimes(2));
-    expect(mocks.runExploreEvidenceQuery.mock.calls[1][0].query.resultView).toBe(
-      "students"
-    );
+    expect(mocks.runExploreEvidenceQuery.mock.calls[1][0].query.studentIds).toEqual(["student_mary"]);
   });
 
   it("expands only server-returned supporting evidence for a student", async () => {
@@ -344,7 +342,7 @@ describe("ExploreEvidencePage", () => {
     await waitFor(() =>
       expect(mocks.runExploreSupportingEvidenceQuery).toHaveBeenCalledWith(
         expect.objectContaining({
-          query: DEFAULT_EXPLORE_QUERY,
+          query: { ...DEFAULT_EXPLORE_QUERY, resultView: "students" },
           studentId: "student_mary",
           page: 1,
         })
@@ -360,7 +358,7 @@ describe("ExploreEvidencePage", () => {
 
   it("prevents duplicate submission while a question is pending", async () => {
     let resolveQuery:
-      | ((value: { success: true; results: ExploreQueryResults }) => void)
+      | ((value: { success: true; results: ExploreQueryResults; }) => void)
       | undefined;
     mocks.runExploreEvidenceQuery.mockReturnValue(
       new Promise((resolve) => {
@@ -368,9 +366,7 @@ describe("ExploreEvidencePage", () => {
       })
     );
     renderPage();
-    fireEvent.change(screen.getByLabelText("Result view"), {
-      target: { value: "students" },
-    });
+    selectChoice("Student", "Mary");
 
     fireEvent.click(screen.getByRole("button", { name: "Update results" }));
     expect(
@@ -382,16 +378,10 @@ describe("ExploreEvidencePage", () => {
     expect(mocks.runExploreEvidenceQuery).toHaveBeenCalledTimes(1);
 
     await act(async () => {
-      resolveQuery?.({ success: true, results: studentResults });
+      resolveQuery?.({ success: true, results: evidenceResults });
       await Promise.resolve();
     });
-    await waitFor(() =>
-      expect(
-        (screen.getByRole("button", {
-          name: "Show results",
-        }) as HTMLButtonElement).disabled
-      ).toBe(false)
-    );
+    await waitFor(() => expect(screen.queryByRole("region", { name: "Filter evidence" })).toBeNull());
   });
 
   it("uses distinct empty states for no saved evidence and no matches", () => {
@@ -423,6 +413,108 @@ describe("ExploreEvidencePage", () => {
         options={options}
       />
     );
-    expect(screen.getByRole("heading", { name: "No evidence matches this question." })).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "No evidence matches these filters." })).toBeTruthy();
+  });
+
+  it("keeps draft filters separate when changing the result view", async () => {
+    mocks.runExploreEvidenceQuery.mockResolvedValue({ success: true, results: studentResults });
+    renderPage();
+    selectChoice("Student", "Mary");
+    fireEvent.click(screen.getByRole("button", { name: "By student" }));
+    await screen.findByRole("heading", { name: "Students with evidence" });
+    await screen.findByRole("button", { name: "Update results" });
+    expect(mocks.runExploreEvidenceQuery.mock.calls[0][0].query).toEqual({
+      ...DEFAULT_EXPLORE_QUERY, resultView: "students",
+    });
+    expect(screen.getByRole("button", { name: "Remove Mary" })).toBeTruthy();
+    expect(screen.getByRole("status").textContent).toContain("Filters changed");
+    expect(screen.queryByRole("list", { name: "Applied filters" })).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "Update results" }));
+    await waitFor(() => expect(mocks.runExploreEvidenceQuery).toHaveBeenCalledTimes(2));
+    expect(mocks.runExploreEvidenceQuery.mock.calls[1][0].query).toEqual({
+      ...DEFAULT_EXPLORE_QUERY, resultView: "students", studentIds: ["student_mary"],
+    });
+    expect((await screen.findByRole("list", { name: "Applied filters" })).textContent).toContain("Student: Mary");
+    await waitFor(() => expect(document.activeElement).toBe(screen.getByRole("heading", { name: "Students with evidence" })));
+  });
+
+  it("can close and reopen unfinished filters without losing edits", () => {
+    renderPage();
+    selectChoice("Tags", "read");
+    fireEvent.click(screen.getByRole("button", { name: "Close" }));
+    expect(screen.queryByRole("region", { name: "Filter evidence" })).toBeNull();
+    expect(document.activeElement).toBe(screen.getByRole("button", { name: "Filters" }));
+    expect(screen.getByRole("button", { name: "Review changes" })).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Review changes" }));
+    expect(screen.getByRole("button", { name: "Remove #reading" })).toBeTruthy();
+    expect(mocks.runExploreEvidenceQuery).not.toHaveBeenCalled();
+  });
+
+  it("clears every filter while retaining student view and waits for explicit application", async () => {
+    mocks.runExploreEvidenceQuery.mockResolvedValue({ success: true, results: studentResults });
+    render(<ExploreEvidencePage
+      initialQuery={{
+        ...DEFAULT_EXPLORE_QUERY, resultView: "students", studentIds: ["student_mary"],
+        classIds: ["class_reading"], date: { rule: "last7" }, photo: "with",
+        tags: { includeAll: ["reading"], includeAny: ["independent"], exclude: ["fractions"] }
+      }}
+      initialResults={studentResults} options={options}
+    />);
+    fireEvent.click(screen.getByRole("button", { name: /^Filters/ }));
+    fireEvent.click(screen.getByRole("button", { name: "Clear filters" }));
+    expect(screen.queryByRole("button", { name: "Remove Mary" })).toBeNull();
+    expect(screen.queryByLabelText("Without tags")).toBeNull();
+    expect((screen.getByLabelText("Date") as HTMLSelectElement).value).toBe("all");
+    expect((screen.getByLabelText("Photo") as HTMLSelectElement).value).toBe("either");
+    expect(screen.getByRole("list", { name: "Applied filters" }).textContent).toContain("Student: Mary");
+    expect(mocks.runExploreEvidenceQuery).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole("button", { name: "Update results" }));
+    await waitFor(() => expect(mocks.runExploreEvidenceQuery).toHaveBeenCalledTimes(1));
+    expect(mocks.runExploreEvidenceQuery.mock.calls[0][0].query).toEqual({ ...DEFAULT_EXPLORE_QUERY, resultView: "students" });
+    await waitFor(() => expect(screen.queryByRole("list", { name: "Applied filters" })).toBeNull());
+  });
+
+  it("paginates the applied evidence without applying unfinished filters", async () => {
+    renderPage({ ...evidenceResults, hasOlder: true });
+    selectChoice("Student", "Mary");
+    fireEvent.click(screen.getByRole("button", { name: "Older" }));
+    await waitFor(() => expect(mocks.runExploreEvidenceQuery).toHaveBeenCalledTimes(1));
+    expect(mocks.runExploreEvidenceQuery.mock.calls[0][0]).toEqual(expect.objectContaining({ query: DEFAULT_EXPLORE_QUERY, page: 2 }));
+    expect(screen.getByRole("button", { name: "Remove Mary" })).toBeTruthy();
+    expect(await screen.findByRole("button", { name: "Update results" })).toBeTruthy();
+  });
+
+  it("uses alphabetical pagination for student groups", async () => {
+    mocks.runExploreEvidenceQuery.mockResolvedValue({ success: true, results: studentResults });
+    renderPage({ ...studentResults, hasOlder: true });
+    fireEvent.click(screen.getByRole("button", { name: "Next" }));
+    await waitFor(() => expect(mocks.runExploreEvidenceQuery).toHaveBeenCalledTimes(1));
+    expect(mocks.runExploreEvidenceQuery.mock.calls[0][0]).toEqual(expect.objectContaining({ query: { ...DEFAULT_EXPLORE_QUERY, resultView: "students" }, page: 2 }));
+  });
+
+  it("does not submit the filter form when a search has no selectable option", () => {
+    renderPage();
+    const input = screen.getByRole("combobox", { name: "Student" });
+    fireEvent.focus(input);
+    fireEvent.change(input, { target: { value: "no matching student" } });
+    expect(screen.getByText("No available students match.")).toBeTruthy();
+    expect(fireEvent.keyDown(input, { key: "Enter" })).toBe(false);
+    expect(mocks.runExploreEvidenceQuery).not.toHaveBeenCalled();
+    fireEvent.keyDown(input, { key: "Escape" });
+    expect(screen.queryByRole("listbox")).toBeNull();
+  });
+
+  it("associates invalid date ranges with the inputs and submits valid dates unchanged", async () => {
+    renderPage();
+    fireEvent.change(screen.getByLabelText("Date"), { target: { value: "range" } });
+    fireEvent.change(screen.getByLabelText("Start date"), { target: { value: "2026-09-02" } });
+    fireEvent.change(screen.getByLabelText("End date"), { target: { value: "2026-09-01" } });
+    const errorId = screen.getByLabelText("End date").getAttribute("aria-describedby");
+    expect(document.getElementById(errorId!)?.textContent).toContain("start date must be on or before");
+    expect((screen.getByRole("button", { name: "Update results" }) as HTMLButtonElement).disabled).toBe(true);
+    fireEvent.change(screen.getByLabelText("End date"), { target: { value: "2026-09-02" } });
+    fireEvent.click(screen.getByRole("button", { name: "Update results" }));
+    await waitFor(() => expect(mocks.runExploreEvidenceQuery).toHaveBeenCalledTimes(1));
+    expect(mocks.runExploreEvidenceQuery.mock.calls[0][0].query.date).toEqual({ rule: "range", startDate: "2026-09-02", endDate: "2026-09-02" });
   });
 });

@@ -153,7 +153,7 @@ routes keep the same colors quieter around capture, review, and retrieval.
 **Key Characteristics:**
 
 - Capture-first hierarchy with one prominent working surface.
-- Explicit sentence-like retrieval questions above evidence-led result ledgers.
+- Evidence collections with optional inline filtering and visible applied scope.
 - Evidence-led ledgers separated by rules instead of interchangeable card grids.
 - Cool Paper / Cool Surface workspace, Deep Indigo action, Seafoam Mint only
   inside indigo fields.
@@ -404,23 +404,28 @@ confirmation stay explicit. Rows never become nested cards or a secondary
 analytics surface. Inline confirmation is a flat ruled panel inside the row
 (Quiet Surface, or Alert Red tint when destructive), not a modal.
 
-### Explore question and results
+### Explore collection and filters
 
-Explore turns a bounded retrieval question into the existing evidence-ledger
-language. One lightly lifted work surface begins with the sentence-like
-**Show me [Evidence or Students] from [date]** controls. Student, Tags, Class,
-and Photo stand as ordinary labeled fields; empty means unconstrained.
-Student, class, and tag values use searchable keyboard multi-selects with
-named removal controls. Tag matching stays attached to Tags rather than
-appearing as separate condition types.
+Explore opens onto the evidence ledger. A compact toolbar offers **Filters**
+and **Evidence / By student** views. The selected view uses Deep Indigo with
+On-Indigo text inside a Quiet Surface well; **Show results** keeps the same
+indigo as the apply action. The optional inline editor is Quiet Surface, so Cool
+Surface fields and the results ledger stay distinct. Student and class, tags,
+and date and photo form three desktop columns; mobile stacks them. Searchable
+multi-selects retain visible labels and named removal controls. Selected values
+and applied-scope chips use ink on Quiet Surface. Combobox keyboard focus uses
+Deep Indigo with On-Indigo muted descriptions. Unfinished edits use the same
+Quiet Surface as a status strip. Alert Red remains error-only. Tag matching and
+exclusion stay attached to Tags. Empty fields are unconstrained.
 
-Changing a question does not silently replace the current results. The explicit
-run action reads **Show results**, **Update results**, or **Updating results…**.
-Below the question, one quiet ruled header carries complete matching-record and
-represented-student counts. Evidence results reuse the shared evidence content
-in newest-first ledger rows; student results use alphabetical expandable rows
-with inspectable, paged supporting evidence. The question remains transient,
-and mobile stacks the same sequence into one column with a full-width action.
+The explicit **Show results** or **Update results** action applies edits,
+collapses the editor, and focuses the collection. Closing it preserves unfinished
+edits with a visible status. Applied scope and complete record/student counts
+stay next to the results. View changes and pagination use that applied scope.
+Evidence uses newest-first ruled rows with shared evidence content; student
+groups are alphabetical, with inspectable supporting records that recede onto
+Quiet Surface and do not repeat the group's identity. Filters remain transient
+and are never encoded in the URL.
 
 ### Motion
 

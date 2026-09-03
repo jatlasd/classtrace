@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronDown, ChevronUp, FileSearch, X } from "lucide-react";
+import { ChevronDown, ChevronUp, FileSearch, SlidersHorizontal, X } from "lucide-react";
 import Link from "next/link";
 import {
   useId,
@@ -28,10 +28,12 @@ import type {
   ExploreQueryResults,
   ExploreStudentGroup,
 } from "@/lib/evidence/explore-evidence-contract";
+import { DEFAULT_EXPLORE_QUERY } from "@/lib/evidence/explore-evidence-contract";
 import { routes } from "@/lib/routes";
 
 type TagMatchMode = "all" | "any";
 type TagListKey = "includeAny" | "includeAll";
+type QueryIntent = "filters" | "view" | "page";
 
 type SupportingState = {
   records: ExploreEvidenceRecord[];
@@ -57,16 +59,29 @@ const DATE_RULE_LABELS: Record<ExploreDateCondition["rule"], string> = {
 };
 
 const FIELD_CONTROL_CLASS =
-  "min-h-10 w-full rounded-md border border-input bg-card px-2.5 text-sm text-foreground outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 lg:min-h-8";
-
-const SENTENCE_CONTROL_CLASS =
-  "min-h-10 rounded-md border border-input bg-muted/30 px-2 text-sm font-semibold text-foreground outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 lg:min-h-8";
+  "min-h-11 min-w-0 w-full rounded-md border border-input bg-card px-2.5 text-sm text-foreground outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 lg:min-h-9";
 
 const REVEAL_ACTION_CLASS =
-  "min-h-10 rounded-md px-1 text-xs font-semibold text-link underline-offset-4 outline-none hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 lg:min-h-7";
+  "min-h-11 rounded-md px-1 text-xs font-semibold text-link underline-offset-4 outline-none hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 lg:min-h-8";
 
 function querySignature(query: ExploreEvidenceQuery): string {
   return JSON.stringify(query);
+}
+
+function describeFilters(query: ExploreEvidenceQuery, options: ExploreEvidenceOptions): string[] {
+  const labels: string[] = [];
+  const names = (ids: string[], choices: { id: string; label: string; }[]) =>
+    ids.map((id) => choices.find((choice) => choice.id === id)?.label ?? id).join(", ");
+  if (query.studentIds.length) labels.push(`Student: ${names(query.studentIds, options.students)}`);
+  if (query.classIds.length) labels.push(`Class at capture: ${names(query.classIds, options.classes)}`);
+  if (query.tags.includeAll.length) labels.push(`Tags${query.tags.includeAll.length > 1 ? " (all)" : ""}: ${names(query.tags.includeAll, options.tags)}`);
+  if (query.tags.includeAny.length) labels.push(`Tags (any): ${names(query.tags.includeAny, options.tags)}`);
+  if (query.tags.exclude.length) labels.push(`Without tags: ${names(query.tags.exclude, options.tags)}`);
+  if (query.date.rule === "exact") labels.push(formatEvidenceDate(`${query.date.date}T00:00:00`));
+  else if (query.date.rule === "range") labels.push(`${formatEvidenceDate(`${query.date.startDate}T00:00:00`)} – ${formatEvidenceDate(`${query.date.endDate}T00:00:00`)}`);
+  else if (query.date.rule !== "all") labels.push(DATE_RULE_LABELS[query.date.rule]);
+  if (query.photo !== "either") labels.push(query.photo === "with" ? "With a photo" : "Without a photo");
+  return labels;
 }
 
 function dateFromKey(value: string): Date | null {
@@ -150,38 +165,38 @@ function secondaryTagKey(mode: TagMatchMode): TagListKey {
   return mode === "all" ? "includeAny" : "includeAll";
 }
 
-function EvidenceResultRow({ record }: { record: ExploreEvidenceRecord }) {
+function EvidenceResultRow({ record, showStudent = true }: { record: ExploreEvidenceRecord; showStudent?: boolean; }) {
   return (
     <li className="border-b border-border last:border-b-0">
       <article
         aria-label={`Saved evidence for ${record.studentDisplayName}`}
-        className="grid gap-3 px-4 py-4 sm:grid-cols-[8.5rem_minmax(0,1fr)] sm:px-5"
+        className="grid gap-2 px-3 py-4 sm:grid-cols-[6.5rem_minmax(0,1fr)] sm:gap-4 sm:px-4"
       >
-        <p className="text-xs font-medium tabular-nums text-muted-foreground">
+        <time dateTime={record.evidenceDate} className="text-xs font-medium tabular-nums text-muted-foreground">
           {formatEvidenceDate(record.evidenceDate)}
-        </p>
+        </time>
         <div className="min-w-0">
-          <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+          {showStudent ? <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
             <Link
               href={routes.student(record.rosterStudentId)}
-              className="rounded-sm text-sm font-semibold text-link underline-offset-4 outline-none hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              className="break-words rounded-sm text-sm font-semibold text-link underline-offset-4 outline-none [overflow-wrap:anywhere] hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             >
               {record.studentDisplayName}
             </Link>
-            <span className="text-xs text-muted-foreground">
+            <span className="break-words text-xs text-muted-foreground [overflow-wrap:anywhere]">
               @{record.studentMentionHandle}
             </span>
             {record.classGroupName ? (
-              <span className="border-l border-border pl-2 text-xs text-muted-foreground">
-                Class {record.classGroupName}
+              <span className="break-words border-l border-border pl-2 text-xs text-muted-foreground [overflow-wrap:anywhere]">
+                {record.classGroupName}
               </span>
             ) : null}
-          </div>
+          </div> : null}
           <EvidenceRecordContent
             record={record}
             compact
             showStructuredSummary={false}
-            textClassName="mt-2"
+            textClassName="mt-1.5 max-w-[75ch]"
           />
         </div>
       </article>
@@ -196,6 +211,7 @@ function ResultPagination({
   pending,
   onPage,
   label,
+  chronological = true,
 }: {
   page: number;
   hasNewer: boolean;
@@ -203,6 +219,7 @@ function ResultPagination({
   pending: boolean;
   onPage: (page: number) => void;
   label: string;
+  chronological?: boolean;
 }) {
   if (!hasNewer && !hasOlder) return null;
 
@@ -218,7 +235,7 @@ function ResultPagination({
         disabled={!hasNewer || pending}
         onClick={() => onPage(page - 1)}
       >
-        Newer
+        {chronological ? "Newer" : "Previous"}
       </Button>
       <span className="text-xs font-medium tabular-nums text-muted-foreground">
         Page {page}
@@ -230,7 +247,7 @@ function ResultPagination({
         disabled={!hasOlder || pending}
         onClick={() => onPage(page + 1)}
       >
-        Older
+        {chronological ? "Older" : "Next"}
       </Button>
     </nav>
   );
@@ -244,17 +261,17 @@ function EmptyResults({
   onRevise: () => void;
 }) {
   return (
-    <div className="border border-border bg-card/60 px-5 py-7 text-sm leading-relaxed text-muted-foreground">
-      <div className="mb-3 flex size-10 items-center justify-center rounded-md border border-border bg-muted/50 text-link">
+    <div className="border border-border bg-card px-5 py-7 text-sm leading-relaxed text-muted-foreground shadow-surface">
+      <div className="mb-3 flex size-10 items-center justify-center rounded-md border border-border bg-muted text-foreground">
         <FileSearch aria-hidden="true" className="size-5" strokeWidth={1.75} />
       </div>
       <h2 className="font-sans text-base font-semibold text-foreground">
-        {noEvidence ? "No saved evidence yet." : "No evidence matches this question."}
+        {noEvidence ? "No saved evidence yet." : "No evidence matches these filters."}
       </h2>
       <p className="mt-1 max-w-[68ch]">
         {noEvidence
           ? "Validated evidence will appear here after you review and save a student-specific capture."
-          : "Nothing in saved evidence matched this question. Change a field and update the results."}
+          : "Try a wider date range or remove a filter to include more evidence."}
       </p>
       {noEvidence ? (
         <Button asChild variant="outline" size="sm" className="mt-4">
@@ -262,7 +279,7 @@ function EmptyResults({
         </Button>
       ) : (
         <Button type="button" variant="outline" size="sm" className="mt-4" onClick={onRevise}>
-          Revise question
+          Edit filters
         </Button>
       )}
     </div>
@@ -281,7 +298,7 @@ function ModifierRemoveButton({
       type="button"
       aria-label={label}
       onClick={onClick}
-      className="flex min-h-10 items-center justify-center gap-2 self-end rounded-md px-2 text-xs font-semibold text-muted-foreground outline-none transition-colors hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 lg:min-h-8"
+      className="flex min-h-11 items-center justify-center gap-2 self-end rounded-md px-2 text-xs font-semibold text-muted-foreground outline-none transition-colors hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 lg:min-h-9"
     >
       <X aria-hidden="true" className="size-4" />
       Remove
@@ -297,6 +314,7 @@ export function ExploreEvidencePage({
   const [draftQuery, setDraftQuery] = useState(initialQuery);
   const [appliedQuery, setAppliedQuery] = useState(initialQuery);
   const [results, setResults] = useState(initialResults);
+  const [filtersOpen, setFiltersOpen] = useState(false);
   const [tagMatchMode, setTagMatchMode] = useState(() => initialTagMatchMode(initialQuery));
   const [withoutOpen, setWithoutOpen] = useState(initialQuery.tags.exclude.length > 0);
   const [secondaryOpen, setSecondaryOpen] = useState(() => {
@@ -304,12 +322,16 @@ export function ExploreEvidencePage({
     return initialQuery.tags[secondaryTagKey(mode)].length > 0;
   });
   const [queryError, setQueryError] = useState<string | null>(null);
+  const retryRequest = useRef<{ query: ExploreEvidenceQuery; page: number; intent: QueryIntent; } | null>(null);
   const [supporting, setSupporting] = useState<Record<string, SupportingState>>({});
   const [expandedStudents, setExpandedStudents] = useState<string[]>([]);
   const [supportingPendingStudentId, setSupportingPendingStudentId] = useState<string | null>(null);
   const [isPending, startQueryTransition] = useTransition();
   const [isSupportingPending, startSupportingTransition] = useTransition();
-  const builderRef = useRef<HTMLElement>(null);
+  const filterButtonRef = useRef<HTMLButtonElement>(null);
+  const studentInputRef = useRef<HTMLInputElement>(null);
+  const resultsHeadingRef = useRef<HTMLHeadingElement>(null);
+  const queryGeneration = useRef(0);
   const tagsInputRef = useRef<HTMLInputElement>(null);
   const exactDateRef = useRef<HTMLInputElement>(null);
   const rangeStartRef = useRef<HTMLInputElement>(null);
@@ -317,6 +339,8 @@ export function ExploreEvidencePage({
 
   const hasUnappliedChanges =
     querySignature(draftQuery) !== querySignature(appliedQuery);
+  const appliedFilters = describeFilters(appliedQuery, options);
+  const hasDraftFilters = describeFilters(draftQuery, options).length > 0;
   const currentDateError = dateValidationError(draftQuery.date);
   const primaryTags = draftQuery.tags[primaryTagKey(tagMatchMode)];
   const secondaryTags = draftQuery.tags[secondaryTagKey(tagMatchMode)];
@@ -372,7 +396,21 @@ export function ExploreEvidencePage({
     updateTags({ [secondaryTagKey(tagMatchMode)]: [] });
   }
 
-  function runQuery(query: ExploreEvidenceQuery, page = 1): void {
+  function openFilters(): void {
+    setFiltersOpen(true);
+    window.setTimeout(() => studentInputRef.current?.focus(), 0);
+  }
+
+  function resetFilters(): void {
+    setDraftQuery({ ...DEFAULT_EXPLORE_QUERY, resultView: appliedQuery.resultView });
+    setTagMatchMode("all");
+    setWithoutOpen(false);
+    setSecondaryOpen(false);
+    setQueryError(null);
+    studentInputRef.current?.focus();
+  }
+
+  function runQuery(query: ExploreEvidenceQuery, page = 1, intent: QueryIntent = "page"): void {
     const validationError = dateValidationError(query.date);
     if (validationError) {
       setQueryError(validationError);
@@ -384,6 +422,7 @@ export function ExploreEvidencePage({
     }
 
     setQueryError(null);
+    retryRequest.current = { query, page, intent };
     startQueryTransition(async () => {
       const response = await runExploreEvidenceQuery({
         query,
@@ -395,14 +434,23 @@ export function ExploreEvidencePage({
         return;
       }
 
+      queryGeneration.current += 1;
       setResults(response.results);
       setAppliedQuery(query);
+      if (intent === "filters") {
+        setDraftQuery(query);
+        setFiltersOpen(false);
+        window.setTimeout(() => resultsHeadingRef.current?.focus(), 0);
+      } else if (intent === "view") {
+        setDraftQuery((draft) => ({ ...draft, resultView: query.resultView }));
+      }
       setExpandedStudents([]);
       setSupporting({});
     });
   }
 
   function loadSupportingEvidence(studentId: string, page = 1): void {
+    const generation = queryGeneration.current;
     setSupportingPendingStudentId(studentId);
     startSupportingTransition(async () => {
       const response = await runExploreSupportingEvidenceQuery({
@@ -411,6 +459,7 @@ export function ExploreEvidencePage({
         page,
         dateContext: dateContextForQuery(appliedQuery),
       });
+      if (generation !== queryGeneration.current) return;
       if (!response.success) {
         setSupporting((state) => ({
           ...state,
@@ -449,358 +498,370 @@ export function ExploreEvidencePage({
 
   return (
     <div className="mx-auto w-full max-w-[1180px] px-3 py-5 sm:px-5 sm:py-7">
-      <header className="mb-5 border-b border-border pb-4">
+      <header className="mb-5">
         <h1 className="font-sans text-2xl font-semibold tracking-[-0.025em] text-foreground sm:text-3xl">
           Explore evidence
         </h1>
         <p className="mt-1.5 text-[15px] leading-relaxed text-muted-foreground">
-          Ask a question of your saved evidence.
+          Find saved observations by student, tag, or date.
         </p>
       </header>
 
-      <section
-        ref={builderRef}
-        aria-labelledby="explore-question-heading"
-        aria-busy={isPending}
-        className="overflow-visible rounded-card bg-card shadow-paper"
-      >
-        <h2 id="explore-question-heading" className="sr-only">
-          Current question
-        </h2>
-        <div className="px-3 py-3 sm:px-4">
-          <div className="flex flex-wrap items-center gap-x-1.5 gap-y-1.5 text-sm font-semibold leading-tight text-foreground">
-            <span>Show me</span>
-            <label className="sr-only" htmlFor="explore-result-view">
-              Result view
-            </label>
-            <select
-              id="explore-result-view"
-              value={draftQuery.resultView}
-              onChange={(event) =>
-                updateQuery((query) => ({
-                  ...query,
-                  resultView: event.target.value as ExploreEvidenceQuery["resultView"],
-                }))
-              }
-              className={SENTENCE_CONTROL_CLASS}
-            >
-              <option value="evidence">Evidence</option>
-              <option value="students">Students</option>
-            </select>
-            <span>from</span>
-            <label className="sr-only" htmlFor="explore-date-rule">
-              Date
-            </label>
-            <select
-              id="explore-date-rule"
-              value={draftQuery.date.rule}
-              onChange={(event) => {
-                const rule = event.target.value as ExploreDateCondition["rule"];
-                const nextDate: ExploreDateCondition =
-                  rule === "exact"
-                    ? { rule, date: "" }
-                    : rule === "range"
-                      ? { rule, startDate: "", endDate: "" }
-                      : { rule };
-                updateQuery((query) => ({ ...query, date: nextDate }));
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border pb-3">
+        <Button
+          ref={filterButtonRef}
+          type="button"
+          variant="outline"
+          size="sm"
+          aria-expanded={filtersOpen}
+          aria-controls="explore-filters"
+          onClick={() => setFiltersOpen((open) => !open)}
+          className={
+            appliedFilters.length > 0
+              ? "min-h-11 gap-2 bg-muted sm:min-h-9"
+              : "min-h-11 gap-2 bg-card sm:min-h-9"
+          }
+        >
+          <SlidersHorizontal aria-hidden="true" className="size-4" />
+          Filters{appliedFilters.length > 0 ? (
+            <span className="tabular-nums"> ({appliedFilters.length})</span>
+          ) : null}
+          <ChevronDown aria-hidden="true" className={"size-3.5 " + (filtersOpen ? "rotate-180" : "")} />
+        </Button>
+        <div role="group" aria-label="View evidence" className="flex gap-0.5 rounded-md bg-muted p-0.5">
+          {(["evidence", "students"] as const).map((view) => (
+            <button
+              key={view}
+              type="button"
+              aria-pressed={results.view === view}
+              disabled={isPending}
+              onClick={() => {
+                if (view !== results.view) runQuery({ ...appliedQuery, resultView: view }, 1, "view");
               }}
-              className={SENTENCE_CONTROL_CLASS}
+              className={
+                results.view === view
+                  ? "min-h-11 rounded-md bg-primary px-3 text-sm font-semibold text-primary-foreground outline-none transition-colors hover:bg-[var(--primary-hover)] focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-60 sm:min-h-9"
+                  : "min-h-11 rounded-md px-3 text-sm font-semibold text-muted-foreground outline-none transition-colors hover:bg-card hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-60 sm:min-h-9"
+              }
             >
-              {Object.entries(DATE_RULE_LABELS).map(([value, label]) => (
-                <option key={value} value={value}>
-                  {label}
-                </option>
-              ))}
-            </select>
-          </div>
+              {view === "evidence" ? "Evidence" : "By student"}
+            </button>
+          ))}
+        </div>
+      </div>
 
-          {draftQuery.date.rule === "exact" ? (
-            <div className="mt-2.5 max-w-sm">
-              <label htmlFor="explore-exact-date" className="mb-1 block text-xs font-semibold text-foreground">
-                Exact date
-              </label>
-              <input
-                ref={exactDateRef}
-                id="explore-exact-date"
-                type="date"
-                value={draftQuery.date.date}
-                aria-invalid={Boolean(currentDateError)}
-                onChange={(event) =>
-                  updateQuery((query) => ({
-                    ...query,
-                    date: { rule: "exact", date: event.target.value },
-                  }))
-                }
-                className={`${FIELD_CONTROL_CLASS} aria-invalid:border-destructive`}
-              />
-            </div>
-          ) : draftQuery.date.rule === "range" ? (
-            <div className="mt-2.5 grid gap-2.5 sm:max-w-2xl sm:grid-cols-2">
-              <div>
-                <label htmlFor="explore-start-date" className="mb-1 block text-xs font-semibold text-foreground">
-                  Start date
-                </label>
-                <input
-                  ref={rangeStartRef}
-                  id="explore-start-date"
-                  type="date"
-                  value={draftQuery.date.startDate}
-                  aria-invalid={Boolean(currentDateError)}
-                  onChange={(event) =>
-                    updateQuery((query) => ({
-                      ...query,
-                      date: {
-                        rule: "range",
-                        startDate: event.target.value,
-                        endDate: query.date.rule === "range" ? query.date.endDate : "",
-                      },
-                    }))
-                  }
-                  className={`${FIELD_CONTROL_CLASS} aria-invalid:border-destructive`}
+      {filtersOpen ? <section id="explore-filters" aria-label="Filter evidence" className="border-b border-border bg-muted px-3 py-4 sm:px-4">
+        <form onSubmit={(event) => { event.preventDefault(); runQuery(draftQuery, 1, "filters"); }}>
+          <fieldset disabled={isPending}>
+            <legend className="sr-only">Narrow saved evidence</legend>
+            <div className="grid items-start gap-4 md:grid-cols-3">
+              <div className="min-w-0 space-y-3">
+                <ExploreMultiSelect
+                  label="Student"
+                  inputRef={studentInputRef}
+                  options={options.students}
+                  selectedIds={draftQuery.studentIds}
+                  onChange={(studentIds) => updateQuery((query) => ({ ...query, studentIds }))}
+                  placeholder="Any student"
+                  emptyMessage="No available students match."
                 />
-              </div>
-              <div>
-                <label htmlFor="explore-end-date" className="mb-1 block text-xs font-semibold text-foreground">
-                  End date
-                </label>
-                <input
-                  id="explore-end-date"
-                  type="date"
-                  value={draftQuery.date.endDate}
-                  aria-invalid={Boolean(currentDateError)}
-                  onChange={(event) =>
-                    updateQuery((query) => ({
-                      ...query,
-                      date: {
-                        rule: "range",
-                        startDate: query.date.rule === "range" ? query.date.startDate : "",
-                        endDate: event.target.value,
-                      },
-                    }))
-                  }
-                  className={`${FIELD_CONTROL_CLASS} aria-invalid:border-destructive`}
+
+                <ExploreMultiSelect
+                  label="Class at capture"
+                  options={options.classes}
+                  selectedIds={draftQuery.classIds}
+                  onChange={(classIds) => updateQuery((query) => ({ ...query, classIds }))}
+                  placeholder="Any class"
+                  emptyMessage="No referenced classes match."
                 />
+
+                <p className="text-xs leading-relaxed text-muted-foreground">Class recorded when the evidence was saved.</p>
               </div>
-            </div>
-          ) : null}
-          {currentDateError ? (
-            <p className="mt-2 text-xs font-medium text-destructive">
-              {currentDateError}
-            </p>
-          ) : null}
+              <div className="min-w-0">
+                <div className="min-w-0">
+                  <ExploreMultiSelect
+                    label="Tags"
+                    options={tagOptions}
+                    selectedIds={primaryTags}
+                    onChange={(tags) => updateTags({ [primaryTagKey(tagMatchMode)]: tags })}
+                    placeholder="Any tags"
+                    emptyMessage="No available tags match."
+                    inputRef={tagsInputRef}
+                  />
 
-          <div className="mt-2.5 grid gap-2.5 sm:grid-cols-2">
-            <ExploreMultiSelect
-              label="Student"
-              options={options.students}
-              selectedIds={draftQuery.studentIds}
-              onChange={(studentIds) => updateQuery((query) => ({ ...query, studentIds }))}
-              placeholder="Any student"
-              emptyMessage="No available students match."
-            />
-
-            <div className="min-w-0">
-              <ExploreMultiSelect
-                label="Tags"
-                options={tagOptions}
-                selectedIds={primaryTags}
-                onChange={(tags) => updateTags({ [primaryTagKey(tagMatchMode)]: tags })}
-                placeholder="Any tags"
-                emptyMessage="No available tags match."
-                inputRef={tagsInputRef}
-              />
-
-              {primaryTags.length >= 2 ? (
-                <fieldset className="mt-1.5" disabled={matchLocked}>
-                  <legend className="mb-1 text-xs font-semibold text-foreground">
-                    Match
-                  </legend>
-                  <div className="flex flex-wrap gap-x-3 gap-y-1">
-                    <label className="inline-flex min-h-10 items-center gap-1.5 text-xs text-foreground lg:min-h-7">
-                      <input
-                        type="radio"
-                        name={tagMatchName}
-                        value="all"
-                        checked={tagMatchMode === "all"}
-                        disabled={matchLocked}
-                        onChange={() => changeTagMatchMode("all")}
-                        className="size-3.5 accent-primary"
-                      />
-                      All of these tags
-                    </label>
-                    <label className="inline-flex min-h-10 items-center gap-1.5 text-xs text-foreground lg:min-h-7">
-                      <input
-                        type="radio"
-                        name={tagMatchName}
-                        value="any"
-                        checked={tagMatchMode === "any"}
-                        disabled={matchLocked}
-                        onChange={() => changeTagMatchMode("any")}
-                        className="size-3.5 accent-primary"
-                      />
-                      Any of these tags
-                    </label>
+                  {primaryTags.length >= 2 ? (
+                    <fieldset className="mt-1.5" disabled={matchLocked}>
+                      <legend className="mb-1 text-xs font-semibold text-foreground">
+                        Match
+                      </legend>
+                      <div className="flex flex-wrap gap-x-3 gap-y-1">
+                        <label className="inline-flex min-h-11 items-center gap-1.5 text-xs text-foreground lg:min-h-8">
+                          <input
+                            type="radio"
+                            name={tagMatchName}
+                            value="all"
+                            checked={tagMatchMode === "all"}
+                            disabled={matchLocked}
+                            onChange={() => changeTagMatchMode("all")}
+                            className="size-3.5 accent-primary"
+                          />
+                          All of these tags
+                        </label>
+                        <label className="inline-flex min-h-11 items-center gap-1.5 text-xs text-foreground lg:min-h-8">
+                          <input
+                            type="radio"
+                            name={tagMatchName}
+                            value="any"
+                            checked={tagMatchMode === "any"}
+                            disabled={matchLocked}
+                            onChange={() => changeTagMatchMode("any")}
+                            className="size-3.5 accent-primary"
+                          />
+                          Any of these tags
+                        </label>
+                      </div>
+                    </fieldset>
+                  ) : null}
+                </div>
+                {showSecondary ? (
+                  <div className="mt-2.5 grid gap-2 ">
+                    <ExploreMultiSelect
+                      label={secondaryLabel}
+                      options={tagOptions}
+                      selectedIds={secondaryTags}
+                      onChange={(tags) => updateTags({ [secondaryTagKey(tagMatchMode)]: tags })}
+                      placeholder="Any tags"
+                      emptyMessage="No available tags match."
+                    />
+                    <ModifierRemoveButton
+                      label="Remove extra tag group"
+                      onClick={dismissSecondary}
+                    />
                   </div>
-                </fieldset>
-              ) : null}
-            </div>
-          </div>
+                ) : null}
 
-          <div className="mt-2.5 grid gap-2.5 sm:grid-cols-[minmax(0,1fr)_11rem]">
-            <ExploreMultiSelect
-              label="Class"
-              options={options.classes}
-              selectedIds={draftQuery.classIds}
-              onChange={(classIds) => updateQuery((query) => ({ ...query, classIds }))}
-              placeholder="Any class"
-              emptyMessage="No referenced classes match."
-            />
+                {showWithout ? (
+                  <div className="mt-2.5 grid gap-2 ">
+                    <ExploreMultiSelect
+                      label="Without tags"
+                      options={tagOptions}
+                      selectedIds={draftQuery.tags.exclude}
+                      onChange={(tags) => updateTags({ exclude: tags })}
+                      placeholder="Any tags"
+                      emptyMessage="No available tags match."
+                    />
+                    <ModifierRemoveButton
+                      label="Remove without tags"
+                      onClick={dismissWithout}
+                    />
+                  </div>
+                ) : null}
 
-            <div>
-              <label htmlFor="explore-photo" className="mb-1 block text-xs font-semibold text-foreground">
-                Photo
-              </label>
-              <select
-                id="explore-photo"
-                value={draftQuery.photo}
-                onChange={(event) =>
-                  updateQuery((query) => ({
-                    ...query,
-                    photo: event.target.value as ExploreEvidenceQuery["photo"],
-                  }))
-                }
-                className={FIELD_CONTROL_CLASS}
-              >
-                <option value="either">Any</option>
-                <option value="with">With a photo</option>
-                <option value="without">Without a photo</option>
-              </select>
-            </div>
-          </div>
+                {!showSecondary || !showWithout ? (
+                  <div className="mt-1.5 flex flex-wrap items-center gap-x-3">
+                    {!showSecondary && primaryTags.length > 0 ? (
+                      <button
+                        type="button"
+                        onClick={() => setSecondaryOpen(true)}
+                        className={REVEAL_ACTION_CLASS}
+                      >
+                        {secondaryLabel}…
+                      </button>
+                    ) : null}
+                    {!showWithout ? (
+                      <button
+                        type="button"
+                        onClick={() => setWithoutOpen(true)}
+                        className={REVEAL_ACTION_CLASS}
+                      >
+                        Exclude tags…
+                      </button>
+                    ) : null}
+                  </div>
+                ) : null}
+              </div>
+              <div className="min-w-0 space-y-3">
+                <div>
+                  <label htmlFor="explore-date-rule" className="mb-1 block text-xs font-semibold text-foreground">Date</label>
+                  <select
+                    id="explore-date-rule"
+                    value={draftQuery.date.rule}
+                    onChange={(event) => {
+                      const rule = event.target.value as ExploreDateCondition["rule"];
+                      const nextDate: ExploreDateCondition =
+                        rule === "exact"
+                          ? { rule, date: "" }
+                          : rule === "range"
+                            ? { rule, startDate: "", endDate: "" }
+                            : { rule };
+                      updateQuery((query) => ({ ...query, date: nextDate }));
+                    }}
+                    className={FIELD_CONTROL_CLASS}
+                  >
+                    {Object.entries(DATE_RULE_LABELS).map(([value, label]) => (
+                      <option key={value} value={value}>
+                        {label}
+                      </option>
+                    ))}
+                  </select>
 
-          {showSecondary ? (
-            <div className="mt-2.5 grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto]">
-              <ExploreMultiSelect
-                label={secondaryLabel}
-                options={tagOptions}
-                selectedIds={secondaryTags}
-                onChange={(tags) => updateTags({ [secondaryTagKey(tagMatchMode)]: tags })}
-                placeholder="Any tags"
-                emptyMessage="No available tags match."
-              />
-              <ModifierRemoveButton
-                label="Remove extra tag group"
-                onClick={dismissSecondary}
-              />
-            </div>
-          ) : null}
+                  {draftQuery.date.rule === "exact" ? (
+                    <div className="mt-2.5 max-w-sm">
+                      <label htmlFor="explore-exact-date" className="mb-1 block text-xs font-semibold text-foreground">
+                        Exact date
+                      </label>
+                      <input
+                        ref={exactDateRef}
+                        id="explore-exact-date"
+                        type="date"
+                        value={draftQuery.date.date}
+                        aria-invalid={Boolean(currentDateError)}
+                        aria-describedby={currentDateError ? "explore-date-error" : undefined}
+                        onChange={(event) =>
+                          updateQuery((query) => ({
+                            ...query,
+                            date: { rule: "exact", date: event.target.value },
+                          }))
+                        }
+                        className={`${FIELD_CONTROL_CLASS} aria-invalid:border-destructive`}
+                      />
+                    </div>
+                  ) : draftQuery.date.rule === "range" ? (
+                    <div className="mt-2.5 grid gap-2.5">
+                      <div>
+                        <label htmlFor="explore-start-date" className="mb-1 block text-xs font-semibold text-foreground">
+                          Start date
+                        </label>
+                        <input
+                          ref={rangeStartRef}
+                          id="explore-start-date"
+                          type="date"
+                          value={draftQuery.date.startDate}
+                          aria-invalid={Boolean(currentDateError)}
+                          aria-describedby={currentDateError ? "explore-date-error" : undefined}
+                          onChange={(event) =>
+                            updateQuery((query) => ({
+                              ...query,
+                              date: {
+                                rule: "range",
+                                startDate: event.target.value,
+                                endDate: query.date.rule === "range" ? query.date.endDate : "",
+                              },
+                            }))
+                          }
+                          className={`${FIELD_CONTROL_CLASS} aria-invalid:border-destructive`}
+                        />
+                      </div>
+                      <div>
+                        <label htmlFor="explore-end-date" className="mb-1 block text-xs font-semibold text-foreground">
+                          End date
+                        </label>
+                        <input
+                          id="explore-end-date"
+                          type="date"
+                          value={draftQuery.date.endDate}
+                          aria-invalid={Boolean(currentDateError)}
+                          aria-describedby={currentDateError ? "explore-date-error" : undefined}
+                          onChange={(event) =>
+                            updateQuery((query) => ({
+                              ...query,
+                              date: {
+                                rule: "range",
+                                startDate: query.date.rule === "range" ? query.date.startDate : "",
+                                endDate: event.target.value,
+                              },
+                            }))
+                          }
+                          className={`${FIELD_CONTROL_CLASS} aria-invalid:border-destructive`}
+                        />
+                      </div>
+                    </div>
+                  ) : null}
+                  {currentDateError ? (
+                    <p id="explore-date-error" role="status" className="mt-2 text-xs font-medium text-destructive">
+                      {currentDateError}
+                    </p>
+                  ) : null}
 
-          {showWithout ? (
-            <div className="mt-2.5 grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto]">
-              <ExploreMultiSelect
-                label="Without"
-                options={tagOptions}
-                selectedIds={draftQuery.tags.exclude}
-                onChange={(tags) => updateTags({ exclude: tags })}
-                placeholder="Any tags"
-                emptyMessage="No available tags match."
-              />
-              <ModifierRemoveButton
-                label="Remove without tags"
-                onClick={dismissWithout}
-              />
-            </div>
-          ) : null}
 
-          {!showSecondary || !showWithout ? (
-            <div className="mt-1.5 flex flex-wrap items-center gap-x-3">
-              {!showSecondary && primaryTags.length > 0 ? (
-                <button
-                  type="button"
-                  onClick={() => setSecondaryOpen(true)}
-                  className={REVEAL_ACTION_CLASS}
-                >
-                  {secondaryLabel}…
-                </button>
-              ) : null}
-              {!showWithout ? (
-                <button
-                  type="button"
-                  onClick={() => setWithoutOpen(true)}
-                  className={REVEAL_ACTION_CLASS}
-                >
-                  Without…
-                </button>
-              ) : null}
+                </div>
+                <div>
+                  <label htmlFor="explore-photo" className="mb-1 block text-xs font-semibold text-foreground">
+                    Photo
+                  </label>
+                  <select
+                    id="explore-photo"
+                    value={draftQuery.photo}
+                    onChange={(event) =>
+                      updateQuery((query) => ({
+                        ...query,
+                        photo: event.target.value as ExploreEvidenceQuery["photo"],
+                      }))
+                    }
+                    className={FIELD_CONTROL_CLASS}
+                  >
+                    <option value="either">Any</option>
+                    <option value="with">With a photo</option>
+                    <option value="without">Without a photo</option>
+                  </select>
+                </div>
+              </div>
             </div>
-          ) : null}
+            <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-border pt-3">
+              <button type="button" onClick={resetFilters} disabled={!hasDraftFilters} className={REVEAL_ACTION_CLASS + " disabled:cursor-default disabled:opacity-50"}>Clear filters</button>
+              <div className="flex items-center gap-2">
+                <Button type="button" variant="ghost" onClick={() => { setFiltersOpen(false); filterButtonRef.current?.focus(); }}>Close</Button>
+                <Button type="submit" disabled={isPending || Boolean(currentDateError)}>{runLabel}</Button>
+              </div>
+            </div>
+          </fieldset>
+        </form>
+      </section> : null}
+
+      {hasUnappliedChanges ? (
+        <p role="status" className="mt-3 rounded-md bg-muted px-3 py-2.5 text-sm text-foreground">
+          Filters changed. {filtersOpen ? "Update results to apply them." : (
+            <button type="button" onClick={openFilters} className="min-h-11 rounded-sm font-semibold text-link underline underline-offset-4 outline-none focus-visible:ring-2 focus-visible:ring-ring sm:min-h-9">Review changes</button>
+          )}
+        </p>
+      ) : null}
+
+      {queryError ? (
+        <div role="alert" className="mt-3 rounded-md border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+          <p className="font-medium">{queryError}</p>
+          <button type="button" disabled={isPending} onClick={() => { const request = retryRequest.current; if (request) runQuery(request.query, request.page, request.intent); }} className="mt-2 min-h-11 rounded-md px-1 text-xs font-semibold underline underline-offset-4 outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">Retry</button>
         </div>
+      ) : null}
 
-        <div className="border-t border-border px-3 py-2.5 sm:px-4 sm:text-right">
-          <Button
-            type="button"
-            size="sm"
-            disabled={isPending || Boolean(currentDateError)}
-            onClick={() => runQuery(draftQuery)}
-            className="w-full sm:w-auto"
-          >
-            {runLabel}
-          </Button>
-        </div>
-
-        {queryError ? (
-          <div role="alert" className="border-t border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive sm:px-5">
-            <p className="font-medium">{queryError}</p>
-            {!currentDateError ? (
-              <button
-                type="button"
-                disabled={isPending}
-                onClick={() => runQuery(draftQuery)}
-                className="mt-2 min-h-11 rounded-md px-1 text-xs font-semibold underline underline-offset-4 outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-              >
-                Retry this question
-              </button>
-            ) : null}
-          </div>
-        ) : null}
-      </section>
-
-      <section aria-labelledby="explore-results-heading" className="mt-7">
-        <div className="mb-3 flex flex-col gap-3 border-y border-border px-1 py-3 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <h2 id="explore-results-heading" className="font-sans text-base font-semibold text-foreground">
-              {results.view === "evidence" ? "Evidence results" : "Students represented"}
+      <section aria-labelledby="explore-results-heading" aria-busy={isPending} className="mt-5">
+        <div className="mb-3">
+          <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+            <h2 ref={resultsHeadingRef} tabIndex={-1} id="explore-results-heading" className="rounded-sm font-sans text-base font-semibold text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring">
+              {results.view === "students" ? "Students with evidence" : appliedFilters.length ? "Matching evidence" : "All evidence"}
             </h2>
-            <p className="mt-0.5 text-xs text-muted-foreground">
-              {results.view === "evidence"
-                ? "Newest matching evidence appears first."
-                : "Students are listed alphabetically. Expand one to inspect matching evidence."}
+            <p aria-live="polite" className="text-xs text-muted-foreground">
+              {isPending ? "Updating results…" : <><span className="font-semibold tabular-nums text-foreground">{results.counts.evidence}</span>{" "}{plural(results.counts.evidence, "record")}<span aria-hidden="true" className="px-2">·</span><span className="font-semibold tabular-nums text-foreground">{results.counts.students}</span>{" "}{plural(results.counts.students, "student")}</>}
             </p>
           </div>
-          <p aria-live="polite" className="text-sm text-muted-foreground">
-            <span className="font-semibold tabular-nums text-foreground">{results.counts.evidence}</span>{" "}
-            matching {plural(results.counts.evidence, "record")}
-            <span aria-hidden="true" className="px-2">·</span>
-            <span className="font-semibold tabular-nums text-foreground">{results.counts.students}</span>{" "}
-            {plural(results.counts.students, "student")}
+          <p className="mt-1 text-xs text-muted-foreground">
+            {results.view === "evidence" ? "Newest first" : "Alphabetical · Open a student’s matching evidence below"}
+            {appliedQuery.studentIds.length === 0 && appliedQuery.classIds.length === 0 ? " · All students" : null}
+            {appliedQuery.date.rule === "all" ? " · All time" : null}
           </p>
+          {appliedFilters.length > 0 ? (
+            <ul aria-label="Applied filters" className="mt-2 flex flex-wrap gap-1.5">
+              {appliedFilters.map((label) => <li key={label} className="max-w-full break-words rounded-md border border-border bg-muted px-2 py-1 text-xs font-medium text-foreground [overflow-wrap:anywhere]">{label}</li>)}
+            </ul>
+          ) : null}
         </div>
 
         {results.counts.evidence === 0 ? (
           <EmptyResults
-            noEvidence={
-              appliedQuery.studentIds.length === 0 &&
-              appliedQuery.classIds.length === 0 &&
-              appliedQuery.tags.includeAny.length === 0 &&
-              appliedQuery.tags.includeAll.length === 0 &&
-              appliedQuery.tags.exclude.length === 0 &&
-              appliedQuery.date.rule === "all" &&
-              appliedQuery.photo === "either"
-            }
-            onRevise={() => builderRef.current?.scrollIntoView({ block: "start" })}
+            noEvidence={appliedFilters.length === 0}
+            onRevise={openFilters}
           />
         ) : results.view === "evidence" ? (
-          <div className="overflow-hidden rounded-lg border border-border bg-card">
+          <div className="overflow-hidden border-y border-border bg-card">
             <ol>
               {results.records.map((record) => (
                 <EvidenceResultRow key={record.id} record={record} />
@@ -816,7 +877,7 @@ export function ExploreEvidencePage({
             />
           </div>
         ) : (
-          <div className="overflow-hidden rounded-lg border border-border bg-card">
+          <div className="overflow-hidden border-y border-border bg-card">
             <ol>
               {results.students.map((student) => {
                 const isExpanded = expandedStudents.includes(student.id);
@@ -830,14 +891,14 @@ export function ExploreEvidencePage({
                         <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
                           <Link
                             href={routes.student(student.id)}
-                            className="rounded-sm text-sm font-semibold text-link underline-offset-4 outline-none hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                            className="break-words rounded-sm text-sm font-semibold text-link underline-offset-4 outline-none [overflow-wrap:anywhere] hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                           >
                             {student.displayName}
                           </Link>
-                          <span className="text-xs text-muted-foreground">@{student.mentionHandle}</span>
+                          <span className="break-words text-xs text-muted-foreground [overflow-wrap:anywhere]">@{student.mentionHandle}</span>
                           {student.classGroupName ? (
-                            <span className="border-l border-border pl-2 text-xs text-muted-foreground">
-                              Class {student.classGroupName}
+                            <span className="break-words border-l border-border pl-2 text-xs text-muted-foreground [overflow-wrap:anywhere]">
+                              {student.classGroupName}
                             </span>
                           ) : null}
                         </div>
@@ -854,6 +915,7 @@ export function ExploreEvidencePage({
                         size="sm"
                         aria-expanded={isExpanded}
                         aria-controls={`supporting-evidence-${student.id}`}
+                        disabled={isPending || isSupportingPending}
                         onClick={() => toggleStudent(student)}
                       >
                         {isExpanded ? (
@@ -866,13 +928,13 @@ export function ExploreEvidencePage({
                     </div>
 
                     {isExpanded ? (
-                      <div id={`supporting-evidence-${student.id}`} className="border-t border-border bg-muted/20 px-3 py-3 sm:px-5">
+                      <div id={`supporting-evidence-${student.id}`} className="border-t border-border">
                         {loading && !supportingState ? (
-                          <p role="status" className="py-4 text-sm text-muted-foreground">
+                          <p role="status" className="px-4 py-4 text-sm text-muted-foreground">
                             Loading supporting evidence…
                           </p>
                         ) : supportingState?.error ? (
-                          <div role="alert" className="py-3 text-sm text-destructive">
+                          <div role="alert" className="px-4 py-3 text-sm text-destructive">
                             <p>{supportingState.error}</p>
                             <Button
                               type="button"
@@ -886,10 +948,10 @@ export function ExploreEvidencePage({
                             </Button>
                           </div>
                         ) : supportingState ? (
-                          <div className="overflow-hidden rounded-md border border-border bg-card">
+                          <div className="bg-muted">
                             <ol>
                               {supportingState.records.map((record) => (
-                                <EvidenceResultRow key={record.id} record={record} />
+                                <EvidenceResultRow key={record.id} record={record} showStudent={false} />
                               ))}
                             </ol>
                             <ResultPagination
@@ -915,6 +977,7 @@ export function ExploreEvidencePage({
               pending={isPending}
               onPage={(page) => runQuery(appliedQuery, page)}
               label="Student result pages"
+              chronological={false}
             />
           </div>
         )}

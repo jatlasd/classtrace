@@ -109,27 +109,31 @@ Files: `app/app/explore/page.tsx`,
 `components/explore/explore-evidence-page.tsx`, and
 `components/explore/explore-multi-select.tsx`
 
-Last updated: 2026-09-02
+Last updated: 2026-09-03
 
 | Property | Pattern |
 |---|---|
-| Header | Compact route title and direct supporting promise above a bottom rule |
-| Question surface | One quiet `rounded-card bg-card shadow-paper` sentence plus a dense standing-field form; no metric cards or dashboard grid |
-| Fields | Always-visible labeled controls at form density (`min-h-11` mobile, `min-h-9` desktop); empty means unconstrained; student, class, and tag values use searchable keyboard multi-selects |
+| Header | Compact route title and direct retrieval description above the collection toolbar |
+| Collection toolbar | Inline **Filters** disclosure with applied-condition count on Quiet Surface when applied; **Evidence / By student** sit in a Quiet Surface well, with the pressed view using Deep Indigo and On-Indigo text |
+| Filter editor | Initially collapsed, border-led Quiet Surface (`bg-muted`); student/class, tags, and date/photo form three desktop columns and stack on mobile |
+| Fields | Labeled controls at form density (`min-h-11` mobile, `min-h-9` desktop); empty means unconstrained; student, class, and tag values use searchable keyboard multi-selects; class is explicitly **Class at capture** |
 | Tag matching | One Tags field; all-of default at two or more tags; Without and a complementary include group stay as text reveals |
-| Execution state | Explicit **Show results** / **Update results** / **Updating results…** action with retry on failure |
-| Counts | One quiet complete-result line for matching records and represented students |
+| Execution state | Explicit **Show results** / **Update results** / **Updating results…**; successful application collapses the editor and focuses results; failures retain results and retry the failed request |
+| Scope and counts | Collection heading with complete record/student counts, ordering, and applied-filter chips in ink on Quiet Surface; unapplied edits use a Quiet Surface status |
 | Evidence results | Shared `EvidenceRecordContent` in border-led ledger rows, newest evidence date then creation time |
-| Student results | Alphabetical student ledger with complete per-student counts and server-paged supporting evidence |
+| Student results | Alphabetical student ledger with complete per-student counts, Previous/Next pagination, and server-paged supporting evidence without repeated student identity |
 | Responsive behavior | One stacked mobile column; controls wrap without horizontal scrolling; touch targets approach 44px |
 
-- The default question is **Evidence** from **All time**. Changing a field does
+- The default collection is **Evidence** from **All time**. Changing a field does
   not query until **Show results** or **Update results** is activated.
+- Closing the editor retains unfinished edits. **Clear filters** resets the
+  draft conditions while retaining the view and still requires application.
+- View changes and pagination use applied conditions and retain unfinished edits.
 - Query state is deliberately transient and does not appear in the URL.
 - Empty, pending, stale-result, failure/retry, evidence pagination, student
   pagination, and supporting-evidence states preserve the current question.
 - Results are read-only and link student identity to the existing timeline.
-- Dropdowns escape the question surface through `overflow-visible`; selection,
+- Dropdowns escape the inline editor without clipping; selection,
   focus, and removal have non-color cues and visible keyboard focus.
 
 ## Site footer

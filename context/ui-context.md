@@ -54,12 +54,14 @@ The feed begins with its page header and prominent quick-capture composer. The c
 - Invalid controls use `aria-invalid` when the error belongs to that control.
 - Dynamic error summaries use a live region and receive focus when the teacher needs to act on them.
 - Pending buttons use a real ellipsis (`…`) and remain explicit about the action.
-- Feed search/filter state lives in the URL. Explore questions remain transient
-  client state and run only through **Show results** or **Update results**.
-  Evidence pagination is explicit and bounded.
-- Explore uses one sentence-like question surface with standing Student, Tags,
-  Class, and Photo fields, then complete-result counts and evidence-ledger
-  rows. It does not use metric cards, charts, or analytics-dashboard chrome.
+- Feed search/filter state lives in the URL. Explore filters remain transient
+  client state and apply only through **Show results** or **Update results**.
+  View changes and bounded pagination use the last applied filters.
+- Explore opens directly onto an evidence ledger, with an inline **Filters**
+  disclosure and **Evidence / By student** view controls. Applied scope and
+  complete-result counts stay beside the evidence; unfinished filter edits
+  are identified separately. Applying filters closes the editor and focuses
+  the results. It does not use metric cards, charts, or dashboard chrome.
 - The first successful workspace save may show one inline retrieval payoff with timeline, report, and capture-another actions.
 - Do not hide a destructive action behind an unrelated icon or ambiguous menu affordance.
 
