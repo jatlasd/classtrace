@@ -3,6 +3,7 @@
 import { ChevronDown, ChevronUp, FileSearch, X } from "lucide-react";
 import Link from "next/link";
 import {
+  useId,
   useMemo,
   useRef,
   useState,
@@ -29,13 +30,8 @@ import type {
 } from "@/lib/evidence/explore-evidence-contract";
 import { routes } from "@/lib/routes";
 
-type ConditionKey =
-  | "students"
-  | "tagsAny"
-  | "tagsAll"
-  | "tagsExclude"
-  | "classes"
-  | "photo";
+type TagMatchMode = "all" | "any";
+type TagListKey = "includeAny" | "includeAll";
 
 type SupportingState = {
   records: ExploreEvidenceRecord[];
@@ -51,18 +47,6 @@ type ExploreEvidencePageProps = {
   options: ExploreEvidenceOptions;
 };
 
-const CONDITIONS: ReadonlyArray<{
-  id: ConditionKey;
-  label: string;
-}> = [
-  { id: "students", label: "Student" },
-  { id: "tagsAny", label: "Tags include any" },
-  { id: "tagsAll", label: "Tags include all" },
-  { id: "tagsExclude", label: "Tags exclude" },
-  { id: "classes", label: "Class" },
-  { id: "photo", label: "Photo" },
-];
-
 const DATE_RULE_LABELS: Record<ExploreDateCondition["rule"], string> = {
   all: "All time",
   exact: "Exact date",
@@ -71,6 +55,15 @@ const DATE_RULE_LABELS: Record<ExploreDateCondition["rule"], string> = {
   last30: "Last 30 days",
   thisMonth: "This month",
 };
+
+const FIELD_CONTROL_CLASS =
+  "min-h-10 w-full rounded-md border border-input bg-card px-2.5 text-sm text-foreground outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 lg:min-h-8";
+
+const SENTENCE_CONTROL_CLASS =
+  "min-h-10 rounded-md border border-input bg-muted/30 px-2 text-sm font-semibold text-foreground outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 lg:min-h-8";
+
+const REVEAL_ACTION_CLASS =
+  "min-h-10 rounded-md px-1 text-xs font-semibold text-link underline-offset-4 outline-none hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 lg:min-h-7";
 
 function querySignature(query: ExploreEvidenceQuery): string {
   return JSON.stringify(query);
@@ -140,6 +133,21 @@ function dateValidationError(date: ExploreDateCondition): string | null {
     }
   }
   return null;
+}
+
+function initialTagMatchMode(query: ExploreEvidenceQuery): TagMatchMode {
+  if (query.tags.includeAny.length > 0 && query.tags.includeAll.length === 0) {
+    return "any";
+  }
+  return "all";
+}
+
+function primaryTagKey(mode: TagMatchMode): TagListKey {
+  return mode === "all" ? "includeAll" : "includeAny";
+}
+
+function secondaryTagKey(mode: TagMatchMode): TagListKey {
+  return mode === "all" ? "includeAny" : "includeAll";
 }
 
 function EvidenceResultRow({ record }: { record: ExploreEvidenceRecord }) {
@@ -246,7 +254,7 @@ function EmptyResults({
       <p className="mt-1 max-w-[68ch]">
         {noEvidence
           ? "Validated evidence will appear here after you review and save a student-specific capture."
-          : "The current conditions did not match any saved records. Revise the question or remove a condition and show the results again."}
+          : "Nothing in saved evidence matched this question. Change a field and update the results."}
       </p>
       {noEvidence ? (
         <Button asChild variant="outline" size="sm" className="mt-4">
@@ -261,6 +269,26 @@ function EmptyResults({
   );
 }
 
+function ModifierRemoveButton({
+  label,
+  onClick,
+}: {
+  label: string;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      aria-label={label}
+      onClick={onClick}
+      className="flex min-h-10 items-center justify-center gap-2 self-end rounded-md px-2 text-xs font-semibold text-muted-foreground outline-none transition-colors hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 lg:min-h-8"
+    >
+      <X aria-hidden="true" className="size-4" />
+      Remove
+    </button>
+  );
+}
+
 export function ExploreEvidencePage({
   initialQuery,
   initialResults,
@@ -269,8 +297,12 @@ export function ExploreEvidencePage({
   const [draftQuery, setDraftQuery] = useState(initialQuery);
   const [appliedQuery, setAppliedQuery] = useState(initialQuery);
   const [results, setResults] = useState(initialResults);
-  const [activeConditions, setActiveConditions] = useState<ConditionKey[]>([]);
-  const [conditionToAdd, setConditionToAdd] = useState<ConditionKey | "">("");
+  const [tagMatchMode, setTagMatchMode] = useState(() => initialTagMatchMode(initialQuery));
+  const [withoutOpen, setWithoutOpen] = useState(initialQuery.tags.exclude.length > 0);
+  const [secondaryOpen, setSecondaryOpen] = useState(() => {
+    const mode = initialTagMatchMode(initialQuery);
+    return initialQuery.tags[secondaryTagKey(mode)].length > 0;
+  });
   const [queryError, setQueryError] = useState<string | null>(null);
   const [supporting, setSupporting] = useState<Record<string, SupportingState>>({});
   const [expandedStudents, setExpandedStudents] = useState<string[]>([]);
@@ -278,16 +310,26 @@ export function ExploreEvidencePage({
   const [isPending, startQueryTransition] = useTransition();
   const [isSupportingPending, startSupportingTransition] = useTransition();
   const builderRef = useRef<HTMLElement>(null);
-  const addConditionRef = useRef<HTMLSelectElement>(null);
+  const tagsInputRef = useRef<HTMLInputElement>(null);
   const exactDateRef = useRef<HTMLInputElement>(null);
   const rangeStartRef = useRef<HTMLInputElement>(null);
+  const tagMatchName = useId();
 
-  const availableConditions = CONDITIONS.filter(
-    (condition) => !activeConditions.includes(condition.id)
-  );
   const hasUnappliedChanges =
     querySignature(draftQuery) !== querySignature(appliedQuery);
   const currentDateError = dateValidationError(draftQuery.date);
+  const primaryTags = draftQuery.tags[primaryTagKey(tagMatchMode)];
+  const secondaryTags = draftQuery.tags[secondaryTagKey(tagMatchMode)];
+  const showWithout = withoutOpen || draftQuery.tags.exclude.length > 0;
+  const showSecondary = secondaryOpen || secondaryTags.length > 0;
+  const matchLocked = secondaryTags.length > 0;
+  const secondaryLabel =
+    tagMatchMode === "all" ? "Also any of these tags" : "Also all of these tags";
+  const runLabel = isPending
+    ? "Updating results…"
+    : hasUnappliedChanges
+      ? "Update results"
+      : "Show results";
 
   const tagOptions: ExploreSelectOption[] = useMemo(
     () => options.tags.map((tag) => ({ id: tag.id, label: tag.label })),
@@ -301,30 +343,33 @@ export function ExploreEvidencePage({
     setQueryError(null);
   }
 
-  function addCondition(): void {
-    if (!conditionToAdd) return;
-    setActiveConditions((conditions) => [...conditions, conditionToAdd]);
-    setConditionToAdd("");
+  function updateTags(patch: Partial<ExploreEvidenceQuery["tags"]>): void {
+    updateQuery((query) => ({
+      ...query,
+      tags: { ...query.tags, ...patch },
+    }));
   }
 
-  function removeCondition(condition: ConditionKey): void {
-    setActiveConditions((conditions) => conditions.filter((item) => item !== condition));
-    updateQuery((query) => {
-      if (condition === "students") return { ...query, studentIds: [] };
-      if (condition === "classes") return { ...query, classIds: [] };
-      if (condition === "photo") return { ...query, photo: "either" };
-      const tagKey =
-        condition === "tagsAny"
-          ? "includeAny"
-          : condition === "tagsAll"
-            ? "includeAll"
-            : "exclude";
-      return {
-        ...query,
-        tags: { ...query.tags, [tagKey]: [] },
-      };
+  function changeTagMatchMode(next: TagMatchMode): void {
+    if (matchLocked || next === tagMatchMode) return;
+    const currentPrimary = primaryTags;
+    setTagMatchMode(next);
+    updateTags({
+      includeAll: next === "all" ? currentPrimary : [],
+      includeAny: next === "any" ? currentPrimary : [],
     });
-    window.setTimeout(() => addConditionRef.current?.focus(), 0);
+  }
+
+  function dismissWithout(): void {
+    tagsInputRef.current?.focus();
+    setWithoutOpen(false);
+    updateTags({ exclude: [] });
+  }
+
+  function dismissSecondary(): void {
+    tagsInputRef.current?.focus();
+    setSecondaryOpen(false);
+    updateTags({ [secondaryTagKey(tagMatchMode)]: [] });
   }
 
   function runQuery(query: ExploreEvidenceQuery, page = 1): void {
@@ -402,101 +447,6 @@ export function ExploreEvidencePage({
     if (!supporting[student.id]) loadSupportingEvidence(student.id);
   }
 
-  function renderCondition(condition: ConditionKey) {
-    const conditionLabel = CONDITIONS.find((item) => item.id === condition)?.label ?? "Condition";
-    let content;
-
-    if (condition === "students") {
-      content = (
-        <ExploreMultiSelect
-          label="Student is any of"
-          options={options.students}
-          selectedIds={draftQuery.studentIds}
-          onChange={(studentIds) => updateQuery((query) => ({ ...query, studentIds }))}
-          placeholder="Search students"
-          emptyMessage="No available students match."
-        />
-      );
-    } else if (condition === "classes") {
-      content = (
-        <ExploreMultiSelect
-          label="Class is any of"
-          options={options.classes}
-          selectedIds={draftQuery.classIds}
-          onChange={(classIds) => updateQuery((query) => ({ ...query, classIds }))}
-          placeholder="Search classes"
-          emptyMessage="No referenced classes match."
-        />
-      );
-    } else if (condition === "photo") {
-      content = (
-        <div>
-          <label htmlFor="explore-photo-rule" className="mb-1.5 block text-xs font-semibold text-foreground">
-            Photo is
-          </label>
-          <select
-            id="explore-photo-rule"
-            value={draftQuery.photo}
-            onChange={(event) =>
-              updateQuery((query) => ({
-                ...query,
-                photo: event.target.value as ExploreEvidenceQuery["photo"],
-              }))
-            }
-            className="min-h-11 w-full rounded-md border border-input bg-card px-3 text-sm text-foreground outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-          >
-            <option value="either">With or without a photo</option>
-            <option value="with">With a photo</option>
-            <option value="without">Without a photo</option>
-          </select>
-        </div>
-      );
-    } else {
-      const tagKey =
-        condition === "tagsAny"
-          ? "includeAny"
-          : condition === "tagsAll"
-            ? "includeAll"
-            : "exclude";
-      content = (
-        <ExploreMultiSelect
-          label={
-            condition === "tagsAny"
-              ? "Tags include any of"
-              : condition === "tagsAll"
-                ? "Tags include all of"
-                : "Tags exclude"
-          }
-          options={tagOptions}
-          selectedIds={draftQuery.tags[tagKey]}
-          onChange={(tags) =>
-            updateQuery((query) => ({
-              ...query,
-              tags: { ...query.tags, [tagKey]: tags },
-            }))
-          }
-          placeholder="Search saved tags"
-          emptyMessage="No available tags match."
-        />
-      );
-    }
-
-    return (
-      <div key={condition} className="grid gap-3 border-t border-border px-4 py-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:px-5">
-        <div className="min-w-0">{content}</div>
-        <button
-          type="button"
-          aria-label={`Remove ${conditionLabel} condition`}
-          onClick={() => removeCondition(condition)}
-          className="flex min-h-11 items-center justify-center gap-2 self-end rounded-md px-3 text-xs font-semibold text-muted-foreground outline-none transition-colors hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-        >
-          <X aria-hidden="true" className="size-4" />
-          Remove
-        </button>
-      </div>
-    );
-  }
-
   return (
     <div className="mx-auto w-full max-w-[1180px] px-3 py-5 sm:px-5 sm:py-7">
       <header className="mb-5 border-b border-border pb-4">
@@ -511,13 +461,14 @@ export function ExploreEvidencePage({
       <section
         ref={builderRef}
         aria-labelledby="explore-question-heading"
+        aria-busy={isPending}
         className="overflow-visible rounded-card bg-card shadow-paper"
       >
         <h2 id="explore-question-heading" className="sr-only">
           Current question
         </h2>
-        <div className="px-4 py-5 sm:px-5">
-          <div className="flex flex-wrap items-center gap-x-2 gap-y-3 text-lg font-semibold leading-tight text-foreground sm:text-xl">
+        <div className="px-3 py-3 sm:px-4">
+          <div className="flex flex-wrap items-center gap-x-1.5 gap-y-1.5 text-sm font-semibold leading-tight text-foreground">
             <span>Show me</span>
             <label className="sr-only" htmlFor="explore-result-view">
               Result view
@@ -531,7 +482,7 @@ export function ExploreEvidencePage({
                   resultView: event.target.value as ExploreEvidenceQuery["resultView"],
                 }))
               }
-              className="min-h-11 rounded-md border border-input bg-muted/30 px-3 text-base font-semibold text-foreground outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:text-lg"
+              className={SENTENCE_CONTROL_CLASS}
             >
               <option value="evidence">Evidence</option>
               <option value="students">Students</option>
@@ -553,7 +504,7 @@ export function ExploreEvidencePage({
                       : { rule };
                 updateQuery((query) => ({ ...query, date: nextDate }));
               }}
-              className="min-h-11 rounded-md border border-input bg-muted/30 px-3 text-base font-semibold text-foreground outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:text-lg"
+              className={SENTENCE_CONTROL_CLASS}
             >
               {Object.entries(DATE_RULE_LABELS).map(([value, label]) => (
                 <option key={value} value={value}>
@@ -564,8 +515,8 @@ export function ExploreEvidencePage({
           </div>
 
           {draftQuery.date.rule === "exact" ? (
-            <div className="mt-4 max-w-sm">
-              <label htmlFor="explore-exact-date" className="mb-1.5 block text-xs font-semibold text-foreground">
+            <div className="mt-2.5 max-w-sm">
+              <label htmlFor="explore-exact-date" className="mb-1 block text-xs font-semibold text-foreground">
                 Exact date
               </label>
               <input
@@ -580,13 +531,13 @@ export function ExploreEvidencePage({
                     date: { rule: "exact", date: event.target.value },
                   }))
                 }
-                className="min-h-11 w-full rounded-md border border-input bg-card px-3 text-sm text-foreground outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 aria-invalid:border-destructive"
+                className={`${FIELD_CONTROL_CLASS} aria-invalid:border-destructive`}
               />
             </div>
           ) : draftQuery.date.rule === "range" ? (
-            <div className="mt-4 grid gap-3 sm:max-w-2xl sm:grid-cols-2">
+            <div className="mt-2.5 grid gap-2.5 sm:max-w-2xl sm:grid-cols-2">
               <div>
-                <label htmlFor="explore-start-date" className="mb-1.5 block text-xs font-semibold text-foreground">
+                <label htmlFor="explore-start-date" className="mb-1 block text-xs font-semibold text-foreground">
                   Start date
                 </label>
                 <input
@@ -605,11 +556,11 @@ export function ExploreEvidencePage({
                       },
                     }))
                   }
-                  className="min-h-11 w-full rounded-md border border-input bg-card px-3 text-sm text-foreground outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 aria-invalid:border-destructive"
+                  className={`${FIELD_CONTROL_CLASS} aria-invalid:border-destructive`}
                 />
               </div>
               <div>
-                <label htmlFor="explore-end-date" className="mb-1.5 block text-xs font-semibold text-foreground">
+                <label htmlFor="explore-end-date" className="mb-1 block text-xs font-semibold text-foreground">
                   End date
                 </label>
                 <input
@@ -627,7 +578,7 @@ export function ExploreEvidencePage({
                       },
                     }))
                   }
-                  className="min-h-11 w-full rounded-md border border-input bg-card px-3 text-sm text-foreground outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 aria-invalid:border-destructive"
+                  className={`${FIELD_CONTROL_CLASS} aria-invalid:border-destructive`}
                 />
               </div>
             </div>
@@ -637,63 +588,164 @@ export function ExploreEvidencePage({
               {currentDateError}
             </p>
           ) : null}
-        </div>
 
-        {activeConditions.map(renderCondition)}
+          <div className="mt-2.5 grid gap-2.5 sm:grid-cols-2">
+            <ExploreMultiSelect
+              label="Student"
+              options={options.students}
+              selectedIds={draftQuery.studentIds}
+              onChange={(studentIds) => updateQuery((query) => ({ ...query, studentIds }))}
+              placeholder="Any student"
+              emptyMessage="No available students match."
+            />
 
-        <div className="grid gap-4 border-t border-border bg-muted/20 px-4 py-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end sm:px-5">
-          <div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:items-end">
-            <div className="min-w-0 flex-1 sm:max-w-xs">
-              <label htmlFor="explore-add-condition" className="mb-1.5 block text-xs font-semibold text-foreground">
-                Add a condition
+            <div className="min-w-0">
+              <ExploreMultiSelect
+                label="Tags"
+                options={tagOptions}
+                selectedIds={primaryTags}
+                onChange={(tags) => updateTags({ [primaryTagKey(tagMatchMode)]: tags })}
+                placeholder="Any tags"
+                emptyMessage="No available tags match."
+                inputRef={tagsInputRef}
+              />
+
+              {primaryTags.length >= 2 ? (
+                <fieldset className="mt-1.5" disabled={matchLocked}>
+                  <legend className="mb-1 text-xs font-semibold text-foreground">
+                    Match
+                  </legend>
+                  <div className="flex flex-wrap gap-x-3 gap-y-1">
+                    <label className="inline-flex min-h-10 items-center gap-1.5 text-xs text-foreground lg:min-h-7">
+                      <input
+                        type="radio"
+                        name={tagMatchName}
+                        value="all"
+                        checked={tagMatchMode === "all"}
+                        disabled={matchLocked}
+                        onChange={() => changeTagMatchMode("all")}
+                        className="size-3.5 accent-primary"
+                      />
+                      All of these tags
+                    </label>
+                    <label className="inline-flex min-h-10 items-center gap-1.5 text-xs text-foreground lg:min-h-7">
+                      <input
+                        type="radio"
+                        name={tagMatchName}
+                        value="any"
+                        checked={tagMatchMode === "any"}
+                        disabled={matchLocked}
+                        onChange={() => changeTagMatchMode("any")}
+                        className="size-3.5 accent-primary"
+                      />
+                      Any of these tags
+                    </label>
+                  </div>
+                </fieldset>
+              ) : null}
+            </div>
+          </div>
+
+          <div className="mt-2.5 grid gap-2.5 sm:grid-cols-[minmax(0,1fr)_11rem]">
+            <ExploreMultiSelect
+              label="Class"
+              options={options.classes}
+              selectedIds={draftQuery.classIds}
+              onChange={(classIds) => updateQuery((query) => ({ ...query, classIds }))}
+              placeholder="Any class"
+              emptyMessage="No referenced classes match."
+            />
+
+            <div>
+              <label htmlFor="explore-photo" className="mb-1 block text-xs font-semibold text-foreground">
+                Photo
               </label>
               <select
-                ref={addConditionRef}
-                id="explore-add-condition"
-                value={conditionToAdd}
-                disabled={availableConditions.length === 0}
-                onChange={(event) => setConditionToAdd(event.target.value as ConditionKey | "")}
-                className="min-h-11 w-full rounded-md border border-input bg-card px-3 text-sm text-foreground outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-60"
+                id="explore-photo"
+                value={draftQuery.photo}
+                onChange={(event) =>
+                  updateQuery((query) => ({
+                    ...query,
+                    photo: event.target.value as ExploreEvidenceQuery["photo"],
+                  }))
+                }
+                className={FIELD_CONTROL_CLASS}
               >
-                <option value="">Choose a condition</option>
-                {availableConditions.map((condition) => (
-                  <option key={condition.id} value={condition.id}>
-                    {condition.label}
-                  </option>
-                ))}
+                <option value="either">Any</option>
+                <option value="with">With a photo</option>
+                <option value="without">Without a photo</option>
               </select>
             </div>
-            <Button
-              type="button"
-              variant="outline"
-              disabled={!conditionToAdd}
-              onClick={addCondition}
-            >
-              Add condition
-            </Button>
           </div>
-          <div className="sm:text-right">
-            <p
-              role="status"
-              className={`mb-2 text-xs font-medium ${
-                hasUnappliedChanges ? "text-foreground" : "text-muted-foreground"
-              }`}
-            >
-              {isPending
-                ? "Updating results…"
-                : hasUnappliedChanges
-                  ? "Question changed. Show results to apply it."
-                  : "Results match this question."}
-            </p>
-            <Button
-              type="button"
-              disabled={isPending || Boolean(currentDateError)}
-              onClick={() => runQuery(draftQuery)}
-              className="w-full sm:w-auto"
-            >
-              {isPending ? "Showing results…" : "Show results"}
-            </Button>
-          </div>
+
+          {showSecondary ? (
+            <div className="mt-2.5 grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto]">
+              <ExploreMultiSelect
+                label={secondaryLabel}
+                options={tagOptions}
+                selectedIds={secondaryTags}
+                onChange={(tags) => updateTags({ [secondaryTagKey(tagMatchMode)]: tags })}
+                placeholder="Any tags"
+                emptyMessage="No available tags match."
+              />
+              <ModifierRemoveButton
+                label="Remove extra tag group"
+                onClick={dismissSecondary}
+              />
+            </div>
+          ) : null}
+
+          {showWithout ? (
+            <div className="mt-2.5 grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto]">
+              <ExploreMultiSelect
+                label="Without"
+                options={tagOptions}
+                selectedIds={draftQuery.tags.exclude}
+                onChange={(tags) => updateTags({ exclude: tags })}
+                placeholder="Any tags"
+                emptyMessage="No available tags match."
+              />
+              <ModifierRemoveButton
+                label="Remove without tags"
+                onClick={dismissWithout}
+              />
+            </div>
+          ) : null}
+
+          {!showSecondary || !showWithout ? (
+            <div className="mt-1.5 flex flex-wrap items-center gap-x-3">
+              {!showSecondary && primaryTags.length > 0 ? (
+                <button
+                  type="button"
+                  onClick={() => setSecondaryOpen(true)}
+                  className={REVEAL_ACTION_CLASS}
+                >
+                  {secondaryLabel}…
+                </button>
+              ) : null}
+              {!showWithout ? (
+                <button
+                  type="button"
+                  onClick={() => setWithoutOpen(true)}
+                  className={REVEAL_ACTION_CLASS}
+                >
+                  Without…
+                </button>
+              ) : null}
+            </div>
+          ) : null}
+        </div>
+
+        <div className="border-t border-border px-3 py-2.5 sm:px-4 sm:text-right">
+          <Button
+            type="button"
+            size="sm"
+            disabled={isPending || Boolean(currentDateError)}
+            onClick={() => runQuery(draftQuery)}
+            className="w-full sm:w-auto"
+          >
+            {runLabel}
+          </Button>
         </div>
 
         {queryError ? (

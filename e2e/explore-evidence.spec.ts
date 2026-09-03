@@ -7,6 +7,10 @@ test("runs the Explore Evidence question surface on desktop", async ({ page }) =
   await expect(page.getByRole("heading", { name: "Explore evidence" })).toBeVisible();
   await expect(page.getByLabel("Result view")).toHaveValue("evidence");
   await expect(page.getByLabel("Date")).toHaveValue("all");
+  await expect(page.getByLabel("Student")).toBeVisible();
+  await expect(page.getByLabel("Tags")).toBeVisible();
+  await expect(page.getByLabel("Class")).toBeVisible();
+  await expect(page.getByLabel("Photo")).toHaveValue("either");
   await expect(page.getByRole("button", { name: "Show results" })).toBeEnabled();
   await expect(page.getByText(/matching records?/)).toBeVisible();
   await page.screenshot({
@@ -14,17 +18,10 @@ test("runs the Explore Evidence question surface on desktop", async ({ page }) =
     fullPage: true,
   });
 
-  await page.getByLabel("Add a condition").selectOption("photo");
-  await page.getByRole("button", { name: "Add condition" }).click();
-  await page.getByLabel("Photo is").selectOption("with");
-  await expect(page.getByRole("status")).toContainText(
-    "Question changed. Show results to apply it."
-  );
-  await page.getByRole("button", { name: "Show results" }).click();
-  await expect(page.getByRole("status")).toContainText(
-    "Results match this question."
-  );
-
+  await page.getByLabel("Photo").selectOption("with");
+  await expect(page.getByRole("button", { name: "Update results" })).toBeEnabled();
+  await page.getByRole("button", { name: "Update results" }).click();
+  await expect(page.getByRole("button", { name: "Show results" })).toBeEnabled();
 });
 
 test("keeps Explore Evidence in one overflow-free mobile column", async ({ page }) => {

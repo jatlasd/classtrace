@@ -1,7 +1,7 @@
 "use client";
 
 import { Search, X } from "lucide-react";
-import { useId, useMemo, useRef, useState } from "react";
+import { useId, useMemo, useRef, useState, type RefObject } from "react";
 
 export type ExploreSelectOption = {
   id: string;
@@ -16,6 +16,7 @@ type ExploreMultiSelectProps = {
   onChange: (ids: string[]) => void;
   placeholder: string;
   emptyMessage: string;
+  inputRef?: RefObject<HTMLInputElement | null>;
 };
 
 export function ExploreMultiSelect({
@@ -25,10 +26,12 @@ export function ExploreMultiSelect({
   onChange,
   placeholder,
   emptyMessage,
+  inputRef,
 }: ExploreMultiSelectProps) {
   const inputId = useId();
   const listboxId = useId();
-  const inputRef = useRef<HTMLInputElement>(null);
+  const localInputRef = useRef<HTMLInputElement>(null);
+  const resolvedInputRef = inputRef ?? localInputRef;
   const [search, setSearch] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
@@ -59,31 +62,31 @@ export function ExploreMultiSelect({
     setSearch("");
     setActiveIndex(0);
     setIsOpen(true);
-    inputRef.current?.focus();
+    resolvedInputRef.current?.focus();
   }
 
   function removeOption(id: string): void {
     onChange(selectedIds.filter((selectedId) => selectedId !== id));
-    inputRef.current?.focus();
+    resolvedInputRef.current?.focus();
   }
 
   return (
     <div className="relative min-w-0">
       <label
         htmlFor={inputId}
-        className="mb-1.5 block text-xs font-semibold text-foreground"
+        className="mb-1 block text-xs font-semibold text-foreground"
       >
         {label}
       </label>
       <div
-        className="rounded-md border border-input bg-card px-2.5 py-2 focus-within:border-ring focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2"
+        className="rounded-md border border-input bg-card px-1.5 py-1 focus-within:border-ring focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2"
       >
         {selected.length > 0 ? (
-          <div className="mb-2 flex flex-wrap gap-1.5" aria-label={`${label} selected`}>
+          <div className="mb-1 flex flex-wrap gap-1" aria-label={`${label} selected`}>
             {selected.map((option) => (
               <span
                 key={option.id}
-                className="inline-flex min-h-9 max-w-full items-center gap-1 rounded-full border border-border bg-muted/40 pl-2.5 text-xs font-medium text-foreground"
+                className="inline-flex min-h-7 max-w-full items-center gap-0.5 rounded-full border border-border bg-muted/40 pl-1.5 text-xs font-medium text-foreground"
               >
                 <span className="min-w-0 break-words [overflow-wrap:anywhere]">
                   {option.label}
@@ -92,18 +95,18 @@ export function ExploreMultiSelect({
                   type="button"
                   aria-label={`Remove ${option.label}`}
                   onClick={() => removeOption(option.id)}
-                  className="flex size-9 shrink-0 items-center justify-center rounded-full text-muted-foreground outline-none transition-colors hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
+                  className="flex size-7 shrink-0 items-center justify-center rounded-full text-muted-foreground outline-none transition-colors hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
                 >
-                  <X aria-hidden="true" className="size-3.5" />
+                  <X aria-hidden="true" className="size-3" />
                 </button>
               </span>
             ))}
           </div>
         ) : null}
-        <div className="flex min-h-9 items-center gap-2">
-          <Search aria-hidden="true" className="size-4 shrink-0 text-muted-foreground" />
+        <div className="flex min-h-7 items-center gap-1.5">
+          <Search aria-hidden="true" className="size-3.5 shrink-0 text-muted-foreground" />
           <input
-            ref={inputRef}
+            ref={resolvedInputRef}
             id={inputId}
             type="search"
             role="combobox"
@@ -163,10 +166,10 @@ export function ExploreMultiSelect({
           id={listboxId}
           role="listbox"
           aria-label={`${label} choices`}
-          className="absolute left-0 right-0 top-full z-30 mt-1 max-h-64 overflow-y-auto rounded-md border border-border bg-card p-1 shadow-floating"
+          className="absolute left-0 right-0 top-full z-30 mt-1 max-h-56 overflow-y-auto rounded-md border border-border bg-card p-1 shadow-floating"
         >
           {available.length === 0 ? (
-            <p className="px-3 py-3 text-sm text-muted-foreground">
+            <p className="px-2.5 py-2 text-sm text-muted-foreground">
               {emptyMessage}
             </p>
           ) : (
@@ -180,7 +183,7 @@ export function ExploreMultiSelect({
                 onMouseDown={(event) => event.preventDefault()}
                 onMouseEnter={() => setActiveIndex(index)}
                 onClick={() => selectOption(option)}
-                className={`flex min-h-11 w-full items-center gap-3 rounded-md px-3 py-2 text-left outline-none transition-colors ${
+                className={`flex min-h-9 w-full items-center gap-2 rounded-md px-2 py-1 text-left outline-none transition-colors lg:min-h-8 ${
                   index === boundedActiveIndex ? "bg-muted text-foreground" : "text-foreground"
                 }`}
               >

@@ -93,6 +93,7 @@ const options = {
   tags: [
     { id: "reading", label: "#reading" },
     { id: "independent", label: "#independent" },
+    { id: "fractions", label: "#fractions" },
   ],
 };
 
@@ -104,6 +105,13 @@ function renderPage(initialResults: ExploreQueryResults = evidenceResults) {
       options={options}
     />
   );
+}
+
+function selectChoice(label: string, search: string) {
+  const input = screen.getByLabelText(label);
+  fireEvent.focus(input);
+  fireEvent.change(input, { target: { value: search } });
+  fireEvent.keyDown(input, { key: "Enter" });
 }
 
 afterEach(cleanup);
@@ -125,7 +133,7 @@ describe("ExploreEvidencePage", () => {
     });
   });
 
-  it("starts with the plain-language all-evidence question and supporting record", () => {
+  it("starts with the sentence, standing fields, and supporting record", () => {
     renderPage();
 
     expect(screen.getByRole("heading", { name: "Explore evidence" })).toBeTruthy();
@@ -134,6 +142,13 @@ describe("ExploreEvidencePage", () => {
       "evidence"
     );
     expect((screen.getByLabelText("Date") as HTMLSelectElement).value).toBe("all");
+    expect(screen.getByLabelText("Student")).toBeTruthy();
+    expect(screen.getByLabelText("Tags")).toBeTruthy();
+    expect(screen.getByLabelText("Class")).toBeTruthy();
+    expect((screen.getByLabelText("Photo") as HTMLSelectElement).value).toBe("either");
+    expect(screen.queryByLabelText("Add a condition")).toBeNull();
+    expect(screen.queryByRole("button", { name: "Add condition" })).toBeNull();
+    expect(screen.getByRole("button", { name: "Show results" })).toBeTruthy();
     const countSummary = screen.getByText("matching record", { exact: false });
     expect(countSummary.textContent).toContain("1 matching record");
     expect(countSummary.textContent).toContain("1 student");
@@ -145,12 +160,8 @@ describe("ExploreEvidencePage", () => {
 
   it("lets keyboard users search, select, and remove a student without querying until requested", async () => {
     renderPage();
-    fireEvent.change(screen.getByLabelText("Add a condition"), {
-      target: { value: "students" },
-    });
-    fireEvent.click(screen.getByRole("button", { name: "Add condition" }));
 
-    const studentInput = screen.getByLabelText("Student is any of");
+    const studentInput = screen.getByLabelText("Student");
     fireEvent.focus(studentInput);
     fireEvent.change(studentInput, { target: { value: "Mar" } });
     expect(screen.getByRole("option", { name: /Mary/ })).toBeTruthy();
@@ -158,10 +169,11 @@ describe("ExploreEvidencePage", () => {
 
     fireEvent.keyDown(studentInput, { key: "Enter" });
     expect(screen.getByRole("button", { name: "Remove Mary" })).toBeTruthy();
-    expect(screen.getByText("Question changed. Show results to apply it.")).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Update results" })).toBeTruthy();
+    expect(screen.queryByText("Question changed. Show results to apply it.")).toBeNull();
     expect(mocks.runExploreEvidenceQuery).not.toHaveBeenCalled();
 
-    fireEvent.click(screen.getByRole("button", { name: "Show results" }));
+    fireEvent.click(screen.getByRole("button", { name: "Update results" }));
     await waitFor(() => expect(mocks.runExploreEvidenceQuery).toHaveBeenCalledTimes(1));
     expect(mocks.runExploreEvidenceQuery.mock.calls[0][0].query.studentIds).toEqual([
       "student_mary",
@@ -171,18 +183,116 @@ describe("ExploreEvidencePage", () => {
     expect(document.activeElement).toBe(studentInput);
   });
 
-  it("removes a whole condition and moves focus to the next logical builder control", async () => {
+  it("treats an unchanged Photo field as unconstrained", async () => {
     renderPage();
-    const addSelect = screen.getByLabelText("Add a condition");
-    fireEvent.change(addSelect, { target: { value: "photo" } });
-    fireEvent.click(screen.getByRole("button", { name: "Add condition" }));
-    fireEvent.change(screen.getByLabelText("Photo is"), {
+    fireEvent.change(screen.getByLabelText("Photo"), {
       target: { value: "with" },
     });
+    fireEvent.click(screen.getByRole("button", { name: "Update results" }));
+    await waitFor(() => expect(mocks.runExploreEvidenceQuery).toHaveBeenCalledTimes(1));
+    expect(mocks.runExploreEvidenceQuery.mock.calls[0][0].query.photo).toBe("with");
 
-    fireEvent.click(screen.getByRole("button", { name: "Remove Photo condition" }));
-    await waitFor(() => expect(document.activeElement).toBe(addSelect));
+    fireEvent.change(screen.getByLabelText("Photo"), {
+      target: { value: "either" },
+    });
+    expect(screen.getByRole("button", { name: "Update results" })).toBeTruthy();
     expect(screen.queryByLabelText("Photo is")).toBeNull();
+  });
+
+  it("does not ask how tags match until two tags are selected", () => {
+    renderPage();
+    selectChoice("Tags", "read");
+    expect(screen.queryByRole("radio", { name: "All of these tags" })).toBeNull();
+    expect(screen.getByRole("button", { name: "Also any of these tags…" })).toBeTruthy();
+  });
+
+  it("defaults two tags to all-of matching and does not query until requested", async () => {
+    renderPage();
+    selectChoice("Tags", "read");
+    selectChoice("Tags", "ind");
+
+    const allRadio = screen.getByRole("radio", { name: "All of these tags" }) as HTMLInputElement;
+    expect(allRadio.checked).toBe(true);
+    expect(mocks.runExploreEvidenceQuery).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByRole("button", { name: "Update results" }));
+    await waitFor(() => expect(mocks.runExploreEvidenceQuery).toHaveBeenCalledTimes(1));
+    expect(mocks.runExploreEvidenceQuery.mock.calls[0][0].query.tags).toEqual({
+      includeAny: [],
+      includeAll: ["reading", "independent"],
+      exclude: [],
+    });
+  });
+
+  it("sends include-any when the teacher chooses any-of matching", async () => {
+    renderPage();
+    selectChoice("Tags", "read");
+    selectChoice("Tags", "ind");
+    fireEvent.click(screen.getByRole("radio", { name: "Any of these tags" }));
+    fireEvent.click(screen.getByRole("button", { name: "Update results" }));
+    await waitFor(() => expect(mocks.runExploreEvidenceQuery).toHaveBeenCalledTimes(1));
+    expect(mocks.runExploreEvidenceQuery.mock.calls[0][0].query.tags).toEqual({
+      includeAny: ["reading", "independent"],
+      includeAll: [],
+      exclude: [],
+    });
+  });
+
+  it("keeps exclude off-stage until Without is opened", async () => {
+    renderPage();
+    expect(screen.queryByLabelText("Without")).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "Without…" }));
+
+    selectChoice("Without", "read");
+    fireEvent.click(screen.getByRole("button", { name: "Update results" }));
+    await waitFor(() => expect(mocks.runExploreEvidenceQuery).toHaveBeenCalledTimes(1));
+    expect(mocks.runExploreEvidenceQuery.mock.calls[0][0].query.tags.exclude).toEqual([
+      "reading",
+    ]);
+  });
+
+  it("collapses Without and returns focus to Tags", () => {
+    renderPage();
+    fireEvent.click(screen.getByRole("button", { name: "Without…" }));
+    fireEvent.click(screen.getByRole("button", { name: "Remove without tags" }));
+    expect(screen.queryByLabelText("Without")).toBeNull();
+    expect(document.activeElement).toBe(screen.getByLabelText("Tags"));
+  });
+
+  it("adds a complementary tag group without changing match mode", async () => {
+    renderPage();
+    selectChoice("Tags", "read");
+    fireEvent.click(screen.getByRole("button", { name: "Also any of these tags…" }));
+    selectChoice("Also any of these tags", "ind");
+
+    fireEvent.click(screen.getByRole("button", { name: "Update results" }));
+    await waitFor(() => expect(mocks.runExploreEvidenceQuery).toHaveBeenCalledTimes(1));
+    expect(mocks.runExploreEvidenceQuery.mock.calls[0][0].query.tags).toEqual({
+      includeAny: ["independent"],
+      includeAll: ["reading"],
+      exclude: [],
+    });
+  });
+
+  it("locks all/any matching while the extra tag group has values", () => {
+    renderPage();
+    selectChoice("Tags", "read");
+    selectChoice("Tags", "ind");
+    fireEvent.blur(screen.getByLabelText("Tags"));
+    fireEvent.click(screen.getByRole("button", { name: "Also any of these tags…" }));
+    const extraInput = screen.getByLabelText("Also any of these tags");
+    fireEvent.focus(extraInput);
+    fireEvent.change(extraInput, { target: { value: "frac" } });
+    const listboxId = extraInput.getAttribute("aria-controls");
+    fireEvent.click(document.getElementById(`${listboxId}-fractions`)!);
+
+    expect(screen.getByRole("button", { name: "Remove #fractions" })).toBeTruthy();
+    expect(
+      (screen.getByRole("radio", { name: "All of these tags" }) as HTMLInputElement).disabled
+    ).toBe(true);
+    expect(
+      (screen.getByRole("radio", { name: "Any of these tags" }) as HTMLInputElement).disabled
+    ).toBe(true);
   });
 
   it("identifies incomplete date questions and prevents submission", () => {
@@ -196,7 +306,7 @@ describe("ExploreEvidencePage", () => {
       "true"
     );
     expect(
-      (screen.getByRole("button", { name: "Show results" }) as HTMLButtonElement)
+      (screen.getByRole("button", { name: "Update results" }) as HTMLButtonElement)
         .disabled
     ).toBe(true);
     expect(mocks.runExploreEvidenceQuery).not.toHaveBeenCalled();
@@ -210,7 +320,7 @@ describe("ExploreEvidencePage", () => {
     fireEvent.change(screen.getByLabelText("Result view"), {
       target: { value: "students" },
     });
-    fireEvent.click(screen.getByRole("button", { name: "Show results" }));
+    fireEvent.click(screen.getByRole("button", { name: "Update results" }));
 
     expect((await screen.findByRole("alert")).textContent).toContain(
       "Unable to update results."
@@ -262,14 +372,13 @@ describe("ExploreEvidencePage", () => {
       target: { value: "students" },
     });
 
-    fireEvent.click(screen.getByRole("button", { name: "Show results" }));
+    fireEvent.click(screen.getByRole("button", { name: "Update results" }));
     expect(
       (screen.getByRole("button", {
-        name: "Showing results…",
+        name: "Updating results…",
       }) as HTMLButtonElement).disabled
     ).toBe(true);
-    expect(screen.getByText("Updating results…")).toBeTruthy();
-    fireEvent.click(screen.getByRole("button", { name: "Showing results…" }));
+    fireEvent.click(screen.getByRole("button", { name: "Updating results…" }));
     expect(mocks.runExploreEvidenceQuery).toHaveBeenCalledTimes(1);
 
     await act(async () => {

@@ -15,8 +15,9 @@ teacher-reviewed evidence record for one roster student. Explore Evidence helps
 the teacher retrieve and organize those saved records later.
 
 The feature is a teacher-operated, deterministic evidence query tool. A teacher
-chooses what to see, adds a small set of conditions, and receives current
-results with the supporting evidence visible.
+chooses what to see, names the students, tags, dates, classes, or photo
+presence that matter, and receives current results with the supporting evidence
+visible.
 
 The product loop becomes:
 
@@ -88,9 +89,9 @@ The feature is named **Explore Evidence**.
 - Page title: **Explore evidence**
 - Supporting copy: **Ask a question of your saved evidence.**
 
-The interface describes the teacher's work as a **question** made from
-**conditions**. The implementation may call the submitted definition a query,
-but the teacher does not need to learn query or filter terminology.
+The interface describes the teacher's work as a **question**. The
+implementation may call the submitted definition a query, but the teacher does
+not need to learn query, filter, or condition terminology.
 
 Explore Evidence queries only permanent, teacher-validated `EvidenceRecord`
 data. It never queries or displays temporary drafts or raw capture text.
@@ -111,19 +112,24 @@ The page begins with a visible sentence:
 
 > Show me **Evidence** from **All time**
 
-The first bounded page of active evidence appears immediately. The teacher can
-change the result view and add conditions without saving a configuration. A
-clear **Show results** action runs the current valid question against saved
-evidence.
+The first bounded page of active evidence appears immediately. Under the
+sentence, Student, Tags, Class, and Photo are always available. Empty fields
+do not constrain results. The teacher can change the sentence or fields without
+saving a configuration. **Show results** runs the current valid question;
+**Update results** applies changes after the displayed results no longer match.
 
 Example:
 
-> Show me **Students**  
-> where Student is any of **Jeremy or Mary**  
-> and Tags include all of **#fractions and #reteach**  
-> and Tags exclude **#assessment**  
-> and Date is **Last 30 days**  
-> and Photo is **With a photo**
+> Show me **Students** from **Last 30 days**  
+> Student **Jeremy**, **Mary**  
+> Tags **#fractions**, **#reteach** (all of these tags)  
+> Without **#assessment**  
+> Photo **With a photo**
+
+Tags are one field. Two or more selected tags default to matching all of them,
+with any-of as an explicit exception. Exclude stays behind **Without…**. A
+second include group can add the other matching mode after the primary tags
+have a value.
 
 The underlying implementation is a direct evidence filter, not a generalized
 query language.
@@ -237,22 +243,22 @@ queries that do not filter by class.
 Explore Evidence always supports an unsaved current question. Saving a reusable
 configuration is not required or included in the first release.
 
-- Adding, changing, or removing a condition updates the current question but
-  does not query the server.
-- **Show results** runs the complete valid question.
+- Changing a field updates the current question but does not query the server.
+- **Show results** runs the complete valid question when the displayed results
+  already match. **Update results** runs it after the question has changed.
 - A custom date question cannot run until its date or range is valid.
 - Typing inside a student, class, or tag picker narrows available choices; it
   does not run the evidence question.
-- After previously applied conditions change, the interface identifies that the
-  displayed results do not yet include those changes.
-- While a question is running, the interface identifies the pending state and
+- After the question changes, the run action reads **Update results** instead
+  of a separate draft-versus-applied status line.
+- While a question is running, the run action reads **Updating results…** and
   prevents duplicate submission.
-- A query failure preserves the current conditions and the last successful
+- A query failure preserves the current fields and the last successful
   results, and offers a retry.
 - Refreshing or reopening the page returns to the default all-evidence question.
 
 Evidence created in another tab appears the next time the teacher chooses
-**Show results** or refreshes the page. Query execution does not require
+**Show results**, **Update results**, or refreshes the page. Query execution does not require
 WebSockets, server-sent events, subscriptions, background processing, or
 notifications.
 
@@ -305,12 +311,13 @@ system rather than an analytics dashboard.
 ### Desktop
 
 - Page title and direct supporting copy
-- One primary sentence-like query work surface
+- One primary sentence-like question surface with standing Student, Tags,
+  Class, and Photo fields
 - Matching counts and evidence-ledger results below
 
 ### Mobile
 
-- The query builder and results remain one stacked working column.
+- The question surface and results remain one stacked working column.
 - Controls stack or wrap without horizontal scrolling.
 - Evidence and student rows preserve the existing mobile evidence patterns.
 
@@ -339,8 +346,8 @@ action without implying that evidence is missing for instructional reasons.
 - Every control has a persistent accessible label.
 - Multi-select controls support keyboard search, selection, and removal.
 - Selected and unavailable values are not communicated by color alone.
-- Adding or removing a condition preserves a predictable focus position.
-- Removing the focused condition moves focus to the next logical control.
+- Clearing a standing field preserves a predictable focus position.
+- Dismissing Without or an extra tag group moves focus to Tags.
 - Result-count changes and query failures are announced without repeatedly
   interrupting screen-reader navigation.
 - Updating state remains visible in reduced-motion mode.
@@ -465,15 +472,15 @@ product decision must earn and define any addition before implementation.
 ### Query execution
 
 - A teacher can construct and run any supported question without saving it.
-- Changing conditions does not rerun the question until **Show results** is
-  activated.
+- Changing fields does not rerun the question until **Show results** or
+  **Update results** is activated.
 - Picker typing alone does not run the evidence question.
 - Invalid or incomplete dates prevent submission and identify what must be
   corrected.
-- Unapplied changes are distinguishable from the conditions represented by the
-  displayed results.
+- Unapplied changes are distinguishable because the run action reads
+  **Update results**.
 - Pending submission prevents an accidental duplicate request.
-- Failure preserves the current conditions and last successful results; retry
+- Failure preserves the current fields and last successful results; retry
   reruns the current valid question.
 
 ### Interface and accessibility

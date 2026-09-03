@@ -280,9 +280,9 @@ These limits protect resource usage and database hygiene; they are not substitut
 - Feed search and filter state is represented in the URL; it filters the currently loaded page and survives refresh/back navigation.
 - Explore Evidence uses a versioned direct filter with only result view,
   student IDs, normalized tag any/all/exclude values, one local-calendar date
-  rule, class IDs, and a photo-presence rule. Unsaved conditions remain client
-  state, are not encoded in the URL, and reach the server only through an
-  explicit **Show results** action.
+  rule, class IDs, and a photo-presence rule.   Unsaved question fields remain client state, are not encoded in the URL,
+  and reach the server only through an explicit **Show results** or
+  **Update results** action.
 - Explore derives evidence rows, alphabetized student groups, complete counts,
   and expanded supporting evidence from the same authenticated
   workspace-scoped predicate. Evidence pages contain 25 rows, student pages 20

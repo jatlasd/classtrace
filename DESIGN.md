@@ -408,14 +408,15 @@ analytics surface. Inline confirmation is a flat ruled panel inside the row
 
 Explore turns a bounded retrieval question into the existing evidence-ledger
 language. One lightly lifted work surface begins with the sentence-like
-**Show me [Evidence or Students] from [date]** controls. Optional conditions
-occupy full-width ruled rows with visible labels; student, class, and tag values
-use searchable keyboard multi-selects with named removal controls.
+**Show me [Evidence or Students] from [date]** controls. Student, Tags, Class,
+and Photo stand as ordinary labeled fields; empty means unconstrained.
+Student, class, and tag values use searchable keyboard multi-selects with
+named removal controls. Tag matching stays attached to Tags rather than
+appearing as separate condition types.
 
-Changing a question does not silently replace the current results. A concise
-status states whether results match, the question changed, or an update is
-pending, and only the explicit **Show results** action applies it. Below the
-builder, one quiet ruled header carries complete matching-record and
+Changing a question does not silently replace the current results. The explicit
+run action reads **Show results**, **Update results**, or **Updating results…**.
+Below the question, one quiet ruled header carries complete matching-record and
 represented-student counts. Evidence results reuse the shared evidence content
 in newest-first ledger rows; student results use alphabetical expandable rows
 with inspectable, paged supporting evidence. The question remains transient,

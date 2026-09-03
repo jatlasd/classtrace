@@ -109,27 +109,28 @@ Files: `app/app/explore/page.tsx`,
 `components/explore/explore-evidence-page.tsx`, and
 `components/explore/explore-multi-select.tsx`
 
-Last updated: 2026-09-01
+Last updated: 2026-09-02
 
 | Property | Pattern |
 |---|---|
 | Header | Compact route title and direct supporting promise above a bottom rule |
-| Question surface | One `rounded-card bg-card shadow-paper` sentence builder; no metric cards or dashboard grid |
-| Conditions | Removable full-width rows with visible labels; student, class, and tag values use searchable keyboard multi-selects |
-| Execution state | Explicit **Show results** action with visible matched, changed, pending, and retry states |
+| Question surface | One quiet `rounded-card bg-card shadow-paper` sentence plus a dense standing-field form; no metric cards or dashboard grid |
+| Fields | Always-visible labeled controls at form density (`min-h-11` mobile, `min-h-9` desktop); empty means unconstrained; student, class, and tag values use searchable keyboard multi-selects |
+| Tag matching | One Tags field; all-of default at two or more tags; Without and a complementary include group stay as text reveals |
+| Execution state | Explicit **Show results** / **Update results** / **Updating results…** action with retry on failure |
 | Counts | One quiet complete-result line for matching records and represented students |
 | Evidence results | Shared `EvidenceRecordContent` in border-led ledger rows, newest evidence date then creation time |
 | Student results | Alphabetical student ledger with complete per-student counts and server-paged supporting evidence |
 | Responsive behavior | One stacked mobile column; controls wrap without horizontal scrolling; touch targets approach 44px |
 
-- The default question is **Evidence** from **All time**. Adding, editing, or
-  removing a condition does not query until **Show results** is activated.
+- The default question is **Evidence** from **All time**. Changing a field does
+  not query until **Show results** or **Update results** is activated.
 - Query state is deliberately transient and does not appear in the URL.
 - Empty, pending, stale-result, failure/retry, evidence pagination, student
   pagination, and supporting-evidence states preserve the current question.
 - Results are read-only and link student identity to the existing timeline.
-- Dropdowns escape the builder through `overflow-visible`; selection, focus,
-  and removal have non-color cues and visible keyboard focus.
+- Dropdowns escape the question surface through `overflow-visible`; selection,
+  focus, and removal have non-color cues and visible keyboard focus.
 
 ## Site footer
 
