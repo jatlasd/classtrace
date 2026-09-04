@@ -66,8 +66,7 @@ export function ExploreMultiSelect({
     onChange([...selectedIds, option.id]);
     setSearch("");
     setActiveIndex(0);
-    setIsOpen(true);
-    resolvedInputRef.current?.focus();
+    setIsOpen(false);
   }
 
   function removeOption(id: string): void {
@@ -123,6 +122,7 @@ export function ExploreMultiSelect({
             value={search}
             placeholder={placeholder}
             onFocus={() => setIsOpen(true)}
+            onClick={() => setIsOpen(true)}
             onBlur={() => setIsOpen(false)}
             onChange={(event) => {
               setSearch(event.target.value);
@@ -145,11 +145,15 @@ export function ExploreMultiSelect({
                     : (index - 1 + available.length) % available.length
                 );
               } else if (event.key === "Enter") {
-                event.preventDefault();
-                if (isOpen && activeOption) selectOption(activeOption);
+                if (isOpen) {
+                  event.preventDefault();
+                  if (activeOption) selectOption(activeOption);
+                }
               } else if (event.key === "Escape") {
-                event.preventDefault();
-                setIsOpen(false);
+                if (isOpen) {
+                  event.preventDefault();
+                  setIsOpen(false);
+                }
               } else if (
                 event.key === "Backspace" &&
                 !search &&

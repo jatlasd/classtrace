@@ -162,16 +162,22 @@ describe("ExploreEvidencePage", () => {
     renderPage();
 
     const studentInput = screen.getByLabelText("Student");
-    fireEvent.focus(studentInput);
+    studentInput.focus();
     fireEvent.change(studentInput, { target: { value: "Mar" } });
     expect(screen.getByRole("option", { name: /Mary/ })).toBeTruthy();
     expect(mocks.runExploreEvidenceQuery).not.toHaveBeenCalled();
 
     fireEvent.keyDown(studentInput, { key: "Enter" });
     expect(screen.getByRole("button", { name: "Remove Mary" })).toBeTruthy();
+    expect(screen.queryByRole("listbox", { name: "Student choices" })).toBeNull();
+    expect(document.activeElement).toBe(studentInput);
     expect(screen.getByRole("button", { name: "Update results" })).toBeTruthy();
     expect(screen.queryByText("Question changed. Show results to apply it.")).toBeNull();
     expect(mocks.runExploreEvidenceQuery).not.toHaveBeenCalled();
+
+    fireEvent.click(studentInput);
+    expect(screen.getByRole("listbox", { name: "Student choices" })).toBeTruthy();
+    fireEvent.keyDown(studentInput, { key: "Escape" });
 
     fireEvent.click(screen.getByRole("button", { name: "Update results" }));
     await waitFor(() => expect(mocks.runExploreEvidenceQuery).toHaveBeenCalledTimes(1));
