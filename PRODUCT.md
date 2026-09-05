@@ -19,8 +19,8 @@ review what will become permanent, and retrieve trustworthy evidence later.
 ClassTrace turns a quick, messy classroom observation into a deterministic
 structured draft, requires the teacher to review it, and saves the approved
 evidence to exactly one teacher-owned roster student. Success means capture is
-fast, validation is unambiguous, and the resulting feed, timeline, report, or
-export remains easy to trust.
+fast, validation is unambiguous, and the resulting feed, Explore results,
+timeline, report, or export remains easy to trust.
 
 ## Positioning
 
@@ -64,6 +64,10 @@ Confirmed capability:
   deletion, or the next device-local midnight.
 - Paged global feed, student timeline, date-filtered printable report, and
   one-student CSV export.
+- Explore Evidence runs an explicit transient question across active saved
+  evidence using student, exact normalized tag, local-calendar date,
+  class-at-validation, and photo-presence conditions. It returns either paged
+  evidence or alphabetical student groups with inspectable supporting records.
 - Intentional archive and permanent-delete paths for evidence, students, and
   classes.
 - Settings Help and Feedback sends a bounded support report through Resend

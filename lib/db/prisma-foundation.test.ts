@@ -49,6 +49,13 @@ const evidencePhotoMigrationPath = join(
   "20260821000000_add_evidence_photos",
   "migration.sql"
 );
+const exploreEvidenceMigrationPath = join(
+  projectRoot,
+  "prisma",
+  "migrations",
+  "20260902000000_add_explore_evidence_indexes",
+  "migration.sql"
+);
 
 const schema = readFileSync(schemaPath, "utf8");
 const envExample = readFileSync(envExamplePath, "utf8");
@@ -161,6 +168,29 @@ describe("Prisma database foundation", () => {
     );
     expect(migration).toContain("ON DELETE CASCADE");
     expect(migration).not.toMatch(/filename|EXIF|location|camera/i);
+  });
+
+  it("adds only the indexes used by bounded Explore Evidence filters and sorting", () => {
+    expect(existsSync(exploreEvidenceMigrationPath)).toBe(true);
+    const migration = readFileSync(exploreEvidenceMigrationPath, "utf8");
+
+    expect(migration).toContain(
+      '"EvidenceRecord_workspace_evidence_sort_idx"'
+    );
+    expect(migration).toContain(
+      '("workspaceId", "evidenceDate" DESC, "createdAt" DESC)'
+    );
+    expect(migration).toContain(
+      '"EvidenceRecord_workspace_student_sort_idx"'
+    );
+    expect(migration).toContain(
+      '"EvidenceRecord_workspace_class_sort_idx"'
+    );
+    expect(migration).toContain(
+      '"EvidenceRecord_tags_gin_idx"'
+    );
+    expect(migration).toContain('USING GIN (tags)');
+    expect(schema).toContain('@@index([tags], type: Gin');
   });
 
   it("adds nullable evidence notes without fabricating legacy note text", () => {

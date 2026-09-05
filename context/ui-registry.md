@@ -66,14 +66,14 @@ Files: `app/app/layout.tsx`,
 `components/dashboard/app-navigation.ts`, and
 `components/layout/site-footer.tsx`
 
-Last updated: 2026-08-30
+Last updated: 2026-09-01
 
 | Property | Pattern |
 |---|---|
 | Desktop frame | Fixed `w-52` muted-surface `bg-sidebar` plus 56px `bg-card/95` route header |
 | Mobile frame | Sticky minimum-64px muted-surface `bg-sidebar` header with safe-area padding |
 | Drawer | Left panel capped at `340px`, `bg-sidebar`, `border-sidebar-border`, `shadow-floating` |
-| Primary navigation | Capture, Students, Settings only; 44px desktop and 48px mobile rows |
+| Primary navigation | Capture, Explore, Students, Settings; 44px desktop and 48px mobile rows |
 | Active state | Full `border-sidebar-ring bg-sidebar-accent text-sidebar-accent-foreground`, mint icon, plus `aria-current="page"` |
 | Inactive state | `text-sidebar-foreground/78` with tonal sidebar hover |
 | Focus | Indigo focus treatment on the light shell; mint focus treatment inside indigo public fields |
@@ -86,9 +86,10 @@ Last updated: 2026-08-30
   they are not global navigation items.
 - The feed route header pairs **Feed** with the quiet **All evidence** context
   label. It does not add fake global search, notifications, or settings controls.
-- Other authenticated route headers use the same quiet context slot: **All
-  classes** for Students, **Account** for Settings, **Evidence** for a student
-  timeline, and **Printable evidence** for a report.
+- Other authenticated route headers use the same quiet context slot: **Saved
+  evidence** for Explore, **All classes** for Students, **Account** for
+  Settings, **Evidence** for a student timeline, and **Printable evidence** for
+  a report.
 - The mobile header names the current route beside the compact inverse brand
   lockup. The modal drawer contains focus, closes from Escape or backdrop,
   restores trigger focus, and locks body scrolling while open.
@@ -99,7 +100,41 @@ Last updated: 2026-08-30
   on short pages and after the content on long pages. Public pages include
   access links; authenticated, auth-provider, operator, and error surfaces keep
   only the shared trust and support links.
-- Content widths: feed up to `1560px`; report around `1180px`; roster `880px`; settings/timeline narrower as content requires.
+- Content widths: feed up to `1560px`; Explore and report around `1180px`;
+  roster `880px`; settings/timeline narrower as content requires.
+
+## Explore Evidence
+
+Files: `app/app/explore/page.tsx`,
+`components/explore/explore-evidence-page.tsx`, and
+`components/explore/explore-multi-select.tsx`
+
+Last updated: 2026-09-05
+
+| Property | Pattern |
+|---|---|
+| Header | Compact indigo header with reviewed-and-saved scope and mint-icon **Student / Tags / Date** shortcuts that open and focus the corresponding filter |
+| Collection toolbar | Inline **Filters** disclosure with applied-condition count on Quiet Surface when applied; **Evidence / Group by student** sit in a Quiet Surface well, with the pressed view using Deep Indigo and On-Indigo text |
+| Filter editor | Initially collapsed, bordered Work Surface with **Who / What / When** groups separated by rules; student/class, tags/photo, and date form three desktop columns and stack on mobile; **How filters work** reveals matching guidance and classroom-question examples |
+| Fields | Labeled controls at form density (`min-h-11` mobile, `min-h-9` desktop); empty means unconstrained; student, class, and tag values use searchable keyboard multi-selects with dropdown arrows and **Add another…** after selection; class is explicitly **Class at capture** |
+| Tag matching | One Tags field; all-of default at two or more tags; Without and a complementary include group stay as text reveals |
+| Execution state | Explicit **Show results** / **Update results** / **Updating results…**; successful application collapses the editor and focuses results; failures retain results and retry the failed request |
+| Scope and counts | Collection heading with complete record/student counts, ordering, and applied-filter chips in ink on Quiet Surface; unapplied edits use a Quiet Surface status |
+| Evidence results | Shared `EvidenceRecordContent` in a rounded, bordered ledger with alternating white/Work Surface rows, newest evidence date then creation time |
+| Student results | Alphabetical student ledger with complete per-student counts, Previous/Next pagination, and server-paged supporting evidence without repeated student identity |
+| Responsive behavior | One stacked mobile column; controls wrap without horizontal scrolling; touch targets approach 44px |
+
+- The default collection is **Evidence** from **All time**. Changing a field does
+  not query until **Show results** or **Update results** is activated.
+- Closing the editor retains unfinished edits. **Clear filters** resets the
+  draft conditions while retaining the view and still requires application.
+- View changes and pagination use applied conditions and retain unfinished edits.
+- Query state is deliberately transient and does not appear in the URL.
+- Empty, pending, stale-result, failure/retry, evidence pagination, student
+  pagination, and supporting-evidence states preserve the current question.
+- Results are read-only and link student identity to the existing timeline.
+- Dropdowns escape the inline editor without clipping; selection,
+  focus, and removal have non-color cues and visible keyboard focus.
 
 ## Site footer
 

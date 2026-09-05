@@ -153,6 +153,7 @@ routes keep the same colors quieter around capture, review, and retrieval.
 **Key Characteristics:**
 
 - Capture-first hierarchy with one prominent working surface.
+- Evidence collections with optional inline filtering and visible applied scope.
 - Evidence-led ledgers separated by rules instead of interchangeable card grids.
 - Cool Paper / Cool Surface workspace, Deep Indigo action, Seafoam Mint only
   inside indigo fields.
@@ -253,13 +254,15 @@ and data use Inter. Mono appears only for genuine identifiers or counters.
 Authenticated routes share one shell: a fixed Quiet Surface sidebar (`13rem` /
 `w-52`) from `lg` up, a sticky Quiet Surface header below `lg`, and a 3.5rem
 route header on desktop (`bg-card/95` with a light blur). Primary navigation is
-Capture, Students, and Settings only. Workspace offset is `lg:pl-52 lg:pt-14`,
-reset for print.
+Capture, Explore, Students, and Settings, in that order. Capture remains the
+first action concept; Explore is the direct saved-evidence retrieval route.
+Workspace offset is `lg:pl-52 lg:pt-14`, reset for print.
 
 Content widths are observed, not aspirational:
 
 - Feed: `1560px`, with a `16.5rem` context rail from `xl`
-- Report and Settings: `1180px`; Settings adds a `19rem` context rail from `xl`
+- Explore, Report, and Settings: `1180px`; Settings adds a `19rem` context rail
+  from `xl`
 - Roster: `1100px`
 - Public pages: about `1180px`, hero up to `1360px`
 
@@ -401,6 +404,29 @@ confirmation stay explicit. Rows never become nested cards or a secondary
 analytics surface. Inline confirmation is a flat ruled panel inside the row
 (Quiet Surface, or Alert Red tint when destructive), not a modal.
 
+### Explore collection and filters
+
+Explore opens onto the evidence ledger. A compact toolbar offers **Filters**
+and **Evidence / By student** views. The selected view uses Deep Indigo with
+On-Indigo text inside a Quiet Surface well; **Show results** keeps the same
+indigo as the apply action. The optional inline editor is Quiet Surface, so Cool
+Surface fields and the results ledger stay distinct. Student and class, tags,
+and date and photo form three desktop columns; mobile stacks them. Searchable
+multi-selects retain visible labels and named removal controls. Selected values
+and applied-scope chips use ink on Quiet Surface. Combobox keyboard focus uses
+Deep Indigo with On-Indigo muted descriptions. Unfinished edits use the same
+Quiet Surface as a status strip. Alert Red remains error-only. Tag matching and
+exclusion stay attached to Tags. Empty fields are unconstrained.
+
+The explicit **Show results** or **Update results** action applies edits,
+collapses the editor, and focuses the collection. Closing it preserves unfinished
+edits with a visible status. Applied scope and complete record/student counts
+stay next to the results. View changes and pagination use that applied scope.
+Evidence uses newest-first ruled rows with shared evidence content; student
+groups are alphabetical, with inspectable supporting records that recede onto
+Quiet Surface and do not repeat the group's identity. Filters remain transient
+and are never encoded in the URL.
+
 ### Motion
 
 Drawer backdrop fades in `160ms`; the panel slides `180ms`. Both run only when
@@ -414,6 +440,8 @@ decorative motion.
 
 - **Do** keep capture visually primary and ask for exactly one student.
 - **Do** render evidence and roster data as ledgers when scanning matters.
+- **Do** keep multi-condition evidence retrieval in one explicit question
+  surface followed by complete counts and ruled results.
 - **Do** use the semantic roles declared in `app/globals.css`.
 - **Do** reserve Seafoam Mint for deliberate emphasis inside Deep Indigo fields.
 - **Do** use Deep Indigo action and Slate Ink links/icons on light surfaces.
@@ -428,6 +456,7 @@ decorative motion.
 
 - **Don't** make ClassTrace look like an enterprise dashboard, a decorative
   classroom theme, a generic teacher notebook, or a card-grid analytics product.
+- **Don't** turn Explore into metric cards, charts, or database-filter chrome.
 - **Don't** use ornamental school imagery, fake controls, dashboard metrics,
   glass effects, gradient text, noisy textures, excessive cards, or invented
   affordances that compete with capture and review.

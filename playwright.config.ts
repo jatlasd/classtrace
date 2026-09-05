@@ -32,7 +32,7 @@ export default defineConfig({
     {
       name: "authenticated-chromium",
       dependencies: ["auth-setup"],
-      testMatch: /(?:authenticated-page|landing-page)\.spec\.ts/,
+      testMatch: /(?:authenticated-page|explore-evidence|landing-page)\.spec\.ts/,
       use: {
         ...devices["Desktop Chrome"],
         storageState: authenticatedStorageStatePath,

@@ -1,7 +1,7 @@
 import { INPUT_LIMITS } from "../lib/validation/input-limits.ts";
 
 export const DEMO_CLERK_USER_ID = "user_3HQButQuO16dX0RvhZbZ7jtQb2m";
-export const DEMO_DATASET_VERSION = "2026-school-spring-v1";
+export const DEMO_DATASET_VERSION = "2026-school-spring-v2";
 export const DEMO_DATABASE_IDENTITY = Object.freeze({
   projectId: "floral-forest-27181712",
   branchId: "br-wild-recipe-atxbdvko",
@@ -606,6 +606,41 @@ const evidence = Object.entries(authoredEvidence).flatMap(
   }
 );
 
+const photos = [
+  {
+    id: "demo_photo_stacy_decimal_2026",
+    evidenceId: "demo_evidence_stacy_01",
+    assetFilename: "decimal-place-value.webp",
+    contentType: "image/webp",
+    width: 1_000,
+    height: 1_000,
+  },
+  {
+    id: "demo_photo_jeremy_equations_2026",
+    evidenceId: "demo_evidence_jeremy_10",
+    assetFilename: "one-step-equations.webp",
+    contentType: "image/webp",
+    width: 1_000,
+    height: 1_000,
+  },
+  {
+    id: "demo_photo_jeff_reading_2026",
+    evidenceId: "demo_evidence_jeff_10",
+    assetFilename: "annotated-reading-passage.webp",
+    contentType: "image/webp",
+    width: 1_000,
+    height: 1_000,
+  },
+  {
+    id: "demo_photo_mary_planning_2026",
+    evidenceId: "demo_evidence_mary_07",
+    assetFilename: "paragraph-planning.webp",
+    contentType: "image/webp",
+    width: 1_000,
+    height: 1_000,
+  },
+];
+
 function freezeRecords(records) {
   return Object.freeze(
     records.map((record) =>
@@ -626,6 +661,7 @@ export const DEMO_DATASET = Object.freeze({
   classes: freezeRecords(classes),
   students: freezeRecords(students),
   evidence: freezeRecords(evidence),
+  photos: freezeRecords(photos),
 });
 
 function assertText(value, label, maxLength) {
@@ -662,12 +698,18 @@ export function validateDemoDataset(dataset = DEMO_DATASET) {
   if (dataset.evidence.length !== 56) {
     throw new Error("Demo dataset must contain exactly 56 evidence records.");
   }
+  if (!Array.isArray(dataset.photos) || dataset.photos.length !== 4) {
+    throw new Error("Demo dataset must contain exactly 4 evidence photos.");
+  }
 
   assertUnique(dataset.classes, "id", "Class IDs");
   assertUnique(dataset.classes, "nameKey", "Class name keys");
   assertUnique(dataset.students, "id", "Student IDs");
   assertUnique(dataset.students, "mentionHandle", "Student handles");
   assertUnique(dataset.evidence, "id", "Evidence IDs");
+  assertUnique(dataset.photos, "id", "Photo IDs");
+  assertUnique(dataset.photos, "evidenceId", "Photo evidence relations");
+  assertUnique(dataset.photos, "assetFilename", "Photo assets");
 
   const classIds = new Set(dataset.classes.map((classGroup) => classGroup.id));
   for (const [index, classGroup] of dataset.classes.entries()) {
@@ -831,6 +873,26 @@ export function validateDemoDataset(dataset = DEMO_DATASET) {
       throw new Error(`Demo dataset evidence-type coverage is invalid for ${type}.`);
     }
   }
+
+  const evidenceIds = new Set(dataset.evidence.map((record) => record.id));
+  for (const [index, photo] of dataset.photos.entries()) {
+    const position = `Photo ${index + 1}`;
+    assertText(photo.id, `${position} ID`, INPUT_LIMITS.identifier);
+    assertText(photo.evidenceId, `${position} evidence ID`, INPUT_LIMITS.identifier);
+    if (
+      !evidenceIds.has(photo.evidenceId) ||
+      photo.contentType !== "image/webp" ||
+      !/^[a-z0-9-]+\.webp$/.test(photo.assetFilename) ||
+      !Number.isInteger(photo.width) ||
+      !Number.isInteger(photo.height) ||
+      photo.width < 1 ||
+      photo.height < 1 ||
+      photo.width > INPUT_LIMITS.evidencePhotoLongEdge ||
+      photo.height > INPUT_LIMITS.evidencePhotoLongEdge
+    ) {
+      throw new Error(`${position} relation or image metadata is invalid.`);
+    }
+  }
   if ([...studentById].some(([studentId]) => studentCounts.get(studentId) !== 14)) {
     throw new Error("Each demo student must have exactly 14 evidence records.");
   }
@@ -850,6 +912,7 @@ export function validateDemoDataset(dataset = DEMO_DATASET) {
     classCount: dataset.classes.length,
     studentCount: dataset.students.length,
     evidenceCount: dataset.evidence.length,
+    photoCount: dataset.photos.length,
     earliestEvidenceDate: new Date(
       Math.min(...dataset.evidence.map((record) => Date.parse(record.evidenceDate)))
     ).toISOString(),

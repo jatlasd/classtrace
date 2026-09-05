@@ -58,6 +58,52 @@ afterAll(async () => {
 });
 
 describe("database ownership constraints", () => {
+  it("uses the Explore Evidence sort and tag indexes on representative data", async () => {
+    await database.evidenceRecord.createMany({
+      data: Array.from({ length: 600 }, (_, index) => ({
+        workspaceId: fixture.workspaceA.id,
+        rosterStudentId: fixture.studentA.id,
+        classGroupId: fixture.classA.id,
+        evidenceDate: new Date(Date.UTC(2026, 4, 1 + (index % 28), 16)),
+        evidenceNote: `Reviewed integration evidence ${index + 1}`,
+        summary: `Mary · reading · ${index + 1}`,
+        evidenceType: "Academic check-in",
+        tags: index % 20 === 0 ? ["reading", "independent"] : ["writing"],
+        validatedAt: new Date(Date.UTC(2026, 5, 1, 16, index)),
+      })),
+    });
+    await database.$executeRaw`ANALYZE "EvidenceRecord"`;
+
+    const plans = await database.$transaction(async (transaction) => {
+      await transaction.$executeRaw`SET LOCAL enable_seqscan = off`;
+      const sortPlan = await transaction.$queryRaw`
+        EXPLAIN (FORMAT JSON)
+        SELECT evidence.id
+        FROM "EvidenceRecord" evidence
+        WHERE evidence."workspaceId" = ${fixture.workspaceA.id}
+          AND evidence."archivedAt" IS NULL
+        ORDER BY evidence."evidenceDate" DESC, evidence."createdAt" DESC
+        LIMIT 25
+      `;
+      await transaction.$executeRaw`SET LOCAL enable_indexscan = off`;
+      const tagPlan = await transaction.$queryRaw`
+        EXPLAIN (FORMAT JSON)
+        SELECT count(*)
+        FROM "EvidenceRecord" evidence
+        WHERE evidence."workspaceId" = ${fixture.workspaceA.id}
+          AND evidence.tags @> ARRAY['reading']::text[]
+      `;
+      return { sortPlan, tagPlan };
+    });
+
+    expect(JSON.stringify(plans.sortPlan)).toContain(
+      "EvidenceRecord_workspace_evidence_sort_idx"
+    );
+    expect(JSON.stringify(plans.tagPlan)).toContain(
+      "EvidenceRecord_tags_gin_idx"
+    );
+  });
+
   it("rejects cross-workspace roster and evidence relationships", async () => {
     await expect(
       database.rosterStudent.create({

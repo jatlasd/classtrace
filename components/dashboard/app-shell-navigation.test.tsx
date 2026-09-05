@@ -58,6 +58,7 @@ describe("AppShellNavigation", () => {
         "aria-current"
       )
     ).toBe(false);
+    expect(screen.getAllByRole("link", { name: "Explore" })).toHaveLength(1);
     expect(screen.getAllByText("Feed").length).toBeGreaterThan(0);
     expect(screen.getByText("All evidence")).toBeTruthy();
     expect(screen.queryByRole("link", { name: "Dashboard" })).toBeNull();
@@ -65,6 +66,11 @@ describe("AppShellNavigation", () => {
   });
 
   it("pairs authenticated routes with truthful compact context labels", () => {
+    mocks.pathname = "/app/explore";
+    const exploreRender = render(<AppShellNavigation />);
+    expect(screen.getByText("Saved evidence")).toBeTruthy();
+    exploreRender.unmount();
+
     mocks.pathname = "/app/roster";
     const rosterRender = render(<AppShellNavigation />);
     expect(screen.getByText("All classes")).toBeTruthy();

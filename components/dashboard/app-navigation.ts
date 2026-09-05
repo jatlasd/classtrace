@@ -1,12 +1,12 @@
 import type { LucideIcon } from "lucide-react";
-import { PenLine, Settings, Users } from "lucide-react";
+import { PenLine, Search, Settings, Users } from "lucide-react";
 import { isStudentProfilePath, routes } from "@/lib/routes";
 
 export type AppNavigationItem = {
   href: string;
   icon: LucideIcon;
   label: string;
-  match: "capture" | "settings" | "students";
+  match: "capture" | "explore" | "settings" | "students";
 };
 
 export const APP_NAVIGATION_ITEMS: readonly AppNavigationItem[] = [
@@ -15,6 +15,12 @@ export const APP_NAVIGATION_ITEMS: readonly AppNavigationItem[] = [
     href: routes.feed,
     icon: PenLine,
     match: "capture",
+  },
+  {
+    label: "Explore",
+    href: routes.explore,
+    icon: Search,
+    match: "explore",
   },
   {
     label: "Students",
@@ -35,6 +41,7 @@ export function isAppNavigationItemActive(
   match: AppNavigationItem["match"]
 ): boolean {
   if (match === "capture") return pathname === routes.feed;
+  if (match === "explore") return pathname === routes.explore;
   if (match === "settings") return pathname === routes.settings;
 
   return pathname === routes.roster || isStudentProfilePath(pathname);
@@ -42,6 +49,7 @@ export function isAppNavigationItemActive(
 
 export function getAppRouteLabel(pathname: string): string {
   if (pathname === routes.feed) return "Feed";
+  if (pathname === routes.explore) return "Explore";
   if (pathname === routes.roster) return "Students";
   if (pathname === routes.settings) return "Settings";
   if (isStudentProfilePath(pathname)) {
