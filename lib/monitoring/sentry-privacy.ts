@@ -16,7 +16,7 @@ const SAFE_OPERATIONS = [
   "class.archive",
   "class.create",
   "class.rename",
-  "evidence.archive",
+  "class.restore",
   "evidence.delete",
   "evidence.export",
   "evidence.explore",

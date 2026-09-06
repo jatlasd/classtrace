@@ -69,7 +69,13 @@ export function StudentEvidenceExportAction({
     }
 
     setStatus({ state: "pending" });
-    const result = await exportStudentEvidence({ studentId });
+    let result: ExportStudentEvidenceActionResult;
+    try {
+      result = await exportStudentEvidence({ studentId });
+    } catch {
+      setStatus({ state: "error", message: "Failed to export evidence." });
+      return;
+    }
 
     if (!result.success) {
       setStatus({ state: "error", message: result.error });

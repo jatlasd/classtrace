@@ -10,7 +10,7 @@ describe("EvidenceFeedHeader", () => {
   it("introduces the capture workflow without a stats grid", () => {
     render(<EvidenceFeedHeader />);
 
-    expect(screen.getByRole("heading", { name: "Evidence feed" })).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "Feed" })).toBeTruthy();
     expect(screen.queryByText(/students$/)).toBeNull();
     expect(screen.queryByText(/saved records?$/)).toBeNull();
     expect(screen.queryByText(/drafts? to review$/)).toBeNull();

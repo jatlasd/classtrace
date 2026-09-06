@@ -27,7 +27,7 @@ export default function PrivacyPage() {
       title="Privacy, in plain language"
       description="ClassTrace is a small teacher-first beta. This page describes what the product handles today, what it deliberately does not collect, and where its privacy limits still are."
       sections={sections}
-      lastUpdated="August 21, 2026"
+      lastUpdated="September 5, 2026"
     >
       <PublicNote>
         ClassTrace does not claim FERPA compliance, district approval, legal
@@ -96,6 +96,15 @@ export default function PrivacyPage() {
           providers process application requests and stored workspace data.
           Their own terms and operational retention may apply to information
           they process for ClassTrace.
+        </p>
+        <p>
+          Sentry receives privacy-scrubbed application errors and sampled
+          performance traces so the operator can diagnose failures. ClassTrace
+          removes user identity, request contents, concrete URLs, cookies,
+          headers, query parameters, teacher-entered text, and photo data before
+          sending these events. Session replay and Sentry log shipping are
+          disabled. Sentry may retain the resulting limited diagnostic data
+          under its own settings.
         </p>
         <p>
           When you submit Help and Feedback, ClassTrace sends your selected

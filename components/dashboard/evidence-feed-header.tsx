@@ -1,13 +1,10 @@
 export function EvidenceFeedHeader() {
   return (
-    <header className="flex items-center justify-between gap-4 border-b border-border px-4 py-3 sm:px-5 lg:hidden">
+    <header className="mb-7 sm:mb-9">
       <div>
-        <h1 className="font-sans text-base font-semibold text-foreground">
-          Evidence feed
+        <h1 className="font-sans text-3xl font-semibold tracking-tight text-foreground">
+          Feed
         </h1>
-        <p className="mt-0.5 text-xs text-muted-foreground">
-          Capture, review, and retrieve evidence.
-        </p>
       </div>
     </header>
   );

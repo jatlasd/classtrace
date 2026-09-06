@@ -70,27 +70,26 @@ Last updated: 2026-09-01
 
 | Property | Pattern |
 |---|---|
-| Desktop frame | Fixed `w-52` muted-surface `bg-sidebar` plus 56px `bg-card/95` route header |
-| Mobile frame | Sticky minimum-64px muted-surface `bg-sidebar` header with safe-area padding |
-| Drawer | Left panel capped at `340px`, `bg-sidebar`, `border-sidebar-border`, `shadow-floating` |
+| Desktop frame | Fixed `w-52` page-ground sidebar; Feed has an in-flow heading, other routes retain the 56px route header |
+| Mobile frame | Sticky minimum-64px page-ground header with safe-area padding |
+| Drawer | Left panel capped at `340px`, `bg-background`, `border-sidebar-border`, `shadow-floating` |
 | Primary navigation | Capture, Explore, Students, Settings; 44px desktop and 48px mobile rows |
-| Active state | Full `border-sidebar-ring bg-sidebar-accent text-sidebar-accent-foreground`, mint icon, plus `aria-current="page"` |
+| Active state | Strong foreground text with an underline and `aria-current="page"` |
 | Inactive state | `text-sidebar-foreground/78` with tonal sidebar hover |
 | Focus | Indigo focus treatment on the light shell; mint focus treatment inside indigo public fields |
 | Motion | Short drawer translation/backdrop fade only when reduced motion is not requested |
-| Workspace offset | `lg:pl-52 lg:pt-14`; reset for report printing |
+| Workspace offset | `lg:pl-52`; non-Feed routes retain `lg:pt-14`; reset for report printing |
 
 - Desktop account/sign-out stays at the bottom of the sidebar. Mobile sign-out
   and the existing trust/support links stay in the drawer's bottom region.
 - Student timelines and reports activate Students but remain contextual routes;
   they are not global navigation items.
-- The feed route header pairs **Feed** with the quiet **All evidence** context
-  label. It does not add fake global search, notifications, or settings controls.
+- Feed owns one in-flow **Feed** heading and omits the fixed route header and mobile route-name duplication.
 - Other authenticated route headers use the same quiet context slot: **Saved
   evidence** for Explore, **All classes** for Students, **Account** for
   Settings, **Evidence** for a student timeline, and **Printable evidence** for
   a report.
-- The mobile header names the current route beside the compact inverse brand
+- The mobile header names non-Feed routes beside the compact brand
   lockup. The modal drawer contains focus, closes from Escape or backdrop,
   restores trigger focus, and locks body scrolling while open.
 - One `main#main-content`; child pages do not render another `main`.
@@ -100,7 +99,7 @@ Last updated: 2026-09-01
   on short pages and after the content on long pages. Public pages include
   access links; authenticated, auth-provider, operator, and error surfaces keep
   only the shared trust and support links.
-- Content widths: feed up to `1560px`; Explore and report around `1180px`;
+- Content widths: feed up to `1080px`; Explore and report around `1180px`;
   roster `880px`; settings/timeline narrower as content requires.
 
 ## Explore Evidence
@@ -228,12 +227,10 @@ details into metrics, tabs, or a settings card grid.
 
 File: `components/dashboard/quick-capture-card.tsx`
 
-- `rounded-card border border-border bg-card shadow-surface`, spanning the main
-  feed column above the evidence ledger.
-- “What happened?” remains a visible `text-sm font-semibold` working label.
-- The active surface uses compact `px-4`/`px-5` horizontal rhythm, a 42px
-  writing area, and a ruled `bg-muted/20` action footer.
-- The header states the review-before-save boundary once; compact composer
+- Open composer above the evidence; only the writing area has an input border. No outer card, shadow, or tinted action footer.
+- “What happened?” remains a visible `text-base font-semibold` working label.
+- The writing area starts at two lines (64px content height); photo controls, draft guidance and Capture sit directly below.
+- The footer states the draft-before-review boundary; compact composer
   guidance explains `@` student mentions and `#tags` without repeating it as
   decorative hint controls.
 - Mention input remains text-only and offers roster-backed suggestions. Adjacent Take photo and Choose photo controls add one temporary work-sample photo without turning capture into a general upload form.
@@ -246,6 +243,10 @@ File: `components/dashboard/quick-capture-card.tsx`
 - After the workspace's first successful save, one inline success panel links to the student's timeline/report and can return focus to this composer.
 - Do not turn capture into a multi-field form.
 - A selected photo is previewed in the capture surface with Replace and Remove controls, visible local-only guidance, and a written processing state.
+- Capture remains disabled until session-draft and encrypted-photo restoration
+  completes. A missing restored photo remains visible as an actionable draft
+  state; the teacher must reattach it or explicitly continue with the note
+  alone. Replacement processing and local persistence block permanent save.
 
 ## Evidence feed composition
 
@@ -255,18 +256,19 @@ Files: `components/dashboard/evidence-feed.tsx`,
 
 Last updated: 2026-08-30
 
-- The feed page uses a dense responsive workspace. At `xl`, the main
-  capture-and-ledger column sits beside a `16.5rem` real-data context rail;
-  below `xl`, capture and the ledger remain the only visible column.
-- The inbox owns its heading, count/order metadata, search, and filters in one
-  ruled header. It remains a single ledger rather than a collection of cards.
-- Saved rows use the compact evidence-content density, keep validation implicit,
-  and prioritize date, student, class, evidence, tags, and explicit actions.
-  At `lg`, actions align with row metadata and real evidence photos occupy a
-  compact right-hand thumbnail slot. Draft rows carry explicit review state.
-- The desktop context rail uses active roster links, functional recent-tag
-  filters, and the current draft count with the three save boundaries. It does
-  not introduce metrics, alerts, follow-up queues, or unsupported features.
+- One open `1080px` workspace contains capture, a shared search/filter toolbar,
+  unfinished captures and saved evidence. There is no right context rail.
+- Search and filters retain their existing scope across drafts and the current
+  saved-evidence page; their toolbar therefore precedes both sections.
+- Needs-review captures use a shared neutral working treatment with an explicit
+  heading and count. Review state, photo recovery, and save confirmation remain intact.
+- Saved evidence sits on the page with fine row rules. Student identity leads,
+  followed by the approved note, plain metadata and a quiet explicit Delete action.
+- Calendar-date headings group consecutive saved records within the current page.
+  After hydration, device-local Today/Yesterday labels identify recent calendar dates;
+  other headings show explicit dates. The stored evidence calendar date is retained.
+- Work samples use bounded, uncropped previews alongside notes at desktop widths
+  and below them on mobile. Expansion, retry and photo-only records remain supported.
 
 ## Capture review
 
@@ -303,7 +305,7 @@ Last imprinted: 2026-07-22
 - The first-save confirmation is a flat neutral bordered panel; validation
   copy and a muted-ink icon communicate state without adding another lifted
   surface or an accent wash.
-- Use one ledger row: capture icon, compact status metadata, full-width source
+- Use one working row: compact status metadata, full-width source
   or review content, then inline actions. Do not add a nested card, shadow, or
   narrow action rail.
 - Photo-only drafts use the existing student-resolution control, keep structured fields empty unless the teacher supplies them, and may save only after one student and an evidence date within the workspace-created-to-today local calendar window are confirmed.
@@ -418,6 +420,8 @@ Last imprinted: 2026-07-12
 | Follow-up | top divider, muted body, foreground label |
 | Overflow | `break-words [overflow-wrap:anywhere]` |
 
+The Feed opts into `presentation="journal"` for plain secondary metadata and comfortable note text; other surfaces retain their existing chips and density.
+
 This component owns Evidence note versus legacy structured-entry copy, reviewed summary, structured chips, tags, follow-up, and authenticated photo display across feed, timeline, and report. Do not copy that markup into a new read surface.
 Authenticated photos use the shared Photo thumbnails pattern. Printed reports render the full image without the interactive affordance.
 The portaled expanded-photo dialog repeats the `.authenticated-app` boundary so
@@ -442,7 +446,7 @@ Last updated: 2026-08-22
 | Expanded backdrop | `bg-foreground/85`; responsive page-edge padding |
 | Close control | 44px target, `bg-card text-foreground`, visible focus ring |
 
-Draft and authenticated evidence photos use one compact square thumbnail on screen. The image uses `object-cover` for scanning; a visible icon and accessible button name disclose expansion. The focused overlay uses `object-contain`, closes from its named control, backdrop, or Escape key, and returns focus to the thumbnail. Printed reports hide the affordance and render the complete image.
+Draft and default authenticated evidence photos use one compact square thumbnail on screen. Feed work samples opt into an uncropped, proportion-preserving preview bounded to 256px tall and 224px wide on desktop. The image uses `object-cover` for scanning; a visible icon and accessible button name disclose expansion. The focused overlay uses `object-contain`, closes from its named control, backdrop, or Escape key, and returns focus to the thumbnail. Printed reports hide the affordance and render the complete image.
 
 ## Evidence rows and timeline/report entries
 
@@ -450,15 +454,15 @@ Files: `components/dashboard/saved-evidence-row.tsx`, `components/students/stude
 
 - Evidence content is primary; student, class, and date are compact supporting
   metadata.
-- Feed rows use a fixed desktop date column as the ledger anchor; on mobile the
-  same date collapses above the content.
+- Feed uses shared date headings above saved entries rather than repeated date gutters.
 - Saved feed rows do not repeat a “Validated” badge. Their placement, evidence
-  content, and Archive/Delete controls already establish that they are saved
+  content, and Delete control already establish that they are saved
   records; an accessible article label preserves that distinction for screen
   readers.
-- Feed rows are divided inside one ledger container.
-- Feed rows expose **Archive** and **Delete** as explicit footer actions with
-  inline confirmations; archive precedes permanent delete.
+- Feed rows are divided directly on the page, without an enclosing card.
+- Feed rows expose **Delete** as an explicit action with an inline destructive
+  confirmation. Evidence archiving is not offered until the product has a
+  complete retrieval and restoration path.
 - Timeline and report headers label class context explicitly (`Class …`) rather
   than relying on slash-separated metadata.
 - Timeline/report pages use compact `1100px`/`1180px` work areas and a shallow
@@ -475,8 +479,7 @@ File: `components/dashboard/evidence-feed-controls.tsx`
 
 - Search is a labeled native search field with a named clear control.
 - Filters are a named button group using `aria-pressed`.
-- The selected filter uses `border-border bg-muted text-foreground` without a
-  shadow; selection stays tonal and flat inside the ledger toolbar.
+- Selected Feed filters use a primary underline and foreground text with visible keyboard focus, without pills or filled surfaces.
 - Empty states include one quiet icon, heading, explanation, and optional next action.
 - Evidence paging uses a named nav with explicit Newer/Older links and current page text.
 - The feed remains one evidence ledger. Do not add pattern summaries,
@@ -507,6 +510,8 @@ Last updated: 2026-08-30
   `·`) plus one collapsed **Manage** toggle that reveals the edit form and
   archive/delete actions in a tonal `bg-muted/20` panel. Do not render
   always-open per-row actions.
+- The archived-classes view offers **Restore class**, so an archived name is
+  never permanently stranded.
 - **Add student** is a quiet `<details>` row at the end of the student ledger
   (expanded inline only for an empty class). Import and class rename/archive
   live under collapsed **Paste several students** / **Class settings**

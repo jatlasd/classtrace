@@ -31,7 +31,7 @@ import {
   type StudentMentionDisplay,
   type StudentMentionRef,
 } from "@/lib/students/student-mention-display";
-import { CheckCircle2, Circle, ClipboardCheck, ImagePlus, Trash2, X } from "lucide-react";
+import { Circle, ImagePlus, Trash2, X } from "lucide-react";
 
 type EvidenceCaptureCardProps = {
   draft: NoteDraft;
@@ -43,7 +43,8 @@ type EvidenceCaptureCardProps = {
   classGroups: StudentResolutionClassOption[];
   onValidate: (
     fields: InterpretationFields,
-    saveInput: ValidatedEvidenceSaveInput
+    saveInput: ValidatedEvidenceSaveInput,
+    reviewedPhoto?: PhotoDraft
   ) => Promise<ValidatedEvidenceSaveResult>;
   onEdit?: (rawNote: string) => boolean;
   onDelete?: () => void;
@@ -54,6 +55,7 @@ type EvidenceCaptureCardProps = {
     input: CreateStudentFromReviewInput
   ) => Promise<CreateStudentFromReviewResult>;
   photo?: PhotoDraft;
+  photoMissing?: boolean;
   photoRecoveryWarning?: string;
   onPhotoChange?: (photo: PhotoDraft) => Promise<void> | void;
   onPhotoRemove?: () => void;
@@ -108,23 +110,12 @@ function Chip({
   );
 }
 
-function StudentAvatar({ student }: { student: StudentMentionDisplay }) {
-  return (
-    <span
-      className={`mr-1.5 inline-flex size-4 items-center justify-center rounded-full text-[9px] font-bold text-link ${student.colorClass}`}
-    >
-      {student.initials}
-    </span>
-  );
-}
-
 function ResolvedStudentChip({ student }: { student: StudentMentionDisplay }) {
   return (
     <Link
       href={routes.student(student.id)}
-      className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium capitalize transition-opacity hover:opacity-80 ${chipStyles.student}`}
+      className="inline-flex max-w-full items-center break-words text-base font-semibold text-foreground underline-offset-4 hover:underline focus-visible:ring-2 focus-visible:ring-ring"
     >
-      <StudentAvatar student={student} />
       {student.displayName}
     </Link>
   );
@@ -146,26 +137,6 @@ function StudentMentionChip({ mentionRef }: { mentionRef: StudentMentionRef }) {
     return <ResolvedStudentChip student={mentionRef.student} />;
   }
   return <UnresolvedStudentChip mention={mentionRef.mention} />;
-}
-
-function CaptureIcon({
-  status,
-}: {
-  status: "pending" | "validated";
-}) {
-  if (status === "validated") {
-    return (
-      <span className="flex size-9 items-center justify-center rounded-md border border-border text-muted-foreground">
-        <CheckCircle2 className="size-4" strokeWidth={1.75} />
-      </span>
-    );
-  }
-
-  return (
-    <span className="flex size-9 items-center justify-center rounded-md border border-border text-muted-foreground">
-      <ClipboardCheck className="size-4" strokeWidth={1.75} />
-    </span>
-  );
 }
 
 function StatusPill({
@@ -217,6 +188,7 @@ export function EvidenceCaptureCard({
   onCaptureAnother,
   onCreateStudent,
   photo,
+  photoMissing = false,
   photoRecoveryWarning,
   onPhotoChange,
   onPhotoRemove,
@@ -268,20 +240,35 @@ export function EvidenceCaptureCard({
     if (!file) return;
     setPhotoError("");
     setIsProcessingPhoto(true);
-    const result = await normalizeEvidencePhoto(file);
-    setIsProcessingPhoto(false);
-    if (!result.success) {
-      setPhotoError(result.error);
-      return;
+    try {
+      const result = await normalizeEvidencePhoto(file);
+      if (!result.success) {
+        setPhotoError(result.error);
+        return;
+      }
+      await onPhotoChange?.(result.photo);
+    } catch {
+      setPhotoError("This photo could not be attached. Choose it again.");
+    } finally {
+      setIsProcessingPhoto(false);
     }
-    await onPhotoChange?.(result.photo);
   }
 
   async function handleConfirm(
     fields: InterpretationFields,
     saveInput: ValidatedEvidenceSaveInput
   ): Promise<ValidatedEvidenceSaveResult> {
-    const result = await onValidate(fields, saveInput);
+    if (isProcessingPhoto) {
+      return { success: false, error: "Wait for the photo to finish processing." };
+    }
+    if (photoMissing && !photo) {
+      return {
+        success: false,
+        error: "Choose the photo again or continue without it before saving.",
+      };
+    }
+
+    const result = await onValidate(fields, saveInput, photo);
 
     return result;
   }
@@ -338,8 +325,7 @@ export function EvidenceCaptureCard({
 
   return (
     <article className="border-b border-border last:border-b-0">
-      <div className="grid gap-3 px-3 py-3 sm:grid-cols-[2.25rem_minmax(0,1fr)] sm:px-4">
-        <CaptureIcon status={display.validationStatus} />
+      <div className="grid gap-3 px-3 py-4 sm:px-4">
 
         <div className="min-w-0">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
@@ -358,7 +344,7 @@ export function EvidenceCaptureCard({
                     type="button"
                     variant="ghost"
                     size="sm"
-                    disabled={isReviewSavePending}
+                    disabled={isReviewSavePending || isProcessingPhoto}
                     onClick={handleStartEdit}
                   >
                     Edit original capture
@@ -371,7 +357,7 @@ export function EvidenceCaptureCard({
                     variant="ghost"
                     size="sm"
                     className="text-muted-foreground hover:text-destructive"
-                    disabled={isReviewSavePending}
+                    disabled={isReviewSavePending || isProcessingPhoto}
                     onClick={handleRequestDraftDelete}
                   >
                     <Trash2 aria-hidden="true" className="size-3.5" />
@@ -395,18 +381,22 @@ export function EvidenceCaptureCard({
             />
           ) : null}
 
+          {photo || photoMissing ? (
+            <input
+              ref={photoInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp,image/avif"
+              className="sr-only"
+              aria-label={photo ? "Replace photo evidence" : "Choose photo evidence again"}
+              aria-invalid={Boolean(photoError)}
+              aria-describedby={photoError ? photoErrorId : undefined}
+              disabled={isProcessingPhoto || isReviewSavePending}
+              onChange={(event) => void handlePhotoFile(event.target.files?.[0])}
+            />
+          ) : null}
+
           {photo ? (
             <div className="mt-4 grid gap-3 border-y border-border/70 py-3 sm:grid-cols-[7rem_1fr] sm:items-start">
-              <input
-                ref={photoInputRef}
-                type="file"
-                accept="image/jpeg,image/png,image/webp,image/avif"
-                className="sr-only"
-                aria-label="Replace photo evidence"
-                aria-invalid={Boolean(photoError)}
-                aria-describedby={photoError ? photoErrorId : undefined}
-                onChange={(event) => void handlePhotoFile(event.target.files?.[0])}
-              />
               <LocalPhotoPreview
                 blob={photo.blob}
                 alt="Temporary photo evidence preview"
@@ -455,6 +445,48 @@ export function EvidenceCaptureCard({
                     Remove photo
                   </Button>
                 </div>
+              </div>
+            </div>
+          ) : photoMissing ? (
+            <div className="mt-4 space-y-3 border-y border-destructive/30 bg-destructive/5 px-3 py-3 sm:px-4">
+              <div>
+                <p className="text-sm font-medium text-destructive">Photo needs attention</p>
+                <p role="alert" className="mt-1 text-xs leading-relaxed text-destructive">
+                  {photoRecoveryWarning}
+                </p>
+              </div>
+              {photoError ? (
+                <p id={photoErrorId} role="alert" className="text-xs text-destructive">
+                  {photoError}
+                </p>
+              ) : null}
+              {isProcessingPhoto ? (
+                <p role="status" className="text-xs text-muted-foreground">
+                  Processing photo…
+                </p>
+              ) : null}
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  disabled={isProcessingPhoto || isReviewSavePending}
+                  onClick={() => photoInputRef.current?.click()}
+                >
+                  <ImagePlus aria-hidden="true" className="size-4" />
+                  {isProcessingPhoto ? "Processing…" : "Choose photo again"}
+                </Button>
+                {draft.parsed.rawNote.trim() ? (
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="ghost"
+                    disabled={isProcessingPhoto || isReviewSavePending}
+                    onClick={onPhotoRemove}
+                  >
+                    Continue without photo
+                  </Button>
+                ) : null}
               </div>
             </div>
           ) : null}
@@ -599,6 +631,8 @@ export function EvidenceCaptureCard({
               onSavePendingChange={setIsReviewSavePending}
               onResolvedStudentChange={setResolvedStudentOverride}
               hasPhoto={Boolean(photo)}
+              photoChangePending={isProcessingPhoto}
+              photoResolutionRequired={photoMissing && !photo}
               capturedAt={capturedAt}
               workspaceCreatedAt={workspaceCreatedAt}
             />

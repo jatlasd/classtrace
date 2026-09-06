@@ -126,6 +126,7 @@ export function StudentReportDateRangeForm({
             </label>
             <input
               id="student-report-start"
+              key={`start-${start ?? ""}`}
               name="start"
               type="date"
               defaultValue={start}
@@ -141,6 +142,7 @@ export function StudentReportDateRangeForm({
             </label>
             <input
               id="student-report-end"
+              key={`end-${end ?? ""}`}
               name="end"
               type="date"
               defaultValue={end}

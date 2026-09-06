@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowLeft, ArrowRight, ChevronRight, Plus } from "lucide-react";
 import { ArchivedRosterStudentActions } from "@/components/roster/archived-roster-student-actions";
+import { ArchivedClassGroupActions } from "@/components/roster/archived-class-group-actions";
 import { ClassRosterManager } from "@/components/roster/class-roster-manager";
 import { ClassGroupForm } from "@/components/roster/class-group-form";
 import {
@@ -230,12 +231,20 @@ function ArchivedClassesView({
               key={classGroup.id}
               className="border-b border-border px-4 py-3.5 last:border-b-0 sm:px-5"
             >
-              <p className="break-words font-medium leading-snug text-foreground [overflow-wrap:anywhere]">
-                {classGroup.name}
-              </p>
-              <p className="mt-0.5 text-xs text-muted-foreground">
-                Archived class
-              </p>
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <p className="break-words font-medium leading-snug text-foreground [overflow-wrap:anywhere]">
+                    {classGroup.name}
+                  </p>
+                  <p className="mt-0.5 text-xs text-muted-foreground">
+                    Archived class
+                  </p>
+                </div>
+                <ArchivedClassGroupActions
+                  classGroupId={classGroup.id}
+                  className={classGroup.name}
+                />
+              </div>
             </li>
           ))}
         </ul>

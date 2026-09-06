@@ -20,7 +20,9 @@ describe("operator authorization", () => {
   it("rejects unauthenticated requests", async () => {
     await expect(
       requireOperator({
-        getAuth: vi.fn().mockResolvedValue({ userId: null }),
+        getAuth: Object.assign(vi.fn().mockResolvedValue({ userId: null }), {
+          protect: vi.fn(),
+        }),
         configuredUserIds: new Set(["owner_1"]),
       })
     ).rejects.toMatchObject({
@@ -31,7 +33,10 @@ describe("operator authorization", () => {
   it("rejects a signed-in teacher who is not configured as an operator", async () => {
     await expect(
       requireOperator({
-        getAuth: vi.fn().mockResolvedValue({ userId: "teacher_1" }),
+        getAuth: Object.assign(
+          vi.fn().mockResolvedValue({ userId: "teacher_1" }),
+          { protect: vi.fn() }
+        ),
         configuredUserIds: new Set(["owner_1"]),
       })
     ).rejects.toMatchObject({
@@ -42,7 +47,10 @@ describe("operator authorization", () => {
   it("returns the trusted Clerk ID for a configured operator", async () => {
     await expect(
       requireOperator({
-        getAuth: vi.fn().mockResolvedValue({ userId: "owner_1" }),
+        getAuth: Object.assign(
+          vi.fn().mockResolvedValue({ userId: "owner_1" }),
+          { protect: vi.fn() }
+        ),
         configuredUserIds: new Set(["owner_1"]),
       })
     ).resolves.toEqual({ clerkUserId: "owner_1" });

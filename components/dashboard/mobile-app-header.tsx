@@ -91,7 +91,7 @@ export function MobileAppHeader({
 
   return (
     <>
-      <header className="app-shell-mobile-header sticky top-0 z-50 flex min-h-16 items-center justify-between gap-3 border-b border-sidebar-border bg-sidebar px-4 pt-[env(safe-area-inset-top)] text-sidebar-foreground lg:hidden">
+      <header className="app-shell-mobile-header sticky top-0 z-50 flex min-h-16 items-center justify-between gap-3 border-b border-sidebar-border bg-background px-4 pt-[env(safe-area-inset-top)] text-sidebar-foreground lg:hidden">
         <div className="flex min-w-0 items-center gap-3">
           <Link
             href={routes.feed}
@@ -100,10 +100,10 @@ export function MobileAppHeader({
           >
             <BrandLockup size="sm" />
           </Link>
-          <span aria-hidden="true" className="h-5 w-px shrink-0 bg-sidebar-border" />
-          <span className="truncate text-xs font-semibold text-sidebar-foreground/72">
-            {routeLabel}
-          </span>
+          {pathname !== routes.feed ? <>
+            <span aria-hidden="true" className="h-5 w-px shrink-0 bg-sidebar-border" />
+            <span className="truncate text-xs font-semibold text-sidebar-foreground">{routeLabel}</span>
+          </> : null}
         </div>
         <button
           ref={menuButtonRef}
@@ -135,7 +135,7 @@ export function MobileAppHeader({
             onClick={closeMenu}
             className="app-shell-drawer-backdrop absolute inset-0 bg-foreground/55"
           />
-          <div className="app-shell-drawer-panel relative flex h-full w-[min(88vw,340px)] flex-col border-r border-sidebar-border bg-sidebar pb-[env(safe-area-inset-bottom)] pt-[env(safe-area-inset-top)] text-sidebar-foreground shadow-floating">
+          <div className="app-shell-drawer-panel relative flex h-full w-[min(88vw,340px)] flex-col border-r border-sidebar-border bg-background pb-[env(safe-area-inset-bottom)] pt-[env(safe-area-inset-top)] text-sidebar-foreground shadow-floating">
             <div className="flex h-16 items-center justify-between gap-4 border-b border-sidebar-border px-4">
               <h2 id={dialogTitleId} className="text-base font-semibold text-sidebar-primary">
                 Navigation
@@ -164,13 +164,13 @@ export function MobileAppHeader({
                       onClick={closeMenu}
                       className={`flex min-h-12 items-center gap-3 rounded-md border px-3 text-sm font-semibold outline-none transition-colors focus-visible:ring-2 focus-visible:ring-sidebar-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
                         active
-                          ? "border-sidebar-ring bg-sidebar-accent text-sidebar-accent-foreground"
+                          ? "border-transparent text-foreground underline decoration-2 underline-offset-8"
                           : "border-transparent text-sidebar-foreground/80 hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground"
                       }`}
                     >
                       <item.icon
                         aria-hidden="true"
-                        className={`size-5 shrink-0 ${active ? "text-mint" : ""}`}
+                        className={`size-5 shrink-0 ${active ? "text-foreground" : ""}`}
                         strokeWidth={active ? 2.2 : 1.8}
                       />
                       <span>{item.label}</span>

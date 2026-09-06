@@ -15,10 +15,11 @@ Priority order:
 ## Visual language
 
 - Public and authenticated routes share one cool-surface, indigo, and mint semantic palette. Public pages use the colors more compositionally; authenticated routes keep them restrained around the teacher's work.
-- Indigo ground owns public navigation, hero/showcase fields, the closing invitation, and active app navigation. Mint is a brand signature used only inside those indigo fields; it always takes dark mint ink when used as a fill.
+- Indigo ground owns public navigation, hero/showcase fields, the closing invitation, and public active navigation. Mint is a brand signature used only inside those indigo fields; it always takes dark mint ink when used as a fill.
 - Light surfaces use white, cool neutral surfaces, indigo actions, and ink links/icons. Validation uses ink-muted icons or bordered neutral treatments rather than mint or pastel washes; red remains reserved for destructive state.
 - Inter is the sole user-facing type family. Weight, size, spacing, and color create identity and page hierarchy.
-- Borders and tonal separation do most layout work. Shadows are tight, palette-tinted, and reserved for genuinely floating or focused surfaces.
+- Authenticated Feed uses one open evidence surface: student identity and approved notes lead, dates group entries, and neutral working surfaces distinguish drafts. Navigation is text-led; the Feed has no context rail or enclosing ledger card.
+- Spacing and fine rules establish hierarchy. Shadows are tight, palette-tinted, and reserved for genuinely floating or focused surfaces.
 - Corners are modest (`rounded-md`, `rounded-card`); pills are for chips/status only.
 - The shared brand lockup uses the approved compact `CT` tile: mint with dark letters on indigo, and indigo with mint letters on light surfaces.
 
@@ -27,7 +28,7 @@ Use semantic tokens from `app/globals.css`. Do not introduce raw palette utiliti
 ## App shell and hierarchy
 
 - Authenticated routes share one responsive application shell and one `main`
-  landmark: a fixed muted-surface sidebar at `lg` and above, and a sticky muted-surface header
+  landmark: a fixed page-ground sidebar at `lg` and above, and a sticky page-ground header
   with a modal navigation drawer below `lg`.
 - A keyboard skip link targets `#main-content`.
 - Active navigation uses `aria-current="page"` and restrained visual emphasis.
@@ -81,7 +82,7 @@ The feed begins with its page header and prominent quick-capture composer. The c
 ## Responsive behavior
 
 - Mobile layouts stack naturally; controls wrap rather than creating horizontal scrolling.
-- Evidence rows collapse date/status metadata above the evidence content.
+- Feed dates group saved entries; timeline/report date metadata collapses above content on mobile.
 - Roster editing/actions remain reachable without hover.
 - Desktop uses available width for scanning, not for adding dashboard panels.
 - Printable reports remove app chrome and avoid splitting an evidence entry across pages.

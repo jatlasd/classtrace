@@ -5,6 +5,7 @@ const mocks = vi.hoisted(() => ({
   createClassGroupForWorkspace: vi.fn(),
   renameClassGroupForWorkspace: vi.fn(),
   archiveClassGroupForWorkspace: vi.fn(),
+  restoreClassGroupForWorkspace: vi.fn(),
   revalidatePath: vi.fn(),
 }));
 
@@ -16,12 +17,14 @@ vi.mock("@/lib/classes/class-groups", () => ({
   createClassGroupForWorkspace: mocks.createClassGroupForWorkspace,
   renameClassGroupForWorkspace: mocks.renameClassGroupForWorkspace,
   archiveClassGroupForWorkspace: mocks.archiveClassGroupForWorkspace,
+  restoreClassGroupForWorkspace: mocks.restoreClassGroupForWorkspace,
 }));
 
 import {
   archiveClassGroup,
   createClassGroup,
   renameClassGroup,
+  restoreClassGroup,
 } from "@/actions/classes";
 
 describe("class group Server Actions", () => {
@@ -46,15 +49,17 @@ describe("class group Server Actions", () => {
     expect(mocks.revalidatePath).toHaveBeenCalledWith("/app/roster");
   });
 
-  it("renames and archives only by authenticated workspace plus class id", async () => {
+  it("renames, archives, and restores only by authenticated workspace plus class id", async () => {
     mocks.renameClassGroupForWorkspace.mockResolvedValue({
       success: true,
       classGroup: { id: "class_1", name: "Literacy" },
     });
     mocks.archiveClassGroupForWorkspace.mockResolvedValue({ success: true });
+    mocks.restoreClassGroupForWorkspace.mockResolvedValue({ success: true });
 
     await renameClassGroup({ classGroupId: "class_1", name: "Literacy" });
     await archiveClassGroup({ classGroupId: "class_1" });
+    await restoreClassGroup({ classGroupId: "class_1" });
 
     expect(mocks.renameClassGroupForWorkspace).toHaveBeenCalledWith({
       workspaceId: "workspace_1",
@@ -65,7 +70,11 @@ describe("class group Server Actions", () => {
       workspaceId: "workspace_1",
       classGroupId: "class_1",
     });
-    expect(mocks.revalidatePath).toHaveBeenCalledTimes(2);
+    expect(mocks.restoreClassGroupForWorkspace).toHaveBeenCalledWith({
+      workspaceId: "workspace_1",
+      classGroupId: "class_1",
+    });
+    expect(mocks.revalidatePath).toHaveBeenCalledTimes(3);
   });
 
   it("does not revalidate after an expected domain rejection", async () => {
@@ -97,8 +106,11 @@ describe("class group Server Actions", () => {
     await expect(
       archiveClassGroup({ classGroupId: "class_1" })
     ).resolves.toEqual({ success: false, error: "Failed to archive class." });
+    await expect(
+      restoreClassGroup({ classGroupId: "class_1" })
+    ).resolves.toEqual({ success: false, error: "Failed to restore class." });
 
-    expect(consoleError).toHaveBeenCalledTimes(3);
+    expect(consoleError).toHaveBeenCalledTimes(4);
     consoleError.mockRestore();
   });
 });

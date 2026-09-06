@@ -22,6 +22,7 @@ export type EvidenceRecordContentData = {
 type EvidenceRecordContentProps = {
   record: EvidenceRecordContentData;
   compact?: boolean;
+  presentation?: "default" | "journal";
   includeClassGroup?: boolean;
   showStructuredSummary?: boolean;
   textClassName?: string;
@@ -31,10 +32,12 @@ type EvidenceRecordContentProps = {
 function EvidenceChip({
   children,
   compact,
+  journal,
   variant = "default",
 }: {
   children: ReactNode;
   compact: boolean;
+  journal?: boolean;
   variant?: "default" | "tag" | "evidence";
 }) {
   const className =
@@ -43,6 +46,8 @@ function EvidenceChip({
       : variant === "evidence"
         ? "border-border bg-transparent text-foreground"
         : "border-border bg-card text-foreground";
+
+  if (journal) return <span className="max-w-full break-words text-xs text-muted-foreground [overflow-wrap:anywhere]">{children}</span>;
 
   return (
     <span
@@ -58,11 +63,13 @@ function EvidenceChip({
 export function EvidenceRecordContent({
   record,
   compact = false,
+  presentation = "default",
   includeClassGroup = false,
   showStructuredSummary = true,
   textClassName = "mt-1",
   photoLoading = "lazy",
 }: EvidenceRecordContentProps) {
+  const journal = presentation === "journal";
   const primaryEvidenceText = record.evidenceNote ?? record.summary;
   const hasStructuredDetails = Boolean(
     record.evidenceType ||
@@ -95,20 +102,20 @@ export function EvidenceRecordContent({
       ) : null}
 
       {hasStructuredDetails ? (
-        <div className={`${compact ? "mt-2 gap-1" : "mt-3 gap-1.5"} flex flex-wrap`}>
+        <div className={`${journal ? "mt-3 gap-x-3 gap-y-1" : compact ? "mt-2 gap-1" : "mt-3 gap-1.5"} flex flex-wrap`}>
           {includeClassGroup && record.classGroupName ? (
-            <EvidenceChip compact={compact}>{record.classGroupName}</EvidenceChip>
+            <EvidenceChip journal={journal} compact={compact}>{record.classGroupName}</EvidenceChip>
           ) : null}
-          {record.topic ? <EvidenceChip compact={compact}>{record.topic}</EvidenceChip> : null}
+          {record.topic ? <EvidenceChip journal={journal} compact={compact}>{record.topic}</EvidenceChip> : null}
           {record.performance ? (
-            <EvidenceChip compact={compact}>{record.performance}</EvidenceChip>
+            <EvidenceChip journal={journal} compact={compact}>{record.performance}</EvidenceChip>
           ) : null}
-          {record.behavior ? <EvidenceChip compact={compact}>{record.behavior}</EvidenceChip> : null}
+          {record.behavior ? <EvidenceChip journal={journal} compact={compact}>{record.behavior}</EvidenceChip> : null}
           {record.evidenceType ? (
-            <EvidenceChip compact={compact} variant="evidence">{record.evidenceType}</EvidenceChip>
+            <EvidenceChip journal={journal} compact={compact} variant="evidence">{record.evidenceType}</EvidenceChip>
           ) : null}
           {record.tags.map((tag) => (
-            <EvidenceChip compact={compact} key={tag} variant="tag">
+            <EvidenceChip journal={journal} compact={compact} key={tag} variant="tag">
               {formatTagLabel(tag)}
             </EvidenceChip>
           ))}

@@ -49,17 +49,17 @@ const quickCaptureMentionsStyle: MentionsInputStyle = {
   },
   "&multiLine": {
     control: {
-      minHeight: 42,
+      minHeight: 64,
     },
     highlighter: {
       ...captureTextLayerStyle,
-      minHeight: 42,
+      minHeight: 64,
       overflow: "hidden",
     },
     input: {
       ...captureTextLayerStyle,
       outline: 0,
-      minHeight: 42,
+      minHeight: 64,
       overflow: "auto",
       resize: "none",
     },
@@ -98,6 +98,7 @@ const mentionHighlightStyle = {
 type QuickCaptureCardProps = {
   rosterStudents: CaptureRosterStudent[];
   focusRequestKey?: number;
+  disabled?: boolean;
   onDraft: (
     draft: NoteDraft,
     identity: { id: string; capturedAt: number },
@@ -143,6 +144,7 @@ function resolutionMessage(
 export function QuickCaptureCard({
   rosterStudents,
   focusRequestKey = 0,
+  disabled = false,
   onDraft,
 }: QuickCaptureCardProps) {
   const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement | null>(null);
@@ -186,6 +188,7 @@ export function QuickCaptureCard({
   );
   const hasCaptureContent = trimmedPlainText.length > 0 || photo !== null;
   const canCapture =
+    !disabled &&
     hasCaptureContent &&
     !isProcessingPhoto &&
     (studentResolution.status === "resolved_one_student" ||
@@ -264,12 +267,12 @@ export function QuickCaptureCard({
   }
 
   return (
-    <section className="overflow-hidden rounded-card border border-border bg-card shadow-surface ring-1 ring-transparent transition-shadow focus-within:ring-ring/20">
-      <div className="px-4 pt-3 sm:px-5">
+    <section className="min-w-0">
+      <div className="">
         <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
           <label
             htmlFor="quick-capture"
-            className="font-sans text-sm font-semibold text-foreground"
+            className="font-sans text-base font-semibold text-foreground"
           >
             What happened?
           </label>
@@ -279,7 +282,7 @@ export function QuickCaptureCard({
           </p>
         </div>
 
-        <div className="quick-capture-mentions mt-2 rounded-md border border-input bg-background/35 px-3 py-2.5 transition-colors focus-within:border-ring focus-within:bg-card focus-within:ring-3 focus-within:ring-ring/20">
+        <div className="quick-capture-mentions mt-3 rounded-md border border-input bg-background px-4 py-3 transition-colors focus-within:border-ring focus-within:bg-card focus-within:ring-3 focus-within:ring-ring/20">
           <MentionsInput
             inputRef={(element: HTMLInputElement | HTMLTextAreaElement | null) => {
               inputRef.current = element;
@@ -287,6 +290,7 @@ export function QuickCaptureCard({
             id="quick-capture"
             name="quick-capture"
             autoComplete="off"
+            disabled={disabled}
             value={markupValue}
             onChange={handleChange}
             onKeyDown={handleKeyDown}
@@ -322,6 +326,7 @@ export function QuickCaptureCard({
           aria-label="Take photo"
           aria-invalid={Boolean(photoError)}
           aria-describedby={photoError ? photoErrorId : undefined}
+          disabled={disabled}
           onChange={(event) => void handlePhotoFile(event.target.files?.[0])}
         />
         <input
@@ -332,6 +337,7 @@ export function QuickCaptureCard({
           aria-label="Choose photo"
           aria-invalid={Boolean(photoError)}
           aria-describedby={photoError ? photoErrorId : undefined}
+          disabled={disabled}
           onChange={(event) => void handlePhotoFile(event.target.files?.[0])}
         />
 
@@ -354,6 +360,7 @@ export function QuickCaptureCard({
                     type="button"
                     size="sm"
                     variant="outline"
+                    disabled={disabled || isProcessingPhoto}
                     onClick={() => choosePhotoRef.current?.click()}
                   >
                     <ImagePlus aria-hidden="true" className="size-4" />
@@ -363,6 +370,7 @@ export function QuickCaptureCard({
                     type="button"
                     size="sm"
                     variant="ghost"
+                    disabled={disabled || isProcessingPhoto}
                     onClick={() => setPhoto(null)}
                   >
                     <X aria-hidden="true" className="size-4" />
@@ -379,7 +387,7 @@ export function QuickCaptureCard({
         ) : null}
       </div>
 
-      <div className="flex flex-col gap-2 border-t border-border bg-muted/20 px-3 py-2 sm:flex-row sm:items-center sm:px-4">
+      <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-center">
         {!photo ? (
           <div className="flex flex-wrap items-center gap-1">
             <Button
@@ -387,7 +395,7 @@ export function QuickCaptureCard({
               size="sm"
               variant="ghost"
               className="text-muted-foreground"
-              disabled={isProcessingPhoto}
+              disabled={disabled || isProcessingPhoto}
               onClick={() => takePhotoRef.current?.click()}
             >
               <Camera aria-hidden="true" className="size-4" />
@@ -397,7 +405,7 @@ export function QuickCaptureCard({
               type="button"
               size="sm"
               variant="ghost"
-              disabled={isProcessingPhoto}
+              disabled={disabled || isProcessingPhoto}
               onClick={() => choosePhotoRef.current?.click()}
             >
               <ImagePlus aria-hidden="true" className="size-4" />
@@ -414,13 +422,15 @@ export function QuickCaptureCard({
 
         <div aria-live="polite" className="min-w-0 flex-1 sm:text-right">
           <p
-            className={`${guidance ? "text-xs leading-relaxed" : "sr-only"} ${
+            className={`text-xs leading-relaxed ${
               guidance?.tone === "error"
                 ? "text-destructive"
                 : "text-muted-foreground"
             }`}
           >
-            {guidance?.text ?? "Capture creates a draft for review."}
+            {disabled
+              ? "Restoring drafts before capture opens…"
+              : guidance?.text ?? "Capture creates a draft for review."}
           </p>
         </div>
 
@@ -428,7 +438,7 @@ export function QuickCaptureCard({
           onClick={() => void handlePost()}
           disabled={!canCapture}
           size="sm"
-          className="min-h-11 w-full shrink-0 px-5 text-sm font-semibold sm:min-h-9 sm:w-auto"
+          className="min-h-11 w-full shrink-0 px-5 text-sm font-semibold sm:w-auto"
         >
           {posted ? (
             <>

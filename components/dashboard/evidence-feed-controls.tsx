@@ -1,5 +1,5 @@
 import Link from "next/link";
-import type { ReactNode } from "react";
+import { useId, type ReactNode } from "react";
 import { ClipboardCheck, Search, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { routes } from "@/lib/routes";
@@ -19,9 +19,13 @@ export function EvidenceSearchControl({
   query: string;
   onQueryChange: (query: string) => void;
 }) {
+  const searchId = useId();
   return (
     <div className="relative min-w-0 flex-1 sm:max-w-[280px]">
+      <label htmlFor={searchId} className="mb-1.5 block text-xs text-muted-foreground">Search drafts and evidence on this page</label>
+      <div className="relative">
       <input
+        id={searchId}
         type="search"
         name="evidence-search"
         autoComplete="off"
@@ -40,11 +44,12 @@ export function EvidenceSearchControl({
           type="button"
           onClick={() => onQueryChange("")}
           aria-label="Clear search"
-          className="absolute right-3 top-1/2 -translate-y-1/2 rounded p-0.5 text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/30"
+          className="absolute right-0 top-1/2 flex size-11 -translate-y-1/2 items-center justify-center rounded text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/30"
         >
           <X aria-hidden="true" className="size-4" />
         </button>
       ) : null}
+      </div>
     </div>
   );
 }
@@ -68,10 +73,10 @@ export function InboxFilterControl({
           type="button"
           onClick={() => onFilterChange(option.value)}
           aria-pressed={filter === option.value}
-          className={`min-h-11 rounded-md border px-3 py-2 text-sm font-medium transition-colors sm:min-h-9 ${
+          className={`min-h-11 border-b-2 px-2 py-2 text-sm font-medium outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
             filter === option.value
-              ? "border-border bg-muted text-foreground"
-              : "border-transparent text-muted-foreground hover:bg-muted/60 hover:text-foreground"
+              ? "border-primary text-foreground"
+              : "border-transparent text-muted-foreground hover:text-foreground"
           }`}
         >
           {option.label}

@@ -4,7 +4,6 @@ const mocks = vi.hoisted(() => ({
   revalidatePath: vi.fn(),
   getCurrentWorkspace: vi.fn(),
   saveValidatedEvidenceForWorkspace: vi.fn(),
-  archiveEvidenceForWorkspace: vi.fn(),
   deleteEvidenceForWorkspace: vi.fn(),
   exportStudentEvidenceForWorkspace: vi.fn(),
 }));
@@ -18,9 +17,6 @@ vi.mock("@/lib/auth/get-current-workspace", () => ({
 vi.mock("@/lib/evidence/save-validated-evidence", () => ({
   saveValidatedEvidenceForWorkspace: mocks.saveValidatedEvidenceForWorkspace,
 }));
-vi.mock("@/lib/evidence/archive-evidence", () => ({
-  archiveEvidenceForWorkspace: mocks.archiveEvidenceForWorkspace,
-}));
 vi.mock("@/lib/evidence/delete-evidence", () => ({
   deleteEvidenceForWorkspace: mocks.deleteEvidenceForWorkspace,
 }));
@@ -29,7 +25,6 @@ vi.mock("@/lib/evidence/export-student-evidence", () => ({
 }));
 
 import {
-  archiveEvidence,
   deleteEvidence,
   exportStudentEvidence,
   saveValidatedEvidence,
@@ -158,29 +153,17 @@ describe("evidence Server Actions", () => {
     expect(mocks.saveValidatedEvidenceForWorkspace).not.toHaveBeenCalled();
   });
 
-  it("scopes archive and delete actions and refreshes the affected student", async () => {
-    mocks.archiveEvidenceForWorkspace.mockResolvedValue({
-      success: true,
-      evidenceId: "evidence_1",
-      rosterStudentId: "student_mary",
-    });
+  it("scopes delete actions and refreshes the affected student", async () => {
     mocks.deleteEvidenceForWorkspace.mockResolvedValue({
       success: true,
       evidenceId: "evidence_2",
       rosterStudentId: "student_mary",
     });
 
-    await expect(archiveEvidence({ evidenceId: "evidence_1" })).resolves.toMatchObject({
-      success: true,
-    });
     await expect(deleteEvidence({ evidenceId: "evidence_2" })).resolves.toMatchObject({
       success: true,
     });
 
-    expect(mocks.archiveEvidenceForWorkspace).toHaveBeenCalledWith({
-      workspaceId: "workspace_1",
-      input: { evidenceId: "evidence_1" },
-    });
     expect(mocks.deleteEvidenceForWorkspace).toHaveBeenCalledWith({
       workspaceId: "workspace_1",
       input: { evidenceId: "evidence_2" },

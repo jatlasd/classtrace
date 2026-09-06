@@ -51,7 +51,8 @@ The strongest early users are special education teachers, case managers, interve
   student groups with inspectable supporting records.
 - A student report can be filtered by teacher-local dates and printed.
 - One student’s evidence can be exported as CSV.
-- Evidence, students, and classes support intentional archive/delete paths.
+- Saved evidence supports intentional permanent deletion. Students and classes
+  support archive paths, with restoration available from their archived views.
 - Settings includes a Help and Feedback form that sends a bounded support report
   through Resend to the configured ClassTrace operator without storing it in the
   ClassTrace database.

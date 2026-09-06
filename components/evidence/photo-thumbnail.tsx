@@ -7,6 +7,7 @@ import { createPortal } from "react-dom";
 type PhotoThumbnailProps = {
   alt: string;
   className?: string;
+  presentation?: "thumbnail" | "work-sample";
   loading?: "eager" | "lazy";
   onError?: () => void;
   width?: number;
@@ -18,6 +19,7 @@ export function PhotoThumbnail({
   blob,
   alt,
   className = "",
+  presentation = "thumbnail",
   loading = "lazy",
   onError,
   width,
@@ -75,7 +77,7 @@ export function PhotoThumbnail({
         type="button"
         aria-label={`Expand ${alt}`}
         aria-haspopup="dialog"
-        className={`group relative block size-24 shrink-0 overflow-hidden rounded-md border border-border bg-muted/20 outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background sm:size-28 print:pointer-events-none print:h-auto print:max-h-[6.5in] print:w-auto print:max-w-full ${className}`}
+        className={`group relative block ${presentation === "work-sample" ? "w-fit max-w-full sm:max-w-56" : "size-24 sm:size-28"} shrink-0 overflow-hidden rounded-md border border-border bg-muted/20 outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background print:pointer-events-none print:h-auto print:max-h-[6.5in] print:w-auto print:max-w-full ${className}`}
         onClick={() => setExpanded(true)}
       >
         {/* Authenticated and local object URLs cannot use Next image optimization. */}
@@ -88,7 +90,7 @@ export function PhotoThumbnail({
           loading={loading}
           decoding="async"
           onError={onError}
-          className="size-full object-cover print:h-auto print:max-h-[6.5in] print:w-auto print:max-w-full print:object-contain"
+          className={`${presentation === "work-sample" ? "h-auto max-h-64 w-auto max-w-full object-contain" : "size-full object-cover"} print:h-auto print:max-h-[6.5in] print:w-auto print:max-w-full print:object-contain`}
         />
         <span className="absolute right-1.5 bottom-1.5 inline-flex size-7 items-center justify-center rounded-md bg-foreground/85 text-background shadow-sm group-hover:bg-foreground print:hidden">
           <Maximize2 aria-hidden="true" className="size-3.5" />

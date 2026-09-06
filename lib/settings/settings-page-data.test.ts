@@ -55,6 +55,7 @@ describe("getSettingsPageData", () => {
         clerkUserId: "clerk_user_1",
         teacherProfileId: "teacher_profile_1",
         workspaceId: "workspace_1",
+        workspaceCreatedAt: new Date("2026-06-01T12:00:00.000Z"),
       }),
       getClerkUser: async () => ({
         fullName: "Mary Teacher",
@@ -112,6 +113,7 @@ describe("getSettingsPageData", () => {
         clerkUserId: "clerk_user_1",
         teacherProfileId: "teacher_profile_1",
         workspaceId: "workspace_1",
+        workspaceCreatedAt: new Date("2026-06-01T12:00:00.000Z"),
       }),
       getClerkUser: async () => ({
         fullName: null,

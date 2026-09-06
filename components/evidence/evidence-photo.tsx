@@ -10,6 +10,7 @@ type EvidencePhotoProps = {
   width?: number;
   height?: number;
   className?: string;
+  presentation?: "thumbnail" | "work-sample";
   loading?: "eager" | "lazy";
 };
 
@@ -30,6 +31,7 @@ export function EvidencePhoto({
   width,
   height,
   className = "",
+  presentation = "thumbnail",
   loading = "lazy",
 }: EvidencePhotoProps) {
   const [unavailable, setUnavailable] = useState(false);
@@ -65,6 +67,7 @@ export function EvidencePhoto({
       width={width}
       height={height}
       className={className}
+      presentation={presentation}
     />
   );
 }

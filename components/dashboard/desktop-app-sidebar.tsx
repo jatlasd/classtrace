@@ -19,8 +19,8 @@ export function DesktopAppSidebar({
   pathname,
 }: DesktopAppSidebarProps) {
   return (
-    <aside className="app-shell-sidebar fixed inset-y-0 left-0 z-50 hidden w-52 flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground lg:flex">
-      <div className="flex h-16 items-center border-b border-sidebar-border px-5">
+    <aside className="app-shell-sidebar fixed inset-y-0 left-0 z-50 hidden w-52 flex-col bg-background text-sidebar-foreground lg:flex">
+      <div className="flex h-16 items-center px-6">
         <Link
           href={routes.feed}
           aria-label="ClassTrace capture"
@@ -31,9 +31,6 @@ export function DesktopAppSidebar({
       </div>
 
       <nav aria-label="Primary" className="flex-1 px-3 py-5">
-        <p className="px-3 pb-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-sidebar-foreground/55">
-          Workspace
-        </p>
         <div className="space-y-1">
           {APP_NAVIGATION_ITEMS.map((item) => {
             const active = isAppNavigationItemActive(pathname, item.match);
@@ -45,13 +42,13 @@ export function DesktopAppSidebar({
                 aria-current={active ? "page" : undefined}
                 className={`flex h-11 items-center gap-3 rounded-md border px-3 text-sm font-semibold outline-none transition-colors focus-visible:ring-2 focus-visible:ring-sidebar-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
                   active
-                    ? "border-sidebar-ring bg-sidebar-accent text-sidebar-accent-foreground"
-                    : "border-transparent text-sidebar-foreground/78 hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground"
+                    ? "border-transparent text-foreground underline decoration-2 underline-offset-8"
+                    : "border-transparent text-muted-foreground hover:text-foreground hover:bg-muted/30"
                 }`}
               >
                 <item.icon
                   aria-hidden="true"
-                  className={`size-[18px] shrink-0 ${active ? "text-mint" : ""}`}
+                  className={`size-[18px] shrink-0 ${active ? "text-foreground" : ""}`}
                   strokeWidth={active ? 2.2 : 1.8}
                 />
                 <span>{item.label}</span>
@@ -61,15 +58,12 @@ export function DesktopAppSidebar({
         </div>
       </nav>
 
-      <div className="border-t border-sidebar-border p-3">
-        <p className="px-3 pb-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-sidebar-foreground/55">
-          Teacher account
-        </p>
+      <div className="p-3">
         <button
           type="button"
           disabled={isSigningOut}
           onClick={onSignOut}
-          className="flex h-11 w-full items-center gap-3 rounded-md px-3 text-sm font-semibold text-sidebar-foreground/78 outline-none transition-colors hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground focus-visible:ring-2 focus-visible:ring-sidebar-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-wait disabled:opacity-60"
+          className="flex h-11 w-full items-center gap-3 rounded-md px-3 text-sm font-semibold text-muted-foreground outline-none transition-colors hover:text-foreground hover:bg-muted/30 focus-visible:ring-2 focus-visible:ring-sidebar-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-wait disabled:opacity-60"
         >
           <LogOut aria-hidden="true" className="size-[18px]" strokeWidth={1.8} />
           <span>{isSigningOut ? "Signing out…" : "Sign out"}</span>

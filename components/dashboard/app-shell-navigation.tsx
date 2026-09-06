@@ -47,7 +47,7 @@ export function AppShellNavigation() {
               : null;
 
   return (
-    <div className="app-shell-navigation">
+    <div className={`app-shell-navigation ${pathname === routes.feed ? "app-shell-feed-navigation" : ""}`}>
       <DesktopAppSidebar
         pathname={pathname}
         isSigningOut={isSigningOut}
@@ -58,7 +58,7 @@ export function AppShellNavigation() {
         isSigningOut={isSigningOut}
         onSignOut={() => void handleSignOut()}
       />
-      <header className="app-shell-route-header fixed left-52 right-0 top-0 z-40 hidden h-14 items-center border-b border-border bg-card/95 px-5 backdrop-blur lg:flex">
+      {pathname !== routes.feed ? <header className="app-shell-route-header fixed left-52 right-0 top-0 z-40 hidden h-14 items-center border-b border-border bg-card/95 px-5 backdrop-blur lg:flex">
         <p className="text-sm font-semibold text-foreground">
           {getAppRouteLabel(pathname)}
         </p>
@@ -67,7 +67,7 @@ export function AppShellNavigation() {
             {routeContext}
           </p>
         ) : null}
-      </header>
+      </header> : null}
     </div>
   );
 }

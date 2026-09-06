@@ -44,6 +44,8 @@ type InterpretationReviewPanelProps = {
   onSavePendingChange?: (isPending: boolean) => void;
   onResolvedStudentChange?: (student: CaptureRosterStudent | null) => void;
   hasPhoto?: boolean;
+  photoChangePending?: boolean;
+  photoResolutionRequired?: boolean;
   capturedAt?: number;
   workspaceCreatedAt?: string;
 };
@@ -183,6 +185,8 @@ function InterpretationReviewPanelContent({
   onSavePendingChange,
   onResolvedStudentChange,
   hasPhoto = false,
+  photoChangePending = false,
+  photoResolutionRequired = false,
   capturedAt,
   workspaceCreatedAt = "1970-01-01T00:00:00.000Z",
 }: InterpretationReviewPanelProps) {
@@ -284,7 +288,7 @@ function InterpretationReviewPanelContent({
   }
 
   async function handleConfirm() {
-    if (isBusy || savedEvidenceId) {
+    if (isBusy || photoChangePending || photoResolutionRequired || savedEvidenceId) {
       return;
     }
 
@@ -376,7 +380,6 @@ function InterpretationReviewPanelContent({
   return (
     <div className="mt-4 border-t border-border pt-4">
       <div className="mb-4 space-y-1">
-        <p className="text-xs font-semibold text-link">Teacher review</p>
         <h3 className="font-sans text-xl font-semibold text-foreground">
           Review before saving
         </h3>
@@ -640,6 +643,12 @@ function InterpretationReviewPanelContent({
           </p>
         ) : isSaving ? (
           <p className="text-sm text-muted-foreground">Saving evidence…</p>
+        ) : photoChangePending ? (
+          <p className="text-sm text-muted-foreground">Finishing photo processing…</p>
+        ) : photoResolutionRequired ? (
+          <p className="text-sm text-destructive">
+            Choose the photo again or continue without it before saving.
+          </p>
         ) : (
           <p className="text-xs leading-relaxed text-muted-foreground">
             Save validated evidence to your evidence records after review.
@@ -654,7 +663,12 @@ function InterpretationReviewPanelContent({
       >
         <Button
           size="sm"
-          disabled={isBusy || Boolean(savedEvidenceId)}
+          disabled={
+            isBusy ||
+            photoChangePending ||
+            photoResolutionRequired ||
+            Boolean(savedEvidenceId)
+          }
           onClick={handleConfirm}
         >
           {savedEvidenceId

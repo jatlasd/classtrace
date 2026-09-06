@@ -44,7 +44,6 @@ describe("onRequestError", () => {
         routeType: "render",
         renderSource: "react-server-components",
         revalidateReason: undefined,
-        renderType: "dynamic",
       }
     );
 
@@ -87,7 +86,6 @@ describe("onRequestError", () => {
       routeType: "render" as const,
       renderSource: "server-rendering" as const,
       revalidateReason: undefined,
-      renderType: "dynamic" as const,
     };
 
     await onRequestError(

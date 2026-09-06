@@ -63,11 +63,15 @@ function buildClassGroup() {
   };
 }
 
+const unusedRosterStudentUpdate: RosterStudentDatabase["rosterStudent"]["updateMany"] =
+  async () => ({ count: 0 });
+
 describe("roster student database helpers", () => {
   it("lists only active roster students scoped to the workspace", async () => {
     const calls: unknown[] = [];
     const database = {
       rosterStudent: {
+        updateMany: unusedRosterStudentUpdate,
         findMany: async (args) => {
           calls.push(args);
           return [buildRecord({ id: "student_1", workspaceId: "workspace_1", displayName: "Mary", mentionHandle: "mary" })];
@@ -108,6 +112,7 @@ describe("roster student database helpers", () => {
     const calls: unknown[] = [];
     const database = {
       rosterStudent: {
+        updateMany: unusedRosterStudentUpdate,
         findMany: async () => [],
         findFirst: async () => null,
         count: async (args) => {
@@ -143,6 +148,7 @@ describe("roster student database helpers", () => {
   it("returns false when a workspace has no active roster students", async () => {
     const database = {
       rosterStudent: {
+        updateMany: unusedRosterStudentUpdate,
         findMany: async () => [],
         findFirst: async () => null,
         count: async () => 0,
@@ -171,6 +177,7 @@ describe("roster student database helpers", () => {
     let createCalled = false;
     const database = {
       rosterStudent: {
+        updateMany: unusedRosterStudentUpdate,
         findMany: async () => [],
         findFirst: async () =>
           buildRecord({
@@ -216,6 +223,7 @@ describe("roster student database helpers", () => {
     const createCalls: unknown[] = [];
     const database = {
       rosterStudent: {
+        updateMany: unusedRosterStudentUpdate,
         findMany: async () => [],
         findFirst: async () => null,
         count: async () => 0,
@@ -277,6 +285,7 @@ describe("roster student database helpers", () => {
     let createCalled = false;
     const database = {
       rosterStudent: {
+        updateMany: unusedRosterStudentUpdate,
         findMany: async () => [],
         findFirst: async () => null,
         count: async () => 0,
@@ -385,6 +394,7 @@ describe("roster student database helpers", () => {
     const findFirstCalls: unknown[] = [];
     const database = {
       rosterStudent: {
+        updateMany: unusedRosterStudentUpdate,
         findMany: async () => [],
         findFirst: async (args) => {
           findFirstCalls.push(args);
@@ -456,6 +466,7 @@ describe("roster student database helpers", () => {
   it("maps school/local ID unique constraint errors to school/local ID copy", async () => {
     const database = {
       rosterStudent: {
+        updateMany: unusedRosterStudentUpdate,
         findMany: async () => [],
         findFirst: async () => null,
         count: async () => 0,

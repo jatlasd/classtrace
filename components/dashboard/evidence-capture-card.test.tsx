@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-import { useState } from "react";
+import { useState, type ComponentProps } from "react";
 import {
   cleanup,
   fireEvent,
@@ -9,6 +9,14 @@ import {
   within,
 } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
+
+const mocks = vi.hoisted(() => ({ normalizeEvidencePhoto: vi.fn() }));
+vi.mock("@/lib/evidence/photo-draft-storage", async (importOriginal) => {
+  const original = await importOriginal<
+    typeof import("@/lib/evidence/photo-draft-storage")
+  >();
+  return { ...original, normalizeEvidencePhoto: mocks.normalizeEvidencePhoto };
+});
 import { buildNoteDraft } from "@/lib/note-processing/build-note-draft";
 import { EvidenceCaptureCard } from "./evidence-capture-card";
 
@@ -31,6 +39,12 @@ type CaptureHarnessProps = {
   onDelete?: () => void;
   captureDraft?: typeof draft;
   captureRoster?: typeof roster;
+  photo?: ComponentProps<typeof EvidenceCaptureCard>["photo"];
+  photoMissing?: boolean;
+  photoRecoveryWarning?: string;
+  onPhotoChange?: ComponentProps<typeof EvidenceCaptureCard>["onPhotoChange"];
+  onPhotoRemove?: () => void;
+  onValidate?: ComponentProps<typeof EvidenceCaptureCard>["onValidate"];
 };
 
 function CaptureHarness({
@@ -38,6 +52,12 @@ function CaptureHarness({
   onDelete,
   captureDraft = draft,
   captureRoster = roster,
+  photo,
+  photoMissing,
+  photoRecoveryWarning,
+  onPhotoChange,
+  onPhotoRemove,
+  onValidate,
 }: CaptureHarnessProps) {
   const [reviewOpen, setReviewOpen] = useState(false);
 
@@ -47,17 +67,25 @@ function CaptureHarness({
       workspaceCreatedAt="2026-06-01T12:00:00.000Z"
       rosterStudents={captureRoster}
       classGroups={[{ id: "class_reading", name: "Reading" }]}
-      onValidate={vi.fn().mockResolvedValue({
-        success: true,
-        evidenceId: "evidence_1",
-        isFirstWorkspaceEvidence: false,
-      })}
+      onValidate={
+        onValidate ??
+        vi.fn().mockResolvedValue({
+          success: true,
+          evidenceId: "evidence_1",
+          isFirstWorkspaceEvidence: false,
+        })
+      }
       onEdit={onEdit}
       onDelete={onDelete}
       reviewOpen={reviewOpen}
       onReviewOpenChange={setReviewOpen}
       onCaptureAnother={vi.fn()}
       onCreateStudent={vi.fn()}
+      photo={photo}
+      photoMissing={photoMissing}
+      photoRecoveryWarning={photoRecoveryWarning}
+      onPhotoChange={onPhotoChange}
+      onPhotoRemove={onPhotoRemove}
     />
   );
 }
@@ -228,5 +256,98 @@ describe("EvidenceCaptureCard review flow", () => {
     );
 
     expect(onDelete).toHaveBeenCalledOnce();
+  });
+
+  it("keeps a missing restored photo visible and blocks save until it is resolved", () => {
+    const onPhotoRemove = vi.fn();
+    render(
+      <CaptureHarness
+        photoMissing
+        photoRecoveryWarning="The draft photo could not be restored. Choose it again before saving."
+        onPhotoRemove={onPhotoRemove}
+      />
+    );
+
+    expect(screen.getByText("Photo needs attention")).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Choose photo again" })).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Review before saving" }));
+    expect(
+      (screen.getByRole("button", { name: "Validate and save" }) as HTMLButtonElement)
+        .disabled
+    ).toBe(true);
+
+    fireEvent.click(screen.getByRole("button", { name: "Continue without photo" }));
+    expect(onPhotoRemove).toHaveBeenCalledOnce();
+  });
+
+  it("waits for replacement persistence and submits the reviewed photo snapshot", async () => {
+    let finishPersistence: (() => void) | undefined;
+    const persistence = new Promise<void>((resolve) => {
+      finishPersistence = resolve;
+    });
+    const oldPhoto = {
+      blob: new Blob([new Uint8Array([1])], { type: "image/webp" }),
+      contentType: "image/webp" as const,
+      byteSize: 1,
+      width: 100,
+      height: 80,
+    };
+    const replacementPhoto = {
+      ...oldPhoto,
+      blob: new Blob([new Uint8Array([2])], { type: "image/webp" }),
+    };
+    const onValidate = vi.fn().mockResolvedValue({
+      success: true,
+      evidenceId: "evidence_1",
+      isFirstWorkspaceEvidence: false,
+    });
+    mocks.normalizeEvidencePhoto.mockResolvedValue({
+      success: true,
+      photo: replacementPhoto,
+    });
+    Object.defineProperty(URL, "createObjectURL", {
+      configurable: true,
+      value: vi.fn(() => "blob:preview"),
+    });
+    Object.defineProperty(URL, "revokeObjectURL", {
+      configurable: true,
+      value: vi.fn(),
+    });
+
+    function PhotoHarness() {
+      const [photo, setPhoto] = useState(oldPhoto);
+      return (
+        <CaptureHarness
+          photo={photo}
+          onValidate={onValidate}
+          onPhotoChange={async (nextPhoto) => {
+            await persistence;
+            setPhoto(nextPhoto);
+          }}
+        />
+      );
+    }
+
+    render(<PhotoHarness />);
+    fireEvent.click(screen.getByRole("button", { name: "Review before saving" }));
+    fireEvent.change(screen.getByLabelText("Replace photo evidence"), {
+      target: {
+        files: [new File([new Uint8Array([9])], "replacement.png", { type: "image/png" })],
+      },
+    });
+
+    const saveButton = screen.getByRole("button", { name: "Validate and save" });
+    expect((saveButton as HTMLButtonElement).disabled).toBe(true);
+    expect(onValidate).not.toHaveBeenCalled();
+
+    finishPersistence?.();
+    await screen.findByText("Temporary photo");
+    await vi.waitFor(() =>
+      expect((saveButton as HTMLButtonElement).disabled).toBe(false)
+    );
+    fireEvent.click(saveButton);
+
+    await vi.waitFor(() => expect(onValidate).toHaveBeenCalledOnce());
+    expect(onValidate.mock.calls[0][2]).toBe(replacementPhoto);
   });
 });

@@ -4,7 +4,6 @@ import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/re
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
-  archiveEvidence: vi.fn(),
   deleteEvidence: vi.fn(),
   refresh: vi.fn(),
 }));
@@ -13,7 +12,6 @@ vi.mock("next/navigation", () => ({
   useRouter: () => ({ refresh: mocks.refresh }),
 }));
 vi.mock("@/actions/evidence", () => ({
-  archiveEvidence: mocks.archiveEvidence,
   deleteEvidence: mocks.deleteEvidence,
 }));
 
@@ -40,28 +38,7 @@ const record = {
 describe("SavedEvidenceRow management", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mocks.archiveEvidence.mockResolvedValue({ success: true });
     mocks.deleteEvidence.mockResolvedValue({ success: true });
-  });
-
-  it("requires an explicit archive confirmation before calling the action", async () => {
-    const onArchived = vi.fn();
-    render(<SavedEvidenceRow record={record} onArchived={onArchived} />);
-
-    fireEvent.click(screen.getByRole("button", { name: /Archive evidence/ }));
-
-    expect(screen.queryByRole("button", { name: /Manage evidence/ })).toBeNull();
-    expect(mocks.archiveEvidence).not.toHaveBeenCalled();
-    fireEvent.click(
-      screen.getByRole("button", { name: /Confirm archive evidence/ })
-    );
-
-    await waitFor(() =>
-      expect(mocks.archiveEvidence).toHaveBeenCalledWith({
-        evidenceId: "evidence_1",
-      })
-    );
-    expect(onArchived).toHaveBeenCalledWith("evidence_1");
   });
 
   it("keeps saved-row metadata implicit and avoids repeating structured chips", () => {

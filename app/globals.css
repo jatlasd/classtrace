@@ -278,3 +278,10 @@
     page-break-inside: avoid;
   }
 }
+
+/* Feed owns its in-flow heading; other routes retain their route header. */
+@media (min-width: 64rem) {
+  .authenticated-app:has(.app-shell-feed-navigation) .app-shell-workspace {
+    padding-top: 0;
+  }
+}

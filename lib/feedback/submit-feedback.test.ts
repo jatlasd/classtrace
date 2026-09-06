@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 vi.mock("server-only", () => ({}));
 
 import { FEEDBACK_TYPE_LABELS } from "@/lib/feedback/feedback-contract";
+import type { FeedbackFormInput } from "@/lib/feedback/feedback-contract";
 import {
   submitFeedbackForWorkspace,
   type FeedbackDeliveryPayload,
@@ -10,7 +11,15 @@ import {
 } from "@/lib/feedback/submit-feedback";
 import { INPUT_LIMITS } from "@/lib/validation/input-limits";
 
-function validInput() {
+function validInput(): {
+  form: FeedbackFormInput;
+  context: {
+    clerkUserId: string;
+    workspaceId: string;
+    submittedAt: Date;
+    release: string;
+  };
+} {
   return {
     form: {
       type: "BROKE",

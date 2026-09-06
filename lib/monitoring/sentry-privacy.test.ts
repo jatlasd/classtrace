@@ -19,7 +19,7 @@ describe("Sentry privacy boundary", () => {
       databaseQueryData: false,
       stackFrameVariables: false,
     });
-    expect(sentryPrivacyOptions.beforeBreadcrumb({})).toBeNull();
+    expect(sentryPrivacyOptions.beforeBreadcrumb()).toBeNull();
   });
 
   it("removes user-controlled event data while preserving a readable stack", () => {
@@ -119,7 +119,7 @@ describe("Sentry privacy boundary", () => {
           data: { note: "SENTINEL_TRACE_DATA" },
           description: "SENTINEL_TRACE_DESCRIPTION",
           op: "SENTINEL_TRACE_OPERATION",
-          origin: "SENTINEL_TRACE_ORIGIN",
+          origin: "manual",
         },
       },
     };

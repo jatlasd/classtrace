@@ -59,8 +59,8 @@ describe("AppShellNavigation", () => {
       )
     ).toBe(false);
     expect(screen.getAllByRole("link", { name: "Explore" })).toHaveLength(1);
-    expect(screen.getAllByText("Feed").length).toBeGreaterThan(0);
-    expect(screen.getByText("All evidence")).toBeTruthy();
+    expect(screen.queryByText("Feed")).toBeNull();
+    expect(screen.queryByText("All evidence")).toBeNull();
     expect(screen.queryByRole("link", { name: "Dashboard" })).toBeNull();
     expect(screen.queryByRole("link", { name: "Reports" })).toBeNull();
   });
