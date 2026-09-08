@@ -12,15 +12,15 @@ export default async function AppLayout({
 
   return (
     <ClassTraceClerkProvider>
-      <div className="authenticated-app flex min-h-dvh flex-col bg-background">
+      <div className="authenticated-app flex min-h-dvh flex-col bg-base">
         <a
           href="#main-content"
-          className="fixed left-4 top-3 z-[90] -translate-y-20 rounded-md bg-foreground px-3 py-2 text-sm font-semibold text-background transition-transform focus:translate-y-0 lg:left-56"
+          className="fixed left-4 top-3 z-[90] -translate-y-20 rounded-full bg-live-bright px-4 py-2 text-sm font-semibold text-live-fg transition-transform focus:translate-y-0"
         >
           Skip to main content
         </a>
         <AppShellNavigation />
-        <div className="app-shell-workspace flex min-h-0 flex-1 flex-col lg:pl-52 lg:pt-14">
+        <div className="app-shell-workspace flex min-h-0 flex-1 flex-col pb-20 lg:pb-0">
           <main
             id="main-content"
             tabIndex={-1}

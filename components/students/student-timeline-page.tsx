@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { ReactElement } from "react";
-import { Check, Clock3 } from "lucide-react";
 import { EvidenceRecordContent } from "@/components/evidence/evidence-record-content";
+import { ValidatedStamp } from "@/components/evidence/validated-stamp";
 import { StudentEvidenceExportAction } from "@/components/students/student-evidence-export-action";
 import { Button } from "@/components/ui/button";
 import { routes } from "@/lib/routes";
@@ -36,11 +36,6 @@ type StudentTimelinePageProps = {
   evidenceRecords: StudentTimelineEvidenceRecord[];
 };
 
-type StudentProfileHeaderProps = {
-  student: StudentTimelineStudent;
-  evidenceCount: number;
-};
-
 type StudentTimelineProps = {
   student: StudentTimelineStudent;
   records: StudentTimelineEvidenceRecord[];
@@ -49,20 +44,6 @@ type StudentTimelineProps = {
 type StudentTimelineEvidenceItemProps = {
   record: StudentTimelineEvidenceRecord;
 };
-
-function studentInitials(displayName: string): string {
-  const parts = displayName.trim().split(/\s+/).filter(Boolean);
-
-  if (parts.length === 0) {
-    return "ST";
-  }
-
-  if (parts.length === 1) {
-    return parts[0].slice(0, 2).toUpperCase();
-  }
-
-  return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
-}
 
 function formatTimelineDate(value: string): string {
   const date = new Date(value);
@@ -74,68 +55,103 @@ function formatTimelineDate(value: string): string {
   return new Intl.DateTimeFormat("en", {
     month: "short",
     day: "numeric",
+  }).format(date);
+}
+
+function formatMonth(value: string): string {
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return "Recently";
+  }
+
+  return new Intl.DateTimeFormat("en", {
+    month: "long",
     year: "numeric",
   }).format(date);
 }
 
+function describeSpan(records: StudentTimelineEvidenceRecord[]): string | null {
+  if (records.length === 0) return null;
+  const dates = records
+    .map((record) => new Date(record.evidenceDate))
+    .filter((date) => !Number.isNaN(date.getTime()))
+    .sort((a, b) => a.getTime() - b.getTime());
+  if (dates.length === 0) return null;
+  const format = new Intl.DateTimeFormat("en", { month: "short", day: "numeric", year: "numeric" });
+  const first = format.format(dates[0]);
+  const last = format.format(dates[dates.length - 1]);
+  return first === last ? first : `${first} – ${last}`;
+}
+
+function groupByMonth(records: StudentTimelineEvidenceRecord[]): { key: string; label: string; records: StudentTimelineEvidenceRecord[]; }[] {
+  const groups: { key: string; label: string; records: StudentTimelineEvidenceRecord[]; }[] = [];
+  for (const record of records) {
+    const date = new Date(record.evidenceDate);
+    const key = Number.isNaN(date.getTime()) ? "recent" : `${date.getFullYear()}-${date.getMonth()}`;
+    const group = groups.at(-1);
+    if (group && group.key === key) {
+      group.records.push(record);
+    } else {
+      groups.push({ key, label: formatMonth(record.evidenceDate), records: [record] });
+    }
+  }
+  return groups;
+}
+
 function StudentProfileHeader({
   student,
-  evidenceCount,
-}: StudentProfileHeaderProps) {
-  const metadata = [
-    student.classGroupName ? `Class ${student.classGroupName}` : "No class yet",
-    student.schoolLocalId ? `Local ID ${student.schoolLocalId}` : null,
-  ].filter(Boolean);
+  records,
+}: {
+  student: StudentTimelineStudent;
+  records: StudentTimelineEvidenceRecord[];
+}) {
+  const evidenceCount = records.length;
+  const span = describeSpan(records);
 
   return (
-    <header className="mb-4 border-b border-border pb-4">
-      <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-        <Button asChild variant="ghost" size="sm" className="-ml-2">
-          <Link href={routes.roster}>Back to roster</Link>
-        </Button>
-        <div className="flex flex-wrap items-center gap-2">
-          <Button asChild variant="outline" size="sm">
-            <Link href={routes.studentReport(student.id)}>View report</Link>
-          </Button>
-          <Button asChild variant="outline" size="sm">
-            <Link href={routes.feed}>Capture evidence</Link>
-          </Button>
-        </div>
+    <header className="mb-10">
+      <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+        <Link
+          href={routes.roster}
+          className="label rounded-full text-fg-2 underline decoration-line-2 underline-offset-4 outline-none transition-colors hover:text-fg hover:decoration-fg focus-visible:ring-2 focus-visible:ring-live-bright focus-visible:ring-offset-2 focus-visible:ring-offset-base"
+        >
+          Students
+        </Link>
+        {student.classGroupName ? (
+          <>
+            <span aria-hidden="true" className="label text-fg-3">/</span>
+            <span className="label text-fg-2">{student.classGroupName}</span>
+          </>
+        ) : null}
       </div>
-
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex min-w-0 items-start gap-4">
-          <div className="flex size-10 shrink-0 items-center justify-center rounded-md border border-border bg-muted/50 text-xs font-bold text-foreground">
-            {studentInitials(student.displayName)}
-          </div>
-          <div className="min-w-0">
-            <h1 className="font-sans text-lg font-semibold tracking-tight text-foreground">
-              {student.displayName}
-            </h1>
-            <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
-              <span>@{student.mentionHandle}</span>
-              {metadata.map((item) => (
-                <span key={item} className="border-l border-border pl-2">
-                  {item}
-                </span>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-2 sm:justify-end">
-          <p className="mr-1 text-xs text-muted-foreground">
-            <span className="font-semibold tabular-nums text-foreground">
-              {evidenceCount}
-            </span>{" "}
-            validated {evidenceCount === 1 ? "record" : "records"}
-          </p>
-          <StudentEvidenceExportAction
-            studentId={student.id}
-            studentName={student.displayName}
-            evidenceCount={evidenceCount}
-          />
-        </div>
+      <h1 className="mt-3 break-words font-display text-[clamp(2.5rem,6vw,4.5rem)] font-semibold leading-[0.95] text-fg [overflow-wrap:anywhere]">
+        {student.displayName}
+      </h1>
+      <p className="mt-4 max-w-[52ch] text-[17px] leading-relaxed text-fg-2">
+        {evidenceCount === 0 ? (
+          <>Nothing saved yet for @{student.mentionHandle}.</>
+        ) : (
+          <>
+            <span className="font-semibold text-fg">{evidenceCount}</span>{" "}
+            {evidenceCount === 1 ? "piece" : "pieces"} of validated evidence
+            {span ? <>, <span className="text-fg">{span}</span></> : null}.
+            {student.schoolLocalId ? <span className="text-fg-3"> Local ID {student.schoolLocalId}.</span> : null}
+          </>
+        )}
+      </p>
+      <div className="mt-6 flex flex-wrap items-center gap-2">
+        <Button asChild variant="solid">
+          <Link href={routes.studentReport(student.id)}>Print report</Link>
+        </Button>
+        <StudentEvidenceExportAction
+          studentId={student.id}
+          studentName={student.displayName}
+          evidenceCount={evidenceCount}
+        />
+        <Button asChild variant="ghost">
+          <Link href={routes.feed}>Capture something</Link>
+        </Button>
       </div>
     </header>
   );
@@ -145,28 +161,20 @@ function StudentTimelineEvidenceItem({
   record,
 }: StudentTimelineEvidenceItemProps) {
   return (
-    <li className="border-b border-border last:border-b-0">
-      <article className="grid gap-3 px-4 py-3 sm:grid-cols-[8.5rem_minmax(0,1fr)_auto] sm:px-5">
-        <div className="flex items-start justify-between gap-3 sm:block">
-          <p className="text-xs font-medium tabular-nums text-muted-foreground">
+    <li className="trace-node pl-7 py-4">
+      <article className="min-w-0">
+        <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+          <time dateTime={record.evidenceDate} className="text-[13px] font-semibold text-fg-2">
             {formatTimelineDate(record.evidenceDate)}
-          </p>
-          <span className="inline-flex w-fit items-center gap-1.5 rounded-md border border-border px-2 py-0.5 text-[11px] font-semibold text-muted-foreground sm:hidden">
-            <Check className="size-3" aria-hidden="true" />
-            Validated
-          </span>
+          </time>
+          <ValidatedStamp className="text-fg-3" />
         </div>
-        <div className="min-w-0">
-          <EvidenceRecordContent
-            record={record}
-            showStructuredSummary={false}
-            compact
-          />
-        </div>
-        <span className="hidden w-fit items-center gap-1.5 self-start rounded-md border border-border px-2 py-0.5 text-[11px] font-semibold text-muted-foreground sm:inline-flex">
-          <Check className="size-3" aria-hidden="true" />
-          Validated
-        </span>
+        <EvidenceRecordContent
+          record={record}
+          showStructuredSummary={false}
+          compact
+          textClassName="mt-1.5 max-w-[70ch]"
+        />
       </article>
     </li>
   );
@@ -178,45 +186,53 @@ function StudentTimelineEmptyState({
   student: StudentTimelineStudent;
 }) {
   return (
-    <div className="border border-border bg-card/60 p-5 text-sm leading-relaxed text-muted-foreground">
-      <div className="mb-3 flex size-10 items-center justify-center rounded-md border border-border bg-muted/50 text-link">
-        <Clock3 className="size-5" strokeWidth={1.75} />
-      </div>
-      <p className="font-medium text-foreground">No validated evidence yet.</p>
-      <p className="mt-1">
-        Capture a student-specific note for {student.displayName}, review it,
-        and this timeline will start here.
+    <div className="plate px-6 py-12 text-center text-[15px] leading-relaxed text-fg-2">
+      <p className="font-display text-2xl font-semibold text-fg">
+        No validated evidence yet.
       </p>
-      <Button asChild variant="outline" size="sm" className="mt-4">
-        <Link href={routes.feed}>Open evidence feed</Link>
+      <p className="mx-auto mt-2 max-w-[44ch]">
+        Write one sentence about {student.displayName}, review it, and the trace
+        starts here.
+      </p>
+      <Button asChild className="mt-5">
+        <Link href={routes.feed}>Capture something</Link>
       </Button>
     </div>
   );
 }
 
 function StudentTimeline({ student, records }: StudentTimelineProps) {
+  const groups = groupByMonth(records);
+
   return (
     <section aria-labelledby="student-evidence-heading">
-      <div className="mb-2 flex flex-wrap items-end justify-between gap-3 px-1">
-        <div>
-          <h2
-            id="student-evidence-heading"
-            className="font-sans text-sm font-semibold text-foreground"
-          >
-            Evidence
-          </h2>
-          <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">
-            Newest evidence appears first.
-          </p>
-        </div>
+      <div className="mb-2 flex flex-wrap items-baseline justify-between gap-3 border-b border-line pb-3">
+        <h2
+          id="student-evidence-heading"
+          className="font-display text-2xl font-semibold text-fg"
+        >
+          Evidence
+        </h2>
+        <p className="label text-fg-3">Newest first</p>
       </div>
       <div className="min-w-0">
         {records.length === 0 ? (
-          <StudentTimelineEmptyState student={student} />
+          <div className="mt-4">
+            <StudentTimelineEmptyState student={student} />
+          </div>
         ) : (
-          <ol className="overflow-hidden rounded-lg border border-border bg-card">
-            {records.map((record) => (
-              <StudentTimelineEvidenceItem key={record.id} record={record} />
+          <ol>
+            {groups.map((group) => (
+              <li key={group.key} className="pt-6">
+                <h3 className="label sticky top-16 z-10 -mx-1 w-fit rounded-full bg-base/95 px-1 py-1 text-fg-2 backdrop-blur">
+                  {group.label}
+                </h3>
+                <ol className="trace mt-1">
+                  {group.records.map((record) => (
+                    <StudentTimelineEvidenceItem key={record.id} record={record} />
+                  ))}
+                </ol>
+              </li>
             ))}
           </ol>
         )}
@@ -230,11 +246,8 @@ export function StudentTimelinePage({
   evidenceRecords,
 }: StudentTimelinePageProps): ReactElement {
   return (
-    <div className="mx-auto w-full max-w-[1100px] px-3 py-4 sm:px-5 sm:py-5">
-      <StudentProfileHeader
-        student={student}
-        evidenceCount={evidenceRecords.length}
-      />
+    <div className="mx-auto w-full max-w-[880px] px-4 py-8 sm:px-6 lg:px-8 lg:py-12">
+      <StudentProfileHeader student={student} records={evidenceRecords} />
       <StudentTimeline student={student} records={evidenceRecords} />
     </div>
   );

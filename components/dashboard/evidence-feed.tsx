@@ -672,7 +672,7 @@ export function EvidenceFeed({
           title="Roster setup comes first"
           body="Add one active student to keep every capture attached to exactly one roster record."
           action={
-            <Button asChild variant="outline" size="sm">
+            <Button asChild variant="outline" size="sm" className="rounded-full">
               <Link href={routes.roster}>Set up roster</Link>
             </Button>
           }
@@ -683,8 +683,8 @@ export function EvidenceFeed({
     if (!hasAnyFeedItems) {
       return (
         <FeedEmptyState
-          title="No evidence in the inbox yet"
-          body="Drafts stay in this tab until you save or delete them, and are cleared at midnight. Saved evidence stays in your evidence records."
+          title="Nothing here yet"
+          body="Drafts stay in this browser until you save or delete them, and clear at midnight. Saved evidence stays in the student's trace."
         />
       );
     }
@@ -703,14 +703,20 @@ export function EvidenceFeed({
     }
 
     return (
-      <>
-        {visibleDraftItems.some(needsReview) ? (
-          <h3 className="mt-6 bg-muted/35 px-4 pt-4 text-sm font-semibold">
-            Needs review <span className="ml-2 font-normal text-muted-foreground">{visibleDraftItems.filter(needsReview).length}</span>
+      <div className="space-y-3">
+        {visibleDraftItems.length > 0 ? (
+          <h3 className="flex items-baseline gap-3 pb-1">
+            <span className="label flex items-center gap-2 text-live">
+              <span aria-hidden="true" className="size-1.5 rounded-full bg-live-bright" />
+              Drafts
+            </span>
+            <span className="font-mono text-sm tabular-nums text-fg-3">
+              {visibleDraftItems.filter(needsReview).length} need review
+            </span>
           </h3>
         ) : null}
         {visibleDraftItems.map((item) => (
-          <div key={item.id} className={needsReview(item) ? "bg-muted/35 px-1" : "py-4"}>
+          <div key={item.id}>
             <EvidenceCaptureCard
               draft={item.draft}
               timestamp={item.timestamp}
@@ -740,118 +746,126 @@ export function EvidenceFeed({
             />
           </div>
         ))}
-        {visibleEvidenceRecords.map((record, index) => (
-          <Fragment key={record.id}>
-            {(index === 0 || record.evidenceDate.slice(0, 10) !== visibleEvidenceRecords[index - 1].evidenceDate.slice(0, 10)) ? (
-              <h3 className="border-b border-border pb-3 pt-7 text-sm font-medium text-muted-foreground">
-                <time dateTime={record.evidenceDate}>{formatEvidenceDay(record.evidenceDate, sessionDraftsReady)}</time>
-              </h3>
-            ) : null}
-            <SavedEvidenceRow
-              record={record}
-              onDeleted={handleSavedEvidenceHidden}
-            />
-          </Fragment>
-        ))}
-      </>
+        {visibleEvidenceRecords.length > 0 ? (
+          <div className={visibleDraftItems.length > 0 ? "pt-6" : ""}>
+            {visibleEvidenceRecords.map((record, index) => {
+              const newDay =
+                index === 0 ||
+                record.evidenceDate.slice(0, 10) !==
+                  visibleEvidenceRecords[index - 1].evidenceDate.slice(0, 10);
+              return (
+                <Fragment key={record.id}>
+                  {newDay ? (
+                    <h3 className={`sticky top-14 z-10 -mx-4 bg-base/95 px-4 py-2 backdrop-blur sm:-mx-6 sm:px-6 lg:top-[4.5rem] ${index === 0 ? "" : "mt-4"}`}>
+                      <time dateTime={record.evidenceDate} className="font-display text-[1.1rem] font-semibold text-fg-2">
+                        {formatEvidenceDay(record.evidenceDate, sessionDraftsReady)}
+                      </time>
+                    </h3>
+                  ) : null}
+                  <div className="trace">
+                    <SavedEvidenceRow
+                      record={record}
+                      onDeleted={handleSavedEvidenceHidden}
+                    />
+                  </div>
+                </Fragment>
+              );
+            })}
+          </div>
+        ) : null}
+      </div>
     );
   }
 
   return (
-    <div className="evidence-journal mx-auto w-full max-w-[1080px] px-5 py-6 sm:px-8 sm:py-9 lg:px-12 lg:py-10">
+    <div className="evidence-journal mx-auto w-full max-w-[880px] px-4 py-5 sm:px-6 sm:py-7 lg:px-8 lg:py-9">
       <EvidenceFeedHeader />
 
-      <div className="min-w-0">
-        <div className="min-w-0 space-y-9">
-          <section aria-label="Capture desk">
-            {rosterSetupNeeded ? (
-              <RosterRequiredState />
-            ) : (
-              <QuickCaptureCard
-                rosterStudents={activeRosterStudents}
-                focusRequestKey={composerFocusRequestKey}
-                disabled={!sessionDraftsReady}
-                onDraft={handleDraft}
-              />
-            )}
-          </section>
+      <section aria-label="Capture desk" className="min-w-0">
+        {rosterSetupNeeded ? (
+          <RosterRequiredState />
+        ) : (
+          <QuickCaptureCard
+            rosterStudents={activeRosterStudents}
+            focusRequestKey={composerFocusRequestKey}
+            disabled={!sessionDraftsReady}
+            onDraft={handleDraft}
+          />
+        )}
+      </section>
 
-          <section
-            className="min-w-0"
-            aria-labelledby="evidence-inbox-heading"
-          >
-            <div className="space-y-3 border-b border-border pb-3">
-              <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-                <div className="min-w-0">
-                  <RecentCapturesLabel />
-                  <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs leading-relaxed text-muted-foreground">
-                    <span>
-                      {hasVisibleFeedItems
-                        ? feedItemCountLabel(visibleFeedItemCount)
-                        : "Drafts and saved evidence will appear here."}
-                    </span>
-                    <span aria-hidden="true">·</span>
-                    <span>Newest first</span>
-                  </p>
-                </div>
-                <EvidenceSearchControl
-                  query={searchQuery}
-                  onQueryChange={handleSearchQueryChange}
-                />
-              </div>
-
-              <InboxFilterControl
-                filter={filter}
-                onFilterChange={handleFilterChange}
-              />
-            </div>
-
-            {captureEditError ? (
-              <p
-                ref={captureEditErrorRef}
-                role="alert"
-                tabIndex={-1}
-                className="border-b border-border bg-muted/30 px-4 py-3 text-sm text-destructive outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background sm:px-6"
-              >
-                {captureEditError}
+      <section
+        className="mt-10 min-w-0 sm:mt-12"
+        aria-labelledby="evidence-inbox-heading"
+      >
+        <div className="space-y-4 border-b border-line pb-4">
+          <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+            <div className="min-w-0">
+              <RecentCapturesLabel />
+              <p className="label mt-2 text-fg-3">
+                {hasVisibleFeedItems
+                  ? feedItemCountLabel(visibleFeedItemCount)
+                  : "Drafts and saved evidence will appear here."}
+                <span aria-hidden="true"> · </span>
+                Newest first
               </p>
-            ) : null}
-
-            <div>
-              {renderFeedList()}
-              {filter !== "needs_review" &&
-              (hasNewerEvidence || hasOlderEvidence) ? (
-                <nav
-                  aria-label="Evidence pages"
-                  className="flex items-center justify-between gap-3 border-t border-border px-4 py-4 sm:px-6"
-                >
-                  <div>
-                    {hasNewerEvidence ? (
-                      <Button asChild variant="outline" size="sm">
-                        <Link href={evidencePageHref(evidencePage - 1)}>
-                          Newer evidence
-                        </Link>
-                      </Button>
-                    ) : null}
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    Page {evidencePage}
-                  </p>
-                  <div>
-                    {hasOlderEvidence ? (
-                      <Button asChild variant="outline" size="sm">
-                        <Link href={evidencePageHref(evidencePage + 1)}>
-                          Older evidence
-                        </Link>
-                      </Button>
-                    ) : null}
-                  </div>
-                </nav>
-              ) : null}
             </div>
-          </section>
+            <EvidenceSearchControl
+              query={searchQuery}
+              onQueryChange={handleSearchQueryChange}
+            />
+          </div>
+
+          <InboxFilterControl
+            filter={filter}
+            onFilterChange={handleFilterChange}
+          />
         </div>
-      </div>
+
+        {captureEditError ? (
+          <p
+            ref={captureEditErrorRef}
+            role="alert"
+            tabIndex={-1}
+            className="mt-4 rounded-md border-l-2 border-danger bg-danger-soft px-4 py-3 text-sm text-danger outline-none focus-visible:ring-2 focus-visible:ring-live-bright focus-visible:ring-offset-2 focus-visible:ring-offset-base"
+          >
+            {captureEditError}
+          </p>
+        ) : null}
+
+        <div className="pt-5">
+          {renderFeedList()}
+          {filter !== "needs_review" &&
+          (hasNewerEvidence || hasOlderEvidence) ? (
+            <nav
+              aria-label="Evidence pages"
+              className="mt-6 flex items-center justify-between gap-3 border-t border-line pt-4"
+            >
+              <div>
+                {hasNewerEvidence ? (
+                  <Button asChild variant="outline" size="sm" className="rounded-full">
+                    <Link href={evidencePageHref(evidencePage - 1)}>
+                      Newer evidence
+                    </Link>
+                  </Button>
+                ) : null}
+              </div>
+              <p className="label text-fg-3">
+                Page {evidencePage}
+              </p>
+              <div>
+                {hasOlderEvidence ? (
+                  <Button asChild variant="outline" size="sm" className="rounded-full">
+                    <Link href={evidencePageHref(evidencePage + 1)}>
+                      Older evidence
+                    </Link>
+                  </Button>
+                ) : null}
+              </div>
+            </nav>
+          ) : null}
+        </div>
+      </section>
     </div>
   );
 }

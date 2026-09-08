@@ -5,14 +5,14 @@ import { routes } from "@/lib/routes";
 export default function AppNotFound() {
   return (
     <div className="mx-auto w-full max-w-[760px] px-4 py-10 sm:px-6 lg:px-8">
-      <section className="rounded-card border border-border bg-card p-6">
-        <p className="text-xs font-semibold text-muted-foreground">
+      <section className="plate p-6 sm:p-8">
+        <p className="label text-fg-3">
           Page not found
         </p>
-        <h1 className="mt-2 font-sans text-2xl font-semibold text-foreground">
+        <h1 className="mt-2 font-display text-3xl font-semibold leading-none tracking-[-0.01em] text-fg">
           This ClassTrace page is not available
         </h1>
-        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+        <p className="mt-2 text-sm leading-relaxed text-fg-2">
           Return to the evidence feed or choose a student from your roster.
         </p>
         <div className="mt-5 flex flex-wrap gap-2">

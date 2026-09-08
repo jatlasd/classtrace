@@ -56,10 +56,10 @@ export function RosterStudentRowActions({
   }
 
   return (
-    <div className="space-y-2 border-t border-border/60 pt-3">
+    <div className="space-y-2 border-t border-line pt-3">
       {isConfirmingArchive ? (
         <div className="space-y-2">
-          <p className="text-xs leading-relaxed text-muted-foreground">
+          <p className="text-xs leading-relaxed text-fg-2">
             Hide this student from active roster and capture views?
           </p>
           <div className="flex flex-wrap gap-2">
@@ -93,7 +93,7 @@ export function RosterStudentRowActions({
           type="button"
           variant="ghost"
           size="sm"
-          className="-ml-2 text-muted-foreground"
+          className="-ml-2 text-fg-2"
           onClick={() => {
             setIsConfirmingArchive(true);
             setIsConfirmingDelete(false);
@@ -108,14 +108,14 @@ export function RosterStudentRowActions({
       )}
 
       {archiveError ? (
-        <p className="text-xs leading-relaxed text-destructive" role="status">
+        <p className="text-xs leading-relaxed text-danger" role="status">
           {archiveError}
         </p>
       ) : null}
 
       {isConfirmingDelete ? (
-        <div className="space-y-2 border-t border-border/50 pt-3">
-          <p className="text-xs font-medium leading-relaxed text-destructive">
+        <div className="space-y-2 border-t border-line pt-3">
+          <p className="text-xs font-medium leading-relaxed text-danger">
             Deleting this student will also permanently delete all evidence
             records attached to them. This cannot be undone.
           </p>
@@ -150,7 +150,7 @@ export function RosterStudentRowActions({
           type="button"
           variant="ghost"
           size="sm"
-          className="-ml-2 text-destructive hover:text-destructive"
+          className="-ml-2 text-danger hover:text-danger"
           onClick={() => {
             setIsConfirmingDelete(true);
             setIsConfirmingArchive(false);
@@ -165,7 +165,7 @@ export function RosterStudentRowActions({
       )}
 
       {deleteError ? (
-        <p className="text-xs leading-relaxed text-destructive" role="status">
+        <p className="text-xs leading-relaxed text-danger" role="status">
           {deleteError}
         </p>
       ) : null}

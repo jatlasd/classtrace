@@ -41,12 +41,12 @@ export function EvidencePhoto({
   if (unavailable) {
     return (
       <div className={`flex flex-wrap items-center gap-2 ${className}`}>
-        <p className="text-xs text-muted-foreground">
+        <p className="text-xs text-fg-2">
           Photo evidence is unavailable.
         </p>
         <button
           type="button"
-          className="rounded-md text-xs font-medium text-link underline-offset-4 outline-none hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+          className="rounded-sm text-xs font-medium text-fg underline underline-offset-4 outline-none hover:decoration-2 focus-visible:ring-2 focus-visible:ring-live-bright focus-visible:ring-offset-2 focus-visible:ring-offset-base"
           onClick={() => {
             setRetryKey((current) => current + 1);
             setUnavailable(false);

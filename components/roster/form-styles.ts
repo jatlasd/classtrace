@@ -1,2 +1,3 @@
-export const ROSTER_INPUT_CLASS_NAME =
-  "h-10 w-full rounded-md border border-border bg-background/50 px-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50";
+export const ROSTER_INPUT_CLASS_NAME = "field";
+
+export const FIELD_LABEL_CLASS_NAME = "label block text-fg-2";

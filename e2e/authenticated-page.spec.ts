@@ -5,7 +5,7 @@ test("opens the authenticated settings page", async ({ page }, testInfo) => {
 
   await expect(page).toHaveURL(/\/app\/settings(?:\?.*)?$/);
   await expect(
-    page.getByRole("heading", { name: "Account and workspace" })
+    page.getByRole("heading", { name: "Settings" })
   ).toBeVisible();
   await expect(page.locator(".authenticated-app")).toBeVisible();
 

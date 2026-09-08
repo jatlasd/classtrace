@@ -11,8 +11,8 @@ describe("BrandLockup", () => {
     const { container } = render(<BrandLockup />);
 
     expect(screen.getByText("ClassTrace")).toBeTruthy();
-    expect(screen.getByText("CT")).toBeTruthy();
-    expect(container.querySelector('[data-slot="brand-mark"] .bg-navy')).toBeTruthy();
+    expect(container.querySelector('[data-slot="brand-mark"] .bg-fg')).toBeTruthy();
+    expect(container.querySelector('[data-slot="brand-mark"] .bg-live-bright')).toBeTruthy();
   });
 
   it("accepts a decorative future mark without changing the wordmark", () => {
@@ -27,7 +27,7 @@ describe("BrandLockup", () => {
     ).toBe("true");
     expect(
       container.querySelector('[data-slot="brand-lockup"]')?.classList.contains(
-        "text-navy-foreground"
+        "text-[color:var(--base)]"
       )
     ).toBe(true);
   });

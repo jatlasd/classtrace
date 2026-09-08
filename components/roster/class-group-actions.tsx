@@ -66,7 +66,7 @@ export function ClassGroupActions({
           type="button"
           variant="ghost"
           size="sm"
-          className="-ml-2 text-muted-foreground"
+          className="-ml-2 text-fg-2"
           onClick={() => {
             setIsEditing((current) => !current);
             setIsConfirmingArchive(false);
@@ -80,7 +80,7 @@ export function ClassGroupActions({
           type="button"
           variant="ghost"
           size="sm"
-          className="-ml-2 text-muted-foreground"
+          className="-ml-2 text-fg-2"
           onClick={() => {
             setIsConfirmingArchive((current) => !current);
             setIsEditing(false);
@@ -93,8 +93,8 @@ export function ClassGroupActions({
       </div>
 
       {isEditing ? (
-        <form className="space-y-2 border-t border-border/50 pt-3" onSubmit={handleRename}>
-          <label htmlFor="rename-class" className="text-sm font-medium text-foreground">
+        <form className="space-y-2 border-t border-line pt-3" onSubmit={handleRename}>
+          <label htmlFor="rename-class" className="label block text-fg-2">
             Class name
           </label>
           <input
@@ -131,8 +131,8 @@ export function ClassGroupActions({
       ) : null}
 
       {isConfirmingArchive ? (
-        <div className="space-y-2 border-t border-border/50 pt-3">
-          <p className="text-xs leading-relaxed text-muted-foreground">
+        <div className="space-y-2 border-t border-line pt-3">
+          <p className="text-xs leading-relaxed text-fg-2">
             Archive this class? Empty classes can be archived. Classes with active students
             need those students moved first.
           </p>

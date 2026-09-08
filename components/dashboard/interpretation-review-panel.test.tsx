@@ -156,7 +156,7 @@ describe("InterpretationReviewPanel", () => {
       />
     );
 
-    expect(screen.getByText("Teacher review")).toBeTruthy();
+    expect(screen.getByText("Review before saving")).toBeTruthy();
     expect(screen.getByText("Evidence note")).toBeTruthy();
     fireEvent.change(screen.getByLabelText("Evidence note"), {
       target: { value: "Teacher-approved evidence note." },
@@ -425,7 +425,7 @@ describe("InterpretationReviewPanel", () => {
     expect(await screen.findByText("Evidence trail started")).toBeTruthy();
     expect(
       screen
-        .getByRole("link", { name: "View Mary's timeline" })
+        .getByRole("link", { name: "Open Mary's folder" })
         .getAttribute("href")
     ).toBe("/app/students/student_mary");
     expect(

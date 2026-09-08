@@ -48,7 +48,7 @@ describe("authenticated app layout", () => {
     expect(shell?.classList.contains("min-h-dvh")).toBe(true);
     expect(shell?.classList.contains("flex-col")).toBe(true);
     expect(workspace?.classList.contains("app-shell-workspace")).toBe(true);
-    expect(workspace?.classList.contains("lg:pl-52")).toBe(true);
+    expect(workspace?.classList.contains("pb-20")).toBe(true);
     expect(main.classList.contains("flex-1")).toBe(true);
     expect(main.nextElementSibling).toBe(footer);
     expect(

@@ -29,31 +29,22 @@ type EvidenceRecordContentProps = {
   photoLoading?: "eager" | "lazy";
 };
 
-function EvidenceChip({
+function Detail({
   children,
-  compact,
-  journal,
   variant = "default",
 }: {
   children: ReactNode;
-  compact: boolean;
-  journal?: boolean;
-  variant?: "default" | "tag" | "evidence";
+  variant?: "default" | "tag" | "type";
 }) {
-  const className =
-    variant === "tag"
-      ? "border-border bg-transparent text-muted-foreground"
-      : variant === "evidence"
-        ? "border-border bg-transparent text-foreground"
-        : "border-border bg-card text-foreground";
-
-  if (journal) return <span className="max-w-full break-words text-xs text-muted-foreground [overflow-wrap:anywhere]">{children}</span>;
-
   return (
     <span
-      className={`inline-flex max-w-full items-center break-words rounded-full border font-medium [overflow-wrap:anywhere] ${
-        compact ? "px-2 py-0 text-[11px]" : "px-2.5 py-0.5 text-xs"
-      } ${className}`}
+      className={`inline-flex max-w-full items-center break-words font-mono text-[0.75rem] [overflow-wrap:anywhere] ${
+        variant === "tag"
+          ? "text-fg-2"
+          : variant === "type"
+            ? "rounded-full border border-line px-2 py-px text-fg-2"
+            : "text-fg-3"
+      }`}
     >
       {children}
     </span>
@@ -83,41 +74,43 @@ export function EvidenceRecordContent({
     <>
       {primaryEvidenceText ? (
         <p
-          className={`${textClassName} break-words text-foreground [overflow-wrap:anywhere] ${
-            compact ? "text-sm leading-5" : "text-[15px] leading-relaxed"
+          className={`${textClassName} break-words text-fg [overflow-wrap:anywhere] ${
+            compact
+              ? "text-[15px] leading-[1.5]"
+              : journal
+                ? "text-[17px] leading-[1.55]"
+                : "text-[16px] leading-[1.55]"
           }`}
         >
           {primaryEvidenceText}
         </p>
       ) : null}
       {record.evidenceNote && record.summary && showStructuredSummary ? (
-        <p className="mt-2 break-words text-xs leading-relaxed text-muted-foreground [overflow-wrap:anywhere]">
-          <span className="font-medium text-foreground">Structured details:</span>{" "}
+        <p className="mt-2 break-words text-xs leading-relaxed text-fg-2 [overflow-wrap:anywhere]">
+          <span className="label mr-2 text-fg-3">Structured details</span>
           {record.summary}
         </p>
       ) : !record.evidenceNote && record.summary && !record.hasPhoto ? (
-        <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
-          Legacy structured entry. This record was saved before Evidence notes were added.
+        <p className="mt-2 text-xs leading-relaxed text-fg-3">
+          Legacy structured entry, saved before Evidence notes were added.
         </p>
       ) : null}
 
       {hasStructuredDetails ? (
-        <div className={`${journal ? "mt-3 gap-x-3 gap-y-1" : compact ? "mt-2 gap-1" : "mt-3 gap-1.5"} flex flex-wrap`}>
-          {includeClassGroup && record.classGroupName ? (
-            <EvidenceChip journal={journal} compact={compact}>{record.classGroupName}</EvidenceChip>
-          ) : null}
-          {record.topic ? <EvidenceChip journal={journal} compact={compact}>{record.topic}</EvidenceChip> : null}
-          {record.performance ? (
-            <EvidenceChip journal={journal} compact={compact}>{record.performance}</EvidenceChip>
-          ) : null}
-          {record.behavior ? <EvidenceChip journal={journal} compact={compact}>{record.behavior}</EvidenceChip> : null}
+        <div className={`${compact ? "mt-2 gap-x-2.5 gap-y-1.5" : "mt-3 gap-x-3 gap-y-1.5"} flex flex-wrap items-center`}>
           {record.evidenceType ? (
-            <EvidenceChip journal={journal} compact={compact} variant="evidence">{record.evidenceType}</EvidenceChip>
+            <Detail variant="type">{record.evidenceType}</Detail>
           ) : null}
+          {includeClassGroup && record.classGroupName ? (
+            <Detail>{record.classGroupName}</Detail>
+          ) : null}
+          {record.topic ? <Detail>{record.topic}</Detail> : null}
+          {record.performance ? <Detail>{record.performance}</Detail> : null}
+          {record.behavior ? <Detail>{record.behavior}</Detail> : null}
           {record.tags.map((tag) => (
-            <EvidenceChip journal={journal} compact={compact} key={tag} variant="tag">
+            <Detail key={tag} variant="tag">
               {formatTagLabel(tag)}
-            </EvidenceChip>
+            </Detail>
           ))}
         </div>
       ) : null}
@@ -134,8 +127,8 @@ export function EvidenceRecordContent({
       ) : null}
 
       {record.followUpNotes ? (
-        <p className={`${compact ? "mt-2 pt-2" : "mt-3 pt-2.5"} break-words border-t border-border/50 text-xs leading-relaxed text-muted-foreground [overflow-wrap:anywhere]`}>
-          <span className="font-medium text-foreground">Follow-up:</span>{" "}
+        <p className={`${compact ? "mt-2.5" : "mt-3"} break-words border-l-2 border-live-bright pl-3 text-[13px] leading-relaxed text-fg-2 [overflow-wrap:anywhere]`}>
+          <span className="label mr-2 text-live">Follow up</span>
           {record.followUpNotes}
         </p>
       ) : null}

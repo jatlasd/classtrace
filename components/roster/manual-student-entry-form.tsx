@@ -97,10 +97,10 @@ export function ManualStudentEntryForm({
     <form className="space-y-3" onSubmit={handleSubmit}>
       {showTitle ? (
         <div>
-          <h2 className="font-sans text-lg font-semibold text-foreground">
+          <h2 className="font-display text-2xl font-semibold text-fg">
             {isFirstStudent ? "Add your first student" : "Add a student"}
           </h2>
-          <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">
+          <p className="mt-0.5 text-xs leading-relaxed text-fg-2">
             Enter a name for {className}. ClassTrace creates the mention handle
             automatically.
           </p>
@@ -111,7 +111,7 @@ export function ManualStudentEntryForm({
         <div className="min-w-0 flex-1 basis-52 space-y-1.5">
           <label
             htmlFor="student-display-name"
-            className="text-sm font-medium text-foreground"
+            className="label block text-fg-2"
           >
             Student name
           </label>
@@ -131,7 +131,7 @@ export function ManualStudentEntryForm({
         <Button
           type="submit"
           size="lg"
-          className="h-10 rounded-lg px-5 text-sm font-semibold"
+          className="h-10"
           disabled={isPending}
         >
           {isPending ? "Saving…" : "Add student"}
@@ -139,7 +139,7 @@ export function ManualStudentEntryForm({
       </div>
 
       <details className="group">
-        <summary className="-mx-1 flex min-h-9 w-fit cursor-pointer list-none items-center gap-1 rounded-md px-1 text-xs font-medium text-muted-foreground outline-none transition-colors hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background [&::-webkit-details-marker]:hidden">
+        <summary className="-mx-1 flex min-h-9 w-fit cursor-pointer list-none items-center gap-1 rounded-sm px-1 text-xs font-medium text-fg-2 outline-none transition-colors hover:text-fg focus-visible:ring-2 focus-visible:ring-live-bright focus-visible:ring-offset-2 focus-visible:ring-offset-base [&::-webkit-details-marker]:hidden">
           <ChevronRight
             className="size-3.5 transition-transform group-open:rotate-90"
             aria-hidden="true"
@@ -150,12 +150,12 @@ export function ManualStudentEntryForm({
           <div className="space-y-1.5">
             <label
               htmlFor="student-mention-handle"
-              className="text-sm font-medium text-foreground"
+              className="label block text-fg-2"
             >
               Mention handle
             </label>
-            <div className="flex h-10 rounded-md border border-border bg-background/50 focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/20">
-              <span className="flex items-center border-r border-border px-3 text-sm text-muted-foreground">
+            <div className="flex h-10 rounded-md border border-line-2 bg-well focus-within:border-fg focus-within:ring-3 focus-within:ring-live-bright/20">
+              <span className="flex items-center border-r border-line px-3 text-sm text-fg-2">
                 @
               </span>
               <input
@@ -164,14 +164,14 @@ export function ManualStudentEntryForm({
                 type="text"
                 value={mentionHandle}
                 onChange={(event) => handleMentionHandleChange(event.target.value)}
-                className="min-w-0 flex-1 bg-transparent px-3 text-sm text-foreground outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
+                className="min-w-0 flex-1 bg-transparent px-3 text-sm text-fg outline-none placeholder:text-fg-2 disabled:cursor-not-allowed disabled:opacity-50"
                 aria-invalid={Boolean(error)}
                 aria-describedby={error ? "student-entry-error" : undefined}
                 autoComplete="off"
                 disabled={isPending}
               />
             </div>
-            <p className="text-xs leading-relaxed text-muted-foreground">
+            <p className="text-xs leading-relaxed text-fg-2">
               Change the handle only when the automatic one is not a good fit.
             </p>
           </div>
@@ -179,7 +179,7 @@ export function ManualStudentEntryForm({
           <div className="space-y-1.5">
             <label
               htmlFor="student-school-id"
-              className="text-sm font-medium text-foreground"
+              className="label block text-fg-2"
             >
               School/local ID
             </label>
@@ -199,7 +199,7 @@ export function ManualStudentEntryForm({
               autoComplete="off"
               disabled={isPending}
             />
-            <p className="text-xs leading-relaxed text-muted-foreground">
+            <p className="text-xs leading-relaxed text-fg-2">
               Leave blank if you do not use local IDs.
             </p>
           </div>

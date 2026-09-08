@@ -1,38 +1,36 @@
 import type { Metadata } from "next";
+import { LandingBoundaries } from "@/components/landing/landing-boundaries";
 import { LandingHeader } from "@/components/landing/landing-header";
-import { LandingHero } from "@/components/landing/landing-hero";
-import { LandingBenefits } from "@/components/landing/landing-benefits";
-import { LandingFeatures } from "@/components/landing/landing-features";
-import { LandingHowItWorks } from "@/components/landing/landing-how-it-works";
-import { LandingResponsive } from "@/components/landing/landing-responsive";
-import { LandingClosingCta } from "@/components/landing/landing-closing-cta";
+import { LandingInvitation } from "@/components/landing/landing-invitation";
+import { LandingOpening } from "@/components/landing/landing-opening";
+import { LandingQuestion } from "@/components/landing/landing-question";
+import { LandingTrace } from "@/components/landing/landing-trace";
 import { SiteFooter } from "@/components/layout/site-footer";
 
 export const metadata: Metadata = {
-  title: "ClassTrace — Student evidence capture for teachers",
+  title: "ClassTrace — Write one sentence about one student",
   description:
-    "Invitation-only beta for turning quick teacher notes into organized, teacher-validated student evidence.",
+    "Invitation-only beta. Capture a student observation in one sentence, review it before it saves, and ask your evidence questions later.",
 };
 
 export default function Home() {
   return (
-    <div className="public-landing relative flex min-h-dvh flex-col bg-background">
+    <div className="public-landing relative flex min-h-dvh flex-col bg-base">
       <a
         href="#main-content"
-        className="fixed left-4 top-3 z-[70] -translate-y-20 rounded-md bg-foreground px-3 py-2 text-sm font-semibold text-background transition-transform focus:translate-y-0"
+        className="fixed left-4 top-3 z-[70] -translate-y-20 rounded-full bg-live-bright px-4 py-2 text-sm font-semibold text-live-fg transition-transform focus:translate-y-0"
       >
         Skip to main content
       </a>
       <LandingHeader />
       <main id="main-content" tabIndex={-1} className="flex-1 outline-none">
-        <LandingHero />
-        <LandingHowItWorks />
-        <LandingBenefits />
-        <LandingFeatures />
-        <LandingResponsive />
-        <LandingClosingCta />
+        <LandingOpening />
+        <LandingQuestion />
+        <LandingTrace />
+        <LandingBoundaries />
+        <LandingInvitation />
       </main>
-      <SiteFooter showAccessLinks tone="inverse" />
+      <SiteFooter showAccessLinks />
     </div>
   );
 }

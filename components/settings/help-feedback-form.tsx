@@ -35,7 +35,7 @@ const TYPE_OPTIONS = Object.entries(FEEDBACK_TYPE_LABELS) as Array<
   [FeedbackType, (typeof FEEDBACK_TYPE_LABELS)[FeedbackType]]
 >;
 
-const FEEDBACK_INPUT_CLASS_NAME = `${ROSTER_INPUT_CLASS_NAME} aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20`;
+const FEEDBACK_INPUT_CLASS_NAME = `${ROSTER_INPUT_CLASS_NAME} aria-invalid:border-danger aria-invalid:ring-2 aria-invalid:ring-danger/20`;
 
 export function HelpFeedbackForm({
   initialReplyEmail,
@@ -136,7 +136,7 @@ export function HelpFeedbackForm({
         <div className="space-y-1.5">
           <label
             htmlFor="feedback-type"
-            className="text-sm font-medium text-foreground"
+            className="label block text-fg-2"
           >
             What can we help with?
           </label>
@@ -162,7 +162,7 @@ export function HelpFeedbackForm({
             ))}
           </select>
           {fieldErrors.type ? (
-            <p id="feedback-type-error" className="text-sm text-destructive">
+            <p id="feedback-type-error" className="text-sm text-danger">
               {fieldErrors.type}
             </p>
           ) : null}
@@ -171,7 +171,7 @@ export function HelpFeedbackForm({
         <div className="space-y-1.5">
           <label
             htmlFor="feedback-reply-email"
-            className="text-sm font-medium text-foreground"
+            className="label block text-fg-2"
           >
             Reply email
           </label>
@@ -195,7 +195,7 @@ export function HelpFeedbackForm({
           {fieldErrors.replyEmail ? (
             <p
               id="feedback-reply-email-error"
-              className="text-sm text-destructive"
+              className="text-sm text-danger"
             >
               {fieldErrors.replyEmail}
             </p>
@@ -204,15 +204,15 @@ export function HelpFeedbackForm({
       </div>
 
       {errorReference ? (
-        <div className="border-y border-border/70 py-3">
-          <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            <CircleAlert className="size-3.5 text-destructive" aria-hidden="true" />
+        <div className="border-y border-line py-3">
+          <p className="flex items-center gap-2 label text-fg-3">
+            <CircleAlert className="size-3.5 text-danger" aria-hidden="true" />
             Attached error reference
           </p>
-          <code className="mt-1 block select-all break-all font-mono text-sm font-semibold text-foreground">
+          <code className="mt-1 block select-all break-all font-mono text-sm font-semibold text-fg">
             {errorReference}
           </code>
-          <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+          <p className="mt-1 text-xs leading-relaxed text-fg-2">
             This reference will be included with your report so it can be
             matched to the server logs.
           </p>
@@ -222,7 +222,7 @@ export function HelpFeedbackForm({
       <div className="space-y-1.5">
         <label
           htmlFor="feedback-description"
-          className="text-sm font-medium text-foreground"
+          className="label block text-fg-2"
         >
           Description
         </label>
@@ -234,7 +234,7 @@ export function HelpFeedbackForm({
             setDescription(event.target.value);
             clearFieldError("description");
           }}
-          className="min-h-28 resize-y"
+          className="min-h-28 resize-y bg-plate"
           placeholder="What happened, and what were you trying to do?"
           aria-invalid={Boolean(fieldErrors.description)}
           aria-describedby={[
@@ -250,17 +250,17 @@ export function HelpFeedbackForm({
         {fieldErrors.description ? (
           <p
             id="feedback-description-error"
-            className="text-sm text-destructive"
+            className="text-sm text-danger"
           >
             {fieldErrors.description}
           </p>
         ) : null}
         <p
           id="feedback-privacy-guidance"
-          className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground"
+          className="flex items-start gap-2 text-xs leading-relaxed text-fg-2"
         >
           <ShieldCheck
-            className="mt-0.5 size-3.5 shrink-0 text-validated-foreground"
+            className="mt-0.5 size-3.5 shrink-0 text-fg"
             aria-hidden="true"
           />
           <span>
@@ -277,8 +277,8 @@ export function HelpFeedbackForm({
           tabIndex={message.tone === "error" ? -1 : undefined}
           className={
             message.tone === "error"
-              ? "border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-              : "border border-border bg-card px-3 py-2 text-sm text-foreground"
+              ? "rounded-md border border-danger/40 bg-danger-soft px-3 py-2 text-sm text-danger outline-none focus-visible:ring-2 focus-visible:ring-live-bright focus-visible:ring-offset-2 focus-visible:ring-offset-base"
+              : "rounded-md border border-line bg-well px-3 py-2 text-sm text-fg"
           }
         >
           {message.text}
@@ -288,7 +288,7 @@ export function HelpFeedbackForm({
       <Button
         type="submit"
         size="lg"
-        className="h-10 px-4 font-semibold"
+        className="h-10 px-4"
         disabled={isPending}
       >
         <Send aria-hidden="true" />

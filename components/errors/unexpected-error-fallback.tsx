@@ -69,10 +69,10 @@ export function UnexpectedErrorFallback({
     <div className="mx-auto w-full max-w-[760px] px-4 py-10 sm:px-6 sm:py-14 lg:px-8">
       <section
         aria-labelledby="unexpected-error-heading"
-        className="rounded-card border border-border bg-card p-5 shadow-paper sm:p-7"
+        className="plate p-5 sm:p-7"
       >
         <div className="flex items-start gap-3">
-          <span className="flex size-10 shrink-0 items-center justify-center rounded-md border border-destructive/25 bg-destructive/10 text-destructive">
+          <span className="flex size-10 shrink-0 items-center justify-center rounded-sm border border-danger/40 bg-danger-soft text-danger">
             <TriangleAlert
               className="size-4"
               strokeWidth={1.75}
@@ -80,19 +80,19 @@ export function UnexpectedErrorFallback({
             />
           </span>
           <div className="min-w-0">
-            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            <p className="label text-fg-3">
               ClassTrace could not finish this request
             </p>
             <h1
               id="unexpected-error-heading"
-              className="mt-2 font-sans text-2xl font-semibold tracking-tight text-foreground"
+              className="mt-2 font-display text-3xl font-semibold leading-none tracking-[-0.01em] text-fg"
             >
               Something went wrong
             </h1>
           </div>
         </div>
 
-        <div className="mt-5 space-y-3 text-sm leading-relaxed text-muted-foreground">
+        <div className="mt-5 space-y-3 text-sm leading-relaxed text-fg-2">
           <p>
             We can&apos;t confirm whether your latest work was saved. Retry, then
             check the page before repeating a save or other change.
@@ -103,11 +103,11 @@ export function UnexpectedErrorFallback({
           </p>
         </div>
 
-        <div className="mt-5 border-y border-border/70 py-3">
-          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+        <div className="mt-5 border-y border-dashed border-line-2 py-3">
+          <p className="label text-fg-3">
             Reference ID
           </p>
-          <code className="mt-1 block select-all break-all font-mono text-sm font-semibold text-foreground">
+          <code className="mt-1 block select-all break-all font-mono text-sm font-semibold text-fg">
             {referenceId}
           </code>
         </div>
@@ -116,7 +116,7 @@ export function UnexpectedErrorFallback({
           <Button
             type="button"
             size="lg"
-            className="h-10 px-4 font-semibold"
+            className="h-10 px-4"
             onClick={handleRetry}
             disabled={retrying}
           >
@@ -127,7 +127,7 @@ export function UnexpectedErrorFallback({
             asChild
             variant="outline"
             size="lg"
-            className="h-10 px-4 font-semibold"
+            className="h-10 px-4"
           >
             <a href={reportHref}>
               <MessageCircleQuestion aria-hidden="true" />

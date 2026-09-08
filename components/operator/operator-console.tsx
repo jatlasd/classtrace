@@ -40,9 +40,9 @@ function formatDate(value: string | null): string {
 
 function DetailRow({ label, value }: { label: string; value: string }) {
   return (
-    <div className="grid gap-1 border-t border-border/70 py-3 sm:grid-cols-[190px_minmax(0,1fr)] sm:gap-5">
-      <dt className="text-xs font-semibold text-muted-foreground">{label}</dt>
-      <dd className="min-w-0 break-words text-sm font-medium text-foreground [overflow-wrap:anywhere]">
+    <div className="grid gap-1 border-t border-line py-3 sm:grid-cols-[190px_minmax(0,1fr)] sm:gap-5">
+      <dt className="label text-fg-3">{label}</dt>
+      <dd className="min-w-0 break-words text-sm font-medium text-fg [overflow-wrap:anywhere]">
         {value}
       </dd>
     </div>
@@ -51,9 +51,9 @@ function DetailRow({ label, value }: { label: string; value: string }) {
 
 function CountCell({ label, value }: { label: string; value: number }) {
   return (
-    <div className="min-w-0 px-4 py-4 first:pl-0 last:pr-0 sm:border-l sm:border-border/70 sm:first:border-l-0 sm:first:pl-0">
-      <p className="text-2xl font-semibold tabular-nums text-foreground">{value}</p>
-      <p className="mt-1 text-xs font-medium text-muted-foreground">{label}</p>
+    <div className="min-w-0 px-4 py-4 first:pl-0 last:pr-0 sm:border-l sm:border-line sm:first:border-l-0 sm:first:pl-0">
+      <p className="text-2xl font-semibold tabular-nums text-fg">{value}</p>
+      <p className="mt-1 text-xs font-medium text-fg-2">{label}</p>
     </div>
   );
 }
@@ -158,19 +158,19 @@ export function OperatorConsole() {
 
   const messageClassName =
     message?.tone === "error"
-      ? "border-destructive/30 bg-destructive/10 text-destructive"
-      : "border-border bg-card text-foreground";
+      ? "border-danger bg-danger text-danger"
+      : "border-line bg-plate text-fg";
 
   return (
     <div className="space-y-7">
       <section aria-labelledby="account-search-heading">
         <div className="flex items-start gap-3">
-          <Search className="mt-0.5 size-5 shrink-0 text-link" aria-hidden="true" />
+          <Search className="mt-0.5 size-5 shrink-0 text-fg" aria-hidden="true" />
           <div>
-            <h2 id="account-search-heading" className="text-lg font-semibold text-foreground">
+            <h2 id="account-search-heading" className="text-lg font-semibold text-fg">
               Find one account
             </h2>
-            <p className="mt-1 max-w-[70ch] text-sm leading-relaxed text-muted-foreground">
+            <p className="mt-1 max-w-[70ch] text-sm leading-relaxed text-fg-2">
               Enter the complete email address. Partial matching and account browsing are disabled.
             </p>
           </div>
@@ -178,7 +178,7 @@ export function OperatorConsole() {
 
         <form className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-end" onSubmit={handleSearch}>
           <div className="min-w-0 flex-1">
-            <label htmlFor="operator-account-email" className="text-sm font-medium text-foreground">
+            <label htmlFor="operator-account-email" className="label block text-fg-2">
               Account email
             </label>
             <input
@@ -213,19 +213,19 @@ export function OperatorConsole() {
       ) : null}
 
       {account ? (
-        <div className="space-y-7 border-t border-border pt-7">
+        <div className="space-y-7 border-t border-line pt-7">
           <section aria-labelledby="account-heading">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
               <div>
-                <h2 id="account-heading" className="text-xl font-semibold text-foreground">
+                <h2 id="account-heading" className="text-xl font-semibold text-fg">
                   {account.displayName}
                 </h2>
-                <p className="mt-1 break-words text-sm text-muted-foreground [overflow-wrap:anywhere]">
+                <p className="mt-1 break-words text-sm text-fg-2 [overflow-wrap:anywhere]">
                   {account.email}
                 </p>
               </div>
-              <span className="inline-flex w-fit items-center gap-1.5 rounded-full border border-border bg-muted/60 px-2.5 py-1 text-xs font-medium text-muted-foreground">
-                <ShieldCheck className="size-3.5 text-link" aria-hidden="true" />
+              <span className="inline-flex w-fit items-center gap-1.5 rounded-full border border-line bg-well px-2.5 py-1 text-xs font-medium text-fg-2">
+                <ShieldCheck className="size-3.5 text-fg" aria-hidden="true" />
                 Exact match
               </span>
             </div>
@@ -247,45 +247,45 @@ export function OperatorConsole() {
               ) : null}
             </dl>
 
-            <div className="mt-3 grid border-y border-border/70 sm:grid-cols-3">
+            <div className="mt-3 grid border-y border-line sm:grid-cols-3">
               <CountCell label="Classes" value={account.classTrace?.counts.classGroups ?? EMPTY_COUNTS.classGroups} />
               <CountCell label="Students" value={account.classTrace?.counts.rosterStudents ?? EMPTY_COUNTS.rosterStudents} />
               <CountCell label="Evidence records" value={account.classTrace?.counts.evidenceRecords ?? EMPTY_COUNTS.evidenceRecords} />
             </div>
           </section>
 
-          <section aria-labelledby="destructive-actions-heading" className="border-t border-border pt-7">
+          <section aria-labelledby="destructive-actions-heading" className="border-t border-line pt-7">
             <div className="flex items-start gap-3">
-              <ShieldAlert className="mt-0.5 size-5 shrink-0 text-destructive" aria-hidden="true" />
+              <ShieldAlert className="mt-0.5 size-5 shrink-0 text-danger" aria-hidden="true" />
               <div>
-                <h2 id="destructive-actions-heading" className="text-lg font-semibold text-foreground">
+                <h2 id="destructive-actions-heading" className="text-lg font-semibold text-fg">
                   Destructive actions
                 </h2>
-                <p className="mt-1 max-w-[70ch] text-sm leading-relaxed text-muted-foreground">
+                <p className="mt-1 max-w-[70ch] text-sm leading-relaxed text-fg-2">
                   These actions are permanent, audited, and intentionally separate.
                 </p>
               </div>
             </div>
 
             {account.isCurrentOperator ? (
-              <p role="status" className="mt-4 border border-border bg-muted/60 px-4 py-3 text-sm text-foreground">
+              <p role="status" className="mt-4 border border-line bg-well px-4 py-3 text-sm text-fg">
                 Self-deletion is blocked for the configured operator account.
               </p>
             ) : (
-              <div className="mt-5 divide-y divide-border border-y border-border">
+              <div className="mt-5 divide-y divide-border border-y border-line">
                 <div className="py-5">
                   <div className="flex items-start gap-3">
-                    <Database className="mt-0.5 size-4 shrink-0 text-destructive" aria-hidden="true" />
+                    <Database className="mt-0.5 size-4 shrink-0 text-danger" aria-hidden="true" />
                     <div className="min-w-0 flex-1">
-                      <h3 className="text-sm font-semibold text-foreground">Delete ClassTrace data</h3>
-                      <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+                      <h3 className="text-sm font-semibold text-fg">Delete ClassTrace data</h3>
+                      <p className="mt-1 text-sm leading-relaxed text-fg-2">
                         Deletes the teacher profile, workspace, classes, students, and evidence. The Clerk user remains.
                       </p>
 
                       {account.classTrace ? (
                         <form className="mt-4 space-y-3" onSubmit={handleWorkspaceDelete}>
                           <div>
-                            <label htmlFor="workspace-delete-confirmation" className="text-sm font-medium text-foreground">
+                            <label htmlFor="workspace-delete-confirmation" className="label block text-fg-2">
                               Type {account.email} to confirm
                             </label>
                             <input
@@ -303,7 +303,7 @@ export function OperatorConsole() {
                           </Button>
                         </form>
                       ) : (
-                        <p className="mt-3 text-sm font-medium text-validated-foreground">
+                        <p className="mt-3 text-sm font-medium text-fg">
                           No ClassTrace data remains.
                         </p>
                       )}
@@ -313,17 +313,17 @@ export function OperatorConsole() {
 
                 <div className="py-5">
                   <div className="flex items-start gap-3">
-                    <KeyRound className="mt-0.5 size-4 shrink-0 text-destructive" aria-hidden="true" />
+                    <KeyRound className="mt-0.5 size-4 shrink-0 text-danger" aria-hidden="true" />
                     <div className="min-w-0 flex-1">
-                      <h3 className="text-sm font-semibold text-foreground">Delete Clerk user</h3>
-                      <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+                      <h3 className="text-sm font-semibold text-fg">Delete Clerk user</h3>
+                      <p className="mt-1 text-sm leading-relaxed text-fg-2">
                         Deletes the sign-in identity. This is available only after ClassTrace data is gone.
                       </p>
 
                       {!account.classTrace ? (
                         <form className="mt-4 space-y-3" onSubmit={handleClerkDelete}>
                           <div>
-                            <label htmlFor="clerk-delete-confirmation" className="text-sm font-medium text-foreground">
+                            <label htmlFor="clerk-delete-confirmation" className="label block text-fg-2">
                               Type {account.email} to confirm
                             </label>
                             <input
@@ -341,7 +341,7 @@ export function OperatorConsole() {
                           </Button>
                         </form>
                       ) : (
-                        <p className="mt-3 text-sm font-medium text-muted-foreground">
+                        <p className="mt-3 text-sm font-medium text-fg-2">
                           Delete ClassTrace data first.
                         </p>
                       )}

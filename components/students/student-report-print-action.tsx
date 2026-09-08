@@ -10,7 +10,6 @@ export function StudentReportPrintAction(): ReactElement {
       type="button"
       variant="outline"
       size="sm"
-      className="h-9 rounded-lg px-4"
       onClick={() => window.print()}
     >
       <Printer className="size-3.5" strokeWidth={1.75} />

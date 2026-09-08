@@ -188,8 +188,8 @@ export function StudentResolutionField({
       {isCreatingNew ? (
         <form onSubmit={handleCreateStudent} className="space-y-3">
           <div className="flex items-center justify-between gap-3">
-            <p className="text-sm font-medium text-foreground">
-              Add @{handle} to your roster
+            <p className="text-sm font-medium text-fg">
+              Add <span className="font-mono">@{handle}</span> to your roster
             </p>
             <Button
               type="button"
@@ -208,7 +208,7 @@ export function StudentResolutionField({
             <div className="space-y-1">
               <label
                 htmlFor={displayNameId}
-                className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground"
+                className="label text-fg-2"
               >
                 Student name
               </label>
@@ -225,7 +225,7 @@ export function StudentResolutionField({
             <div className="space-y-1">
               <label
                 htmlFor={classGroupId}
-                className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground"
+                className="label text-fg-2"
               >
                 Class
               </label>
@@ -261,7 +261,7 @@ export function StudentResolutionField({
           <div>
             <label
               htmlFor={rosterSearchId}
-              className="mb-1 block text-xs font-medium text-foreground"
+              className="label mb-1 block text-fg-2"
             >
               {mention ? "Match roster student" : "Choose roster student"}
             </label>
@@ -300,7 +300,7 @@ export function StudentResolutionField({
                 id={rosterResultsId}
                 role="listbox"
                 aria-label="Roster matches"
-                className="mt-1 overflow-hidden rounded-md border border-border bg-card"
+                className="mt-1 overflow-hidden rounded-sm border border-line-2 bg-plate shadow-lift"
               >
                 {visibleRosterStudents.length > 0 ? (
                   visibleRosterStudents.map((student, index) => (
@@ -314,20 +314,20 @@ export function StudentResolutionField({
                       onMouseDown={(event) => event.preventDefault()}
                       onMouseEnter={() => setActiveResultIndex(index)}
                       onClick={() => handleRosterStudentChoice(student)}
-                      className={`flex min-h-10 w-full items-center gap-2 border-b border-border/70 px-3 py-2 text-left text-sm text-foreground outline-none last:border-b-0 ${
+                      className={`flex min-h-11 w-full items-center gap-2 border-b border-line px-3 py-2 text-left text-sm text-fg outline-none last:border-b-0 ${
                         index === activeResultIndex
-                          ? "bg-muted"
-                          : "bg-card hover:bg-muted/60"
+                          ? "bg-live-soft"
+                          : "bg-plate hover:bg-well"
                       }`}
                     >
                       <span className="font-medium">{student.displayName}</span>
-                      <span className="truncate text-muted-foreground">
+                      <span className="truncate font-mono text-xs text-fg-3">
                         @{student.mentionHandle}
                       </span>
                     </button>
                   ))
                 ) : (
-                  <p className="px-3 py-2 text-sm text-muted-foreground">
+                  <p className="px-3 py-2 text-sm italic text-fg-2">
                     No matching roster student.
                   </p>
                 )}
@@ -346,7 +346,7 @@ export function StudentResolutionField({
               onError("");
             }}
           >
-            <UserPlus aria-hidden="true" className="size-4 text-link" />
+            <UserPlus aria-hidden="true" className="size-4" />
             Add @{handle} as a new student
           </Button>
           ) : null}

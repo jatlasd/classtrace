@@ -139,9 +139,9 @@ describe("ExploreEvidencePage", () => {
   it("starts with evidence and keeps filtering optional", () => {
     renderPage(evidenceResults, false);
     expect(screen.getByText("Ask questions of the evidence you reviewed and saved.")).toBeTruthy();
-    expect(screen.getByRole("button", { name: "Filter by student" })).toBeTruthy();
-    expect(screen.getByRole("button", { name: "Filter by tags" })).toBeTruthy();
-    expect(screen.getByRole("button", { name: "Filter by date" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: /^Filter by student/ })).toBeTruthy();
+    expect(screen.getByRole("button", { name: /^Filter by tags/ })).toBeTruthy();
+    expect(screen.getByRole("button", { name: /^Filter by date/ })).toBeTruthy();
     expect(screen.getByRole("heading", { name: "All evidence" })).toBeTruthy();
     expect(screen.getByRole("button", { name: "Evidence" }).getAttribute("aria-pressed")).toBe("true");
     expect(screen.queryByRole("region", { name: "Filter evidence" })).toBeNull();
@@ -200,9 +200,9 @@ describe("ExploreEvidencePage", () => {
   });
 
   it.each([
-    ["Filter by student", "Student"],
-    ["Filter by tags", "Tags"],
-    ["Filter by date", "Date"],
+    [/^Filter by student/, "Student"],
+    [/^Filter by tags/, "Tags"],
+    [/^Filter by date/, "Date"],
   ])("opens %s at the relevant field without applying filters", async (shortcut, label) => {
     renderPage(evidenceResults, false);
     fireEvent.click(screen.getByRole("button", { name: shortcut }));

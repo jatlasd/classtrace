@@ -54,21 +54,21 @@ export function RosterStudentRow({
   }
 
   return (
-    <li className="border-b border-border last:border-b-0">
+    <li className="border-b border-line last:border-b-0">
       <div className="flex flex-wrap items-center gap-x-3 gap-y-2 px-4 py-2.5 sm:px-5">
         <Link
           href={routes.student(student.id)}
           aria-label={`Open ${student.displayName} timeline`}
-          className="-m-1.5 flex min-w-0 flex-1 basis-56 items-center gap-3 rounded-md p-1.5 outline-none transition-colors hover:bg-muted/50 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+          className="-m-1.5 flex min-w-0 flex-1 basis-56 items-center gap-3 rounded-sm p-1.5 outline-none transition-colors hover:bg-well focus-visible:ring-2 focus-visible:ring-live-bright focus-visible:ring-offset-2 focus-visible:ring-offset-base"
         >
-          <span className="flex size-8 shrink-0 items-center justify-center rounded-md border border-border bg-muted/50 text-[10px] font-bold text-foreground">
+          <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-fg font-display text-[0.7rem] font-semibold text-base">
             {studentInitials(student.displayName)}
           </span>
           <span className="min-w-0">
-            <span className="block break-words text-sm font-medium leading-snug text-foreground [overflow-wrap:anywhere]">
+            <span className="block break-words font-display text-lg font-semibold leading-tight text-fg [overflow-wrap:anywhere]">
               {student.displayName}
             </span>
-            <span className="mt-0.5 block break-words text-xs text-muted-foreground [overflow-wrap:anywhere]">
+            <span className="mt-0.5 block break-words font-mono text-xs text-fg-3 [overflow-wrap:anywhere]">
               {metaParts.join(" · ")}
             </span>
           </span>
@@ -77,7 +77,7 @@ export function RosterStudentRow({
           type="button"
           variant="ghost"
           size="sm"
-          className="text-muted-foreground"
+          className="text-fg-2"
           onClick={() => setIsManaging((current) => !current)}
           aria-expanded={isManaging}
           aria-controls={managementId}
@@ -90,7 +90,7 @@ export function RosterStudentRow({
       {isManaging ? (
         <div
           id={managementId}
-          className="space-y-4 border-t border-border/60 bg-muted/20 px-4 py-4 sm:px-5"
+          className="space-y-4 border-t border-dashed border-line-2 bg-well px-4 py-4 sm:px-5"
         >
           <RosterStudentEditForm
             student={{

@@ -91,17 +91,16 @@ export function StudentEvidenceExportAction({
       <Button
         type="button"
         variant="outline"
-        size="sm"
         onClick={handleExport}
         disabled={!hasEvidence || status.state === "pending"}
         aria-label={`Export ${studentName} evidence as CSV`}
       >
-        <Download className="size-3.5" aria-hidden="true" />
-        {status.state === "pending" ? "Preparing CSV" : "Export evidence"}
+        <Download className="size-4" aria-hidden="true" />
+        {status.state === "pending" ? "Preparing CSV" : "Export CSV"}
       </Button>
       <p
         className={`min-h-4 text-xs leading-relaxed ${
-          status.state === "error" ? "text-destructive" : "text-muted-foreground"
+          status.state === "error" ? "text-danger" : "text-fg-3"
         }`}
         role={status.state === "error" ? "alert" : "status"}
         aria-live="polite"

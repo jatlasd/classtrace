@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowRight, CalendarDays, ChevronDown, ChevronUp, FileSearch, List, SlidersHorizontal, Tags, Users, X } from "lucide-react";
+import { ChevronDown, ChevronUp, SlidersHorizontal, X } from "lucide-react";
 import Link from "next/link";
 import {
   useId,
@@ -58,11 +58,35 @@ const DATE_RULE_LABELS: Record<ExploreDateCondition["rule"], string> = {
   thisMonth: "This month",
 };
 
-const FIELD_CONTROL_CLASS =
-  "min-h-11 min-w-0 w-full rounded-md border border-input bg-background px-2.5 text-base sm:text-sm text-foreground outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 lg:min-h-9";
+const FIELD_CONTROL_CLASS = "field";
+
+const FIELD_LABEL_CLASS = "label mb-1.5 block text-fg-2";
 
 const REVEAL_ACTION_CLASS =
-  "min-h-11 rounded-md px-1 text-xs font-semibold text-link underline-offset-4 outline-none hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 lg:min-h-8";
+  "min-h-11 rounded-full px-1 text-[13px] font-semibold text-fg underline decoration-line-2 underline-offset-4 outline-none hover:decoration-fg focus-visible:ring-2 focus-visible:ring-live-bright focus-visible:ring-offset-2 lg:min-h-8";
+
+const SECTION_HEADING_CLASS = "label text-fg-3";
+
+type FilterTarget = "student" | "class" | "tags" | "exclude" | "date" | "photo";
+
+function listNames(ids: string[], choices: { id: string; label: string; }[], joiner = "and"): string {
+  const names = ids.map((id) => choices.find((choice) => choice.id === id)?.label ?? id);
+  if (names.length <= 2) return names.join(` ${joiner} `);
+  return `${names.slice(0, 2).join(", ")} ${joiner} ${names.length - 2} more`;
+}
+
+function describeDateSlot(date: ExploreDateCondition): string {
+  if (date.rule === "exact") return dateFromKey(date.date) ? formatEvidenceDate(`${date.date}T00:00:00`) : "a date";
+  if (date.rule === "range") {
+    return dateFromKey(date.startDate) && dateFromKey(date.endDate)
+      ? `${formatEvidenceDate(`${date.startDate}T00:00:00`)} to ${formatEvidenceDate(`${date.endDate}T00:00:00`)}`
+      : "a date range";
+  }
+  if (date.rule === "last7") return "the last 7 days";
+  if (date.rule === "last30") return "the last 30 days";
+  if (date.rule === "thisMonth") return "this month";
+  return "all time";
+}
 
 function querySignature(query: ExploreEvidenceQuery): string {
   return JSON.stringify(query);
@@ -165,40 +189,65 @@ function secondaryTagKey(mode: TagMatchMode): TagListKey {
   return mode === "all" ? "includeAny" : "includeAll";
 }
 
+function Slot({
+  target,
+  set,
+  onOpen,
+  children,
+}: {
+  target: FilterTarget;
+  set: boolean;
+  onOpen: (target: FilterTarget) => void;
+  children: string;
+}) {
+  const names: Record<FilterTarget, string> = {
+    student: "Filter by student",
+    class: "Filter by class",
+    tags: "Filter by tags",
+    exclude: "Filter by excluded tags",
+    date: "Filter by date",
+    photo: "Filter by photo",
+  };
+  return (
+    <button
+      type="button"
+      aria-controls="explore-filters"
+      data-set={set}
+      onClick={() => onOpen(target)}
+      className="slot"
+    >
+      <span className="sr-only">{names[target]}: </span>
+      {children}
+    </button>
+  );
+}
+
 function EvidenceResultRow({ record, showStudent = true }: { record: ExploreEvidenceRecord; showStudent?: boolean; }) {
   return (
-    <li className="border-b border-border even:bg-card last:border-b-0">
-      <article
-        aria-label={`Saved evidence for ${record.studentDisplayName}`}
-        className="grid gap-2 px-3 py-4 sm:grid-cols-[6.5rem_minmax(0,1fr)] sm:gap-4 sm:px-4"
-      >
-        <time dateTime={record.evidenceDate} className="text-xs font-medium tabular-nums text-muted-foreground sm:pt-0.5">
-          {formatEvidenceDate(record.evidenceDate)}
-        </time>
-        <div className="min-w-0">
-          {showStudent ? <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+    <li className="trace-node pl-7 py-4">
+      <article aria-label={`Saved evidence for ${record.studentDisplayName}`} className="min-w-0">
+        <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+          {showStudent ? (
             <Link
               href={routes.student(record.rosterStudentId)}
-              className="break-words rounded-sm text-sm font-semibold text-link underline-offset-4 outline-none [overflow-wrap:anywhere] hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              className="break-words rounded-sm font-display text-[1.05rem] font-semibold leading-tight text-fg underline-offset-4 outline-none [overflow-wrap:anywhere] hover:underline focus-visible:ring-2 focus-visible:ring-live-bright focus-visible:ring-offset-2"
             >
               {record.studentDisplayName}
             </Link>
-            <span className="break-words text-xs text-muted-foreground [overflow-wrap:anywhere]">
-              @{record.studentMentionHandle}
-            </span>
-            {record.classGroupName ? (
-              <span className="break-words border-l border-border pl-2 text-xs text-muted-foreground [overflow-wrap:anywhere]">
-                {record.classGroupName}
-              </span>
-            ) : null}
-          </div> : null}
-          <EvidenceRecordContent
-            record={record}
-            compact
-            showStructuredSummary={false}
-            textClassName="mt-1.5 max-w-[75ch]"
-          />
+          ) : null}
+          <time dateTime={record.evidenceDate} className="text-[13px] font-medium text-fg-3">
+            {formatEvidenceDate(record.evidenceDate)}
+          </time>
+          {showStudent && record.classGroupName ? (
+            <span className="break-words text-[13px] text-fg-3 [overflow-wrap:anywhere]">{record.classGroupName}</span>
+          ) : null}
         </div>
+        <EvidenceRecordContent
+          record={record}
+          compact
+          showStructuredSummary={false}
+          textClassName="mt-1.5 max-w-[70ch]"
+        />
       </article>
     </li>
   );
@@ -224,29 +273,12 @@ function ResultPagination({
   if (!hasNewer && !hasOlder) return null;
 
   return (
-    <nav
-      aria-label={label}
-      className="flex flex-wrap items-center justify-between gap-3 border-t border-border px-4 py-3"
-    >
-      <Button
-        type="button"
-        variant="outline"
-        size="sm"
-        disabled={!hasNewer || pending}
-        onClick={() => onPage(page - 1)}
-      >
+    <nav aria-label={label} className="flex flex-wrap items-center justify-between gap-3 border-t border-line py-3">
+      <Button type="button" variant="outline" size="sm" disabled={!hasNewer || pending} onClick={() => onPage(page - 1)}>
         {chronological ? "Newer" : "Previous"}
       </Button>
-      <span className="text-xs font-medium tabular-nums text-muted-foreground">
-        Page {page}
-      </span>
-      <Button
-        type="button"
-        variant="outline"
-        size="sm"
-        disabled={!hasOlder || pending}
-        onClick={() => onPage(page + 1)}
-      >
+      <span className="label text-fg-3">Page {page}</span>
+      <Button type="button" variant="outline" size="sm" disabled={!hasOlder || pending} onClick={() => onPage(page + 1)}>
         {chronological ? "Older" : "Next"}
       </Button>
     </nav>
@@ -261,24 +293,21 @@ function EmptyResults({
   onRevise: () => void;
 }) {
   return (
-    <div className="border border-border bg-card px-5 py-7 text-sm leading-relaxed text-muted-foreground shadow-surface">
-      <div className="mb-3 flex size-10 items-center justify-center rounded-md border border-border bg-muted text-foreground">
-        <FileSearch aria-hidden="true" className="size-5" strokeWidth={1.75} />
-      </div>
-      <h2 className="font-sans text-base font-semibold text-foreground">
+    <div className="plate px-6 py-12 text-center text-[15px] leading-relaxed text-fg-2">
+      <h2 className="font-display text-2xl font-semibold text-fg">
         {noEvidence ? "No saved evidence yet." : "No evidence matches these filters."}
       </h2>
-      <p className="mt-1 max-w-[68ch]">
+      <p className="mx-auto mt-2 max-w-[48ch]">
         {noEvidence
           ? "Validated evidence will appear here after you review and save a student-specific capture."
           : "Try a wider date range or remove a filter to include more evidence."}
       </p>
       {noEvidence ? (
-        <Button asChild variant="outline" size="sm" className="mt-4">
+        <Button asChild variant="outline" className="mt-5">
           <Link href={routes.feed}>Capture evidence</Link>
         </Button>
       ) : (
-        <Button type="button" variant="outline" size="sm" className="mt-4" onClick={onRevise}>
+        <Button type="button" variant="outline" className="mt-5" onClick={onRevise}>
           Edit filters
         </Button>
       )}
@@ -298,9 +327,9 @@ function ModifierRemoveButton({
       type="button"
       aria-label={label}
       onClick={onClick}
-      className="flex min-h-11 items-center justify-center gap-2 self-end rounded-md px-2 text-xs font-semibold text-muted-foreground outline-none transition-colors hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 lg:min-h-9"
+      className="flex min-h-11 items-center justify-center gap-1.5 self-end rounded-full px-2.5 text-[13px] font-semibold text-fg-2 outline-none transition-colors hover:bg-well hover:text-fg focus-visible:ring-2 focus-visible:ring-live-bright focus-visible:ring-offset-2 lg:min-h-9"
     >
-      <X aria-hidden="true" className="size-4" />
+      <X aria-hidden="true" className="size-3.5" />
       Remove
     </button>
   );
@@ -330,6 +359,9 @@ export function ExploreEvidencePage({
   const [isSupportingPending, startSupportingTransition] = useTransition();
   const filterButtonRef = useRef<HTMLButtonElement>(null);
   const studentInputRef = useRef<HTMLInputElement>(null);
+  const classInputRef = useRef<HTMLInputElement>(null);
+  const excludeInputRef = useRef<HTMLInputElement>(null);
+  const photoRef = useRef<HTMLSelectElement>(null);
   const resultsHeadingRef = useRef<HTMLHeadingElement>(null);
   const queryGeneration = useRef(0);
   const tagsInputRef = useRef<HTMLInputElement>(null);
@@ -360,6 +392,16 @@ export function ExploreEvidencePage({
     () => options.tags.map((tag) => ({ id: tag.id, label: tag.label })),
     [options.tags]
   );
+
+  const studentSlot = draftQuery.studentIds.length ? listNames(draftQuery.studentIds, options.students, "or") : "any student";
+  const classSlot = draftQuery.classIds.length ? listNames(draftQuery.classIds, options.classes, "or") : null;
+  const tagSlotParts = [
+    primaryTags.length ? listNames(primaryTags, options.tags, tagMatchMode === "all" ? "and" : "or") : null,
+    secondaryTags.length ? `plus ${listNames(secondaryTags, options.tags, tagMatchMode === "all" ? "or" : "and")}` : null,
+  ].filter(Boolean);
+  const tagSlot = tagSlotParts.length ? tagSlotParts.join(" ") : "any tags";
+  const excludeSlot = draftQuery.tags.exclude.length ? listNames(draftQuery.tags.exclude, options.tags, "or") : null;
+  const photoSlot = draftQuery.photo === "with" ? "with a photo" : draftQuery.photo === "without" ? "without a photo" : null;
 
   function updateQuery(
     updater: (query: ExploreEvidenceQuery) => ExploreEvidenceQuery
@@ -397,10 +439,16 @@ export function ExploreEvidencePage({
     updateTags({ [secondaryTagKey(tagMatchMode)]: [] });
   }
 
-  function openFilters(target: "student" | "tags" | "date" = "student"): void {
+  function openFilters(target: FilterTarget = "student"): void {
     setFiltersOpen(true);
     window.setTimeout(() => {
-      const control = target === "tags" ? tagsInputRef.current : target === "date" ? dateRuleRef.current : studentInputRef.current;
+      const control =
+        target === "tags" ? tagsInputRef.current
+        : target === "exclude" ? excludeInputRef.current
+        : target === "date" ? dateRuleRef.current
+        : target === "class" ? classInputRef.current
+        : target === "photo" ? photoRef.current
+        : studentInputRef.current;
       control?.focus();
     }, 0);
   }
@@ -501,66 +549,47 @@ export function ExploreEvidencePage({
   }
 
   return (
-    <div className="mx-auto w-full max-w-[1180px] px-3 py-5 sm:px-5 sm:py-7">
-      <header className="mb-4 rounded-card bg-navy px-4 py-4 text-navy-foreground sm:px-6 sm:py-6">
-        <div className="flex items-start gap-3 sm:gap-4">
-          <div className="hidden size-11 shrink-0 items-center justify-center rounded-md border border-mint-rule text-mint sm:flex">
-            <FileSearch aria-hidden="true" className="size-6" strokeWidth={1.5} />
-          </div>
-          <div>
-            <h1 className="font-sans text-2xl font-semibold tracking-[-0.025em] sm:text-3xl">
-              Explore evidence
-            </h1>
-            <p className="mt-1.5 text-sm leading-relaxed text-ground-muted">
-              Ask questions of the evidence you reviewed and saved.
-            </p>
-          </div>
+    <div className="mx-auto w-full max-w-[1100px] px-4 py-8 sm:px-6 lg:px-8 lg:py-12">
+      <header>
+        <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+          <h1 className="label text-fg">Explore</h1>
+          <p className="label text-fg-3">Ask questions of the evidence you reviewed and saved.</p>
         </div>
-        <div className="mt-4 flex flex-wrap items-center gap-2 sm:pl-15" role="group" aria-label="Start exploring">
-          <span className="mr-1 hidden text-xs text-ground-muted sm:inline">Start with</span>
-          {([
-            { target: "student", label: "Student", icon: Users },
-            { target: "tags", label: "Tags", icon: Tags },
-            { target: "date", label: "Date", icon: CalendarDays },
-          ] as const).map(({ target, label, icon: Icon }) => (
-            <button
-              key={target}
-              type="button"
-              aria-label={`Filter by ${target === "student" ? "student" : target === "tags" ? "tags" : "date"}`}
-              aria-controls="explore-filters"
-              onClick={() => openFilters(target)}
-              className="inline-flex min-h-11 items-center gap-2 rounded-md border border-navy-foreground/25 px-3 text-xs font-semibold text-navy-foreground outline-none transition-colors hover:bg-navy-foreground/10 focus-visible:ring-2 focus-visible:ring-mint focus-visible:ring-offset-2 focus-visible:ring-offset-navy sm:min-h-9"
-            >
-              <Icon aria-hidden="true" className="size-3.5 text-mint" />
-              {label}
-              <ArrowRight aria-hidden="true" className="hidden size-3 sm:block" />
-            </button>
-          ))}
-        </div>
+        <p
+          role="group"
+          aria-label="Your question"
+          className="mt-5 max-w-[22ch] font-display text-[clamp(1.85rem,4.6vw,3.25rem)] font-semibold leading-[1.15] text-fg"
+        >
+          Show me evidence for{" "}
+          <Slot target="student" set={draftQuery.studentIds.length > 0} onOpen={openFilters}>{studentSlot}</Slot>
+          {classSlot ? <>{" "}in{" "}<Slot target="class" set onOpen={openFilters}>{classSlot}</Slot></> : null}
+          {" "}tagged{" "}
+          <Slot target="tags" set={tagSlotParts.length > 0} onOpen={openFilters}>{tagSlot}</Slot>
+          {excludeSlot ? <>{" "}but not{" "}<Slot target="exclude" set onOpen={openFilters}>{excludeSlot}</Slot></> : null}
+          {" "}from{" "}
+          <Slot target="date" set={draftQuery.date.rule !== "all"} onOpen={openFilters}>{describeDateSlot(draftQuery.date)}</Slot>
+          {photoSlot ? <>{" "}<Slot target="photo" set onOpen={openFilters}>{photoSlot}</Slot></> : null}
+          .
+        </p>
       </header>
 
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border pb-3">
+      <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
         <Button
           ref={filterButtonRef}
           type="button"
-          variant="outline"
-          size="sm"
+          variant={filtersOpen ? "secondary" : "outline"}
           aria-expanded={filtersOpen}
           aria-controls="explore-filters"
           onClick={() => setFiltersOpen((open) => !open)}
-          className={
-            appliedFilters.length > 0
-              ? "min-h-11 gap-2 border-primary bg-muted sm:min-h-9"
-              : "min-h-11 gap-2 bg-card sm:min-h-9"
-          }
+          className="gap-2"
         >
           <SlidersHorizontal aria-hidden="true" className="size-4" />
           Filters{appliedFilters.length > 0 ? (
             <span className="tabular-nums"> ({appliedFilters.length})</span>
           ) : null}
-          <ChevronDown aria-hidden="true" className={"size-3.5 " + (filtersOpen ? "rotate-180" : "")} />
+          <ChevronDown aria-hidden="true" className={"size-3.5 transition-transform " + (filtersOpen ? "rotate-180" : "")} />
         </Button>
-        <div role="group" aria-label="View evidence" className="flex gap-0.5 rounded-md bg-muted p-0.5">
+        <div role="group" aria-label="View evidence" className="inline-flex gap-1 rounded-full bg-well p-1">
           {(["evidence", "students"] as const).map((view) => (
             <button
               key={view}
@@ -572,28 +601,23 @@ export function ExploreEvidencePage({
               }}
               className={
                 results.view === view
-                  ? "inline-flex min-h-11 items-center gap-2 rounded-md bg-primary px-2.5 text-xs font-semibold text-primary-foreground sm:px-3 sm:text-sm outline-none transition-colors hover:bg-[var(--primary-hover)] focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-60 sm:min-h-9"
-                  : "inline-flex min-h-11 items-center gap-2 rounded-md px-2.5 text-xs font-semibold text-muted-foreground sm:px-3 sm:text-sm outline-none transition-colors hover:bg-card hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-60 sm:min-h-9"
+                  ? "inline-flex min-h-9 items-center rounded-full bg-fg px-4 text-sm font-semibold text-base outline-none focus-visible:ring-2 focus-visible:ring-live-bright focus-visible:ring-offset-2 focus-visible:ring-offset-well disabled:opacity-60"
+                  : "inline-flex min-h-9 items-center rounded-full px-4 text-sm font-medium text-fg-2 outline-none transition-colors hover:text-fg focus-visible:ring-2 focus-visible:ring-live-bright focus-visible:ring-offset-2 focus-visible:ring-offset-well disabled:opacity-60"
               }
             >
-              {view === "evidence" ? <List aria-hidden="true" className="hidden size-4 sm:block" /> : <Users aria-hidden="true" className="hidden size-4 sm:block" />}
               {view === "evidence" ? "Evidence" : "Group by student"}
             </button>
           ))}
         </div>
       </div>
 
-      {filtersOpen ? <section id="explore-filters" aria-label="Filter evidence" className="mt-3 rounded-card border border-border bg-card">
+      {filtersOpen ? <section id="explore-filters" aria-label="Filter evidence" className="plate mt-4 overflow-hidden">
         <form onSubmit={(event) => { event.preventDefault(); runQuery(draftQuery, 1, "filters"); }}>
           <fieldset disabled={isPending}>
             <legend className="sr-only">Narrow saved evidence</legend>
-            <div className="border-b border-border px-4 py-4 sm:px-5">
-              <h2 className="text-base font-semibold text-foreground">Find the evidence you need</h2>
-              <p className="mt-1 text-sm text-muted-foreground">Choose just what matters. Leave the rest open.</p>
-            </div>
-            <div className="grid items-start gap-6 p-4 sm:p-5 md:grid-cols-3 md:gap-0">
-              <div className="min-w-0 space-y-4 md:pr-5">
-                <h3 className="flex items-center gap-2 text-sm font-semibold text-foreground"><Users aria-hidden="true" className="size-4 text-muted-foreground" /> Who</h3>
+            <div className="grid items-start gap-8 p-5 sm:p-6 md:grid-cols-3 md:gap-0">
+              <div className="min-w-0 space-y-4 md:pr-6">
+                <h3 className={SECTION_HEADING_CLASS}>Who</h3>
                 <ExploreMultiSelect
                   label="Student"
                   inputRef={studentInputRef}
@@ -606,6 +630,7 @@ export function ExploreEvidencePage({
 
                 <ExploreMultiSelect
                   label="Class at capture"
+                  inputRef={classInputRef}
                   options={options.classes}
                   selectedIds={draftQuery.classIds}
                   onChange={(classIds) => updateQuery((query) => ({ ...query, classIds }))}
@@ -613,10 +638,10 @@ export function ExploreEvidencePage({
                   emptyMessage="No referenced classes match."
                 />
 
-                <p className="text-xs leading-relaxed text-muted-foreground">Class recorded when the evidence was saved.</p>
+                <p className="text-xs leading-relaxed text-fg-3">Class recorded when the evidence was saved.</p>
               </div>
-              <div className="min-w-0 border-t border-border pt-5 md:border-l md:border-t-0 md:px-5 md:pt-0">
-                <h3 className="mb-4 flex items-center gap-2 text-sm font-semibold text-foreground"><Tags aria-hidden="true" className="size-4 text-muted-foreground" /> What</h3>
+              <div className="min-w-0 border-t border-line pt-6 md:border-l md:border-t-0 md:px-6 md:pt-0">
+                <h3 className={`${SECTION_HEADING_CLASS} mb-4`}>What</h3>
                 <div className="min-w-0">
                   <ExploreMultiSelect
                     label="Tags"
@@ -629,12 +654,10 @@ export function ExploreEvidencePage({
                   />
 
                   {primaryTags.length >= 2 ? (
-                    <fieldset className="mt-1.5" disabled={matchLocked}>
-                      <legend className="mb-1 text-xs font-semibold text-foreground">
-                        Match
-                      </legend>
-                      <div className="flex flex-wrap gap-x-3 gap-y-1">
-                        <label className="inline-flex min-h-11 items-center gap-1.5 text-xs text-foreground lg:min-h-8">
+                    <fieldset className="mt-2" disabled={matchLocked}>
+                      <legend className="label mb-1 text-fg-2">Match</legend>
+                      <div className="flex flex-wrap gap-x-4 gap-y-1">
+                        <label className="inline-flex min-h-11 items-center gap-2 text-sm text-fg lg:min-h-8">
                           <input
                             type="radio"
                             name={tagMatchName}
@@ -642,11 +665,11 @@ export function ExploreEvidencePage({
                             checked={tagMatchMode === "all"}
                             disabled={matchLocked}
                             onChange={() => changeTagMatchMode("all")}
-                            className="size-3.5 accent-primary"
+                            className="size-4 accent-[var(--fg)]"
                           />
                           All of these tags
                         </label>
-                        <label className="inline-flex min-h-11 items-center gap-1.5 text-xs text-foreground lg:min-h-8">
+                        <label className="inline-flex min-h-11 items-center gap-2 text-sm text-fg lg:min-h-8">
                           <input
                             type="radio"
                             name={tagMatchName}
@@ -654,7 +677,7 @@ export function ExploreEvidencePage({
                             checked={tagMatchMode === "any"}
                             disabled={matchLocked}
                             onChange={() => changeTagMatchMode("any")}
-                            className="size-3.5 accent-primary"
+                            className="size-4 accent-[var(--fg)]"
                           />
                           Any of these tags
                         </label>
@@ -663,7 +686,7 @@ export function ExploreEvidencePage({
                   ) : null}
                 </div>
                 {showSecondary ? (
-                  <div className="mt-2.5 grid gap-2 ">
+                  <div className="mt-3 grid gap-1">
                     <ExploreMultiSelect
                       label={secondaryLabel}
                       options={tagOptions}
@@ -672,57 +695,43 @@ export function ExploreEvidencePage({
                       placeholder="Any tags"
                       emptyMessage="No available tags match."
                     />
-                    <ModifierRemoveButton
-                      label="Remove extra tag group"
-                      onClick={dismissSecondary}
-                    />
+                    <ModifierRemoveButton label="Remove extra tag group" onClick={dismissSecondary} />
                   </div>
                 ) : null}
 
                 {showWithout ? (
-                  <div className="mt-2.5 grid gap-2 ">
+                  <div className="mt-3 grid gap-1">
                     <ExploreMultiSelect
                       label="Without tags"
+                      inputRef={excludeInputRef}
                       options={tagOptions}
                       selectedIds={draftQuery.tags.exclude}
                       onChange={(tags) => updateTags({ exclude: tags })}
                       placeholder="Any tags"
                       emptyMessage="No available tags match."
                     />
-                    <ModifierRemoveButton
-                      label="Remove without tags"
-                      onClick={dismissWithout}
-                    />
+                    <ModifierRemoveButton label="Remove without tags" onClick={dismissWithout} />
                   </div>
                 ) : null}
 
                 {!showSecondary || !showWithout ? (
-                  <div className="mt-1.5 flex flex-wrap items-center gap-x-3">
+                  <div className="mt-2 flex flex-wrap items-center gap-x-4">
                     {!showSecondary && primaryTags.length > 0 ? (
-                      <button
-                        type="button"
-                        onClick={() => setSecondaryOpen(true)}
-                        className={REVEAL_ACTION_CLASS}
-                      >
+                      <button type="button" onClick={() => setSecondaryOpen(true)} className={REVEAL_ACTION_CLASS}>
                         {secondaryLabel}…
                       </button>
                     ) : null}
                     {!showWithout ? (
-                      <button
-                        type="button"
-                        onClick={() => setWithoutOpen(true)}
-                        className={REVEAL_ACTION_CLASS}
-                      >
+                      <button type="button" onClick={() => setWithoutOpen(true)} className={REVEAL_ACTION_CLASS}>
                         Exclude tags…
                       </button>
                     ) : null}
                   </div>
                 ) : null}
-                <div className="mt-4">
-                  <label htmlFor="explore-photo" className="mb-1 block text-xs font-semibold text-foreground">
-                    Photo
-                  </label>
+                <div className="mt-5">
+                  <label htmlFor="explore-photo" className={FIELD_LABEL_CLASS}>Photo</label>
                   <select
+                    ref={photoRef}
                     id="explore-photo"
                     value={draftQuery.photo}
                     onChange={(event) =>
@@ -739,10 +748,10 @@ export function ExploreEvidencePage({
                   </select>
                 </div>
               </div>
-              <div className="min-w-0 space-y-4 border-t border-border pt-5 md:border-l md:border-t-0 md:pl-5 md:pt-0">
-                <h3 className="flex items-center gap-2 text-sm font-semibold text-foreground"><CalendarDays aria-hidden="true" className="size-4 text-muted-foreground" /> When</h3>
+              <div className="min-w-0 space-y-4 border-t border-line pt-6 md:border-l md:border-t-0 md:pl-6 md:pt-0">
+                <h3 className={SECTION_HEADING_CLASS}>When</h3>
                 <div>
-                  <label htmlFor="explore-date-rule" className="mb-1 block text-xs font-semibold text-foreground">Date</label>
+                  <label htmlFor="explore-date-rule" className={FIELD_LABEL_CLASS}>Date</label>
                   <select
                     ref={dateRuleRef}
                     id="explore-date-rule"
@@ -767,10 +776,8 @@ export function ExploreEvidencePage({
                   </select>
 
                   {draftQuery.date.rule === "exact" ? (
-                    <div className="mt-2.5 max-w-sm">
-                      <label htmlFor="explore-exact-date" className="mb-1 block text-xs font-semibold text-foreground">
-                        Exact date
-                      </label>
+                    <div className="mt-3 max-w-sm">
+                      <label htmlFor="explore-exact-date" className={FIELD_LABEL_CLASS}>Exact date</label>
                       <input
                         ref={exactDateRef}
                         id="explore-exact-date"
@@ -784,15 +791,13 @@ export function ExploreEvidencePage({
                             date: { rule: "exact", date: event.target.value },
                           }))
                         }
-                        className={`${FIELD_CONTROL_CLASS} aria-invalid:border-destructive`}
+                        className={FIELD_CONTROL_CLASS}
                       />
                     </div>
                   ) : draftQuery.date.rule === "range" ? (
-                    <div className="mt-2.5 grid gap-2.5">
+                    <div className="mt-3 grid gap-3">
                       <div>
-                        <label htmlFor="explore-start-date" className="mb-1 block text-xs font-semibold text-foreground">
-                          Start date
-                        </label>
+                        <label htmlFor="explore-start-date" className={FIELD_LABEL_CLASS}>Start date</label>
                         <input
                           ref={rangeStartRef}
                           id="explore-start-date"
@@ -810,13 +815,11 @@ export function ExploreEvidencePage({
                               },
                             }))
                           }
-                          className={`${FIELD_CONTROL_CLASS} aria-invalid:border-destructive`}
+                          className={FIELD_CONTROL_CLASS}
                         />
                       </div>
                       <div>
-                        <label htmlFor="explore-end-date" className="mb-1 block text-xs font-semibold text-foreground">
-                          End date
-                        </label>
+                        <label htmlFor="explore-end-date" className={FIELD_LABEL_CLASS}>End date</label>
                         <input
                           id="explore-end-date"
                           type="date"
@@ -833,27 +836,27 @@ export function ExploreEvidencePage({
                               },
                             }))
                           }
-                          className={`${FIELD_CONTROL_CLASS} aria-invalid:border-destructive`}
+                          className={FIELD_CONTROL_CLASS}
                         />
                       </div>
                     </div>
                   ) : null}
                   {currentDateError ? (
-                    <p id="explore-date-error" role="status" className="mt-2 text-xs font-medium text-destructive">
+                    <p id="explore-date-error" role="status" className="mt-2 text-[13px] font-medium text-danger">
                       {currentDateError}
                     </p>
                   ) : null}
                 </div>
               </div>
             </div>
-            <details className="mx-4 mb-4 text-xs leading-relaxed text-muted-foreground sm:mx-5">
-              <summary className="min-h-11 w-fit cursor-pointer rounded-sm py-3 font-semibold text-link outline-none focus-visible:ring-2 focus-visible:ring-ring">How filters work</summary>
+            <details className="mx-5 mb-4 text-[13px] leading-relaxed text-fg-2 sm:mx-6">
+              <summary className="min-h-11 w-fit cursor-pointer rounded-full py-3 font-semibold text-fg underline decoration-line-2 underline-offset-4 outline-none focus-visible:ring-2 focus-visible:ring-live-bright">How filters work</summary>
               <p className="mt-1">Evidence must match every filter you set. If you choose multiple students or classes, it can match any one of them.</p>
-              <p className="mt-2"><span className="font-semibold text-foreground">Try questions like:</span>{" "}
+              <p className="mt-2 text-sm text-fg"><span className="label mr-2 text-fg-3">Try</span>{" "}
                 What evidence did I save for Mary recently? Which records have both #fractions and #independent? Which students have #reteach evidence?
               </p>
             </details>
-            <div className="flex flex-wrap items-center justify-between gap-3 rounded-b-card border-t border-border bg-muted px-4 py-3 sm:px-5">
+            <div className="flex flex-wrap items-center justify-between gap-3 border-t border-line bg-well/60 px-5 py-3 sm:px-6">
               <button type="button" onClick={resetFilters} disabled={!hasDraftFilters} className={REVEAL_ACTION_CLASS + " disabled:cursor-default disabled:opacity-50"}>Clear filters</button>
               <div className="flex items-center gap-2">
                 <Button type="button" variant="ghost" onClick={() => { setFiltersOpen(false); filterButtonRef.current?.focus(); }}>Close</Button>
@@ -865,50 +868,48 @@ export function ExploreEvidencePage({
       </section> : null}
 
       {hasUnappliedChanges ? (
-        <p role="status" className="mt-3 rounded-md bg-muted px-3 py-2.5 text-sm text-foreground">
+        <p role="status" className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-1 rounded-lg border border-live-bright/60 bg-live-soft px-4 py-3 text-sm text-fg">
+          <span aria-hidden="true" className="size-2 rounded-full bg-live-bright" />
           Filters changed. {filtersOpen ? "Update results to apply them." : (
-            <button type="button" onClick={() => openFilters()} className="min-h-11 rounded-sm font-semibold text-link underline underline-offset-4 outline-none focus-visible:ring-2 focus-visible:ring-ring sm:min-h-9">Review changes</button>
+            <button type="button" onClick={() => openFilters()} className="min-h-11 rounded-full font-semibold text-fg underline underline-offset-4 outline-none focus-visible:ring-2 focus-visible:ring-live-bright sm:min-h-9">Review changes</button>
           )}
         </p>
       ) : null}
 
       {queryError ? (
-        <div role="alert" className="mt-3 rounded-md border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+        <div role="alert" className="mt-4 rounded-lg border border-danger/40 bg-danger-soft px-4 py-3 text-sm text-danger">
           <p className="font-medium">{queryError}</p>
-          <button type="button" disabled={isPending} onClick={() => { const request = retryRequest.current; if (request) runQuery(request.query, request.page, request.intent); }} className="mt-2 min-h-11 rounded-md px-1 text-xs font-semibold underline underline-offset-4 outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">Retry</button>
+          <button type="button" disabled={isPending} onClick={() => { const request = retryRequest.current; if (request) runQuery(request.query, request.page, request.intent); }} className="mt-2 min-h-11 rounded-full px-1 text-[13px] font-semibold underline underline-offset-4 outline-none focus-visible:ring-2 focus-visible:ring-live-bright focus-visible:ring-offset-2">Retry</button>
         </div>
       ) : null}
 
-      <section aria-labelledby="explore-results-heading" aria-busy={isPending} className="mt-5">
-        <div className="mb-3">
+      <section aria-labelledby="explore-results-heading" aria-busy={isPending} className="mt-10">
+        <div className="mb-4 border-b border-line pb-4">
           <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-            <h2 ref={resultsHeadingRef} tabIndex={-1} id="explore-results-heading" className="rounded-sm font-sans text-lg font-semibold text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring">
+            <h2 ref={resultsHeadingRef} tabIndex={-1} id="explore-results-heading" className="rounded-sm font-display text-2xl font-semibold text-fg outline-none focus-visible:ring-2 focus-visible:ring-live-bright">
               {results.view === "students" ? "Students with evidence" : appliedFilters.length ? "Matching evidence" : "All evidence"}
             </h2>
-            <p aria-live="polite" className="text-xs text-muted-foreground">
-              {isPending ? "Updating results…" : <><span className="font-semibold tabular-nums text-foreground">{results.counts.evidence}</span>{" "}{plural(results.counts.evidence, "record")}<span aria-hidden="true" className="px-2">·</span><span className="font-semibold tabular-nums text-foreground">{results.counts.students}</span>{" "}{plural(results.counts.students, "student")}</>}
+            <p aria-live="polite" className="label text-fg-2">
+              {isPending ? "Updating results…" : <><span className="tabular-nums text-fg">{results.counts.evidence}</span>{" "}{plural(results.counts.evidence, "record")}<span aria-hidden="true" className="px-2 text-fg-3">·</span><span className="tabular-nums text-fg">{results.counts.students}</span>{" "}{plural(results.counts.students, "student")}</>}
             </p>
           </div>
-          <p className="mt-1 text-xs text-muted-foreground">
-            {results.view === "evidence" ? "Newest first" : "Alphabetical · Open a student’s matching evidence below"}
-            {appliedQuery.studentIds.length === 0 && appliedQuery.classIds.length === 0 ? " · All students" : null}
-            {appliedQuery.date.rule === "all" ? " · All time" : null}
+          <p className="mt-1 text-[13px] text-fg-3">
+            {results.view === "evidence" ? "Newest first" : "Alphabetical · open a student to see their matching evidence"}
+            {appliedQuery.studentIds.length === 0 && appliedQuery.classIds.length === 0 ? " · all students" : null}
+            {appliedQuery.date.rule === "all" ? " · all time" : null}
           </p>
           {appliedFilters.length > 0 ? (
-            <ul aria-label="Applied filters" className="mt-2 flex flex-wrap gap-1.5">
-              {appliedFilters.map((label) => <li key={label} className="max-w-full break-words rounded-md border border-border bg-muted px-2 py-1 text-xs font-medium text-foreground [overflow-wrap:anywhere]">{label}</li>)}
+            <ul aria-label="Applied filters" className="mt-3 flex flex-wrap gap-1.5">
+              {appliedFilters.map((label) => <li key={label} className="max-w-full break-words rounded-full bg-live-soft px-2.5 py-1 text-[13px] font-medium text-fg [overflow-wrap:anywhere]">{label}</li>)}
             </ul>
           ) : null}
         </div>
 
         {results.counts.evidence === 0 ? (
-          <EmptyResults
-            noEvidence={appliedFilters.length === 0}
-            onRevise={() => openFilters()}
-          />
+          <EmptyResults noEvidence={appliedFilters.length === 0} onRevise={() => openFilters()} />
         ) : results.view === "evidence" ? (
-          <div className="overflow-hidden rounded-card border border-border bg-background">
-            <ol>
+          <div>
+            <ol className="trace">
               {results.records.map((record) => (
                 <EvidenceResultRow key={record.id} record={record} />
               ))}
@@ -923,35 +924,30 @@ export function ExploreEvidencePage({
             />
           </div>
         ) : (
-          <div className="overflow-hidden rounded-card border border-border bg-background">
-            <ol>
+          <div>
+            <ol className="divide-y divide-line">
               {results.students.map((student) => {
                 const isExpanded = expandedStudents.includes(student.id);
                 const supportingState = supporting[student.id];
                 const loading =
                   isSupportingPending && supportingPendingStudentId === student.id;
                 return (
-                  <li key={student.id} className="border-b border-border last:border-b-0">
-                    <div className="flex flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-5">
+                  <li key={student.id}>
+                    <div className="flex flex-col gap-3 py-4 sm:flex-row sm:items-center sm:justify-between">
                       <div className="min-w-0">
-                        <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+                        <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
                           <Link
                             href={routes.student(student.id)}
-                            className="break-words rounded-sm text-sm font-semibold text-link underline-offset-4 outline-none [overflow-wrap:anywhere] hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                            className="break-words rounded-sm font-display text-xl font-semibold leading-tight text-fg underline-offset-4 outline-none [overflow-wrap:anywhere] hover:underline focus-visible:ring-2 focus-visible:ring-live-bright focus-visible:ring-offset-2"
                           >
                             {student.displayName}
                           </Link>
-                          <span className="break-words text-xs text-muted-foreground [overflow-wrap:anywhere]">@{student.mentionHandle}</span>
                           {student.classGroupName ? (
-                            <span className="break-words border-l border-border pl-2 text-xs text-muted-foreground [overflow-wrap:anywhere]">
-                              {student.classGroupName}
-                            </span>
+                            <span className="break-words text-[13px] text-fg-3 [overflow-wrap:anywhere]">{student.classGroupName}</span>
                           ) : null}
                         </div>
-                        <p className="mt-1 text-xs text-muted-foreground">
-                          <span className="font-semibold tabular-nums text-foreground">
-                            {student.matchingEvidenceCount}
-                          </span>{" "}
+                        <p className="mt-1 text-[13px] text-fg-2">
+                          <span className="font-semibold tabular-nums text-fg">{student.matchingEvidenceCount}</span>{" "}
                           matching {plural(student.matchingEvidenceCount, "record")}
                         </p>
                       </div>
@@ -964,38 +960,25 @@ export function ExploreEvidencePage({
                         disabled={isPending || isSupportingPending}
                         onClick={() => toggleStudent(student)}
                       >
-                        {isExpanded ? (
-                          <ChevronUp aria-hidden="true" className="size-4" />
-                        ) : (
-                          <ChevronDown aria-hidden="true" className="size-4" />
-                        )}
+                        {isExpanded ? <ChevronUp aria-hidden="true" className="size-4" /> : <ChevronDown aria-hidden="true" className="size-4" />}
                         {isExpanded ? "Hide evidence" : "Show evidence"}
                       </Button>
                     </div>
 
                     {isExpanded ? (
-                      <div id={`supporting-evidence-${student.id}`} className="border-t border-border">
+                      <div id={`supporting-evidence-${student.id}`} className="mb-4 rounded-xl bg-well/70 px-4 pb-2 pt-1">
                         {loading && !supportingState ? (
-                          <p role="status" className="px-4 py-4 text-sm text-muted-foreground">
-                            Loading supporting evidence…
-                          </p>
+                          <p role="status" className="py-4 text-sm text-fg-2">Loading supporting evidence…</p>
                         ) : supportingState?.error ? (
-                          <div role="alert" className="px-4 py-3 text-sm text-destructive">
+                          <div role="alert" className="py-3 text-sm text-danger">
                             <p>{supportingState.error}</p>
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="sm"
-                              className="mt-3"
-                              disabled={loading}
-                              onClick={() => loadSupportingEvidence(student.id, supportingState.page)}
-                            >
+                            <Button type="button" variant="outline" size="sm" className="mt-3" disabled={loading} onClick={() => loadSupportingEvidence(student.id, supportingState.page)}>
                               Retry
                             </Button>
                           </div>
                         ) : supportingState ? (
-                          <div className="bg-muted">
-                            <ol>
+                          <div>
+                            <ol className="trace">
                               {supportingState.records.map((record) => (
                                 <EvidenceResultRow key={record.id} record={record} showStudent={false} />
                               ))}

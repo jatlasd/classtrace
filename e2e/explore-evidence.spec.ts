@@ -4,9 +4,9 @@ test("opens on evidence and applies optional filters on desktop", async ({ page 
   test.setTimeout(60_000);
   await page.goto("/app/explore", { waitUntil: "domcontentloaded" });
 
-  await expect(page.getByRole("heading", { name: "Explore evidence" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Explore" })).toBeVisible();
   await expect(page.getByText("Ask questions of the evidence you reviewed and saved.")).toBeVisible();
-  await expect(page.getByRole("button", { name: "Filter by student" })).toBeVisible();
+  await expect(page.getByRole("button", { name: /^Filter by student/ })).toBeVisible();
   await expect(page.getByRole("button", { name: "Evidence", exact: true })).toHaveAttribute("aria-pressed", "true");
   await expect(page.getByRole("region", { name: "Filter evidence" })).toBeHidden();
   await expect(page.getByRole("heading", { name: "All evidence", exact: true })).toBeVisible();
@@ -44,7 +44,7 @@ test("keeps Explore Evidence in one overflow-free mobile column", async ({ page 
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/app/explore", { waitUntil: "domcontentloaded" });
 
-  await expect(page.getByRole("heading", { name: "Explore evidence" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Explore" })).toBeVisible();
   await expect(page.getByRole("button", { name: "Filters", exact: true })).toBeVisible();
   await expect(page.getByRole("region", { name: "Filter evidence" })).toBeHidden();
   const firstEvidence = page.getByRole("article").first();
@@ -64,7 +64,7 @@ test("keeps Explore Evidence in one overflow-free mobile column", async ({ page 
     path: "output/playwright/explore-mobile.png",
     fullPage: false,
   });
-  await page.getByRole("button", { name: "Filter by date" }).click();
+  await page.getByRole("button", { name: /^Filter by date/ }).click();
   await expect(page.getByLabel("Date", { exact: true })).toBeFocused();
   await page.getByLabel("Date", { exact: true }).selectOption("range");
   await expect(page.getByLabel("Start date")).toHaveAttribute("aria-invalid", "true");

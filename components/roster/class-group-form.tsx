@@ -35,7 +35,7 @@ export function ClassGroupForm() {
   return (
     <form className="space-y-3" onSubmit={handleSubmit}>
       <div className="space-y-1.5">
-        <label htmlFor="class-name" className="text-sm font-medium text-foreground">
+        <label htmlFor="class-name" className="label block text-fg-2">
           Class name
         </label>
         <input
@@ -56,8 +56,7 @@ export function ClassGroupForm() {
       <RosterFormMessage id="class-name-error" message={error} />
       <Button
         type="submit"
-        size="lg"
-        className="h-9 rounded-lg px-5 text-sm font-semibold"
+        size="sm"
         disabled={isPending}
       >
         {isPending ? "Saving…" : "Create class"}

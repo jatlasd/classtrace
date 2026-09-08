@@ -27,17 +27,17 @@ export default async function SignUpPage(): Promise<ReactElement> {
 
   return (
     <ClassTraceClerkProvider>
-      <div className="flex min-h-dvh flex-col bg-background">
+      <div className="grain flex min-h-dvh flex-col bg-base">
         <main className="flex flex-1 items-center justify-center px-4 py-8">
           <div className="w-full max-w-md">
             <header className="mb-6 text-center">
-              <p className="text-sm font-semibold text-link">
+              <p className="label text-fg-3">
                 Invitation-only beta
               </p>
-              <h1 className="font-sans mt-2 text-3xl font-semibold tracking-tight text-foreground">
+              <h1 className="mt-2 font-display text-3xl font-semibold leading-none tracking-[-0.01em] text-fg">
                 Complete your ClassTrace sign-up
               </h1>
-              <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+              <p className="mt-3 text-sm leading-relaxed text-fg-2">
                 Use the invitation sent to your email to create your teacher
                 workspace. Already have an account? Sign in instead.
               </p>

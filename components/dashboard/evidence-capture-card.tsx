@@ -10,6 +10,7 @@ import type {
   CreateStudentFromReviewResult,
   StudentResolutionClassOption,
 } from "@/components/dashboard/student-resolution-field";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ConfirmationPanel } from "@/components/ui/confirmation-panel";
 import { Textarea } from "@/components/ui/textarea";
@@ -31,7 +32,7 @@ import {
   type StudentMentionDisplay,
   type StudentMentionRef,
 } from "@/lib/students/student-mention-display";
-import { Circle, ImagePlus, Trash2, X } from "lucide-react";
+import { ArrowRight, ImagePlus, Trash2, X } from "lucide-react";
 
 type EvidenceCaptureCardProps = {
   draft: NoteDraft;
@@ -83,27 +84,22 @@ type ValidatedEvidenceSaveResult =
     }
   | { success: false; error: string };
 
-const chipStyles = {
-  default: "border-border bg-card text-foreground",
-  student: "border-border bg-secondary text-foreground",
-  tag: "border-border bg-transparent text-muted-foreground",
-  evidence: "border-border bg-transparent text-foreground",
-  unresolved:
-    "border-border bg-transparent text-foreground",
-};
-
-function Chip({
+function DetailLabel({
   children,
-  variant = "default",
-  className = "",
+  kind,
 }: {
   children: React.ReactNode;
-  variant?: keyof typeof chipStyles;
-  className?: string;
+  kind?: "type" | "tag" | "detail";
 }) {
   return (
     <span
-      className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium capitalize ${chipStyles[variant]} ${className}`}
+      className={`inline-flex max-w-full items-center break-words font-mono text-[0.75rem] [overflow-wrap:anywhere] ${
+        kind === "tag"
+          ? "text-fg-2"
+          : kind === "type"
+            ? "rounded-full border border-dashed border-line-2 px-2 py-px text-fg-2"
+            : "text-fg-3"
+      }`}
     >
       {children}
     </span>
@@ -114,7 +110,7 @@ function ResolvedStudentChip({ student }: { student: StudentMentionDisplay }) {
   return (
     <Link
       href={routes.student(student.id)}
-      className="inline-flex max-w-full items-center break-words text-base font-semibold text-foreground underline-offset-4 hover:underline focus-visible:ring-2 focus-visible:ring-ring"
+      className="inline-flex max-w-full items-center break-words font-display text-[1.35rem] font-semibold leading-tight text-fg underline-offset-4 outline-none hover:underline focus-visible:ring-2 focus-visible:ring-live-bright focus-visible:ring-offset-2 focus-visible:ring-offset-plate"
     >
       {student.displayName}
     </Link>
@@ -123,12 +119,10 @@ function ResolvedStudentChip({ student }: { student: StudentMentionDisplay }) {
 
 function UnresolvedStudentChip({ mention }: { mention: string }) {
   return (
-    <Chip variant="unresolved">
+    <span className="inline-flex items-center gap-2 font-display text-[1.35rem] font-semibold leading-tight text-fg-2">
       Unmatched student
-      <span className="ml-1.5 font-normal normal-case text-muted-foreground">
-        ({mention})
-      </span>
-    </Chip>
+      <span className="font-mono text-sm text-live">@{mention}</span>
+    </span>
   );
 }
 
@@ -139,7 +133,7 @@ function StudentMentionChip({ mentionRef }: { mentionRef: StudentMentionRef }) {
   return <UnresolvedStudentChip mention={mentionRef.mention} />;
 }
 
-function StatusPill({
+function StatusFlag({
   status,
   needsReview,
 }: {
@@ -147,29 +141,14 @@ function StatusPill({
   needsReview: boolean;
 }) {
   if (status === "validated") {
-    return (
-      <span className="inline-flex items-center gap-2 rounded-lg border border-border px-2.5 py-1 text-xs font-semibold text-muted-foreground">
-        <Circle className="size-2 fill-current" />
-        Validated
-      </span>
-    );
+    return <Badge variant="validated">Validated</Badge>;
   }
 
   if (!needsReview) {
-    return (
-      <span className="inline-flex items-center gap-2 rounded-lg border border-border px-2.5 py-1 text-xs font-semibold text-muted-foreground">
-        <Circle className="size-2 fill-current" />
-        Ready to review
-      </span>
-    );
+    return <Badge variant="ghost">Ready to review</Badge>;
   }
 
-  return (
-    <span className="inline-flex items-center gap-2 rounded-lg border border-border px-2.5 py-1 text-xs font-semibold text-foreground">
-      <Circle className="size-2 fill-current text-link" />
-      Needs review
-    </span>
-  );
+  return <Badge variant="live">Needs review</Badge>;
 }
 
 export function EvidenceCaptureCard({
@@ -324,148 +303,111 @@ export function EvidenceCaptureCard({
   }
 
   return (
-    <article className="border-b border-border last:border-b-0">
-      <div className="grid gap-3 px-3 py-4 sm:px-4">
+    <article
+      className={`plate overflow-hidden ${
+        isPending ? "border-l-2 border-l-live-bright" : ""
+      }`}
+    >
+      <div className="flex flex-col gap-2 px-4 pt-3.5 sm:flex-row sm:items-center sm:justify-between sm:px-5">
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+          <StatusFlag
+            status={display.validationStatus}
+            needsReview={display.needsReview}
+          />
+          <span className="label text-fg-3">
+            {timestamp}
+            {isPending ? " · clears at midnight" : ""}
+          </span>
+        </div>
 
-        <div className="min-w-0">
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-            <div className="flex flex-wrap items-center gap-2">
-              <StatusPill
-                status={display.validationStatus}
-                needsReview={display.needsReview}
-              />
-              <span className="text-xs text-muted-foreground">{timestamp}</span>
-            </div>
-
-            {showActions && !isEditing ? (
-              <div className="flex flex-wrap items-center gap-1">
-                {onEdit && draft.parsed.rawNote.trim() ? (
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    disabled={isReviewSavePending || isProcessingPhoto}
-                    onClick={handleStartEdit}
-                  >
-                    Edit original capture
-                  </Button>
-                ) : null}
-                {onDelete ? (
-                  <Button
-                    ref={deleteButtonRef}
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    className="text-muted-foreground hover:text-destructive"
-                    disabled={isReviewSavePending || isProcessingPhoto}
-                    onClick={handleRequestDraftDelete}
-                  >
-                    <Trash2 aria-hidden="true" className="size-3.5" />
-                    Delete draft
-                  </Button>
-                ) : null}
-              </div>
+        {showActions && !isEditing ? (
+          <div className="flex flex-wrap items-center gap-1">
+            {onEdit && draft.parsed.rawNote.trim() ? (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                disabled={isReviewSavePending || isProcessingPhoto}
+                onClick={handleStartEdit}
+              >
+                Edit original capture
+              </Button>
+            ) : null}
+            {onDelete ? (
+              <Button
+                ref={deleteButtonRef}
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="hover:text-danger"
+                disabled={isReviewSavePending || isProcessingPhoto}
+                onClick={handleRequestDraftDelete}
+              >
+                <Trash2 aria-hidden="true" className="size-3.5" />
+                Delete draft
+              </Button>
             ) : null}
           </div>
+        ) : null}
+      </div>
 
-          {isConfirmingDelete ? (
-            <ConfirmationPanel
-              ariaLabel="Confirm draft deletion"
-              description="Delete this draft? It will be removed from this browser. This cannot be undone."
-              confirmLabel="Delete this draft"
-              tone="destructive"
-              className="mt-3"
-              disabled={isReviewSavePending}
-              onConfirm={handleConfirmDraftDelete}
-              onCancel={handleCancelDraftDelete}
+      <div className="px-4 pb-4 pt-3 sm:px-5">
+        {isConfirmingDelete ? (
+          <ConfirmationPanel
+            ariaLabel="Confirm draft deletion"
+            description="Delete this draft? It will be removed from this browser. This cannot be undone."
+            confirmLabel="Delete this draft"
+            tone="destructive"
+            className="mb-4"
+            disabled={isReviewSavePending}
+            onConfirm={handleConfirmDraftDelete}
+            onCancel={handleCancelDraftDelete}
+          />
+        ) : null}
+
+        {photo || photoMissing ? (
+          <input
+            ref={photoInputRef}
+            type="file"
+            accept="image/jpeg,image/png,image/webp,image/avif"
+            className="sr-only"
+            aria-label={photo ? "Replace photo evidence" : "Choose photo evidence again"}
+            aria-invalid={Boolean(photoError)}
+            aria-describedby={photoError ? photoErrorId : undefined}
+            disabled={isProcessingPhoto || isReviewSavePending}
+            onChange={(event) => void handlePhotoFile(event.target.files?.[0])}
+          />
+        ) : null}
+
+        {photo ? (
+          <div className="mb-4 grid gap-3 rounded-lg border border-line bg-well p-3 sm:grid-cols-[7rem_1fr] sm:items-start">
+            <LocalPhotoPreview
+              blob={photo.blob}
+              alt="Temporary photo evidence preview"
+              width={photo.width}
+              height={photo.height}
             />
-          ) : null}
-
-          {photo || photoMissing ? (
-            <input
-              ref={photoInputRef}
-              type="file"
-              accept="image/jpeg,image/png,image/webp,image/avif"
-              className="sr-only"
-              aria-label={photo ? "Replace photo evidence" : "Choose photo evidence again"}
-              aria-invalid={Boolean(photoError)}
-              aria-describedby={photoError ? photoErrorId : undefined}
-              disabled={isProcessingPhoto || isReviewSavePending}
-              onChange={(event) => void handlePhotoFile(event.target.files?.[0])}
-            />
-          ) : null}
-
-          {photo ? (
-            <div className="mt-4 grid gap-3 border-y border-border/70 py-3 sm:grid-cols-[7rem_1fr] sm:items-start">
-              <LocalPhotoPreview
-                blob={photo.blob}
-                alt="Temporary photo evidence preview"
-                width={photo.width}
-                height={photo.height}
-              />
-              <div className="space-y-2">
-                <p className="text-sm font-medium text-foreground">Temporary photo</p>
-                <p className="text-xs leading-relaxed text-muted-foreground">
-                  This photo stays on this device until you validate and save it.
-                </p>
-                {photoRecoveryWarning ? (
-                  <p role="alert" className="text-xs leading-relaxed text-destructive">
-                    {photoRecoveryWarning}
-                  </p>
-                ) : null}
-                {photoError ? (
-                  <p id={photoErrorId} role="alert" className="text-xs text-destructive">
-                    {photoError}
-                  </p>
-                ) : null}
-                {isProcessingPhoto ? (
-                  <p role="status" className="text-xs text-muted-foreground">
-                    Processing photo…
-                  </p>
-                ) : null}
-                <div className="flex flex-wrap gap-2">
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    disabled={isProcessingPhoto || isReviewSavePending}
-                    onClick={() => photoInputRef.current?.click()}
-                  >
-                    <ImagePlus aria-hidden="true" className="size-4" />
-                    {isProcessingPhoto ? "Processing…" : "Replace photo"}
-                  </Button>
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="ghost"
-                    disabled={isProcessingPhoto || isReviewSavePending}
-                    onClick={onPhotoRemove}
-                  >
-                    <X aria-hidden="true" className="size-4" />
-                    Remove photo
-                  </Button>
-                </div>
-              </div>
-            </div>
-          ) : photoMissing ? (
-            <div className="mt-4 space-y-3 border-y border-destructive/30 bg-destructive/5 px-3 py-3 sm:px-4">
-              <div>
-                <p className="text-sm font-medium text-destructive">Photo needs attention</p>
-                <p role="alert" className="mt-1 text-xs leading-relaxed text-destructive">
+            <div className="space-y-2">
+              <p className="label text-live">Temporary photo</p>
+              <p className="text-[13px] leading-relaxed text-fg-2">
+                This photo stays on this device until you validate and save it.
+              </p>
+              {photoRecoveryWarning ? (
+                <p role="alert" className="text-xs leading-relaxed text-danger">
                   {photoRecoveryWarning}
                 </p>
-              </div>
+              ) : null}
               {photoError ? (
-                <p id={photoErrorId} role="alert" className="text-xs text-destructive">
+                <p id={photoErrorId} role="alert" className="text-xs text-danger">
                   {photoError}
                 </p>
               ) : null}
               {isProcessingPhoto ? (
-                <p role="status" className="text-xs text-muted-foreground">
+                <p role="status" className="text-xs text-fg-2">
                   Processing photo…
                 </p>
               ) : null}
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-1.5">
                 <Button
                   type="button"
                   size="sm"
@@ -474,74 +416,106 @@ export function EvidenceCaptureCard({
                   onClick={() => photoInputRef.current?.click()}
                 >
                   <ImagePlus aria-hidden="true" className="size-4" />
-                  {isProcessingPhoto ? "Processing…" : "Choose photo again"}
-                </Button>
-                {draft.parsed.rawNote.trim() ? (
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="ghost"
-                    disabled={isProcessingPhoto || isReviewSavePending}
-                    onClick={onPhotoRemove}
-                  >
-                    Continue without photo
-                  </Button>
-                ) : null}
-              </div>
-            </div>
-          ) : null}
-
-          {isEditing ? (
-            <div className="mt-4 space-y-3 border-y border-border bg-muted/20 px-3 py-4 sm:px-4">
-              <div className="space-y-1">
-                <label
-                  htmlFor={sourceEditorId}
-                  className="text-sm font-medium text-foreground"
-                >
-                  Original capture
-                </label>
-                <p className="text-xs leading-relaxed text-muted-foreground">
-                  Correct the source note or student mention, then return to
-                  review.
-                </p>
-              </div>
-              <Textarea
-                id={sourceEditorId}
-                value={editText}
-                onChange={(event) => setEditText(event.target.value)}
-                className="min-h-[120px] text-[15px] leading-relaxed"
-              />
-              <div className="flex flex-wrap gap-2">
-                <Button
-                  type="button"
-                  size="sm"
-                  disabled={!canSaveEdit}
-                  onClick={handleSaveEdit}
-                >
-                  Save original capture
+                  {isProcessingPhoto ? "Processing…" : "Replace photo"}
                 </Button>
                 <Button
                   type="button"
-                  variant="outline"
                   size="sm"
-                  onClick={handleCancelEdit}
+                  variant="ghost"
+                  disabled={isProcessingPhoto || isReviewSavePending}
+                  onClick={onPhotoRemove}
                 >
-                  Cancel
+                  <X aria-hidden="true" className="size-4" />
+                  Remove photo
                 </Button>
               </div>
             </div>
-          ) : null}
-
-          {!isEditing && !reviewOpen ? (
-            <div className="mt-2.5 space-y-2.5">
+          </div>
+        ) : photoMissing ? (
+          <div className="mb-4 space-y-3 rounded-lg border-l-2 border-danger bg-danger-soft p-3">
+            <div>
+              <p className="text-sm font-medium text-danger">Photo needs attention</p>
+              <p role="alert" className="mt-1 text-xs leading-relaxed text-danger">
+                {photoRecoveryWarning}
+              </p>
+            </div>
+            {photoError ? (
+              <p id={photoErrorId} role="alert" className="text-xs text-danger">
+                {photoError}
+              </p>
+            ) : null}
+            {isProcessingPhoto ? (
+              <p role="status" className="text-xs text-fg-2">
+                Processing photo…
+              </p>
+            ) : null}
+            <div className="flex flex-wrap gap-2">
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                disabled={isProcessingPhoto || isReviewSavePending}
+                onClick={() => photoInputRef.current?.click()}
+              >
+                <ImagePlus aria-hidden="true" className="size-4" />
+                {isProcessingPhoto ? "Processing…" : "Choose photo again"}
+              </Button>
               {draft.parsed.rawNote.trim() ? (
-                <NoteContent text={draft.parsed.rawNote} />
-              ) : (
-                <p className="text-sm text-muted-foreground">Photo evidence without a note.</p>
-              )}
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="ghost"
+                  disabled={isProcessingPhoto || isReviewSavePending}
+                  onClick={onPhotoRemove}
+                >
+                  Continue without photo
+                </Button>
+              ) : null}
+            </div>
+          </div>
+        ) : null}
 
-              {draft.parsed.rawNote.trim() ? (
-              <div className="flex flex-wrap gap-1.5">
+        {isEditing ? (
+          <div className="space-y-3">
+            <div className="space-y-1">
+              <label htmlFor={sourceEditorId} className="label block text-fg-2">
+                Original capture
+              </label>
+              <p className="text-[13px] leading-relaxed text-fg-2">
+                Correct the source note or student mention, then return to review.
+              </p>
+            </div>
+            <Textarea
+              id={sourceEditorId}
+              value={editText}
+              onChange={(event) => setEditText(event.target.value)}
+              className="min-h-[120px] text-[17px] leading-relaxed"
+            />
+            <div className="flex flex-wrap gap-2">
+              <Button
+                type="button"
+                size="sm"
+                disabled={!canSaveEdit}
+                onClick={handleSaveEdit}
+              >
+                Save original capture
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={handleCancelEdit}
+              >
+                Cancel
+              </Button>
+            </div>
+          </div>
+        ) : null}
+
+        {!isEditing && !reviewOpen ? (
+          <div className="space-y-3">
+            {draft.parsed.rawNote.trim() ? (
+              <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
                 {display.studentMentions.map((mentionRef, index) => (
                   <StudentMentionChip
                     key={
@@ -552,91 +526,90 @@ export function EvidenceCaptureCard({
                     mentionRef={mentionRef}
                   />
                 ))}
+              </div>
+            ) : null}
 
-                {display.topic ? <Chip>{display.topic}</Chip> : null}
-                {display.performance ? <Chip>{display.performance}</Chip> : null}
+            {draft.parsed.rawNote.trim() ? (
+              <NoteContent text={draft.parsed.rawNote} />
+            ) : (
+              <p className="text-sm text-fg-2">Photo evidence without a note.</p>
+            )}
+
+            {draft.parsed.rawNote.trim() ? (
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
+                <DetailLabel kind="type">{display.evidenceType}</DetailLabel>
+                {display.topic ? <DetailLabel>{display.topic}</DetailLabel> : null}
+                {display.performance ? <DetailLabel>{display.performance}</DetailLabel> : null}
                 {display.behavior?.map((item) => (
-                  <Chip key={item}>{item}</Chip>
+                  <DetailLabel key={item}>{item}</DetailLabel>
                 ))}
-                <Chip variant="evidence">{display.evidenceType}</Chip>
                 {display.tags.map((tag) => (
-                  <Chip key={tag} variant="tag">
+                  <DetailLabel key={tag} kind="tag">
                     {formatTagLabel(tag)}
-                  </Chip>
+                  </DetailLabel>
                 ))}
               </div>
-              ) : null}
+            ) : null}
 
-              {hasUnresolvedMentions ? (
-                <div className="rounded-md border border-border bg-card px-3 py-2.5">
-                  <p className="text-xs leading-relaxed text-foreground">
-                    {unresolvedMentions.length === 1 ? (
-                      <>
-                        <span className="font-medium">
-                          @{unresolvedMentions[0].mention}
-                        </span>{" "}
-                        isn&apos;t on your roster yet. Match or add the student when
-                        you review.
-                      </>
-                    ) : (
-                      <>
-                        Some @mentions aren&apos;t on your roster yet. Correct the
-                        original capture before saving.
-                      </>
-                    )}
-                  </p>
-                </div>
-              ) : null}
+            {hasUnresolvedMentions ? (
+              <p className="rounded-md bg-live-soft px-3 py-2 text-[13px] leading-relaxed text-fg">
+                {unresolvedMentions.length === 1 ? (
+                  <>
+                    <span className="font-mono font-medium text-live">
+                      @{unresolvedMentions[0].mention}
+                    </span>{" "}
+                    isn&apos;t on your roster yet. Match or add the student when
+                    you review.
+                  </>
+                ) : (
+                  <>
+                    Some @mentions aren&apos;t on your roster yet. Correct the
+                    original capture before saving.
+                  </>
+                )}
+              </p>
+            ) : null}
 
-              {display.followUps.length > 0 ? (
-                <ul className="space-y-1 border-t border-border/50 pt-2.5">
-                  {display.followUps.map((item) => (
-                    <li
-                      key={item}
-                      className="text-xs leading-relaxed text-muted-foreground"
-                    >
-                      <span className="font-medium text-foreground">
-                        Follow-up:
-                      </span>{" "}
-                      {item}
-                    </li>
-                  ))}
-                </ul>
-              ) : null}
+            {display.followUps.length > 0 ? (
+              <ul className="space-y-1 border-l-2 border-live-bright pl-3">
+                {display.followUps.map((item) => (
+                  <li key={item} className="text-[13px] leading-relaxed text-fg-2">
+                    <span className="label mr-2 text-live">Follow up</span>
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            ) : null}
 
-              {isPending ? (
-                <div className="border-t border-border/50 pt-2.5">
-                  <Button
-                    type="button"
-                    size="sm"
-                    onClick={() => onReviewOpenChange(true)}
-                  >
-                    Review before saving
-                  </Button>
-                </div>
-              ) : null}
-            </div>
-          ) : null}
-
-          <div hidden={!reviewOpen || isEditing}>
-            <InterpretationReviewPanel
-              display={reviewDisplay}
-              resetKey={draft.parsed.rawNote}
-              onConfirm={handleConfirm}
-              onReviewLater={() => onReviewOpenChange(false)}
-              onCaptureAnother={onCaptureAnother}
-              rosterStudents={rosterStudents}
-              classGroups={classGroups}
-              onCreateStudent={onCreateStudent}
-              onSavePendingChange={setIsReviewSavePending}
-              onResolvedStudentChange={setResolvedStudentOverride}
-              hasPhoto={Boolean(photo)}
-              photoChangePending={isProcessingPhoto}
-              photoResolutionRequired={photoMissing && !photo}
-              capturedAt={capturedAt}
-              workspaceCreatedAt={workspaceCreatedAt}
-            />
+            {isPending ? (
+              <div className="pt-1">
+                <Button type="button" variant="outline" onClick={() => onReviewOpenChange(true)}>
+                  Review before saving
+                  <ArrowRight aria-hidden="true" className="size-4" />
+                </Button>
+              </div>
+            ) : null}
           </div>
+        ) : null}
+
+        <div hidden={!reviewOpen || isEditing}>
+          <InterpretationReviewPanel
+            display={reviewDisplay}
+            resetKey={draft.parsed.rawNote}
+            onConfirm={handleConfirm}
+            onReviewLater={() => onReviewOpenChange(false)}
+            onCaptureAnother={onCaptureAnother}
+            rosterStudents={rosterStudents}
+            classGroups={classGroups}
+            onCreateStudent={onCreateStudent}
+            onSavePendingChange={setIsReviewSavePending}
+            onResolvedStudentChange={setResolvedStudentOverride}
+            hasPhoto={Boolean(photo)}
+            photoChangePending={isProcessingPhoto}
+            photoResolutionRequired={photoMissing && !photo}
+            capturedAt={capturedAt}
+            workspaceCreatedAt={workspaceCreatedAt}
+          />
         </div>
       </div>
     </article>

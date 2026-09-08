@@ -29,7 +29,7 @@ export function SettingsSignOutAction() {
       variant="outline"
       size="lg"
       aria-label="Sign out of ClassTrace"
-      className="h-9 rounded-lg px-5 text-sm font-semibold"
+      className="h-9 rounded-sm px-5 text-sm font-semibold"
       disabled={isSigningOut}
       onClick={() => void handleSignOut()}
     >

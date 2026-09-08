@@ -9,16 +9,16 @@ type BrandLockupProps = Omit<ComponentProps<"span">, "children"> & {
 
 const sizeClasses = {
   sm: {
-    lockup: "gap-2 text-base",
+    lockup: "gap-2 text-[1.05rem]",
     mark: "size-5",
   },
   md: {
-    lockup: "gap-2.5 text-xl",
+    lockup: "gap-2.5 text-[1.35rem]",
     mark: "size-6",
   },
   lg: {
-    lockup: "gap-3 text-2xl",
-    mark: "size-7",
+    lockup: "gap-3 text-[1.75rem]",
+    mark: "size-8",
   },
 } as const;
 
@@ -30,16 +30,21 @@ export function BrandLockup({
   ...props
 }: BrandLockupProps) {
   const classes = sizeClasses[size];
+  const inverse = tone === "inverse";
   const defaultMark = (
-    <span
-      className={cn(
-        "flex size-full items-center justify-center rounded-sm text-[0.42em] font-bold tracking-normal",
-        tone === "inverse"
-          ? "bg-mint text-mint-ink"
-          : "bg-navy text-mint"
-      )}
-    >
-      CT
+    <span className="relative block size-full">
+      <span
+        className={cn(
+          "absolute inset-0 rounded-full",
+          inverse ? "bg-base" : "bg-fg"
+        )}
+      />
+      <span
+        className={cn(
+          "absolute -bottom-px -right-px size-[46%] rounded-full bg-live-bright ring-2",
+          inverse ? "ring-fg" : "ring-base"
+        )}
+      />
     </span>
   );
 
@@ -47,8 +52,8 @@ export function BrandLockup({
     <span
       data-slot="brand-lockup"
       className={cn(
-        "inline-flex min-w-0 items-center font-sans font-bold tracking-[-0.025em]",
-        tone === "inverse" ? "text-navy-foreground" : "text-foreground",
+        "inline-flex min-w-0 items-center font-display font-semibold",
+        inverse ? "text-[color:var(--base)]" : "text-fg",
         classes.lockup,
         className
       )}

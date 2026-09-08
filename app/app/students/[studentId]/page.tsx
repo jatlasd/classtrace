@@ -23,14 +23,14 @@ export default async function StudentProfilePage({
   if (!timeline) {
     return (
       <div className="mx-auto w-full max-w-[860px] px-4 py-7 sm:px-6 lg:px-8">
-        <section className="border border-border bg-card/60 p-5">
-          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+        <section className="plate p-6">
+          <p className="label text-fg-3">
             Student timeline
           </p>
-          <h1 className="mt-2 font-sans text-2xl font-semibold tracking-tight text-foreground">
+          <h1 className="mt-2 font-display text-3xl font-semibold leading-none tracking-[-0.01em] text-fg">
             Student not found on your roster.
           </h1>
-          <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+          <p className="mt-2 text-sm leading-relaxed text-fg-2">
             Choose an active roster student before opening a timeline.
           </p>
           <Button asChild variant="outline" size="sm" className="mt-4">

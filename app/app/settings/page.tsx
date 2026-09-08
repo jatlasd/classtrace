@@ -1,4 +1,4 @@
-import { ExternalLink, MessageCircleQuestion } from "lucide-react";
+import { ExternalLink } from "lucide-react";
 import Link from "next/link";
 import { HelpFeedbackForm } from "@/components/settings/help-feedback-form";
 import { SettingsSignOutAction } from "@/components/settings/settings-sign-out-action";
@@ -13,11 +13,11 @@ type DetailRowProps = {
 
 function DetailRow({ label, value }: DetailRowProps) {
   return (
-    <div className="grid gap-0.5 border-t border-border/60 py-2.5">
-      <dt className="text-[11px] font-medium text-muted-foreground">
+    <div className="grid gap-0.5 border-t border-dashed border-line py-2.5">
+      <dt className="label text-fg-3">
         {label}
       </dt>
-      <dd className="min-w-0 break-words text-sm font-medium text-foreground [overflow-wrap:anywhere]">
+      <dd className="min-w-0 break-words text-sm font-medium text-fg [overflow-wrap:anywhere]">
         {value}
       </dd>
     </div>
@@ -38,38 +38,31 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
   const initialErrorReference = normalizeErrorReference(query.errorReference);
 
   return (
-    <div className="mx-auto w-full max-w-[1180px] px-3 py-4 sm:px-5 sm:py-5">
-      <header className="mb-4 border-b border-border pb-4">
-        <h1 className="font-sans text-lg font-semibold tracking-tight text-foreground">
-          Account and workspace
+    <div className="mx-auto w-full max-w-[1100px] px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
+      <header className="mb-6 border-b border-line pb-5">
+        <h1 className="font-display text-4xl font-semibold leading-none tracking-[-0.01em] text-fg sm:text-5xl">
+          Settings
         </h1>
-        <p className="mt-1 max-w-2xl text-xs leading-relaxed text-muted-foreground">
+        <p className="mt-3 max-w-2xl font-display text-lg  leading-snug text-fg-2">
           Review the account signed in to ClassTrace and the personal teacher
           workspace connected to it.
         </p>
       </header>
 
-      <div className="grid items-start gap-4 xl:grid-cols-[minmax(0,1fr)_19rem]">
+      <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_20rem]">
         <section
           aria-labelledby="help-feedback-heading"
-          className="rounded-lg border border-border bg-card shadow-surface"
+          className="plate"
         >
-          <div className="flex items-start gap-3 border-b border-border bg-muted/20 px-4 py-3 sm:px-5">
-            <span className="flex size-8 shrink-0 items-center justify-center rounded-md border border-border bg-card text-link">
-              <MessageCircleQuestion
-                className="size-4"
-                strokeWidth={1.75}
-                aria-hidden="true"
-              />
-            </span>
+          <div className="border-b border-line px-4 py-4 sm:px-5">
             <div>
               <h2
                 id="help-feedback-heading"
-                className="font-sans text-lg font-semibold text-foreground"
+                className="font-display text-2xl font-semibold text-fg"
               >
                 Help and feedback
               </h2>
-              <p className="mt-0.5 max-w-2xl text-xs leading-relaxed text-muted-foreground">
+              <p className="mt-1 max-w-2xl text-sm leading-relaxed text-fg-2">
                 Tell us what broke, what felt confusing, or what would make
                 ClassTrace more useful.
               </p>
@@ -85,12 +78,12 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
         </section>
 
         <aside className="space-y-4" aria-label="Account details and resources">
-          <section className="overflow-hidden rounded-lg border border-border bg-card">
+          <section className="overflow-hidden rounded-md border border-line bg-well">
             <div className="px-4 py-3">
-              <h2 className="font-sans text-sm font-semibold text-foreground">
+              <h2 className="font-display text-lg font-semibold text-fg">
                 Account
               </h2>
-              <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">
+              <p className="mt-1 text-xs leading-relaxed text-fg-2">
                 Sign-in details are managed by your account provider.
               </p>
               <dl className="mt-3">
@@ -99,11 +92,11 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
               </dl>
             </div>
 
-            <div className="border-t border-border px-4 py-3">
-              <h2 className="font-sans text-sm font-semibold text-foreground">
+            <div className="border-t border-line px-4 py-3">
+              <h2 className="font-display text-lg font-semibold text-fg">
                 Workspace
               </h2>
-              <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">
+              <p className="mt-1 text-xs leading-relaxed text-fg-2">
                 Your personal roster and validated evidence workspace.
               </p>
               <dl className="mt-3">
@@ -118,16 +111,16 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
 
           <section
             aria-labelledby="privacy-terms-heading"
-            className="overflow-hidden rounded-lg border border-border bg-card"
+            className="plate overflow-hidden"
           >
-            <div className="border-b border-border px-4 py-3">
+            <div className="border-b border-line px-4 py-3">
               <h2
                 id="privacy-terms-heading"
-                className="font-sans text-sm font-semibold text-foreground"
+                className="font-display text-lg font-semibold text-fg"
               >
                 Privacy and beta terms
               </h2>
-              <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">
+              <p className="mt-1 text-xs leading-relaxed text-fg-2">
                 Data handling, support, and account boundaries.
               </p>
             </div>
@@ -140,14 +133,14 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
                   { label: "Support", href: routes.support },
                   { label: "Account deletion", href: routes.dataDeletion },
                 ].map((item) => (
-                  <li key={item.href} className="border-b border-border last:border-b-0">
+                  <li key={item.href} className="border-b border-line last:border-b-0">
                     <Link
                       href={item.href}
-                      className="flex min-h-10 items-center justify-between gap-4 px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted/40 hover:text-link"
+                      className="flex min-h-10 items-center justify-between gap-4 px-4 py-2 text-sm font-medium text-fg transition-colors hover:bg-well hover:text-fg"
                     >
                       <span>{item.label}</span>
                       <ExternalLink
-                        className="size-3.5 shrink-0 text-muted-foreground"
+                        className="size-3.5 shrink-0 text-fg-2"
                         aria-hidden="true"
                       />
                     </Link>
@@ -157,12 +150,12 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
             </nav>
           </section>
 
-          <section className="flex items-center justify-between gap-4 border-y border-border py-3">
+          <section className="flex items-center justify-between gap-4 border-y border-line py-3">
             <div>
-              <h2 className="font-sans text-sm font-semibold text-foreground">
+              <h2 className="font-display text-lg font-semibold text-fg">
                 Sign out
               </h2>
-              <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">
+              <p className="mt-1 text-xs leading-relaxed text-fg-2">
                 Leave this ClassTrace session.
               </p>
             </div>

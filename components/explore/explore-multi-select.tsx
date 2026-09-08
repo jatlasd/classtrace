@@ -78,19 +78,19 @@ export function ExploreMultiSelect({
     <div className="relative min-w-0">
       <label
         htmlFor={inputId}
-        className="mb-1 block text-xs font-semibold text-foreground"
+        className="label mb-1.5 block text-fg-2"
       >
         {label}
       </label>
       <div
-        className="rounded-md border border-input bg-background px-2.5 focus-within:border-ring focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2"
+        className="rounded-md border border-line-2 bg-well px-2.5 transition-[border-color,box-shadow] focus-within:border-live-bright focus-within:ring-4 focus-within:ring-live-soft"
       >
         {selected.length > 0 ? (
           <div className="my-1 flex flex-wrap gap-1" aria-label={`${label} selected`}>
             {selected.map((option) => (
               <span
                 key={option.id}
-                className="inline-flex min-h-7 max-w-full items-center gap-0.5 rounded-full border border-border bg-muted pl-1.5 text-xs font-medium text-foreground"
+                className="inline-flex min-h-7 max-w-full items-center gap-0.5 rounded-full bg-live-soft pl-2.5 text-[13px] font-semibold text-fg"
               >
                 <span className="min-w-0 break-words [overflow-wrap:anywhere]">
                   {option.label}
@@ -99,7 +99,7 @@ export function ExploreMultiSelect({
                   type="button"
                   aria-label={`Remove ${option.label}`}
                   onClick={() => removeOption(option.id)}
-                  className="flex size-11 shrink-0 items-center justify-center rounded-full text-muted-foreground outline-none transition-colors hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring lg:size-7"
+                  className="flex size-11 shrink-0 items-center justify-center rounded-full text-fg-2 outline-none transition-colors hover:text-fg focus-visible:ring-2 focus-visible:ring-live-bright lg:size-7"
                 >
                   <X aria-hidden="true" className="size-3" />
                 </button>
@@ -108,7 +108,7 @@ export function ExploreMultiSelect({
           </div>
         ) : null}
         <div className="flex min-h-[34px] items-center gap-1.5 lg:min-h-[26px]">
-          <Search aria-hidden="true" className="size-3.5 shrink-0 text-muted-foreground" />
+          <Search aria-hidden="true" className="size-3.5 shrink-0 text-fg-3" />
           <input
             ref={resolvedInputRef}
             id={inputId}
@@ -163,7 +163,7 @@ export function ExploreMultiSelect({
                 removeOption(selectedIds[selectedIds.length - 1]);
               }
             }}
-            className="min-h-11 min-w-0 flex-1 bg-transparent lg:min-h-7 text-base text-foreground sm:text-sm outline-none placeholder:text-muted-foreground"
+            className="min-h-11 min-w-0 flex-1 bg-transparent text-base text-fg outline-none placeholder:text-fg-3 sm:text-sm lg:min-h-8"
           />
           <button
             type="button"
@@ -176,7 +176,7 @@ export function ExploreMultiSelect({
               resolvedInputRef.current?.focus();
               setIsOpen(!isOpen);
             }}
-            className="-mr-2 flex size-11 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:text-foreground lg:size-9"
+            className="-mr-2 flex size-11 shrink-0 items-center justify-center rounded-full text-fg-2 hover:text-fg lg:size-9"
           >
             <ChevronDown aria-hidden="true" className={`size-4 ${isOpen ? "rotate-180" : ""}`} />
           </button>
@@ -188,10 +188,10 @@ export function ExploreMultiSelect({
           id={listboxId}
           role="listbox"
           aria-label={`${label} choices`}
-          className="absolute left-0 right-0 top-full z-30 mt-1 max-h-56 overflow-y-auto rounded-md border border-border bg-card p-1 shadow-floating"
+          className="absolute left-0 right-0 top-full z-30 mt-1.5 max-h-56 overflow-y-auto rounded-lg border border-line bg-plate p-1 shadow-lift"
         >
           {available.length === 0 ? (
-            <p className="px-2.5 py-2 text-sm text-muted-foreground">
+            <p className="px-2.5 py-2 text-sm text-fg-2">
               {emptyMessage}
             </p>
           ) : (
@@ -206,10 +206,8 @@ export function ExploreMultiSelect({
                 onMouseDown={(event) => event.preventDefault()}
                 onMouseEnter={() => setActiveIndex(index)}
                 onClick={() => selectOption(option)}
-                className={`flex min-h-11 w-full items-center gap-2 rounded-md px-2 py-1 text-left outline-none transition-colors lg:min-h-9 ${
-                  index === boundedActiveIndex
-                    ? "bg-primary text-primary-foreground"
-                    : "text-foreground"
+                className={`flex min-h-11 w-full items-center gap-2 rounded-md px-2.5 py-1 text-left text-fg outline-none transition-colors lg:min-h-9 ${
+                  index === boundedActiveIndex ? "bg-live-soft" : ""
                 }`}
               >
                 <span className="min-w-0">
@@ -218,11 +216,7 @@ export function ExploreMultiSelect({
                   </span>
                   {option.description ? (
                     <span
-                      className={`mt-0.5 block break-words text-xs [overflow-wrap:anywhere] ${
-                        index === boundedActiveIndex
-                          ? "text-ground-muted"
-                          : "text-muted-foreground"
-                      }`}
+                      className="mt-0.5 block break-words text-xs text-fg-3 [overflow-wrap:anywhere]"
                     >
                       {option.description}
                     </span>
