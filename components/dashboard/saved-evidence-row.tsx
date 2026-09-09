@@ -7,28 +7,30 @@ import { deleteEvidence } from "@/actions/evidence";
 import { EvidenceRecordContent } from "@/components/evidence/evidence-record-content";
 import { EvidencePhoto } from "@/components/evidence/evidence-photo";
 import { Button } from "@/components/ui/button";
+import { formatEvidenceCalendarDate } from "@/lib/evidence/evidence-calendar-date";
 import type { EvidenceFeedRecord } from "@/lib/evidence/evidence-feed-records";
 import { routes } from "@/lib/routes";
 import { Trash2 } from "lucide-react";
 
 type SavedEvidenceRowProps = {
   record: EvidenceFeedRecord;
+  evidenceTimeZone: string;
   onDeleted?: (evidenceId: string) => void;
 };
 
 export function SavedEvidenceRow({
   record,
+  evidenceTimeZone,
   onDeleted,
 }: SavedEvidenceRowProps) {
   const router = useRouter();
   const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
   const [deleteError, setDeleteError] = useState("");
   const [isPending, startTransition] = useTransition();
-  const date = new Date(record.evidenceDate);
-  const evidenceDate = Number.isNaN(date.getTime()) ? "Recently" :
-    new Intl.DateTimeFormat("en", {
-      month: "long", day: "numeric", year: "numeric", timeZone: "UTC",
-    }).format(date);
+  const evidenceDate = formatEvidenceCalendarDate(
+    record.evidenceDate,
+    evidenceTimeZone
+  );
   const contentRecord = record.hasPhoto
     ? { ...record, hasPhoto: false }
     : record;

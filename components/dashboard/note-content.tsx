@@ -2,20 +2,16 @@ const tokenPattern = /(@[\w]+|#[\w-]+)/g;
 
 export function NoteContent({
   text,
-  tone = "ink",
   className = "",
 }: {
   text: string;
-  tone?: "ink" | "pencil";
   className?: string;
 }) {
   const parts = text.split(tokenPattern);
 
   return (
     <p
-      className={`break-words text-[17px] leading-[1.55] [overflow-wrap:anywhere] ${
-        tone === "pencil" ? "text-fg" : "text-fg"
-      } ${className}`}
+      className={`break-words text-[17px] leading-[1.55] text-fg [overflow-wrap:anywhere] ${className}`}
     >
       {parts.map((part, index) =>
         part.startsWith("@") ? (

@@ -9,7 +9,7 @@ colors:
   line-strong: "rgb(43 33 64 / 0.24)"
   ink: "#2b2140"
   ink-muted: "#66597d"
-  ink-faint: "#9a90ac"
+  ink-faint: "#756a86"
   live: "#b85c00"
   live-bright: "#ffb020"
   live-ink: "#2b1800"

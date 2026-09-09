@@ -1,4 +1,35 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Locator } from "@playwright/test";
+
+function relativeLuminance(color: string): number {
+  const channels = color.match(/[\d.]+/g)?.slice(0, 3).map(Number);
+  if (!channels || channels.length !== 3) {
+    throw new Error(`Could not parse rendered color: ${color}`);
+  }
+
+  const [red, green, blue] = channels.map((channel) => {
+    const value = channel / 255;
+    return value <= 0.04045
+      ? value / 12.92
+      : ((value + 0.055) / 1.055) ** 2.4;
+  });
+  return 0.2126 * red + 0.7152 * green + 0.0722 * blue;
+}
+
+async function renderedContrast(
+  foreground: Locator,
+  background: Locator
+): Promise<number> {
+  const [foregroundColor, backgroundColor] = await Promise.all([
+    foreground.evaluate((element) => getComputedStyle(element).color),
+    background.evaluate((element) => getComputedStyle(element).backgroundColor),
+  ]);
+  const foregroundLuminance = relativeLuminance(foregroundColor);
+  const backgroundLuminance = relativeLuminance(backgroundColor);
+  return (
+    (Math.max(foregroundLuminance, backgroundLuminance) + 0.05) /
+    (Math.min(foregroundLuminance, backgroundLuminance) + 0.05)
+  );
+}
 
 test("opens on evidence and applies optional filters on desktop", async ({ page }) => {
   test.setTimeout(60_000);
@@ -10,6 +41,18 @@ test("opens on evidence and applies optional filters on desktop", async ({ page 
   await expect(page.getByRole("button", { name: "Evidence", exact: true })).toHaveAttribute("aria-pressed", "true");
   await expect(page.getByRole("region", { name: "Filter evidence" })).toBeHidden();
   await expect(page.getByRole("heading", { name: "All evidence", exact: true })).toBeVisible();
+  expect(
+    await renderedContrast(
+      page.getByRole("link", { name: "Capture", exact: true }),
+      page.locator("body")
+    )
+  ).toBeGreaterThanOrEqual(4.5);
+  expect(
+    await renderedContrast(
+      page.getByText("Ask questions of the evidence you reviewed and saved."),
+      page.locator("body")
+    )
+  ).toBeGreaterThanOrEqual(4.5);
   await page.screenshot({
     path: "output/playwright/explore-desktop.png",
     fullPage: false,
@@ -50,8 +93,25 @@ test("keeps Explore Evidence in one overflow-free mobile column", async ({ page 
   const firstEvidence = page.getByRole("article").first();
   if (await firstEvidence.count()) {
     const position = await firstEvidence.boundingBox();
-    expect(position?.y).toBeLessThan(450);
+    const primaryNavigation = await page
+      .getByRole("navigation", { name: "Primary" })
+      .boundingBox();
+    expect(position).not.toBeNull();
+    expect(primaryNavigation).not.toBeNull();
+    expect(position!.y).toBeLessThan(primaryNavigation!.y);
   }
+  expect(
+    await renderedContrast(
+      page.getByText("Ask questions of the evidence you reviewed and saved."),
+      page.locator("body")
+    )
+  ).toBeGreaterThanOrEqual(4.5);
+  expect(
+    await renderedContrast(
+      page.getByRole("link", { name: "Students" }),
+      page.locator("body")
+    )
+  ).toBeGreaterThanOrEqual(4.5);
   await expect
     .poll(() =>
       page.evaluate(

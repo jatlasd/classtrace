@@ -38,6 +38,10 @@ import {
   needsReview,
   type FeedItem,
 } from "@/lib/evidence/evidence-feed-filtering";
+import {
+  evidenceCalendarDayKey,
+  formatEvidenceDayLabel,
+} from "@/lib/evidence/evidence-calendar-date";
 import type { EvidenceFeedRecord } from "@/lib/evidence/evidence-feed-records";
 import {
   isCurrentLocalDay,
@@ -89,22 +93,6 @@ type BlockedCaptureStudentResolution = Extract<
 >;
 
 const EMPTY_FEED_ITEMS: DraftFeedItem[] = [];
-
-function formatEvidenceDay(value: string, relative: boolean): string {
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "Recently";
-  if (relative) {
-    const today = new Date();
-    const yesterday = new Date(today);
-    yesterday.setDate(yesterday.getDate() - 1);
-    const dayKey = (day: Date) => `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, "0")}-${String(day.getDate()).padStart(2, "0")}`;
-    if (value.slice(0, 10) === dayKey(today)) return "Today";
-    if (value.slice(0, 10) === dayKey(yesterday)) return "Yesterday";
-  }
-  return new Intl.DateTimeFormat("en", {
-    month: "long", day: "numeric", year: "numeric", timeZone: "UTC",
-  }).format(date);
-}
 
 function normalizeInboxFilter(value: string): InboxFilter {
   return value === "needs_review" || value === "validated" ? value : "all";
@@ -177,6 +165,9 @@ export function EvidenceFeed({
     Set<string>
   >(() => new Set());
   const sessionDraftsReady = hydratedWorkspaceId === workspaceId;
+  const evidenceTimeZone = sessionDraftsReady
+    ? Intl.DateTimeFormat().resolvedOptions().timeZone
+    : "UTC";
   const activeDraftItems = sessionDraftsReady ? draftItems : EMPTY_FEED_ITEMS;
   const activeRosterStudents = useMemo(() => {
     const studentsById = new Map(
@@ -751,20 +742,28 @@ export function EvidenceFeed({
             {visibleEvidenceRecords.map((record, index) => {
               const newDay =
                 index === 0 ||
-                record.evidenceDate.slice(0, 10) !==
-                  visibleEvidenceRecords[index - 1].evidenceDate.slice(0, 10);
+                evidenceCalendarDayKey(record.evidenceDate, evidenceTimeZone) !==
+                  evidenceCalendarDayKey(
+                    visibleEvidenceRecords[index - 1].evidenceDate,
+                    evidenceTimeZone
+                  );
               return (
                 <Fragment key={record.id}>
                   {newDay ? (
                     <h3 className={`sticky top-14 z-10 -mx-4 bg-base/95 px-4 py-2 backdrop-blur sm:-mx-6 sm:px-6 lg:top-[4.5rem] ${index === 0 ? "" : "mt-4"}`}>
                       <time dateTime={record.evidenceDate} className="font-display text-[1.1rem] font-semibold text-fg-2">
-                        {formatEvidenceDay(record.evidenceDate, sessionDraftsReady)}
+                        {formatEvidenceDayLabel(
+                          record.evidenceDate,
+                          evidenceTimeZone,
+                          sessionDraftsReady
+                        )}
                       </time>
                     </h3>
                   ) : null}
                   <div className="trace">
                     <SavedEvidenceRow
                       record={record}
+                      evidenceTimeZone={evidenceTimeZone}
                       onDeleted={handleSavedEvidenceHidden}
                     />
                   </div>

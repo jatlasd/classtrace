@@ -42,7 +42,12 @@ describe("SavedEvidenceRow management", () => {
   });
 
   it("keeps saved-row metadata implicit and avoids repeating structured chips", () => {
-    render(<SavedEvidenceRow record={record} />);
+    render(
+      <SavedEvidenceRow
+        record={record}
+        evidenceTimeZone="America/New_York"
+      />
+    );
 
     expect(screen.queryByText("Validated")).toBeNull();
     expect(screen.queryByText(/Structured details:/)).toBeNull();
@@ -50,9 +55,31 @@ describe("SavedEvidenceRow management", () => {
     expect(screen.getByText("Academic check-in")).toBeTruthy();
   });
 
+  it("uses the teacher-local calendar date in its accessible name", () => {
+    render(
+      <SavedEvidenceRow
+        record={{
+          ...record,
+          evidenceDate: "2026-12-08T23:00:00.000Z",
+        }}
+        evidenceTimeZone="Pacific/Fakaofo"
+      />
+    );
+
+    expect(
+      screen.getByLabelText("Saved evidence for Mary on December 9, 2026")
+    ).toBeTruthy();
+  });
+
   it("states permanence before deleting and reports the successful removal", async () => {
     const onDeleted = vi.fn();
-    render(<SavedEvidenceRow record={record} onDeleted={onDeleted} />);
+    render(
+      <SavedEvidenceRow
+        record={record}
+        evidenceTimeZone="America/New_York"
+        onDeleted={onDeleted}
+      />
+    );
 
     fireEvent.click(screen.getByRole("button", { name: /Delete evidence for/ }));
 
