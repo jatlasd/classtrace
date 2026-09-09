@@ -8,6 +8,8 @@ import {
   createClassGroupForWorkspace,
   type ClassGroupMutationResult,
   renameClassGroupForWorkspace,
+  restoreClassGroupForWorkspace,
+  type RestoreClassGroupResult,
 } from "@/lib/classes/class-groups";
 import { captureOperationalError } from "@/lib/monitoring/capture-operational-error";
 import { routes } from "@/lib/routes";
@@ -30,6 +32,12 @@ export type ArchiveClassGroupActionInput = {
 };
 
 export type ArchiveClassGroupActionResult = ArchiveClassGroupResult;
+
+export type RestoreClassGroupActionInput = {
+  classGroupId: string;
+};
+
+export type RestoreClassGroupActionResult = RestoreClassGroupResult;
 
 export async function createClassGroup(
   input: CreateClassGroupActionInput
@@ -92,5 +100,26 @@ export async function archiveClassGroup(
   } catch (error) {
     captureOperationalError("class.archive", error);
     return { success: false, error: "Failed to archive class." };
+  }
+}
+
+export async function restoreClassGroup(
+  input: RestoreClassGroupActionInput
+): Promise<RestoreClassGroupActionResult> {
+  try {
+    const workspace = await getCurrentWorkspace();
+    const result = await restoreClassGroupForWorkspace({
+      workspaceId: workspace.workspaceId,
+      classGroupId: input.classGroupId,
+    });
+
+    if (result.success) {
+      revalidatePath(routes.roster);
+    }
+
+    return result;
+  } catch (error) {
+    captureOperationalError("class.restore", error);
+    return { success: false, error: "Failed to restore class." };
   }
 }

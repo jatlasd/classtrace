@@ -4,16 +4,7 @@ import type {
   StudentMentionRef,
 } from "@/lib/students/student-mention-display";
 
-const COLOR_PALETTE = [
-  "bg-sky-500",
-  "bg-rose-400",
-  "bg-teal-500",
-  "bg-violet-500",
-  "bg-amber-500",
-  "bg-emerald-500",
-  "bg-indigo-500",
-  "bg-orange-500",
-];
+const STUDENT_AVATAR_COLOR = "bg-secondary";
 
 function normalizeMention(value: string): string {
   return value.replace(/^@/, "").trim().toLowerCase();
@@ -31,8 +22,7 @@ function deriveInitials(displayName: string): string {
 }
 
 function captureRosterStudentToDisplayStudent(
-  student: CaptureRosterStudent,
-  colorIndex: number
+  student: CaptureRosterStudent
 ): StudentMentionDisplay {
   return {
     id: student.id,
@@ -40,7 +30,7 @@ function captureRosterStudentToDisplayStudent(
     handle: student.mentionHandle,
     group: student.classGroupName ?? undefined,
     initials: deriveInitials(student.displayName),
-    colorClass: COLOR_PALETTE[colorIndex % COLOR_PALETTE.length],
+    colorClass: STUDENT_AVATAR_COLOR,
   };
 }
 
@@ -48,8 +38,8 @@ function buildRosterLookups(roster: CaptureRosterStudent[]) {
   const byHandle = new Map<string, StudentMentionDisplay>();
   const byDisplayName = new Map<string, StudentMentionDisplay>();
 
-  roster.forEach((student, index) => {
-    const displayStudent = captureRosterStudentToDisplayStudent(student, index);
+  roster.forEach((student) => {
+    const displayStudent = captureRosterStudentToDisplayStudent(student);
     byHandle.set(normalizeMention(student.mentionHandle), displayStudent);
     byDisplayName.set(student.displayName.toLowerCase(), displayStudent);
   });

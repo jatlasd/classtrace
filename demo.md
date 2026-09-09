@@ -34,8 +34,8 @@ inside this exact workspace are replaced.
 
 - **Demo account**: the real Clerk account above and its one production
   ClassTrace workspace.
-- **Canonical dataset**: the versioned classes, students, and validated evidence
-  records that define the reset state.
+- **Canonical dataset**: the versioned classes, students, validated evidence,
+  and synthetic work-sample photos that define the reset state.
 - **Evidence note**: the teacher-reviewed observation stored permanently and
   displayed in the feed, timeline, report, and export.
 - **Source note**: prose used while authoring the dataset. Source notes are not
@@ -45,7 +45,7 @@ inside this exact workspace are replaced.
 
 ## Dataset shape
 
-Dataset version: `2026-school-spring-v1`
+Dataset version: `2026-school-spring-v2`
 
 Use fixed timestamps between March 9 and May 1, 2026. Dates never move when the
 dataset is reset. Store explicit `evidenceDate`, `validatedAt`, `createdAt`, and
@@ -56,6 +56,7 @@ The starting state contains:
 - 2 active classes
 - 4 active fictional students
 - 56 active evidence records: 14 per student
+- 4 validated evidence photos: one anonymous synthetic work sample per student
 - no archived classes, students, or evidence
 - no pending or session-stored captures
 - no legacy records with a missing Evidence note
@@ -177,7 +178,46 @@ Avoid polished phrases such as "demonstrated commendable growth," diagnostic
 claims, moral judgment, fake quotations, exact family details, and repetitive
 sentence templates.
 
-## Reset design
+## Local development reset
+
+`npm run demo:reset:local` loads this same canonical dataset and its four
+photos into one existing Clerk development user's ClassTrace workspace. It is a
+localhost operator command, not an application route or authentication bypass.
+It preserves the selected development `TeacherProfile`, `Workspace`, and beta
+acceptance, while replacing every class, roster student, evidence record, and
+evidence photo inside that one workspace.
+
+The command intentionally refuses to run unless all of these checks pass:
+
+- `.env.local` supplies `DATABASE_URL` for a Neon database named exactly
+  `classtrace_dev`.
+- The connected Neon project, branch, and database identity are present and do
+  not match the canonical production project, branch, or database.
+- `CLERK_SECRET_KEY` is a Clerk development key beginning with `sk_test_`.
+- Exactly one `--email` or `--clerk-user-id` target is supplied, followed by
+  the explicit `--confirm` flag.
+- The target resolves uniquely in the configured Clerk development instance
+  and owns exactly one database workspace with a beta acceptance.
+
+To load the canonical data for the `jatlasdev2` development account, stop any
+work you need to preserve in that workspace, then run from the repository root:
+
+```powershell
+npm run demo
+```
+
+Then start the app with `npm.cmd run dev`.
+
+The equivalent Clerk-ID form is:
+
+```powershell
+npm.cmd run demo:reset:local -- --clerk-user-id <development-clerk-user-id> --confirm
+```
+
+The production `demo:reset` command, its dedicated database URL, canonical
+account, and production identity guards remain separate and unchanged.
+
+## Production reset design
 
 Add an operator-only command named `npm run demo:reset`. It is not exposed in
 the teacher product, operator console, or deployed UI.
@@ -215,7 +255,9 @@ Within one serializable transaction scoped to the resolved workspace:
 5. Insert the four canonical students with same-workspace class relations.
 6. Insert all 56 canonical evidence records with same-workspace student and
    class relations.
-7. Verify the expected counts and relations before commit.
+7. Insert all 4 canonical evidence photos with same-workspace evidence
+   relations.
+8. Verify the expected counts and relations before commit.
 
 Use deterministic, demo-prefixed IDs so the same dataset has stable routes and
 stable ordering after every reset. The transaction is all-or-nothing. A failed
@@ -231,7 +273,7 @@ Successful output is limited to:
 
 - dataset version
 - confirmation that the canonical demo workspace was reset
-- class, student, and evidence counts
+- class, student, evidence, and photo counts
 - earliest and latest evidence dates
 
 Failure output names the failed safety condition without printing sensitive or
@@ -255,7 +297,8 @@ Close the terminal or clear the three variables after the reset.
 ## Implementation plan
 
 1. Convert this specification into a versioned canonical dataset module with
-   deterministic IDs and all 56 fully authored Evidence records.
+   deterministic IDs, all 56 fully authored Evidence records, and four
+   anonymous synthetic work-sample photos.
 2. Add pure dataset validation for counts, names, handles, timestamps, field
    limits, allowed evidence types, tags, references, and the absence of raw-note
    fields.
@@ -293,6 +336,8 @@ The work is complete when:
 - Each student timeline contains 14 chronologically coherent records.
 - The feed contains all 56 records, and a March 9 through May 1 report contains
   the expected 14 records for each individual student.
+- Explore Evidence distinguishes the four photo-backed records from the 52
+  records without a photo, and each student has one matching work sample.
 - CSV export for each student contains that student's 14 records and no other
   student's data.
 - No raw source note is persisted or logged.
@@ -305,7 +350,8 @@ The work is complete when:
 - A public reset button or demo-mode banner
 - Shared credentials or authentication bypasses
 - Generating evidence with AI or at runtime
-- Copying the dataset into teacher workspaces
+- Copying the dataset into real or production teacher workspaces; the one
+  explicitly confirmed local development workspace is the only exception
 - Seeding real student information
 - Changing the production schema
 - Using a Neon branch reset as the account-reset mechanism

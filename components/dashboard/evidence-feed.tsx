@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import {
   saveValidatedEvidence,
   type SaveValidatedEvidenceActionInput,
@@ -38,6 +38,10 @@ import {
   needsReview,
   type FeedItem,
 } from "@/lib/evidence/evidence-feed-filtering";
+import {
+  evidenceCalendarDayKey,
+  formatEvidenceDayLabel,
+} from "@/lib/evidence/evidence-calendar-date";
 import type { EvidenceFeedRecord } from "@/lib/evidence/evidence-feed-records";
 import {
   isCurrentLocalDay,
@@ -62,7 +66,6 @@ import {
   type CaptureRosterStudent,
   type CaptureStudentResolution,
 } from "@/lib/students/resolve-capture-students";
-import { ArrowDownUp } from "lucide-react";
 
 type EvidenceFeedProps = {
   workspaceId: string;
@@ -80,6 +83,7 @@ type EvidenceFeedProps = {
 type DraftFeedItem = FeedItem & {
   reviewOpen: boolean;
   photo?: PhotoDraft;
+  photoMissing?: boolean;
   photoRecoveryWarning?: string;
 };
 
@@ -161,6 +165,9 @@ export function EvidenceFeed({
     Set<string>
   >(() => new Set());
   const sessionDraftsReady = hydratedWorkspaceId === workspaceId;
+  const evidenceTimeZone = sessionDraftsReady
+    ? Intl.DateTimeFormat().resolvedOptions().timeZone
+    : "UTC";
   const activeDraftItems = sessionDraftsReady ? draftItems : EMPTY_FEED_ITEMS;
   const activeRosterStudents = useMemo(() => {
     const studentsById = new Map(
@@ -194,15 +201,19 @@ export function EvidenceFeed({
             timestampMs: sessionDraft.capturedAt,
             reviewOpen: false,
             photo: photo ?? undefined,
+            photoMissing: sessionDraft.hasPhoto && !photo,
             photoRecoveryWarning:
-              sessionDraft.hasPhoto && !photo && sessionDraft.rawNote.trim()
+              sessionDraft.hasPhoto && !photo
                 ? "The draft photo could not be restored. Choose it again before saving."
                 : undefined,
           } satisfies DraftFeedItem;
         })
       );
       const usableItems = restoredItems
-        .filter((item) => item.draft.parsed.rawNote.trim() || item.photo)
+        .filter(
+          (item) =>
+            item.draft.parsed.rawNote.trim() || item.photo || item.photoMissing
+        )
         .sort((a, b) => b.timestampMs - a.timestampMs);
       await pruneExpiredPhotoDrafts();
       if (cancelled) return;
@@ -230,7 +241,7 @@ export function EvidenceFeed({
           id: item.id,
           rawNote: item.draft.parsed.rawNote,
           capturedAt: item.timestampMs,
-          hasPhoto: Boolean(item.photo),
+          hasPhoto: Boolean(item.photo) || Boolean(item.photoMissing),
         }))
     );
   }, [draftItems, sessionDraftsReady, workspaceId]);
@@ -444,14 +455,14 @@ export function EvidenceFeed({
   async function handleValidate(
     id: string,
     fields: InterpretationFields,
-    saveInput: SaveValidatedEvidenceActionInput
+    saveInput: SaveValidatedEvidenceActionInput,
+    reviewedPhoto?: PhotoDraft
   ): Promise<SaveValidatedEvidenceActionResult> {
     setCaptureEditError("");
-    const item = draftItems.find((candidate) => candidate.id === id);
     const formData = new FormData();
     formData.set("evidence", JSON.stringify(saveInput));
-    if (item?.photo) {
-      formData.set("photo", item.photo.blob);
+    if (reviewedPhoto) {
+      formData.set("photo", reviewedPhoto.blob);
     }
     const result = await saveValidatedEvidence(formData);
 
@@ -553,6 +564,7 @@ export function EvidenceFeed({
           ? {
               ...candidate,
               photo,
+              photoMissing: false,
               photoRecoveryWarning: stored
                 ? undefined
                 : "This photo is available now but cannot be recovered after a refresh.",
@@ -568,7 +580,12 @@ export function EvidenceFeed({
       current
         .map((candidate) =>
           candidate.id === id
-            ? { ...candidate, photo: undefined, photoRecoveryWarning: undefined }
+            ? {
+                ...candidate,
+                photo: undefined,
+                photoMissing: false,
+                photoRecoveryWarning: undefined,
+              }
             : candidate
         )
         .filter(
@@ -646,7 +663,7 @@ export function EvidenceFeed({
           title="Roster setup comes first"
           body="Add one active student to keep every capture attached to exactly one roster record."
           action={
-            <Button asChild variant="outline" size="sm">
+            <Button asChild variant="outline" size="sm" className="rounded-full">
               <Link href={routes.roster}>Set up roster</Link>
             </Button>
           }
@@ -657,8 +674,8 @@ export function EvidenceFeed({
     if (!hasAnyFeedItems) {
       return (
         <FeedEmptyState
-          title="No evidence in the inbox yet"
-          body="Drafts stay in this tab until you save or delete them, and are cleared at midnight. Saved evidence stays in your evidence records."
+          title="Nothing here yet"
+          body="Drafts stay in this browser until you save or delete them, and clear at midnight. Saved evidence stays in the student's trace."
         />
       );
     }
@@ -677,83 +694,119 @@ export function EvidenceFeed({
     }
 
     return (
-      <>
+      <div className="space-y-3">
+        {visibleDraftItems.length > 0 ? (
+          <h3 className="flex items-baseline gap-3 pb-1">
+            <span className="label flex items-center gap-2 text-live">
+              <span aria-hidden="true" className="size-1.5 rounded-full bg-live-bright" />
+              Drafts
+            </span>
+            <span className="font-mono text-sm tabular-nums text-fg-3">
+              {visibleDraftItems.filter(needsReview).length} need review
+            </span>
+          </h3>
+        ) : null}
         {visibleDraftItems.map((item) => (
-          <EvidenceCaptureCard
-            key={item.id}
-            draft={item.draft}
-            timestamp={item.timestamp}
-            capturedAt={item.timestampMs}
-            workspaceCreatedAt={workspaceCreatedAt}
-            validation={item.validation}
-            rosterStudents={activeRosterStudents}
-            classGroups={classGroups}
-            onValidate={(fields, saveInput) =>
-              handleValidate(item.id, fields, saveInput)
-            }
-            onCreateStudent={handleCreateStudent}
-            photo={item.photo}
-            photoRecoveryWarning={item.photoRecoveryWarning}
-            onPhotoChange={(photo) => handlePhotoChanged(item.id, photo)}
-            onPhotoRemove={() => handlePhotoRemoved(item.id)}
-            onEdit={(rawNote) => handleEditCapture(item.id, rawNote)}
-            onDelete={() => handleDeleteCapture(item.id)}
-            reviewOpen={item.reviewOpen}
-            onReviewOpenChange={(reviewOpen) =>
-              handleReviewOpenChange(item.id, reviewOpen)
-            }
-            onCaptureAnother={() =>
-              setComposerFocusRequestKey((current) => current + 1)
-            }
-          />
+          <div key={item.id}>
+            <EvidenceCaptureCard
+              draft={item.draft}
+              timestamp={item.timestamp}
+              capturedAt={item.timestampMs}
+              workspaceCreatedAt={workspaceCreatedAt}
+              validation={item.validation}
+              rosterStudents={activeRosterStudents}
+              classGroups={classGroups}
+              onValidate={(fields, saveInput, reviewedPhoto) =>
+                handleValidate(item.id, fields, saveInput, reviewedPhoto)
+              }
+              onCreateStudent={handleCreateStudent}
+              photo={item.photo}
+              photoMissing={item.photoMissing}
+              photoRecoveryWarning={item.photoRecoveryWarning}
+              onPhotoChange={(photo) => handlePhotoChanged(item.id, photo)}
+              onPhotoRemove={() => handlePhotoRemoved(item.id)}
+              onEdit={(rawNote) => handleEditCapture(item.id, rawNote)}
+              onDelete={() => handleDeleteCapture(item.id)}
+              reviewOpen={item.reviewOpen}
+              onReviewOpenChange={(reviewOpen) =>
+                handleReviewOpenChange(item.id, reviewOpen)
+              }
+              onCaptureAnother={() =>
+                setComposerFocusRequestKey((current) => current + 1)
+              }
+            />
+          </div>
         ))}
-        {visibleEvidenceRecords.map((record) => (
-          <SavedEvidenceRow
-            key={record.id}
-            record={record}
-            onArchived={handleSavedEvidenceHidden}
-            onDeleted={handleSavedEvidenceHidden}
-          />
-        ))}
-      </>
+        {visibleEvidenceRecords.length > 0 ? (
+          <div className={visibleDraftItems.length > 0 ? "pt-6" : ""}>
+            {visibleEvidenceRecords.map((record, index) => {
+              const newDay =
+                index === 0 ||
+                evidenceCalendarDayKey(record.evidenceDate, evidenceTimeZone) !==
+                  evidenceCalendarDayKey(
+                    visibleEvidenceRecords[index - 1].evidenceDate,
+                    evidenceTimeZone
+                  );
+              return (
+                <Fragment key={record.id}>
+                  {newDay ? (
+                    <h3 className={`sticky top-14 z-10 -mx-4 bg-base/95 px-4 py-2 backdrop-blur sm:-mx-6 sm:px-6 lg:top-[4.5rem] ${index === 0 ? "" : "mt-4"}`}>
+                      <time dateTime={record.evidenceDate} className="font-display text-[1.1rem] font-semibold text-fg-2">
+                        {formatEvidenceDayLabel(
+                          record.evidenceDate,
+                          evidenceTimeZone,
+                          sessionDraftsReady
+                        )}
+                      </time>
+                    </h3>
+                  ) : null}
+                  <div className="trace">
+                    <SavedEvidenceRow
+                      record={record}
+                      evidenceTimeZone={evidenceTimeZone}
+                      onDeleted={handleSavedEvidenceHidden}
+                    />
+                  </div>
+                </Fragment>
+              );
+            })}
+          </div>
+        ) : null}
+      </div>
     );
   }
 
   return (
-    <div className="mx-auto w-full max-w-[1360px] px-4 py-5 sm:px-6 lg:px-8">
+    <div className="evidence-journal mx-auto w-full max-w-[880px] px-4 py-5 sm:px-6 sm:py-7 lg:px-8 lg:py-9">
       <EvidenceFeedHeader />
 
-      <section className="mt-5" aria-label="Capture desk">
+      <section aria-label="Capture desk" className="min-w-0">
         {rosterSetupNeeded ? (
           <RosterRequiredState />
         ) : (
           <QuickCaptureCard
             rosterStudents={activeRosterStudents}
             focusRequestKey={composerFocusRequestKey}
+            disabled={!sessionDraftsReady}
             onDraft={handleDraft}
           />
         )}
       </section>
 
       <section
-        className="mt-5 overflow-hidden rounded-card border border-border bg-card"
+        className="mt-10 min-w-0 sm:mt-12"
         aria-labelledby="evidence-inbox-heading"
       >
-        <div className="space-y-4 border-b border-border bg-card px-4 py-4 sm:px-6">
-          <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
+        <div className="space-y-4 border-b border-line pb-4">
+          <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
             <div className="min-w-0">
               <RecentCapturesLabel />
-              <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs leading-relaxed text-muted-foreground">
-                <span>
-                  {hasVisibleFeedItems
-                    ? feedItemCountLabel(visibleFeedItemCount)
-                    : "Drafts and saved evidence will appear here."}
-                </span>
-                <span aria-hidden="true">·</span>
-                <span className="inline-flex items-center gap-1.5">
-                  <ArrowDownUp aria-hidden="true" className="size-3.5" />
-                  Newest first
-                </span>
+              <p className="label mt-2 text-fg-3">
+                {hasVisibleFeedItems
+                  ? feedItemCountLabel(visibleFeedItemCount)
+                  : "Drafts and saved evidence will appear here."}
+                <span aria-hidden="true"> · </span>
+                Newest first
               </p>
             </div>
             <EvidenceSearchControl
@@ -773,35 +826,35 @@ export function EvidenceFeed({
             ref={captureEditErrorRef}
             role="alert"
             tabIndex={-1}
-            className="border-b border-border bg-muted/30 px-4 py-3 text-sm text-destructive outline-none focus-visible:ring-3 focus-visible:ring-ring/30 sm:px-6"
+            className="mt-4 rounded-md border-l-2 border-danger bg-danger-soft px-4 py-3 text-sm text-danger outline-none focus-visible:ring-2 focus-visible:ring-live-bright focus-visible:ring-offset-2 focus-visible:ring-offset-base"
           >
             {captureEditError}
           </p>
         ) : null}
 
-        <div>
+        <div className="pt-5">
           {renderFeedList()}
           {filter !== "needs_review" &&
           (hasNewerEvidence || hasOlderEvidence) ? (
             <nav
               aria-label="Evidence pages"
-              className="flex items-center justify-between gap-3 border-t border-border px-4 py-4 sm:px-6"
+              className="mt-6 flex items-center justify-between gap-3 border-t border-line pt-4"
             >
               <div>
                 {hasNewerEvidence ? (
-                  <Button asChild variant="outline" size="sm">
+                  <Button asChild variant="outline" size="sm" className="rounded-full">
                     <Link href={evidencePageHref(evidencePage - 1)}>
                       Newer evidence
                     </Link>
                   </Button>
                 ) : null}
               </div>
-              <p className="text-xs text-muted-foreground">
+              <p className="label text-fg-3">
                 Page {evidencePage}
               </p>
               <div>
                 {hasOlderEvidence ? (
-                  <Button asChild variant="outline" size="sm">
+                  <Button asChild variant="outline" size="sm" className="rounded-full">
                     <Link href={evidencePageHref(evidencePage + 1)}>
                       Older evidence
                     </Link>

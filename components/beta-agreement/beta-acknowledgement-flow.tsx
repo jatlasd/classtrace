@@ -133,7 +133,7 @@ const agreementSteps: readonly AgreementStep[] = [
             I agree to the{" "}
             <Link
               href={routes.terms}
-              className="font-medium text-link underline decoration-border underline-offset-4 transition-colors hover:text-foreground"
+              className="font-medium text-fg underline decoration-border underline-offset-4 transition-colors hover:text-fg"
             >
               ClassTrace Beta Terms
             </Link>
@@ -143,7 +143,7 @@ const agreementSteps: readonly AgreementStep[] = [
             I acknowledge the{" "}
             <Link
               href={routes.privacy}
-              className="font-medium text-link underline decoration-border underline-offset-4 transition-colors hover:text-foreground"
+              className="font-medium text-fg underline decoration-border underline-offset-4 transition-colors hover:text-fg"
             >
               ClassTrace Privacy Notice
             </Link>
@@ -230,16 +230,16 @@ export function BetaAcknowledgementFlow({
   return (
     <section
       aria-labelledby="beta-agreement-heading"
-      className="overflow-hidden rounded-card border border-border bg-card shadow-paper"
+      className="overflow-hidden rounded-sm border border-line bg-plate shadow-sm"
     >
-      <header className="border-b border-border px-5 py-5 sm:px-7 sm:py-6">
+      <header className="border-b border-line px-5 py-5 sm:px-7 sm:py-6">
         <h1
           id="beta-agreement-heading"
-          className="font-display text-2xl font-semibold tracking-tight text-foreground sm:text-3xl"
+          className="font-display text-3xl font-semibold leading-none tracking-[-0.01em] text-fg sm:text-3xl"
         >
           Before you get started
         </h1>
-        <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground">
+        <p className="mt-3 max-w-2xl text-sm leading-6 text-fg-2">
           ClassTrace is still in a very early, limited beta. Before you enter, I
           need to make sure a few things are completely clear.
         </p>
@@ -249,22 +249,22 @@ export function BetaAcknowledgementFlow({
         <h2
           ref={headingRef}
           tabIndex={-1}
-          className="font-display text-xl font-semibold leading-snug text-foreground outline-none sm:text-2xl"
+          className="font-display text-2xl font-semibold leading-snug text-fg outline-none sm:text-3xl"
         >
           {currentStepIndex + 1} of {agreementSteps.length}: {currentStep.title}
         </h2>
 
-        <div className="mt-4 space-y-3 text-[15px] leading-7 text-muted-foreground">
+        <div className="mt-4 space-y-3 text-[15px] leading-7 text-fg-2">
           {currentStep.content}
         </div>
 
-        <label className="mt-6 flex cursor-pointer items-start gap-3 border-y border-border bg-muted/25 px-3 py-4 text-sm font-medium leading-6 text-foreground sm:px-4">
+        <label className="mt-6 flex cursor-pointer items-start gap-3 border-y border-line bg-well px-3 py-4 text-sm font-medium leading-6 text-fg sm:px-4">
           <input
             type="checkbox"
             checked={isChecked}
             disabled={isPending}
             onChange={(event) => setIsChecked(event.target.checked)}
-            className="mt-0.5 size-5 shrink-0 rounded border-border accent-primary outline-none focus-visible:ring-3 focus-visible:ring-ring/40 disabled:cursor-not-allowed"
+            className="mt-0.5 size-5 shrink-0 rounded border-line accent-[var(--fg)] outline-none focus-visible:ring-2 focus-visible:ring-live-bright focus-visible:ring-offset-2 focus-visible:ring-offset-well disabled:cursor-not-allowed"
           />
           <span>{currentStep.checkboxLabel}</span>
         </label>
@@ -274,7 +274,7 @@ export function BetaAcknowledgementFlow({
             ref={errorRef}
             role="alert"
             tabIndex={-1}
-            className="mt-4 border border-destructive/30 bg-destructive/5 px-3 py-3 text-sm text-destructive outline-none focus-visible:ring-3 focus-visible:ring-destructive/20"
+            className="mt-4 border border-danger bg-danger px-3 py-3 text-sm text-danger outline-none focus-visible:ring-2 focus-visible:ring-live-bright focus-visible:ring-offset-2 focus-visible:ring-offset-well"
           >
             {error}
           </div>

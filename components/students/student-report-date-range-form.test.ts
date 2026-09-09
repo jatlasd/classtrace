@@ -70,4 +70,26 @@ describe("buildStudentReportDateRangeHref", () => {
     expect(submittedUrl).toMatch(/startOffset=-?\d+/);
     expect(submittedUrl).toMatch(/endOffset=-?\d+/);
   });
+
+  it("resets edited date inputs when cleared route props arrive", () => {
+    const { rerender } = render(
+      createElement(StudentReportDateRangeForm, {
+        studentId: "student_mary",
+        start: "2026-07-01",
+        end: "2026-07-10",
+      })
+    );
+
+    fireEvent.change(screen.getByLabelText("Start date"), {
+      target: { value: "2026-07-04" },
+    });
+    rerender(
+      createElement(StudentReportDateRangeForm, {
+        studentId: "student_mary",
+      })
+    );
+
+    expect((screen.getByLabelText("Start date") as HTMLInputElement).value).toBe("");
+    expect((screen.getByLabelText("End date") as HTMLInputElement).value).toBe("");
+  });
 });

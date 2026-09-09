@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowLeft, ArrowRight, ChevronRight, Plus } from "lucide-react";
 import { ArchivedRosterStudentActions } from "@/components/roster/archived-roster-student-actions";
+import { ArchivedClassGroupActions } from "@/components/roster/archived-class-group-actions";
 import { ClassRosterManager } from "@/components/roster/class-roster-manager";
 import { ClassGroupForm } from "@/components/roster/class-group-form";
 import {
@@ -53,12 +54,12 @@ function SectionLabel({
   description?: string;
 }) {
   return (
-    <div className="px-1">
-      <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+    <div>
+      <h2 className="font-display text-2xl font-semibold text-fg">
         {title}
       </h2>
       {description ? (
-        <p className="mt-1 max-w-prose text-sm leading-relaxed text-muted-foreground">
+        <p className="mt-1 max-w-prose text-sm leading-relaxed text-fg-2">
           {description}
         </p>
       ) : null}
@@ -84,13 +85,13 @@ function ArchivedStudentRow({
   );
 
   return (
-    <li className="border-b border-border last:border-b-0">
+    <li className="border-b border-line last:border-b-0">
       <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-3 px-4 py-3.5 sm:px-5">
         <div className="min-w-0 flex-1 basis-56">
-          <p className="break-words font-medium leading-snug text-foreground [overflow-wrap:anywhere]">
+          <p className="break-words font-display text-lg font-semibold leading-tight text-fg-2 [overflow-wrap:anywhere]">
             {student.displayName}
           </p>
-          <p className="mt-0.5 break-words text-xs text-muted-foreground [overflow-wrap:anywhere]">
+          <p className="mt-0.5 break-words text-xs text-fg-3 [overflow-wrap:anywhere]">
             {metaParts.join(" · ")}
           </p>
         </div>
@@ -107,7 +108,7 @@ function ArchivedStudentRow({
   );
 }
 
-function ClassOverview({
+function StudentsOverview({
   activeClasses,
   activeStudents,
   hasArchivedClasses,
@@ -118,15 +119,15 @@ function ClassOverview({
 }) {
   if (activeClasses.length === 0) {
     return (
-      <section className="rounded-card border border-border bg-card p-5 shadow-paper sm:p-6">
-        <h2 className="font-display text-lg font-semibold text-foreground">
-          Create your first class
+      <section className="plate p-6 sm:p-8">
+        <h2 className="font-display text-3xl font-semibold text-fg">
+          Start with one class
         </h2>
-        <p className="mt-1 max-w-prose text-sm leading-relaxed text-muted-foreground">
-          Classes organize roster setup only. Once a class has one student,
-          capture opens up and stays global.
+        <p className="mt-2 max-w-prose text-[15px] leading-relaxed text-fg-2">
+          Name the class, add one student, and capture opens up. Classes only
+          organize your roster; capture itself is one box for everyone.
         </p>
-        <div className="mt-4 max-w-sm">
+        <div className="mt-5 max-w-sm">
           <ClassGroupForm />
         </div>
       </section>
@@ -134,71 +135,97 @@ function ClassOverview({
   }
 
   return (
-    <section className="space-y-2.5">
-      <div className="flex flex-wrap items-baseline justify-between gap-3">
-        <SectionLabel title="Classes" />
-        <p className="text-xs tabular-nums text-muted-foreground">
-          {activeClasses.length} {activeClasses.length === 1 ? "class" : "classes"}
-        </p>
-      </div>
-      <ul className="overflow-hidden rounded-card border border-border bg-card shadow-paper">
-        {activeClasses.map((classGroup) => {
-          const studentCount = activeStudents.filter(
-            (student) =>
-              student.classGroupId === classGroup.id && student.hasActiveClass
-          ).length;
+    <div className="space-y-12">
+      {activeClasses.map((classGroup) => {
+        const students = activeStudents.filter(
+          (student) =>
+            student.classGroupId === classGroup.id && student.hasActiveClass
+        );
 
-          return (
-            <li key={classGroup.id} className="border-b border-border">
+        return (
+          <section key={classGroup.id} aria-labelledby={`class-${classGroup.id}`}>
+            <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2 border-b border-line pb-3">
+              <div className="flex min-w-0 flex-wrap items-baseline gap-x-3 gap-y-1">
+                <h2
+                  id={`class-${classGroup.id}`}
+                  className="break-words font-display text-2xl font-semibold leading-tight text-fg [overflow-wrap:anywhere]"
+                >
+                  {classGroup.name}
+                </h2>
+                <span className="label text-fg-3">
+                  {students.length} {students.length === 1 ? "student" : "students"}
+                </span>
+              </div>
               <Link
                 href={classHref(classGroup.id)}
-                className="group flex items-center justify-between gap-4 px-4 py-4 outline-none transition-colors hover:bg-muted/40 focus-visible:bg-muted/40 sm:px-5"
+                className="inline-flex min-h-9 items-center gap-1 rounded-full text-sm font-semibold text-fg-2 underline decoration-line-2 underline-offset-4 outline-none transition-colors hover:text-fg hover:decoration-fg focus-visible:ring-2 focus-visible:ring-live-bright focus-visible:ring-offset-2 focus-visible:ring-offset-base"
               >
-                <span className="min-w-0">
-                  <span className="block break-words font-display text-base font-semibold leading-snug text-foreground [overflow-wrap:anywhere]">
-                    {classGroup.name}
-                  </span>
-                  <span className="mt-0.5 block text-xs text-muted-foreground">
-                    {studentCount} {studentCount === 1 ? "student" : "students"}
-                  </span>
-                </span>
-                <span className="flex shrink-0 items-center gap-1 text-sm text-muted-foreground transition-colors group-hover:text-foreground">
-                  Open
-                  <ChevronRight className="size-4" aria-hidden="true" />
-                </span>
+                Manage class
+                <ChevronRight className="size-4" aria-hidden="true" />
               </Link>
-            </li>
-          );
-        })}
-        <li>
-          <details className="group">
-            <summary className="flex min-h-12 cursor-pointer list-none items-center gap-2 px-4 text-sm font-medium text-primary outline-none transition-colors hover:bg-muted/40 focus-visible:bg-muted/40 sm:px-5 [&::-webkit-details-marker]:hidden">
-              <Plus className="size-4" aria-hidden="true" />
-              New class
-            </summary>
-            <div className="border-t border-border/60 bg-muted/20 px-4 py-4 sm:px-5">
-              <p className="max-w-prose text-sm leading-relaxed text-muted-foreground">
-                Classes organize roster setup only. Capture stays global once at
-                least one student is ready.
-              </p>
-              <div className="mt-3 max-w-sm">
-                <ClassGroupForm />
-              </div>
             </div>
-          </details>
-        </li>
-      </ul>
-      {hasArchivedClasses ? (
-        <div className="px-1">
+            {students.length === 0 ? (
+              <p className="mt-4 text-[15px] text-fg-2">
+                No students yet.{" "}
+                <Link
+                  href={classHref(classGroup.id)}
+                  className="font-semibold text-fg underline decoration-line-2 underline-offset-4 hover:decoration-fg"
+                >
+                  Add the first one
+                </Link>
+                .
+              </p>
+            ) : (
+              <ul className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                {students.map((student) => (
+                  <li key={student.id}>
+                    <Link
+                      href={routes.student(student.id)}
+                      className="group flex min-h-16 items-center justify-between gap-3 rounded-xl border border-line bg-plate px-4 py-3 outline-none transition-colors hover:border-line-2 hover:bg-well focus-visible:ring-2 focus-visible:ring-live-bright focus-visible:ring-offset-2 focus-visible:ring-offset-base"
+                    >
+                      <span className="min-w-0">
+                        <span className="block break-words font-display text-[1.2rem] font-semibold leading-tight text-fg [overflow-wrap:anywhere]">
+                          {student.displayName}
+                        </span>
+                        <span className="mt-0.5 block truncate text-[13px] text-fg-3">
+                          @{student.mentionHandle}
+                        </span>
+                      </span>
+                      <ArrowRight
+                        className="size-4 shrink-0 text-fg-3 transition-colors group-hover:text-fg"
+                        aria-hidden="true"
+                      />
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+        );
+      })}
+
+      <section className="flex flex-wrap items-center gap-x-6 gap-y-3 border-t border-line pt-6">
+        <details className="group min-w-0 flex-1 basis-72">
+          <summary className="inline-flex min-h-11 cursor-pointer list-none items-center gap-2 rounded-full text-sm font-semibold text-fg outline-none focus-visible:ring-2 focus-visible:ring-live-bright focus-visible:ring-offset-2 focus-visible:ring-offset-base [&::-webkit-details-marker]:hidden">
+            <span className="flex size-7 items-center justify-center rounded-full bg-well text-fg group-open:bg-fg group-open:text-base">
+              <Plus className="size-4" aria-hidden="true" />
+            </span>
+            New class
+          </summary>
+          <div className="mt-3 max-w-sm">
+            <ClassGroupForm />
+          </div>
+        </details>
+        {hasArchivedClasses ? (
           <Link
             href={archivedClassesHref()}
-            className="inline-flex min-h-9 items-center gap-1 rounded-md text-sm text-muted-foreground underline-offset-2 outline-none transition-colors hover:text-foreground hover:underline focus-visible:ring-3 focus-visible:ring-ring/20"
+            className="inline-flex min-h-9 items-center rounded-full text-sm text-fg-2 underline decoration-line-2 underline-offset-4 outline-none transition-colors hover:text-fg hover:decoration-fg focus-visible:ring-2 focus-visible:ring-live-bright focus-visible:ring-offset-2 focus-visible:ring-offset-base"
           >
-            View archived classes
+            Archived classes
           </Link>
-        </div>
-      ) : null}
-    </section>
+        ) : null}
+      </section>
+    </div>
   );
 }
 
@@ -212,7 +239,7 @@ function ArchivedClassesView({
       <Button asChild variant="ghost" size="sm" className="-ml-2">
         <Link href={routes.roster}>
           <ArrowLeft className="size-3.5" />
-          Back to active classes
+          Back to students
         </Link>
       </Button>
       <SectionLabel
@@ -220,22 +247,30 @@ function ArchivedClassesView({
         description="Archived classes are hidden from active roster setup. Students cannot be added here."
       />
       {archivedClasses.length === 0 ? (
-        <p className="px-1 text-sm leading-relaxed text-muted-foreground">
+        <p className="px-1 text-sm leading-relaxed text-fg-2">
           No archived classes yet.
         </p>
       ) : (
-        <ul className="overflow-hidden rounded-card border border-border bg-card/60">
+        <ul className="plate overflow-hidden">
           {archivedClasses.map((classGroup) => (
             <li
               key={classGroup.id}
-              className="border-b border-border px-4 py-3.5 last:border-b-0 sm:px-5"
+              className="border-b border-line px-4 py-3.5 last:border-b-0 sm:px-5"
             >
-              <p className="break-words font-medium leading-snug text-foreground [overflow-wrap:anywhere]">
-                {classGroup.name}
-              </p>
-              <p className="mt-0.5 text-xs text-muted-foreground">
-                Archived class
-              </p>
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <p className="break-words font-display text-lg font-semibold leading-tight text-fg-2 [overflow-wrap:anywhere]">
+                    {classGroup.name}
+                  </p>
+                  <p className="mt-0.5 text-xs text-fg-3">
+                    Archived class
+                  </p>
+                </div>
+                <ArchivedClassGroupActions
+                  classGroupId={classGroup.id}
+                  className={classGroup.name}
+                />
+              </div>
             </li>
           ))}
         </ul>
@@ -273,11 +308,11 @@ function OpenClassView({
         <Button asChild variant="ghost" size="sm" className="-ml-2">
           <Link href={routes.roster}>
             <ArrowLeft className="size-3.5" />
-            Back to classes
+            Back to students
           </Link>
         </Button>
         {!canContinueToFeed && students.length > 0 ? (
-          <p className="max-w-sm text-sm leading-relaxed text-muted-foreground">
+          <p className="max-w-sm text-sm leading-relaxed text-fg-2">
             Finish assigning every active student to an active class before
             opening the evidence feed.
           </p>
@@ -348,40 +383,42 @@ export default async function RosterPage({ searchParams }: RosterPageProps) {
         : "Create a class and add one student before capture.";
 
   return (
-    <div className="mx-auto w-full max-w-[880px] px-4 py-8 sm:px-6">
-      <header className="mb-7 flex flex-wrap items-end justify-between gap-x-8 gap-y-4">
+    <div className="mx-auto w-full max-w-[1100px] px-4 py-8 sm:px-6 lg:px-8 lg:py-12">
+      <header className="mb-8 flex flex-wrap items-end justify-between gap-x-8 gap-y-4">
         <div className="min-w-0">
-          <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            Roster
+          <p className="label text-fg-3">
+            {selectedClass ? "Class" : view === "archived" ? "Students" : "Later · one trace per student"}
           </p>
-          <h1 className="break-words font-display text-3xl font-semibold tracking-tight text-foreground [overflow-wrap:anywhere]">
+          <h1 className="mt-2 break-words font-display text-[clamp(2.25rem,5vw,3.5rem)] font-semibold leading-[0.95] text-fg [overflow-wrap:anywhere]">
             {selectedClass
               ? selectedClass.name
               : view === "archived"
                 ? "Archived classes"
-                : "Students by class"}
+                : "Students"}
           </h1>
-          <p className="mt-2 max-w-prose text-sm leading-relaxed text-muted-foreground">
-            Add and manage students inside each class. Your roster is private
-            to your ClassTrace workspace.
-          </p>
+          {isOverview ? (
+            <p className="mt-3 max-w-[48ch] text-[15px] leading-relaxed text-fg-2">
+              Open a student to read everything you have saved about them, in
+              order. Your roster is private to your workspace.
+            </p>
+          ) : selectedClass ? (
+            <p className="mt-3 max-w-[48ch] text-[15px] leading-relaxed text-fg-2">
+              Add, edit, move, or archive the students in this class.
+            </p>
+          ) : null}
         </div>
         {isOverview ? (
-          <div className="pb-1">
+          <div>
             {readyForCapture ? (
               <Link
                 href={routes.feed}
-                className="inline-flex min-h-10 items-center gap-1.5 rounded-lg text-sm font-medium text-primary underline-offset-4 outline-none transition-colors hover:underline focus-visible:ring-3 focus-visible:ring-ring/30"
+                className="inline-flex min-h-11 items-center gap-2 rounded-full bg-live-bright px-4 text-sm font-semibold text-live-fg outline-none transition-colors hover:bg-[#ffc24d] focus-visible:ring-2 focus-visible:ring-live-bright focus-visible:ring-offset-2 focus-visible:ring-offset-base"
               >
-                {classReadiness.activeStudentCount}{" "}
-                {classReadiness.activeStudentCount === 1
-                  ? "student"
-                  : "students"}{" "}
-                ready · Open evidence feed
+                Capture something now
                 <ArrowRight className="size-4" aria-hidden="true" />
               </Link>
             ) : (
-              <p className="max-w-56 text-sm leading-relaxed text-muted-foreground">
+              <p className="max-w-56 rounded-lg border border-live-bright/60 bg-live-soft px-3 py-2 text-sm leading-relaxed text-fg">
                 {readinessGuidance}
               </p>
             )}
@@ -400,31 +437,31 @@ export default async function RosterPage({ searchParams }: RosterPageProps) {
           canContinueToFeed={readyForCapture}
         />
       ) : selectedClassMissing ? (
-        <div className="rounded-card border border-border bg-card/60 p-5 text-sm leading-relaxed text-muted-foreground">
-          <p className="font-medium text-foreground">
+        <div className="plate p-6 text-sm leading-relaxed text-fg-2">
+          <p className="font-display text-2xl font-semibold text-fg">
             This class could not be opened.
           </p>
           <p className="mt-1">
             Return to your active classes and choose another class.
           </p>
           <Button asChild variant="outline" size="sm" className="mt-3">
-            <Link href={routes.roster}>Back to classes</Link>
+            <Link href={routes.roster}>Back to students</Link>
           </Button>
         </div>
       ) : (
-        <div className="space-y-9">
-          <ClassOverview
+        <div className="space-y-12">
+          <StudentsOverview
             activeClasses={activeClasses}
             activeStudents={activeStudents}
             hasArchivedClasses={archivedClasses.length > 0}
           />
           {unassignedStudents.length > 0 ? (
-            <section className="space-y-2.5">
+            <section className="space-y-3 rounded-lg border-l-2 border-live-bright pl-4">
               <SectionLabel
                 title="Needs class"
                 description="Assign these students to an active class before capture is ready."
               />
-              <ul className="overflow-hidden rounded-card border border-border bg-card/60">
+              <ul className="plate overflow-hidden">
                 {unassignedStudents.map((student) => (
                   <RosterStudentRow
                     key={student.id}
@@ -437,12 +474,12 @@ export default async function RosterPage({ searchParams }: RosterPageProps) {
             </section>
           ) : null}
           {archivedStudents.length > 0 ? (
-            <section className="space-y-2.5">
+            <section className="space-y-3">
               <SectionLabel
                 title="Archived students"
                 description="Restore a student when they return. Their saved evidence stays attached to the same record."
               />
-              <ul className="overflow-hidden rounded-card border border-border bg-card/60">
+              <ul className="plate overflow-hidden">
                 {archivedStudents.map((student) => (
                   <ArchivedStudentRow
                     key={student.id}

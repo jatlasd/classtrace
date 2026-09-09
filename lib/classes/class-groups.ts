@@ -40,7 +40,7 @@ type ClassGroupFindFirstArgs = {
     workspaceId: string;
     id?: string;
     nameKey?: string;
-    archivedAt?: null;
+    archivedAt?: null | { not: null };
   };
 };
 
@@ -56,12 +56,12 @@ type ClassGroupUpdateManyArgs = {
   where: {
     id: string;
     workspaceId: string;
-    archivedAt: null;
+    archivedAt: null | { not: null };
   };
   data: {
     name?: string;
     nameKey?: string;
-    archivedAt?: Date;
+    archivedAt?: Date | null;
   };
 };
 
@@ -138,6 +138,10 @@ export type ClassGroupMutationResult =
   | { success: false; error: string };
 
 export type ArchiveClassGroupResult =
+  | { success: true; classGroupId: string }
+  | { success: false; error: string };
+
+export type RestoreClassGroupResult =
   | { success: true; classGroupId: string }
   | { success: false; error: string };
 
@@ -514,6 +518,62 @@ export async function archiveClassGroupForWorkspace(
 
     captureOperationalError("class.archive", error);
     return { success: false, error: "Failed to archive class." };
+  }
+}
+
+export async function restoreClassGroupForWorkspace(
+  input: { workspaceId: string; classGroupId: string },
+  database: ClassGroupsDatabase = classGroupsDatabase
+): Promise<RestoreClassGroupResult> {
+  const classGroupId = normalizeId(input.classGroupId);
+
+  if (!classGroupId) {
+    return { success: false, error: "Choose a class before restoring." };
+  }
+
+  try {
+    const classGroup = await database.classGroup.findFirst({
+      where: {
+        id: classGroupId,
+        workspaceId: input.workspaceId,
+        archivedAt: { not: null },
+      },
+    });
+
+    if (!classGroup) {
+      return {
+        success: false,
+        error: "This archived class could not be found in your workspace.",
+      };
+    }
+
+    const result = await database.classGroup.updateMany({
+      where: {
+        id: classGroup.id,
+        workspaceId: input.workspaceId,
+        archivedAt: { not: null },
+      },
+      data: { archivedAt: null },
+    });
+
+    if (result.count !== 1) {
+      return {
+        success: false,
+        error: "This archived class could not be found in your workspace.",
+      };
+    }
+
+    return { success: true, classGroupId: classGroup.id };
+  } catch (error) {
+    if (isUniqueConstraintError(error)) {
+      return {
+        success: false,
+        error: "An active class with this name already exists.",
+      };
+    }
+
+    captureOperationalError("class.restore", error);
+    return { success: false, error: "Failed to restore class." };
   }
 }
 

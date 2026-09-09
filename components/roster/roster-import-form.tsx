@@ -11,7 +11,7 @@ import {
 } from "@/lib/import/parse-roster-import";
 
 const textareaClassName =
-  "min-h-[132px] w-full rounded-md border border-border bg-background/50 px-3 py-2 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/20 disabled:cursor-not-allowed disabled:opacity-50";
+  "min-h-[132px] w-full rounded-md border border-line-2 bg-well px-3 py-2 text-sm text-fg outline-none transition-colors placeholder:text-fg-2 focus-visible:border-fg focus-visible:ring-2 focus-visible:ring-live-bright focus-visible:ring-offset-2 focus-visible:ring-offset-base disabled:cursor-not-allowed disabled:opacity-50";
 
 type RosterImportFormProps = {
   existingStudents: ExistingRosterImportStudent[];
@@ -23,28 +23,28 @@ function PreviewRow({ row }: { row: RosterImportPreview["rows"][number] }) {
   const isValid = row.errors.length === 0;
 
   return (
-    <li className="border border-border bg-background/40 px-3 py-2.5">
+    <li className="border border-line bg-plate px-3 py-2.5">
       <div className="grid gap-2 sm:grid-cols-[64px_minmax(0,1fr)_64px] sm:items-start">
-        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+        <p className="label text-fg-3">
           Row {row.rowNumber}
         </p>
         <div className="min-w-0">
-          <p className="text-sm font-medium text-foreground">
+          <p className="label block text-fg-2">
             {row.displayName || "Missing student name"}
           </p>
-          <div className="mt-1 flex flex-wrap gap-1.5 text-xs text-muted-foreground">
+          <div className="mt-1 flex flex-wrap gap-1.5 text-xs text-fg-2">
             {row.mentionHandle ? <span>@{row.mentionHandle}</span> : null}
             {row.schoolLocalId ? <span>ID: {row.schoolLocalId}</span> : null}
           </div>
         </div>
-        <span className="justify-self-start rounded-md border border-border bg-card px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground sm:justify-self-end">
+        <span className="justify-self-start rounded-md border border-line-2 bg-well px-2 py-0.5 label text-fg-3 sm:justify-self-end">
           {isValid ? "Ready" : "Fix"}
         </span>
       </div>
       {row.errors.length > 0 ? (
         <ul className="mt-2 space-y-1">
           {row.errors.map((error) => (
-            <li key={error} className="text-xs leading-relaxed text-destructive">
+            <li key={error} className="text-xs leading-relaxed text-danger">
               {error}
             </li>
           ))}
@@ -116,13 +116,13 @@ export function RosterImportForm({
 
   return (
     <form className="space-y-4" onSubmit={handleSubmit}>
-      <p className="text-xs leading-relaxed text-muted-foreground">
+      <p className="text-xs leading-relaxed text-fg-2">
         These students will be added to {className}. One student per line. Add
         an optional handle or school/local ID after a comma.
       </p>
 
       <div className="space-y-1.5">
-        <label htmlFor="roster-import-text" className="text-sm font-medium text-foreground">
+        <label htmlFor="roster-import-text" className="label block text-fg-2">
           Roster list
         </label>
         <textarea
@@ -137,14 +137,14 @@ export function RosterImportForm({
           placeholder={"Jeremy\nStacy Lee, stacy\nMary, mary, M-104"}
           disabled={isPending}
         />
-        <p className="text-xs leading-relaxed text-muted-foreground">
+        <p className="text-xs leading-relaxed text-fg-2">
           Preview students before saving. No students are saved until you confirm.
         </p>
       </div>
 
       {preview ? (
         <div className="space-y-2">
-          <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+          <p className="label text-fg-3">
             Preview
           </p>
           <ul className="space-y-2">
@@ -157,7 +157,7 @@ export function RosterImportForm({
 
       <div aria-live="polite" className="min-h-5 text-sm">
         {statusMessage ? (
-          <p className={preview?.hasErrors ? "text-destructive" : "text-muted-foreground"}>
+          <p className={preview?.hasErrors ? "text-danger" : "text-fg-2"}>
             {statusMessage}
           </p>
         ) : null}

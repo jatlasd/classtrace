@@ -54,16 +54,16 @@ export default function DataDeletionPage() {
 
       <PublicInfoSection id="how-to-request" title="How to send the request">
         <ol className="space-y-3 pl-5 [counter-reset:steps]">
-          <li className="[counter-increment:steps] before:mr-3 before:font-mono before:text-xs before:text-foreground before:content-[counter(steps,decimal-leading-zero)]">
+          <li className="[counter-increment:steps] before:mr-3 before:font-mono before:text-xs before:text-fg before:content-[counter(steps,decimal-leading-zero)]">
             Sign in to the ClassTrace account you want deleted.
           </li>
-          <li className="[counter-increment:steps] before:mr-3 before:font-mono before:text-xs before:text-foreground before:content-[counter(steps,decimal-leading-zero)]">
+          <li className="[counter-increment:steps] before:mr-3 before:font-mono before:text-xs before:text-fg before:content-[counter(steps,decimal-leading-zero)]">
             Open Account, then find Help and feedback.
           </li>
-          <li className="[counter-increment:steps] before:mr-3 before:font-mono before:text-xs before:text-foreground before:content-[counter(steps,decimal-leading-zero)]">
+          <li className="[counter-increment:steps] before:mr-3 before:font-mono before:text-xs before:text-fg before:content-[counter(steps,decimal-leading-zero)]">
             Choose <strong>Account or data request</strong>.
           </li>
-          <li className="[counter-increment:steps] before:mr-3 before:font-mono before:text-xs before:text-foreground before:content-[counter(steps,decimal-leading-zero)]">
+          <li className="[counter-increment:steps] before:mr-3 before:font-mono before:text-xs before:text-fg before:content-[counter(steps,decimal-leading-zero)]">
             Write <strong>Delete my ClassTrace account</strong>, provide a reply
             email, and do not include student information.
           </li>

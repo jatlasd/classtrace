@@ -14,6 +14,10 @@ vi.mock("@/lib/db/prisma", () => ({
 import { importRosterStudentsForWorkspace } from "@/lib/import/roster-import";
 import { INPUT_LIMITS } from "@/lib/validation/input-limits";
 
+type RosterImportDatabase = NonNullable<
+  Parameters<typeof importRosterStudentsForWorkspace>[1]
+>;
+
 const createdAt = new Date("2026-06-15T12:00:00.000Z");
 
 describe("importRosterStudentsForWorkspace", () => {
@@ -22,7 +26,9 @@ describe("importRosterStudentsForWorkspace", () => {
   it("loads existing workspace records including archived uniqueness conflicts", async () => {
     const listCalls: unknown[] = [];
     const database = {
-      listExistingStudents: async (args) => {
+      listExistingStudents: async (
+        args: Parameters<RosterImportDatabase["listExistingStudents"]>[0]
+      ) => {
         listCalls.push(args);
         return [{ mentionHandle: "mary", schoolLocalId: null }];
       },
@@ -81,7 +87,9 @@ describe("importRosterStudentsForWorkspace", () => {
     const database = {
       listExistingStudents: async () => [],
       findActiveClassGroup: async () => classGroup,
-      createStudentsAtomically: async (input) => {
+      createStudentsAtomically: async (
+        input: Parameters<RosterImportDatabase["createStudentsAtomically"]>[0]
+      ) => {
         createCalls.push(input);
         return [
           {

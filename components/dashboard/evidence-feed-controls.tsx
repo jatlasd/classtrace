@@ -1,6 +1,6 @@
 import Link from "next/link";
-import type { ReactNode } from "react";
-import { ClipboardCheck, Search, X } from "lucide-react";
+import { useId, type ReactNode } from "react";
+import { Search, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { routes } from "@/lib/routes";
 
@@ -19,32 +19,39 @@ export function EvidenceSearchControl({
   query: string;
   onQueryChange: (query: string) => void;
 }) {
+  const searchId = useId();
   return (
     <div className="relative min-w-0 flex-1 sm:max-w-[300px]">
-      <input
-        type="search"
-        name="evidence-search"
-        autoComplete="off"
-        value={query}
-        onChange={(event) => onQueryChange(event.target.value)}
-        placeholder="Search this page…"
-        aria-label="Search evidence on this page"
-        className="min-h-11 w-full rounded-lg border border-border bg-background/50 py-2 pl-9 pr-9 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:bg-card focus-visible:ring-3 focus-visible:ring-ring/20 sm:min-h-10"
-      />
-      <Search
-        aria-hidden="true"
-        className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
-      />
-      {query ? (
-        <button
-          type="button"
-          onClick={() => onQueryChange("")}
-          aria-label="Clear search"
-          className="absolute right-3 top-1/2 -translate-y-1/2 rounded p-0.5 text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/30"
-        >
-          <X aria-hidden="true" className="size-4" />
-        </button>
-      ) : null}
+      <label htmlFor={searchId} className="sr-only">
+        Search drafts and evidence on this page
+      </label>
+      <div className="relative">
+        <input
+          id={searchId}
+          type="search"
+          name="evidence-search"
+          autoComplete="off"
+          value={query}
+          onChange={(event) => onQueryChange(event.target.value)}
+          placeholder="Search this page"
+          aria-label="Search evidence on this page"
+          className="field rounded-full pl-9! pr-9! text-sm"
+        />
+        <Search
+          aria-hidden="true"
+          className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-fg-3"
+        />
+        {query ? (
+          <button
+            type="button"
+            onClick={() => onQueryChange("")}
+            aria-label="Clear search"
+            className="absolute right-0 top-1/2 flex size-11 -translate-y-1/2 items-center justify-center rounded-full text-fg-2 transition-colors hover:text-fg focus-visible:ring-2 focus-visible:ring-live-bright lg:size-10"
+          >
+            <X aria-hidden="true" className="size-4" />
+          </button>
+        ) : null}
+      </div>
     </div>
   );
 }
@@ -60,26 +67,29 @@ export function InboxFilterControl({
     <div
       role="group"
       aria-label="Filter evidence inbox"
-      className="flex flex-wrap gap-1.5"
+      className="inline-flex flex-wrap gap-1"
     >
-      {filterOptions.map((option) => (
-        <button
-          key={option.value}
-          type="button"
-          onClick={() => onFilterChange(option.value)}
-          aria-pressed={filter === option.value}
-          className={`min-h-11 rounded-lg border px-3 py-2 text-sm font-medium transition-colors sm:min-h-9 ${
-            filter === option.value
-              ? "border-border bg-muted text-foreground shadow-sm"
-              : "border-transparent text-muted-foreground hover:bg-muted/60 hover:text-foreground"
-          }`}
-        >
-          {option.label}
-          {filter === option.value ? (
-            <span className="sr-only"> selected</span>
-          ) : null}
-        </button>
-      ))}
+      {filterOptions.map((option) => {
+        const selected = filter === option.value;
+        return (
+          <button
+            key={option.value}
+            type="button"
+            onClick={() => onFilterChange(option.value)}
+            aria-pressed={selected}
+            className={`min-h-9 rounded-full px-3.5 text-[13px] font-medium outline-none transition-colors focus-visible:ring-2 focus-visible:ring-live-bright focus-visible:ring-offset-2 focus-visible:ring-offset-base ${
+              selected
+                ? option.value === "needs_review"
+                  ? "bg-live-bright text-live-fg"
+                  : "bg-fg text-base"
+                : "text-fg-2 hover:bg-plate hover:text-fg"
+            }`}
+          >
+            {option.label}
+            {selected ? <span className="sr-only"> selected</span> : null}
+          </button>
+        );
+      })}
     </div>
   );
 }
@@ -94,21 +104,14 @@ export function FeedEmptyState({
   action?: ReactNode;
 }) {
   return (
-    <div className="px-6 py-10 text-center sm:px-10">
-      <div className="mx-auto flex size-12 items-center justify-center rounded-lg border border-border bg-muted/40 text-primary">
-        <ClipboardCheck
-          aria-hidden="true"
-          className="size-5"
-          strokeWidth={1.75}
-        />
-      </div>
-      <h3 className="mt-4 font-display text-lg font-semibold text-foreground">
+    <div className="rounded-lg border border-dashed border-line-2 px-6 py-12 text-center sm:px-10">
+      <h3 className="font-display text-[1.6rem] font-semibold text-fg">
         {title}
       </h3>
-      <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-muted-foreground">
+      <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-fg-2">
         {body}
       </p>
-      {action ? <div className="mt-4">{action}</div> : null}
+      {action ? <div className="mt-5">{action}</div> : null}
     </div>
   );
 }
@@ -117,7 +120,7 @@ export function FilterEmptyMessage({ filter }: { filter: InboxFilter }) {
   if (filter === "needs_review") {
     return (
       <FeedEmptyState
-        title="Review queue is clear"
+        title="Nothing waiting on you"
         body="New captures that need teacher validation will appear here before they become saved evidence."
       />
     );
@@ -137,18 +140,16 @@ export function FilterEmptyMessage({ filter }: { filter: InboxFilter }) {
 
 export function RosterRequiredState() {
   return (
-    <section className="rounded-card border border-border bg-card p-6 shadow-paper">
-      <p className="mb-1 text-xs font-semibold text-muted-foreground">
-        Roster needed
-      </p>
-      <h2 className="font-display text-lg font-semibold text-foreground">
+    <section className="plate p-6 sm:p-8">
+      <p className="label text-live">Roster needed</p>
+      <h2 className="mt-3 font-display text-[2rem] font-semibold leading-none text-fg">
         Add one student before capturing evidence
       </h2>
-      <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+      <p className="mt-3 max-w-prose text-sm leading-relaxed text-fg-2">
         Captures need one student from your roster. Start with a name and handle,
         then come back here for your first student-specific capture.
       </p>
-      <Button asChild className="mt-4 h-9 rounded-lg px-5 text-sm font-semibold">
+      <Button asChild className="mt-5 rounded-full">
         <Link href={routes.roster}>Set up roster</Link>
       </Button>
     </section>

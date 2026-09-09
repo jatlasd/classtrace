@@ -24,6 +24,7 @@ import {
   listActiveRosterStudentsForClass,
   normalizeClassName,
   renameClassGroupForWorkspace,
+  restoreClassGroupForWorkspace,
   type ClassGroupsDatabase,
 } from "@/lib/classes/class-groups";
 import { INPUT_LIMITS } from "@/lib/validation/input-limits";
@@ -304,6 +305,45 @@ describe("class group domain helpers", () => {
         data: {
           archivedAt: updatedAt,
         },
+      },
+    ]);
+    expect(result).toEqual({
+      success: true,
+      classGroupId: "class_reading",
+    });
+  });
+
+  it("restores only an archived class inside the workspace", async () => {
+    const archivedClass = buildClassGroup({ archivedAt: updatedAt });
+    const { database, calls } = buildDatabase({
+      findFirstClassGroups: [archivedClass],
+    });
+
+    const result = await restoreClassGroupForWorkspace(
+      {
+        workspaceId: "workspace_1",
+        classGroupId: "class_reading",
+      },
+      database
+    );
+
+    expect(calls.findFirst).toEqual([
+      {
+        where: {
+          id: "class_reading",
+          workspaceId: "workspace_1",
+          archivedAt: { not: null },
+        },
+      },
+    ]);
+    expect(calls.updateMany).toEqual([
+      {
+        where: {
+          id: "class_reading",
+          workspaceId: "workspace_1",
+          archivedAt: { not: null },
+        },
+        data: { archivedAt: null },
       },
     ]);
     expect(result).toEqual({

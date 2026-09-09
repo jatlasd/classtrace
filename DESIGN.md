@@ -1,52 +1,52 @@
 ---
 name: ClassTrace
-description: A calm evidence ledger for teacher-reviewed student observations.
+description: A warm, sentence-first evidence trace for teacher-reviewed student observations.
 colors:
-  rust-capture: "#b85a32"
-  paper-background: "#f3eadc"
-  clean-paper: "#fbf7ed"
-  ink: "#182536"
-  muted-paper: "#ebe3d6"
-  muted-ink: "#5d554a"
-  ledger-rule: "#ddd0be"
-  evidence-link: "#2c526f"
-  sage-validated: "#c7d4a6"
-  gold-note: "#e7bd64"
-  destructive-rust: "#a33d2e"
-  deep-navy: "#1d2f4b"
+  base: "#fffdf9"
+  plate: "#ffffff"
+  well: "#f6f2fb"
+  line: "rgb(43 33 64 / 0.10)"
+  line-strong: "rgb(43 33 64 / 0.24)"
+  ink: "#2b2140"
+  ink-muted: "#66597d"
+  ink-faint: "#756a86"
+  live: "#b85c00"
+  live-bright: "#ffb020"
+  live-ink: "#2b1800"
+  live-soft: "#fff1d3"
+  danger: "#b4123f"
+  danger-soft: "#ffe4ec"
 typography:
+  family: "Bricolage Grotesque, ui-sans-serif, system-ui, sans-serif"
   display:
-    fontFamily: "Fraunces, Georgia, serif"
-    fontSize: "1.5rem"
     fontWeight: 600
-    lineHeight: 1.2
-    letterSpacing: "-0.025em"
-  headline:
-    fontFamily: "Fraunces, Georgia, serif"
-    fontSize: "1.125rem"
+    opticalSize: 96
+    letterSpacing: "-0.03em"
+  display-wide:
     fontWeight: 600
-    lineHeight: 1.4
+    opticalSize: 96
+    width: 100
+    letterSpacing: "-0.045em"
+  display-narrow:
+    fontWeight: 600
+    opticalSize: 96
+    width: 80
+    letterSpacing: "-0.02em"
   body:
-    fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif"
     fontSize: "0.9375rem"
     fontWeight: 400
-    lineHeight: 1.625
+    lineHeight: 1.55
   label:
-    fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif"
-    fontSize: "0.875rem"
-    fontWeight: 500
-    lineHeight: 1.25
-  metadata:
-    fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif"
-    fontSize: "0.75rem"
-    fontWeight: 500
-    lineHeight: 1.5
+    fontSize: "0.8125rem"
+    fontWeight: 600
+    lineHeight: "1.125rem"
 rounded:
-  sm: "0.375rem"
-  md: "0.5rem"
-  lg: "0.5625rem"
-  card: "1.125rem"
-  pill: "9999px"
+  xs: "4px"
+  sm: "6px"
+  md: "8px"
+  lg: "12px"
+  xl: "16px"
+  full: "9999px"
 spacing:
   xs: "0.25rem"
   sm: "0.5rem"
@@ -55,275 +55,308 @@ spacing:
   xl: "1.25rem"
   2xl: "1.5rem"
 components:
-  button-primary:
-    backgroundColor: "{colors.rust-capture}"
-    textColor: "{colors.clean-paper}"
-    typography: "{typography.label}"
-    rounded: "{rounded.lg}"
-    padding: "0 0.625rem"
-    height: "2rem"
-  button-outline:
-    backgroundColor: "{colors.clean-paper}"
-    textColor: "{colors.ink}"
-    typography: "{typography.label}"
-    rounded: "{rounded.lg}"
-    padding: "0 0.625rem"
-    height: "2rem"
-  button-destructive:
-    backgroundColor: "#a33d2e1a"
-    textColor: "{colors.destructive-rust}"
-    typography: "{typography.label}"
-    rounded: "{rounded.lg}"
-    padding: "0 0.625rem"
-    height: "2rem"
-  input:
-    backgroundColor: "#f3eadc80"
-    textColor: "{colors.ink}"
-    typography: "{typography.label}"
+  plate:
+    backgroundColor: "{colors.plate}"
+    borderColor: "{colors.line}"
+    rounded: "{rounded.xl}"
+    shadow: "0 1px 2px rgb(43 33 64 / 0.04), 0 8px 24px -16px rgb(43 33 64 / 0.16)"
+  well:
+    backgroundColor: "{colors.well}"
+    borderColor: "{colors.line}"
     rounded: "{rounded.md}"
-    padding: "0 0.75rem"
-    height: "2.5rem"
-  paper-surface:
-    backgroundColor: "{colors.clean-paper}"
-    textColor: "{colors.ink}"
-    rounded: "{rounded.card}"
-    padding: "1.25rem"
-  evidence-chip:
-    backgroundColor: "{colors.muted-paper}"
-    textColor: "{colors.evidence-link}"
-    typography: "{typography.metadata}"
-    rounded: "{rounded.pill}"
-    padding: "0.125rem 0.625rem"
-  nav-item-active:
-    backgroundColor: "{colors.clean-paper}"
-    textColor: "{colors.ink}"
-    typography: "{typography.label}"
-    rounded: "{rounded.lg}"
-    padding: "0 0.75rem"
-    height: "2.75rem"
+  button-live:
+    backgroundColor: "{colors.live-bright}"
+    textColor: "{colors.live-ink}"
+    rounded: "{rounded.md}"
+    height: "2.75rem mobile / 2.5rem desktop"
+  button-solid:
+    backgroundColor: "{colors.ink}"
+    textColor: "{colors.base}"
+    rounded: "{rounded.md}"
+  field:
+    backgroundColor: "{colors.well}"
+    borderColor: "{colors.line-strong}"
+    rounded: "{rounded.md}"
+    height: "2.75rem mobile / 2.5rem desktop"
+  brand-mark:
+    mainColor: "{colors.ink}"
+    traceColor: "{colors.live-bright}"
+    shape: "two overlapping circles"
 ---
 
-# Design System: ClassTrace
+# Design system: ClassTrace
 
-## Overview
+## Source of truth
 
-**Creative North Star: "Calm Evidence Ledger"**
+The current implementation is the visual source of truth. Start with
+`app/globals.css`, the shared UI components, and the rendered route being
+changed. This document names the system already in use; it is not permission to
+reinterpret or restyle it.
 
-ClassTrace should feel like a well-kept evidence ledger open on a teacher's
-desk: humane without being themed, structured without becoming institutional,
-and quiet enough that the observation remains the most important thing on the
-screen. Warm paper tones soften the working environment while ink-forward type,
-rules, and ledger rows make saved evidence easy to scan and trust.
+## Creative north star: the warm evidence trace
 
-This is product UI, so familiarity is an asset. Controls use standard
-affordances, interaction state is explicit, and motion communicates change
-rather than decorating it. The system rejects enterprise-dashboard density,
-decorative classroom imagery, generic teacher-notebook styling, and card-grid
-analytics. On mobile, controls stack or wrap; on desktop, width supports
-scanning rather than adding panels.
+ClassTrace feels like an active observation becoming a trustworthy record. It is
+warm, direct, and editorial rather than institutional. A teacher writes or asks
+one plain-language sentence; the interface then reveals only the structure
+needed to complete that thought.
 
-**Key Characteristics:**
+The visual story is “yellow means not yet; ink means saved.” Amber carries the
+live moment, provisional draft state, and actions that advance work. Deep
+aubergine ink carries durable identity, saved evidence, and the trace left
+behind. Warm ivory, white plates, and pale violet wells keep both states calm
+and legible.
 
-- Capture-first hierarchy with one prominent working surface.
-- Evidence-led ledgers separated by rules instead of interchangeable card grids.
-- Warm paper, dark ink, rare rust action, and sage validation.
-- Familiar controls with visible focus, explicit error, and reduced-motion states.
-- Compact teacher language with no invented analytics or automation concepts.
+Key characteristics:
 
-## Colors
+- Sentence-first Capture and Explore interactions.
+- Bricolage Grotesque used expressively at display scale and plainly for work.
+- Warm ivory page ground, aubergine ink hierarchy, and focused amber state.
+- Rounded plates for active or contained work and wells for inset controls.
+- A line-and-node trace for chronological saved evidence.
+- A sticky top shell, desktop text navigation, and mobile bottom navigation.
+- Explicit teacher review between a provisional capture and a saved record.
 
-The palette is restrained and role-driven: warm neutral surfaces, strong ink,
-one rust action color, blue for navigation through evidence, and sage for
-teacher-validated state.
+## Color and state
 
-### Primary
+Semantic tokens in `app/globals.css` are authoritative. Components use token
+roles rather than introducing a parallel palette.
 
-- **Rust Capture:** The scarce action color for the main action, current-state
-  emphasis, and focus hierarchy.
+- **Base** (`--base`): warm ivory page ground.
+- **Plate** (`--plate`): white active or contained surface.
+- **Well** (`--well`): pale violet inset surface for fields, secondary controls,
+  expanded roster management, and supporting evidence.
+- **Line / Line 2** (`--line`, `--line-2`): quiet and stronger aubergine rules.
+- **Ink hierarchy** (`--fg`, `--fg-2`, `--fg-3`): primary, supporting, and faint
+  text or icon color.
+- **Live amber** (`--live`, `--live-bright`, `--live-fg`, `--live-soft`): dark
+  accessible amber copy, bright amber actions/nodes, dark on-amber ink, and a
+  pale provisional wash.
+- **Danger** (`--danger`, `--danger-soft`): destructive and invalid state only.
 
-### Secondary
+### The live-to-saved rule
 
-- **Evidence Link:** Blue is reserved for links and organizational tags. It is
-  not a competing primary-action system.
-- **Sage Validated:** Sage marks teacher-validated evidence and always appears
-  with an icon or the word “Validated.”
-- **Deep Navy:** A strong alternate action and shell color used only where the
-  existing component vocabulary calls for it.
+Amber means live, provisional, changed, or awaiting teacher action. Ink means
+saved, validated, and part of the durable trace. Always pair color with explicit
+copy, shape, or position. Do not use amber as a generic decorative accent on a
+saved record.
 
-### Tertiary
+### The restrained-palette rule
 
-- **Gold Desk Note:** A restrained supporting accent for instructional context,
-  never a success or primary-action color.
-- **Destructive Rust:** Permanent or high-consequence actions use their own
-  semantic red-rust role rather than the primary action color.
-
-### Neutral
-
-- **Paper Background:** The ambient workspace beneath authenticated and public
-  surfaces.
-- **Clean Paper:** The active reading and working surface for capture, review,
-  roster, and recovery.
-- **Ink:** Primary text, labels, and key metadata.
-- **Muted Paper:** Quiet grouping, hover, and secondary structural tone.
-- **Muted Ink:** Supporting copy that still meets AA contrast.
-- **Ledger Rule:** Borders and dividers that organize rows without decorative
-  depth.
-
-### Named Rules
-
-**The Rust Rarity Rule.** Rust belongs to primary actions, active indicators,
-and focus states. If rust appears everywhere, the hierarchy is broken.
-
-**The Validation Is Sage Rule.** Validated evidence uses sage plus explicit
-text or iconography. Never substitute loud success green, blue information
-styling, or gold celebration.
-
-**The No Rainbow Tags Rule.** Tags organize evidence; they are not decoration.
-Use the shared muted, bordered chip vocabulary.
+Do not add a competing accent family or rainbow tag colors. The system gets its
+range from the ink hierarchy, Base/Plate/Well surfaces, and the live/saved state
+contrast.
 
 ## Typography
 
-**Display Font:** Fraunces (with Georgia fallback)  
-**Body Font:** Inter (with system sans-serif fallback)  
-**Label/Mono Font:** Inter for labels; the system monospace stack only for
-reference identifiers and counters.
+Bricolage Grotesque is the sole loaded user-facing family. `app/layout.tsx`
+loads its optical-size and width axes as `--font-grotesk`; the sans, display, and
+current compact metadata aliases all resolve to it.
 
-**Character:** Fraunces gives page and section headings a humane editorial
-voice. Inter keeps every working control, label, evidence record, and metadata
-line direct and highly legible.
+- **Display** (`font-display`): optical size 96, normal width, `-0.03em`
+  tracking. Use for product headings, student names, and strong operational
+  identity.
+- **Wide display** (`font-display-wide`): optical size 96 with tighter
+  `-0.045em` tracking. Use for the landing page's large statements.
+- **Narrow display** (`font-display-narrow`): width axis 80. Reserve for a
+  deliberately compressed display moment.
+- **Body**: normally 15–17px with approximately 1.5–1.6 leading. Evidence notes
+  are a primary reading target and may use 17px in the feed.
+- **Label** (`label`): 13px/18px, semibold, sentence case. Use for context,
+  metadata, field labels, and compact state.
+- **Compact technical text** (`font-mono` in current markup): still Bricolage,
+  used for handles, tags, dates, and small counters. It is not a license to load
+  a separate monospace face.
 
-### Hierarchy
+The ink hierarchy and scale do most of the organizational work. Do not replace
+the current typeface with Inter or add a decorative handwritten face.
 
-- **Display** (600, 1.5rem, 1.2): Authenticated page titles and the strongest
-  composer headings. Public pages may use the established larger responsive
-  steps.
-- **Headline** (600, 1.125rem, 1.4): Work-surface and section headings.
-- **Body** (400, 0.9375rem, 1.625): Evidence notes and explanatory prose,
-  capped near 65–75 characters where the content is continuous prose.
-- **Label** (500, 0.875rem, 1.25): Form labels, buttons, navigation, and row
-  names.
-- **Metadata** (500, 0.75rem, 1.5): Dates, compact state, helper text, and
-  ledger headers.
+## Layout and responsive shell
 
-### Named Rules
+Authenticated teacher-workspace routes under `/app` share a sticky top header
+on every viewport. The shell is not sidebar-based. Sign-in, beta
+acknowledgement, and operator routes use their own focused layouts.
 
-**The Labels Stay Sans Rule.** Buttons, form labels, navigation, metadata, and
-data use Inter. Fraunces never appears inside a working control.
+- At `lg`, the brand mark sits at the left, the four text-led destinations are
+  centered across the header, and Sign out sits at the right. Active navigation
+  uses foreground text plus a small amber dot.
+- Below `lg`, primary navigation is a fixed four-item bottom tab bar with icons
+  and labels. Capture uses the amber circular affordance; other active items use
+  ink and a white plate treatment.
+- The top-right mobile menu opens a rounded bottom sheet for trust/support links
+  and Sign out. It is not the primary navigation.
+- Primary order is Capture, Explore, Students, Settings. Student timelines and
+  reports keep Students active without becoming global destinations.
+- The shell header is 56px on mobile and 72px at desktop. Mobile workspace
+  content reserves space for the bottom tab bar.
 
-**The Evidence Reads First Rule.** Teacher-approved evidence uses the primary
-ink color at 15px with relaxed leading. Supporting structure steps down to the
-metadata role.
+Content widths are intentionally focused:
 
-## Elevation
+- Capture/feed, student timeline, and report: `880px`.
+- Explore and Students: `1100px`.
+- App header and landing compositions: `1240px`.
 
-ClassTrace is border-first and only lightly lifted. Ledger rules and tonal
-surfaces explain most relationships. The two shadows simulate restrained paper
-separation on a single active surface or a genuinely floating element; they are
-never a default applied to every row.
+Route padding is generally 16px on mobile, 24px at `sm`, and 32px at `lg`.
+Authenticated sections typically use 32–48px vertical page padding. Landing
+sections use 80px, increasing to 112px at `lg`. Mobile content stacks; controls
+wrap and retain reachable actions rather than creating horizontal scroll.
 
-### Shadow Vocabulary
+## Surfaces, elevation, and shape
 
-- **Paper** (`0 3px 8px rgba(31, 25, 17, 0.12)`): The quick-capture composer,
-  one active evidence ledger, deliberate empty/recovery surfaces, and
-  print-safe evidence entries.
-- **Floating** (`0 8px 14px rgba(31, 25, 17, 0.18)`): Rare overlays and public
-  product artifacts that must sit visibly above the page.
+The redesign uses three related layers:
 
-### Named Rules
+- **Page ground:** Base, usually open and unbordered.
+- **Plate:** white, 1px Line border, 16px radius, and a very light palette-tinted
+  shadow. Use for the capture composer, provisional draft/review containers,
+  filter editor, empty/setup surfaces, and class-management ledgers.
+- **Well:** pale violet, 1px Line border, 8px radius. Use inside plates or open
+  pages for controls and secondary grouping.
 
-**The Border-First Rule.** If a border or divider explains the relationship,
-use it and stop. Shadow is reserved for active paper separation.
+`shadow-lift` is stronger and reserved for overlays, suggestion menus, the
+mobile sheet, and the focused live composer. Do not stack lifted plates or make
+every list row float.
 
-**The One Lifted Surface Rule.** A workflow may have one dominant lifted
-surface. Nested shadows and stacks of floating cards are forbidden.
+The current system is not governed by a universal “ledger only” or “no cards”
+rule. Saved evidence uses an open trace; provisional work uses plates; the
+Students overview uses small linked student plates in a responsive grid; dense
+class management uses divided rows. Choose the existing pattern for the same
+kind of content.
 
-## Components
+Radii are 8px for ordinary controls, 12px for compact message/media panels, and
+16px for plates. Full rounding is intentionally used for high-emphasis actions,
+navigation/tab controls, search, compact filter values, circular marks, and
+small state controls. Avoid arbitrary radii outside the token scale.
 
-### Buttons
+Semantic left rules are part of the system for follow-up, danger, unresolved
+work, and live provisional emphasis. They must communicate state, never serve
+as random decoration.
 
-- **Shape:** Modestly curved controls using the shared large radius
-  (0.5625rem); tags alone become pills.
-- **Primary:** Rust background with clean-paper text. The default primitive is
-  2rem high; important forms may use the established 2.5rem treatment.
-- **Hover / Focus:** Hover changes only semantic color. Focus adds the ring
-  color with a 3px visible ring. Active press moves down 1px. Disabled controls
-  remain visible at reduced opacity and reject interaction.
-- **Secondary / Ghost:** Outline uses a clean-paper surface and ledger border;
-  ghost uses a muted tonal hover with no decorative border.
-- **Destructive:** A low-opacity destructive surface with destructive text.
-  Consequence copy and confirmation remain in the same reading context.
+## Brand lockup
 
-### Chips
+The shared `BrandLockup` pairs the Bricolage wordmark with an abstract trace
+mark: one large circle plus a smaller amber circle crossing its lower-right
+edge. On light surfaces the large circle is ink with a Base ring around the
+amber node. The inverse form changes the large circle to Base and rings the node
+with ink.
 
-- **Style:** Full-pill, 1px bordered, 12px medium type, and compact horizontal
-  padding. Evidence type uses a rust tint; tags use muted paper with link blue.
-- **State:** Chips display organization or state. They do not masquerade as
-  buttons unless the component is explicitly a filter with `aria-pressed`.
+There are no `CT` letters in the mark. Do not recreate the retired square tile.
+The mark remains decorative beside the visible `ClassTrace` wordmark, and a
+linked lockup retains an accessible name.
 
-### Cards / Containers
+## Core interactions
 
-- **Corner Style:** Active work surfaces use the shared card radius (1.125rem).
-  Ledger rows inside them remain square and are separated by rules.
-- **Background:** Clean paper for active surfaces; partial muted-paper tints for
-  secondary structure.
-- **Shadow Strategy:** Use the paper shadow only for the single dominant work
-  surface; otherwise rely on a ledger border.
-- **Border:** One ledger-rule border around a true container; dividers separate
-  rows.
-- **Internal Padding:** Usually 1rem–1.5rem, widening at established breakpoints.
+### Capture and provisional review
 
-### Inputs / Fields
+Capture is one large sentence field inside a Plate, headed by the amber
+“What happened?” label and compact `@student · #tag · ⌘↵` guidance. The type is
+large enough to feel like writing, not filling out a form. When content is
+present, the Plate gains the amber live glow. Photo actions, student-resolution
+guidance, and the rounded amber Capture action sit below a rule.
 
-- **Style:** Visible label, 2.5rem control height, 0.5rem radius, ledger border,
-  and a half-strength paper background.
-- **Focus:** Ring-colored border plus a visible 3px low-opacity ring.
-- **Error / Disabled:** `aria-invalid` pairs destructive border/ring with an
-  adjacent accessible error. Disabled fields preserve legibility and reject
-  interaction.
+Capturing creates a device-local draft, not saved evidence. Drafts are Plates
+with explicit status and clearing-time copy. Review opens inside the same Plate
+and exposes the Evidence note first, then date, student resolution, and optional
+structured details. The draft-to-saved key uses an amber node, a line, and an ink
+node. “Validate and save” is an ink-solid action because it commits the record.
 
-### Navigation
+### Saved evidence trace
 
-Authenticated navigation uses 44px-high, rounded text-and-icon links. Inactive
-items use muted ink and a tonal hover; the active item returns to ink, gives its
-icon rust emphasis, sets `aria-current="page"`, and may use a restrained 2px
-desktop underline. Mobile controls wrap without horizontal scrolling.
+Saved evidence leaves the Plate vocabulary and joins an open chronological
+trace. A fine vertical line and ink nodes connect entries. Student identity and
+the approved Evidence note lead; dates, class, structured details, tags,
+follow-up, photo, and deletion support the record. Date or month headings group
+the trace. Saved feed rows do not need a repeated Validated badge; timeline and
+report contexts use the explicit ink Validated stamp.
 
-### Evidence Ledger
+### Explore
 
-Evidence rows are the signature component. The observation is the first reading
-target; student, class, date, validation, structured detail, tags, and actions
-are supporting layers. Draft, review, validated, archived, and destructive
-confirmation states remain explicit. Rows never become nested cards or a
-secondary analytics surface.
+Explore begins as a readable question: “Show me evidence for … tagged … from
+…”. Each editable phrase is a dashed-underlined slot; a set slot becomes solid
+and receives Live Soft. Selecting a slot opens and focuses the corresponding
+field in the optional filter Plate.
 
-## Do's and Don'ts
+Filters group into Who, What, and When. Fields remain Well controls and results
+do not update until Show results or Update results. Unapplied edits use an amber
+status panel. Results return to the open ink trace, or to an alphabetical
+student list whose supporting evidence opens in a Well. Counts stay with the
+result heading. Do not replace the question with dashboard metrics, charts, or
+a spreadsheet grid.
 
-### Do:
+### Students and student trace
 
-- **Do** keep capture visually primary and ask for exactly one student.
-- **Do** render evidence and roster data as ledgers when scanning matters.
-- **Do** use the semantic roles declared in `app/globals.css`.
-- **Do** reserve rust for primary action, current state, and focus hierarchy.
-- **Do** pair sage validation with the word “Validated” or a meaningful icon.
-- **Do** use familiar controls, visible labels, AA contrast, named landmarks,
-  non-color state cues, and reduced-motion alternatives.
-- **Do** keep archive calmer and easier to choose than permanent delete.
-- **Do** use direct teacher language: Capture, What happened?, Review before
-  saving, Evidence note, Student, Class, Tags, Follow-up, Timeline, and Report.
+Students opens with a large page statement and class sections. The overview
+uses a responsive two-/three-column grid of linked student Plates; this is an
+intentional identity-and-entry pattern, not an analytics card grid. New class
+and archive actions remain quiet and inline.
 
-### Don't:
+Inside a class, roster management becomes one Plate with divided student rows.
+Manage expands a dashed Well beneath the row. Add student ends the same Plate;
+bulk paste and class settings use ruled disclosure rows below it.
 
-- **Don't** make ClassTrace look like an enterprise dashboard, a decorative
-  classroom theme, a generic teacher notebook, or a card-grid analytics product.
-- **Don't** borrow surveillance, compliance, automation, or AI-product language.
-- **Don't** use ornamental school imagery, fake controls, dashboard metrics,
-  glass effects, gradient text, noisy textures, excessive cards, or invented
-  affordances that compete with capture and review.
-- **Don't** create decorative motion, orchestrated product-page entrances,
-  broad `transition-all`, or motion without a reduced-motion alternative.
-- **Don't** use colored side stripes, giant soft shadows, nested cards, or
-  radii larger than the established card token.
-- **Don't** introduce a one-off button, input, chip, evidence, or confirmation
-  vocabulary when a shared pattern exists.
-- **Don't** imply classwide capture, multiple-student evidence, file handling,
-  generative interpretation, analytics, or other unapproved product scope.
+A student page is a focused 880px trace. The student's name is the dominant
+heading, followed by record count/date span and direct report/export/capture
+actions. Saved evidence is grouped by month and connected with the trace motif.
+The printable report uses ruled rows and removes app chrome and interactive
+trace decoration.
+
+### Landing page
+
+The landing page uses the same warm system at a more expressive scale. Its
+sequence is: sentence capture, sentence-based Explore question, the
+Capture/Review/Trace progression, product boundaries, and invitation.
+
+Wide Bricolage headlines, generous vertical space, rules, the live composer
+Plate, open evidence trace, and boundary definition list create the composition.
+The `grain` utility is a subtle pair of pale radial color fields made from Live
+Soft and Well; it is the only established atmospheric treatment. The landing
+page does not use dark indigo bands, the retired mint accent, product screenshots
+that invent capabilities, or decorative classroom imagery.
+
+## Shared controls and evidence content
+
+- Default shared buttons are Live Bright with Live Ink. `solid` is Ink on Base;
+  outline, secondary Well, ghost, destructive, and underlined link variants are
+  visually subordinate or semantic alternatives.
+- Shared buttons are 44px high on mobile and 40px at desktop by default. The
+  component radius is 8px; callers intentionally opt into full rounding for
+  major calls to action and compact navigation/filter affordances.
+- Fields are Well with a stronger line, 8px radius, 44px mobile / 40px desktop
+  height, and a Live Bright border plus four-pixel Live Soft focus halo.
+- Every field has a persistent accessible label. Placeholder copy is only a
+  hint. Invalid fields pair Danger styling with adjacent error text.
+- Evidence notes use primary ink and comfortable leading. Evidence type is the
+  one bordered detail pill; tags and other structured details are compact text,
+  not colorful chips. Follow-up uses an amber semantic left rule.
+- Photos are rounded Well-backed thumbnails or bounded uncropped work samples.
+  Expansion opens an ink backdrop, traps focus at the close action, supports
+  Escape/backdrop close, and returns focus to the thumbnail.
+
+## Accessibility and motion
+
+- Maintain WCAG AA contrast for text and interactive states.
+- Preserve visible keyboard focus, one semantic `main`, named navigation
+  landmarks, and `aria-current` for active navigation. Where a layout provides
+  a skip link, it targets `main#main-content`.
+- Color is never the only cue for live/saved, selected, invalid, archived, or
+  destructive state.
+- Mobile targets approach 44×44px. Long teacher text, names, handles, tags, and
+  identifiers wrap or truncate intentionally without hiding controls.
+- The mobile sheet traps focus, closes from Escape/backdrop, restores trigger
+  focus, and locks background scroll.
+- Motion is limited to state communication: focused surface changes, the
+  mobile-sheet entrance, compact icon rotation, and the landing capture caret.
+  The global reduced-motion rule collapses animation and transition duration.
+
+## Anti-slop constraints
+
+- No enterprise dashboard chrome, fake metrics, ornamental school imagery, or
+  invented future-feature controls.
+- No gradient text, glass panels, downloaded textures, noise filters, arbitrary
+  blobs, scrapbook styling, tape, sticky notes, doodles, or handwritten type.
+- No rainbow tags, competing accent palette, giant soft shadows, or stacks of
+  nested floating cards.
+- No repeated eyebrow copy as generic scaffolding. Context labels must locate a
+  real moment or state, such as “Now” or “Later”.
+- No broad `transition-all`; animate only properties that communicate state.
+- No one-off button, field, evidence, brand, or confirmation language when the
+  shared implementation already covers the need.
+- Do not turn amber into decoration or make a saved record look provisional.

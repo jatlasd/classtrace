@@ -20,6 +20,7 @@ class FakeDatabaseClient {
         classCount: 2,
         studentCount: 4,
         evidenceCount: 56,
+        photoCount: 4,
         invalidStudentRelations: 0,
         invalidEvidenceRelations: 0,
       };
@@ -58,6 +59,7 @@ describe("demo workspace reset transaction", () => {
       classCount: 2,
       studentCount: 4,
       evidenceCount: 56,
+      photoCount: 4,
     });
 
     const deleteCalls = client.calls.filter((call) =>
@@ -68,7 +70,7 @@ describe("demo workspace reset transaction", () => {
       true
     );
     expect(client.calls.filter((call) => call.text.startsWith("INSERT"))).toHaveLength(
-      62
+      66
     );
     expect(client.calls.at(-1)?.text).toBe("COMMIT");
     expect(client.calls.some((call) => call.text === "ROLLBACK")).toBe(false);
@@ -113,6 +115,7 @@ describe("demo workspace reset transaction", () => {
         classCount: 2,
         studentCount: 4,
         evidenceCount: 55,
+        photoCount: 4,
         invalidStudentRelations: 0,
         invalidEvidenceRelations: 0,
       },
@@ -138,5 +141,27 @@ describe("demo workspace reset transaction", () => {
       )
     ).toHaveLength(3);
     expect(client.calls.filter((call) => call.text === "ROLLBACK")).toHaveLength(2);
+  });
+
+  it("replaces the same owned workspace idempotently on repeated resets", async () => {
+    const client = new FakeDatabaseClient();
+
+    const first = await resetDemoWorkspace({
+      client,
+      clerkUserId: DEMO_CLERK_USER_ID,
+    });
+    const second = await resetDemoWorkspace({
+      client,
+      clerkUserId: DEMO_CLERK_USER_ID,
+    });
+
+    expect(second).toEqual(first);
+    expect(client.calls.filter((call) => call.text === "COMMIT")).toHaveLength(2);
+    expect(
+      client.calls.filter((call) => call.text.startsWith("DELETE"))
+    ).toHaveLength(6);
+    expect(
+      client.calls.filter((call) => call.text.startsWith("INSERT"))
+    ).toHaveLength(132);
   });
 });

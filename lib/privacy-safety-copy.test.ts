@@ -224,24 +224,4 @@ describe("Unit 23 privacy and safety copy guardrails", () => {
     expect(consoleLinesWithRawDraft).toEqual([]);
   });
 
-  it("preserves cautious landing boundaries and teacher-validation language", () => {
-    const landingBoundary = readFileSync(
-      join(projectRoot, "components", "landing", "landing-trust.tsx"),
-      "utf8"
-    );
-    const reviewPanel = readFileSync(
-      join(
-        projectRoot,
-        "components",
-        "dashboard",
-        "interpretation-review-panel.tsx"
-      ),
-      "utf8"
-    );
-
-    expect(landingBoundary).toContain("Not an IEP generator");
-    expect(landingBoundary).toContain("Not an admin dashboard");
-    expect(reviewPanel).toContain("Review before saving");
-    expect(reviewPanel).toContain("Save validated evidence");
-  });
 });

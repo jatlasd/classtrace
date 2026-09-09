@@ -3,80 +3,37 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import { archiveEvidence, deleteEvidence } from "@/actions/evidence";
+import { deleteEvidence } from "@/actions/evidence";
 import { EvidenceRecordContent } from "@/components/evidence/evidence-record-content";
+import { EvidencePhoto } from "@/components/evidence/evidence-photo";
 import { Button } from "@/components/ui/button";
+import { formatEvidenceCalendarDate } from "@/lib/evidence/evidence-calendar-date";
 import type { EvidenceFeedRecord } from "@/lib/evidence/evidence-feed-records";
 import { routes } from "@/lib/routes";
-import { Archive, Trash2 } from "lucide-react";
+import { Trash2 } from "lucide-react";
 
 type SavedEvidenceRowProps = {
   record: EvidenceFeedRecord;
-  onArchived?: (evidenceId: string) => void;
+  evidenceTimeZone: string;
   onDeleted?: (evidenceId: string) => void;
 };
 
-type EvidenceDateParts = {
-  label: string;
-  month: string;
-  day: string;
-  year: string;
-};
-
-function formatEvidenceDate(value: string): EvidenceDateParts {
-  const date = new Date(value);
-
-  if (Number.isNaN(date.getTime())) {
-    return {
-      label: "Recently",
-      month: "",
-      day: "Recent",
-      year: "",
-    };
-  }
-
-  const parts = new Intl.DateTimeFormat("en", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  }).formatToParts(date);
-
-  return {
-    label: parts.map((part) => part.value).join(""),
-    month: parts.find((part) => part.type === "month")?.value ?? "",
-    day: parts.find((part) => part.type === "day")?.value ?? "",
-    year: parts.find((part) => part.type === "year")?.value ?? "",
-  };
-}
-
 export function SavedEvidenceRow({
   record,
-  onArchived,
+  evidenceTimeZone,
   onDeleted,
 }: SavedEvidenceRowProps) {
   const router = useRouter();
-  const [isConfirmingArchive, setIsConfirmingArchive] = useState(false);
   const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
-  const [archiveError, setArchiveError] = useState("");
   const [deleteError, setDeleteError] = useState("");
   const [isPending, startTransition] = useTransition();
-  const evidenceDate = formatEvidenceDate(record.evidenceDate);
-
-  function handleArchive(): void {
-    setArchiveError("");
-    startTransition(async () => {
-      const result = await archiveEvidence({ evidenceId: record.id });
-
-      if (!result.success) {
-        setArchiveError(result.error);
-        setIsConfirmingArchive(false);
-        return;
-      }
-
-      onArchived?.(record.id);
-      router.refresh();
-    });
-  }
+  const evidenceDate = formatEvidenceCalendarDate(
+    record.evidenceDate,
+    evidenceTimeZone
+  );
+  const contentRecord = record.hasPhoto
+    ? { ...record, hasPhoto: false }
+    : record;
 
   function handleDelete(): void {
     setDeleteError("");
@@ -96,163 +53,98 @@ export function SavedEvidenceRow({
 
   return (
     <article
-      aria-label={`Saved evidence for ${record.studentDisplayName} on ${evidenceDate.label}`}
-      className="border-b border-border transition-colors hover:bg-muted/20 last:border-b-0"
+      aria-label={`Saved evidence for ${record.studentDisplayName} on ${evidenceDate}`}
+      className="trace-node group/row pl-7 py-4"
     >
-      <div className="grid gap-3 px-4 py-5 sm:grid-cols-[64px_minmax(0,1fr)] sm:gap-5 md:px-6">
-        <time
-          dateTime={record.evidenceDate}
-          aria-label={evidenceDate.label}
-          className="flex items-baseline gap-1.5 text-muted-foreground sm:flex-col sm:items-start sm:gap-0.5 sm:border-r sm:border-border/70 sm:pr-4"
-        >
-          <span className="text-sm font-semibold leading-none text-foreground">
-            {evidenceDate.month
-              ? `${evidenceDate.month} ${evidenceDate.day}`
-              : evidenceDate.day}
-          </span>
-          {evidenceDate.year ? (
-            <span className="text-[11px] tabular-nums">{evidenceDate.year}</span>
-          ) : null}
-        </time>
-
-        <div className="min-w-0">
-          <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
-            <Link
-              href={routes.student(record.rosterStudentId)}
-              className="rounded-sm text-sm font-semibold text-foreground underline-offset-2 hover:text-link hover:underline focus-visible:ring-2 focus-visible:ring-ring/30"
-            >
-              {record.studentDisplayName}
-            </Link>
-            {record.classGroupName ? (
-              <span className="text-xs text-muted-foreground">
-                {record.classGroupName}
-              </span>
-            ) : null}
-          </div>
-
-          <EvidenceRecordContent
-            record={record}
-            showStructuredSummary={false}
-            textClassName="mt-2"
-          />
-
-          <div className="mt-3 flex flex-wrap items-center gap-1">
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              className="min-h-11 text-muted-foreground sm:min-h-9"
-              disabled={isPending}
-              onClick={() => {
-                setIsConfirmingArchive(true);
-                setIsConfirmingDelete(false);
-                setArchiveError("");
-                setDeleteError("");
-              }}
-              aria-label={`Archive evidence for ${record.studentDisplayName}`}
-            >
-              <Archive aria-hidden="true" className="size-3.5" />
-              Archive
-            </Button>
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              className="min-h-11 text-destructive hover:text-destructive sm:min-h-9"
-              disabled={isPending}
-              onClick={() => {
-                setIsConfirmingDelete(true);
-                setIsConfirmingArchive(false);
-                setArchiveError("");
-                setDeleteError("");
-              }}
-              aria-label={`Delete evidence for ${record.studentDisplayName}`}
-            >
-              <Trash2 aria-hidden="true" className="size-3.5" />
-              Delete
-            </Button>
-          </div>
-
-          {isConfirmingArchive ? (
-            <div className="mt-3 space-y-3 border-y border-border bg-muted/20 px-3 py-3">
-              <p className="text-xs leading-relaxed text-muted-foreground">
-                Archive this evidence? It will be hidden from default evidence
-                views but kept in your records{record.hasPhoto ? ", including its photo" : ""}.
-              </p>
-              <div className="flex flex-wrap gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={handleArchive}
-                  disabled={isPending}
-                  autoFocus
-                  aria-label={`Confirm archive evidence for ${record.studentDisplayName}`}
-                >
-                  {isPending ? "Archiving…" : "Archive evidence"}
-                </Button>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => {
-                    setIsConfirmingArchive(false);
-                    setArchiveError("");
-                  }}
-                  disabled={isPending}
-                >
-                  Cancel
-                </Button>
-              </div>
-            </div>
-          ) : null}
-
-          {archiveError ? (
-            <p className="mt-2 text-xs leading-relaxed text-destructive" role="alert">
-              {archiveError}
-            </p>
-          ) : null}
-
-          {isConfirmingDelete ? (
-            <div className="mt-3 space-y-3 border-y border-destructive/30 bg-destructive/5 px-3 py-3">
-              <p className="text-xs font-medium leading-relaxed text-destructive">
-                Permanently delete this evidence record{record.hasPhoto ? " and its photo" : ""}? This cannot be undone.
-              </p>
-              <div className="flex flex-wrap gap-2">
-                <Button
-                  type="button"
-                  variant="destructive"
-                  size="sm"
-                  onClick={handleDelete}
-                  disabled={isPending}
-                  autoFocus
-                  aria-label={`Permanently delete evidence for ${record.studentDisplayName}`}
-                >
-                  {isPending ? "Deleting…" : "Delete evidence"}
-                </Button>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => {
-                    setIsConfirmingDelete(false);
-                    setDeleteError("");
-                  }}
-                  disabled={isPending}
-                >
-                  Cancel
-                </Button>
-              </div>
-            </div>
-          ) : null}
-
-          {deleteError ? (
-            <p className="mt-2 text-xs leading-relaxed text-destructive" role="alert">
-              {deleteError}
-            </p>
+      <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+        <div className="flex min-w-0 flex-wrap items-baseline gap-x-3 gap-y-0.5">
+          <Link
+            href={routes.student(record.rosterStudentId)}
+            className="break-words font-display text-[1.35rem] font-semibold leading-tight text-fg underline-offset-4 outline-none [overflow-wrap:anywhere] hover:underline focus-visible:ring-2 focus-visible:ring-live-bright focus-visible:ring-offset-2 focus-visible:ring-offset-base"
+          >
+            {record.studentDisplayName}
+          </Link>
+          {record.classGroupName ? (
+            <span className="label text-fg-3">{record.classGroupName}</span>
           ) : null}
         </div>
+        <Button
+          type="button"
+          variant="ghost"
+          size="xs"
+          className="-mr-2 text-fg-3 hover:text-danger lg:opacity-0 lg:transition-opacity lg:group-focus-within/row:opacity-100 lg:group-hover/row:opacity-100"
+          disabled={isPending}
+          onClick={() => {
+            setIsConfirmingDelete(true);
+            setDeleteError("");
+          }}
+          aria-label={`Delete evidence for ${record.studentDisplayName}`}
+        >
+          <Trash2 aria-hidden="true" className="size-3.5" />
+          Delete
+        </Button>
       </div>
+
+      <div className={`mt-1 ${record.hasPhoto && (record.evidenceNote || record.summary) ? "sm:flex sm:items-start sm:gap-6" : ""}`}>
+        <div className="min-w-0 flex-1">
+          <EvidenceRecordContent
+            record={contentRecord}
+            presentation="journal"
+            showStructuredSummary={false}
+            textClassName="max-w-[64ch]"
+          />
+        </div>
+
+        {record.hasPhoto ? (
+          <EvidencePhoto
+            evidenceId={record.id}
+            evidenceDate={record.evidenceDate}
+            width={record.photoWidth}
+            height={record.photoHeight}
+            presentation="work-sample"
+            className={record.evidenceNote || record.summary ? "mt-4 sm:mt-0" : "mt-2"}
+          />
+        ) : null}
+      </div>
+
+      {isConfirmingDelete ? (
+        <div className="mt-4 space-y-3 rounded-md border-l-2 border-danger bg-danger-soft px-4 py-3">
+          <p className="text-sm font-medium leading-relaxed text-danger">
+            Permanently delete this evidence record{record.hasPhoto ? " and its photo" : ""}? This cannot be undone.
+          </p>
+          <div className="flex flex-wrap gap-2">
+            <Button
+              type="button"
+              variant="destructive"
+              size="sm"
+              onClick={handleDelete}
+              disabled={isPending}
+              autoFocus
+              aria-label={`Permanently delete evidence for ${record.studentDisplayName}`}
+            >
+              {isPending ? "Deleting…" : "Delete evidence"}
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                setIsConfirmingDelete(false);
+                setDeleteError("");
+              }}
+              disabled={isPending}
+            >
+              Cancel
+            </Button>
+          </div>
+        </div>
+      ) : null}
+
+      {deleteError ? (
+        <p className="mt-3 text-xs leading-relaxed text-danger" role="alert">
+          {deleteError}
+        </p>
+      ) : null}
     </article>
   );
 }

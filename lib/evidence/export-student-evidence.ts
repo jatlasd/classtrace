@@ -17,11 +17,6 @@ type RosterStudentFindFirstArgs = {
     displayName: true;
     mentionHandle: true;
     schoolLocalId: true;
-    classGroup: {
-      select: {
-        name: true;
-      };
-    };
   };
 };
 
@@ -49,6 +44,7 @@ type EvidenceRecordFindManyArgs = {
     followUpNotes: true;
     validatedAt: true;
     createdAt: true;
+    classGroup: { select: { name: true } };
     photo: { select: { id: true } };
   };
 };
@@ -58,7 +54,6 @@ type ExportStudentFromDatabase = {
   displayName: string;
   mentionHandle: string;
   schoolLocalId: string | null;
-  classGroup: { name: string } | null;
 };
 
 type ExportEvidenceFromDatabase = {
@@ -78,6 +73,7 @@ type ExportEvidenceFromDatabase = {
   followUpNotes: string | null;
   validatedAt: Date;
   createdAt: Date;
+  classGroup?: { name: string } | null;
   photo?: { id: string } | null;
 };
 
@@ -184,13 +180,12 @@ function buildCsvContent({
   student: ExportStudentFromDatabase;
   evidenceRecords: ExportEvidenceFromDatabase[];
 }): string {
-  const classGroupName = optionalText(student.classGroup?.name ?? null);
   const schoolLocalId = optionalText(student.schoolLocalId);
   const rows = evidenceRecords.map((record) =>
     buildCsvRow([
       student.displayName,
       `@${student.mentionHandle}`,
-      classGroupName,
+      optionalText(record.classGroup?.name ?? null),
       schoolLocalId,
       formatIsoDate(record.evidenceDate),
       formatIsoDate(record.validatedAt),
@@ -248,11 +243,6 @@ export async function exportStudentEvidenceForWorkspace(
         displayName: true,
         mentionHandle: true,
         schoolLocalId: true,
-        classGroup: {
-          select: {
-            name: true,
-          },
-        },
       },
     });
 
@@ -287,6 +277,7 @@ export async function exportStudentEvidenceForWorkspace(
         followUpNotes: true,
         validatedAt: true,
         createdAt: true,
+        classGroup: { select: { name: true } },
         photo: { select: { id: true } },
       },
     });

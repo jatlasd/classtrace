@@ -10,6 +10,7 @@ const FAILURE_LOG_PREFIX = "[lib/feedback/feedback-delivery] failed";
 
 function validEnvironment(): NodeJS.ProcessEnv {
   return {
+    NODE_ENV: "test",
     RESEND_API_KEY: "  re_test_key  ",
     CLASSTRACE_FEEDBACK_FROM_EMAIL: "  onboarding@resend.dev  ",
     CLASSTRACE_FEEDBACK_TO_EMAIL: "  jeremy@classtrace.test  ",

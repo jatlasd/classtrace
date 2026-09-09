@@ -1,18 +1,10 @@
 export function EvidenceFeedHeader() {
   return (
-    <header className="border-b border-border pb-5">
-      <div className="min-w-0">
-        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-          Evidence feed
-        </p>
-        <h1 className="mt-2 max-w-3xl font-display text-3xl font-semibold tracking-tight text-foreground">
-          Capture evidence
-        </h1>
-        <p className="mt-1 max-w-xl text-sm leading-relaxed text-muted-foreground">
-          Start with one student-specific moment. You will review it before
-          anything is saved.
-        </p>
-      </div>
+    <header className="mb-5 flex items-baseline justify-between gap-4">
+      <h1 className="sr-only">Feed</h1>
+      <p className="label text-fg-3">
+        <span className="text-live">Now</span> · write one sentence about one student
+      </p>
     </header>
   );
 }
@@ -21,9 +13,9 @@ export function RecentCapturesLabel() {
   return (
     <h2
       id="evidence-inbox-heading"
-      className="text-base font-semibold text-foreground"
+      className="font-display text-[2rem] font-semibold leading-none text-fg"
     >
-      Recent captures and saved evidence
+      All evidence
     </h2>
   );
 }

@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
-import { ArrowRight, NotebookPen } from "lucide-react";
+import { ArrowRight } from "lucide-react";
+import { BrandLockup } from "@/components/layout/brand-lockup";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { routes } from "@/lib/routes";
 
@@ -25,36 +26,29 @@ export function PublicInfoPage({
   lastUpdated,
 }: PublicInfoPageProps) {
   return (
-    <div className="landing-paper-texture relative flex min-h-dvh flex-col bg-background">
+    <div className="relative flex min-h-dvh flex-col bg-well">
       <a
         href="#main-content"
-        className="fixed left-4 top-3 z-[70] -translate-y-20 rounded-md bg-foreground px-3 py-2 text-sm font-semibold text-background transition-transform focus:translate-y-0"
+        className="fixed left-4 top-3 z-[70] -translate-y-20 rounded-sm bg-fg px-3 py-2 text-sm font-semibold text-on-ink transition-transform focus:translate-y-0"
       >
         Skip to main content
       </a>
 
-      <header className="border-b border-border/70 bg-background/95">
+      <header className="border-b border-line bg-well">
         <div className="mx-auto flex min-h-16 max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-3 md:px-6 lg:px-8">
-          <Link href={routes.root} className="flex items-center gap-2.5">
-            <NotebookPen
-              className="size-7 text-navy"
-              strokeWidth={2}
-              aria-hidden="true"
-            />
-            <span className="font-display text-xl font-semibold tracking-tight text-foreground">
-              ClassTrace
-            </span>
+          <Link href={routes.root}>
+            <BrandLockup size="md" />
           </Link>
           <nav aria-label="Public" className="flex items-center gap-4">
             <Link
               href={routes.support}
-              className="rounded-md py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+              className="rounded-sm py-2 font-mono text-xs uppercase tracking-[0.1em] text-fg-2 transition-colors hover:text-fg"
             >
               Support
             </Link>
             <Link
               href={routes.signIn}
-              className="rounded-md py-2 text-sm font-semibold text-link transition-colors hover:text-foreground"
+              className="rounded-sm py-2 font-mono text-xs font-semibold uppercase tracking-[0.1em] text-fg transition-colors hover:text-fg-2"
             >
               Sign in
             </Link>
@@ -65,20 +59,20 @@ export function PublicInfoPage({
       <main id="main-content" tabIndex={-1} className="flex-1 outline-none">
         <div className="mx-auto grid max-w-6xl gap-10 px-4 py-10 md:px-6 md:py-14 lg:grid-cols-[210px_minmax(0,720px)] lg:gap-16 lg:px-8 lg:py-16">
           <aside className="lg:pt-2">
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+            <p className="label text-fg-3">
               ClassTrace beta
             </p>
             <nav aria-label="On this page" className="mt-4">
-              <ol className="border-l border-border">
+              <ol className="border-l border-line">
                 {sections.map((section, index) => (
                   <li key={section.id}>
                     <a
                       href={"#" + section.id}
-                      className="group flex gap-3 border-l-2 border-transparent py-2 pl-4 text-sm text-muted-foreground transition-colors hover:border-link hover:text-foreground"
+                      className="group flex gap-3 border-l-2 border-transparent py-2 pl-4 text-sm text-fg-2 transition-colors hover:border-live-bright hover:text-fg"
                     >
                       <span
                         aria-hidden="true"
-                        className="font-mono text-xs text-muted-foreground/70"
+                        className="font-mono text-xs text-fg-3"
                       >
                         {String(index + 1).padStart(2, "0")}
                       </span>
@@ -91,15 +85,15 @@ export function PublicInfoPage({
           </aside>
 
           <article className="min-w-0">
-            <header className="border-b border-border pb-8">
-              <h1 className="font-display text-4xl font-semibold leading-tight tracking-tight text-foreground sm:text-5xl">
+            <header className="border-b-2 border-fg pb-8">
+              <h1 className="font-display text-4xl font-semibold leading-[1.02] tracking-[-0.01em] text-fg sm:text-5xl">
                 {title}
               </h1>
-              <p className="mt-5 max-w-2xl text-base leading-7 text-muted-foreground">
+              <p className="mt-5 max-w-2xl font-display text-xl  leading-snug text-fg-2">
                 {description}
               </p>
               {lastUpdated ? (
-                <p className="mt-5 font-mono text-xs text-muted-foreground">
+                <p className="mt-5 font-mono text-xs text-fg-2">
                   Last updated {lastUpdated}
                 </p>
               ) : null}
@@ -134,11 +128,11 @@ export function PublicInfoSection({
     >
       <h2
         id={id + "-heading"}
-        className="font-display text-2xl font-semibold tracking-tight text-foreground"
+        className="font-display text-3xl font-semibold leading-none tracking-[-0.01em] text-fg"
       >
         {title}
       </h2>
-      <div className="mt-4 space-y-4 text-[15px] leading-7 text-muted-foreground [&_strong]:font-semibold [&_strong]:text-foreground [&_ul]:space-y-2 [&_ul]:pl-5 [&_ul]:list-disc">
+      <div className="mt-4 space-y-4 text-[15px] leading-7 text-fg-2 [&_strong]:font-semibold [&_strong]:text-fg [&_ul]:space-y-2 [&_ul]:pl-5 [&_ul]:list-disc">
         {children}
       </div>
     </section>
@@ -154,7 +148,7 @@ export function PublicActionLink({ href, children }: PublicActionLinkProps) {
   return (
     <Link
       href={href}
-      className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-border bg-card px-4 py-2.5 text-sm font-semibold text-foreground transition-colors hover:border-link/50 hover:text-link focus-visible:ring-3 focus-visible:ring-ring/30 focus-visible:outline-none"
+      className="inline-flex min-h-11 items-center gap-2 rounded-sm border border-line-2 bg-plate px-4 py-2.5 text-sm font-semibold text-fg transition-colors hover:bg-well focus-visible:ring-2 focus-visible:ring-live-bright focus-visible:ring-offset-2 focus-visible:ring-offset-well focus-visible:outline-none"
     >
       {children}
       <ArrowRight className="size-4" aria-hidden="true" />
@@ -164,7 +158,7 @@ export function PublicActionLink({ href, children }: PublicActionLinkProps) {
 
 export function PublicNote({ children }: { children: ReactNode }) {
   return (
-    <div className="border-y border-border bg-card/50 px-4 py-4 text-sm leading-6 text-foreground sm:px-5">
+    <div className="rounded-sm border-l-[3px] border-live-bright bg-live-soft/60 px-4 py-4 text-sm leading-6 text-fg sm:px-5">
       {children}
     </div>
   );

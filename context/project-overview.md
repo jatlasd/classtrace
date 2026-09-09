@@ -12,7 +12,7 @@ class-first roster setup
   → deterministic structured draft
   → teacher review and editing
   → permanent evidence
-  → feed, timeline, report, or export
+  → feed, Explore, timeline, report, or export
 ```
 
 The strongest early users are special education teachers, case managers, interventionists, resource teachers, co-teachers, and teachers with substantial documentation needs.
@@ -46,9 +46,13 @@ The strongest early users are special education teachers, case managers, interve
 - Saving creates a permanent evidence record containing a reviewed note, one validated photo, or both; raw capture text and original photo data are not part of that record.
 - The first successful workspace save offers direct next steps to the student timeline, report, or another capture without creating a separate onboarding state.
 - Saved records appear in a paged global feed and student timeline.
+- Explore Evidence runs an explicit, unsaved, workspace-scoped question across
+  active saved evidence and returns either paged evidence records or paged
+  student groups with inspectable supporting records.
 - A student report can be filtered by teacher-local dates and printed.
 - One student’s evidence can be exported as CSV.
-- Evidence, students, and classes support intentional archive/delete paths.
+- Saved evidence supports intentional permanent deletion. Students and classes
+  support archive paths, with restoration available from their archived views.
 - Settings includes a Help and Feedback form that sends a bounded support report
   through Resend to the configured ClassTrace operator without storing it in the
   ClassTrace database.
@@ -61,7 +65,7 @@ The strongest early users are special education teachers, case managers, interve
 2. Captured draft — optional workspace/version-scoped `sessionStorage` manifest with encrypted local photo bytes in IndexedDB, expiring at next device-local midnight.
 3. Structured draft — deterministic interpretation for review.
 4. Teacher-approved evidence — durable database record.
-5. Read models — feed, timeline, report, and export derived from durable evidence.
+5. Read models — feed, Explore, timeline, report, and export derived from durable evidence.
 
 These states must not be collapsed. In particular, a captured raw note must not quietly become permanent evidence.
 
@@ -78,6 +82,7 @@ These states must not be collapsed. In particular, a captured raw note must not 
 | `/beta-acknowledgements` | Required versioned beta acknowledgement before teacher-product access |
 | `/app` | Redirect based on roster readiness |
 | `/app/feed` | Capture and paged evidence inbox |
+| `/app/explore` | Explicit multi-condition retrieval across active saved evidence |
 | `/app/roster` | Class-first roster management |
 | `/app/students/[studentId]` | Student timeline and export |
 | `/app/students/[studentId]/report` | Printable date-filtered report |

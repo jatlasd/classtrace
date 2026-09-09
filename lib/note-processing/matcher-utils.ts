@@ -50,6 +50,56 @@ function containsBoundedPhrase(text: string, phrase: string): boolean {
   return false;
 }
 
+function isNegatedOccurrence(text: string, startIndex: number): boolean {
+  const nearbyPrefix = text.slice(Math.max(0, startIndex - 72), startIndex);
+  const clausePrefix =
+    nearbyPrefix.split(/[.!?;:]|\b(?:but|however|although|yet)\b/).at(-1) ?? "";
+  const normalizedPrefix = clausePrefix
+    .replace(/[^a-z0-9'’\s]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  if (!normalizedPrefix || /\bnot only\s*$/.test(normalizedPrefix)) {
+    return false;
+  }
+
+  return (
+    /\b(?:not|never|hardly)(?:\s+[a-z0-9'’]+){0,2}\s*$/.test(
+      normalizedPrefix
+    ) ||
+    /\bno longer(?:\s+[a-z0-9'’]+){0,3}\s*$/.test(normalizedPrefix) ||
+    /\bwithout(?:\s+[a-z0-9'’]+){0,2}\s*$/.test(normalizedPrefix) ||
+    /\b(?:isn't|isn’t|wasn't|wasn’t|weren't|weren’t|aren't|aren’t|cannot|can't|can’t|won't|won’t)(?:\s+[a-z0-9'’]+){0,2}\s*$/.test(
+      normalizedPrefix
+    )
+  );
+}
+
+function containsUnnegatedBoundedPhrase(text: string, phrase: string): boolean {
+  let startIndex = text.indexOf(phrase);
+
+  while (startIndex !== -1) {
+    const before = text[startIndex - 1];
+    const after = text[startIndex + phrase.length];
+    const startsAtBoundary =
+      before === undefined || !WORD_CHARACTER_PATTERN.test(before);
+    const endsAtBoundary =
+      after === undefined || !WORD_CHARACTER_PATTERN.test(after);
+
+    if (
+      startsAtBoundary &&
+      endsAtBoundary &&
+      !isNegatedOccurrence(text, startIndex)
+    ) {
+      return true;
+    }
+
+    startIndex = text.indexOf(phrase, startIndex + 1);
+  }
+
+  return false;
+}
+
 export function findPhraseHits(
   searchable: string,
   tags: string[],
@@ -62,11 +112,16 @@ export function findPhraseHits(
     const normalizedPhrase = normalizeText(phrase);
     if (!normalizedPhrase) continue;
 
-    if (!containsBoundedPhrase(searchable, normalizedPhrase)) continue;
-
     const matchingTag = normalizedTags.find(
       (tag) => tag === normalizedPhrase || containsBoundedPhrase(tag, normalizedPhrase)
     );
+
+    if (
+      matchingTag === undefined &&
+      !containsUnnegatedBoundedPhrase(searchable, normalizedPhrase)
+    ) {
+      continue;
+    }
 
     hits.push({
       phrase,

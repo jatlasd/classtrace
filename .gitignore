@@ -12,6 +12,11 @@
 
 # testing
 /coverage
+/.playwright-cli/
+/playwright/.auth/
+/output/
+/playwright-report/
+/blob-report/
 
 # next.js
 /.next/
@@ -23,6 +28,14 @@
 # misc
 .DS_Store
 *.pem
+/.codex-remote-attachments/
+
+# local agent and editor tooling
+/.agents/
+/.codex/
+/.cursor/
+/.impeccable/
+/skills-lock.json
 
 # debug
 npm-debug.log*

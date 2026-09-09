@@ -53,13 +53,13 @@ export function ArchivedRosterStudentActions({
     <div className="w-full space-y-2 sm:w-64">
       {hasActiveClasses ? (
         <>
-          <label className="block text-xs font-medium text-foreground">
+          <label className="label block text-fg-2">
             Restore to class
             <select
               value={classGroupId}
               onChange={(event) => setClassGroupId(event.target.value)}
               disabled={isPending}
-              className="mt-1 h-9 w-full rounded-md border border-border bg-background/50 px-2 text-sm text-foreground outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/20"
+              className="mt-1 h-9 w-full rounded-md border border-line-2 bg-well px-2 text-sm text-fg outline-none focus-visible:border-fg focus-visible:ring-2 focus-visible:ring-live-bright focus-visible:ring-offset-2 focus-visible:ring-offset-base"
             >
               {activeClasses.map((classGroup) => (
                 <option key={classGroup.id} value={classGroup.id}>
@@ -81,13 +81,13 @@ export function ArchivedRosterStudentActions({
           </Button>
         </>
       ) : (
-        <p className="text-xs leading-relaxed text-muted-foreground">
+        <p className="text-xs leading-relaxed text-fg-2">
           Create an active class before restoring this student.
         </p>
       )}
 
       {error ? (
-        <p className="text-xs leading-relaxed text-destructive" role="status">
+        <p className="text-xs leading-relaxed text-danger" role="status">
           {error}
         </p>
       ) : null}

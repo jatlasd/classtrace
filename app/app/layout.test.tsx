@@ -7,8 +7,8 @@ const mocks = vi.hoisted(() => ({
   getCurrentAppWorkspace: vi.fn(),
 }));
 
-vi.mock("@/components/dashboard/app-top-nav", () => ({
-  AppTopNav: () => <header>Application navigation</header>,
+vi.mock("@/components/dashboard/app-shell-navigation", () => ({
+  AppShellNavigation: () => <header>Application navigation</header>,
 }));
 vi.mock("@/components/auth/class-trace-clerk-provider", () => ({
   ClassTraceClerkProvider: ({ children }: { children: React.ReactNode }) =>
@@ -41,10 +41,14 @@ describe("authenticated app layout", () => {
 
     const main = screen.getByRole("main");
     const footer = screen.getByRole("contentinfo");
-    const shell = main.parentElement;
+    const workspace = main.parentElement;
+    const shell = workspace?.parentElement;
 
+    expect(shell?.classList.contains("authenticated-app")).toBe(true);
     expect(shell?.classList.contains("min-h-dvh")).toBe(true);
     expect(shell?.classList.contains("flex-col")).toBe(true);
+    expect(workspace?.classList.contains("app-shell-workspace")).toBe(true);
+    expect(workspace?.classList.contains("pb-20")).toBe(true);
     expect(main.classList.contains("flex-1")).toBe(true);
     expect(main.nextElementSibling).toBe(footer);
     expect(

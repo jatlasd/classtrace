@@ -4,7 +4,6 @@ import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/re
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
-  archiveEvidence: vi.fn(),
   deleteEvidence: vi.fn(),
   refresh: vi.fn(),
 }));
@@ -13,7 +12,6 @@ vi.mock("next/navigation", () => ({
   useRouter: () => ({ refresh: mocks.refresh }),
 }));
 vi.mock("@/actions/evidence", () => ({
-  archiveEvidence: mocks.archiveEvidence,
   deleteEvidence: mocks.deleteEvidence,
 }));
 
@@ -40,32 +38,16 @@ const record = {
 describe("SavedEvidenceRow management", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mocks.archiveEvidence.mockResolvedValue({ success: true });
     mocks.deleteEvidence.mockResolvedValue({ success: true });
   });
 
-  it("requires an explicit archive confirmation before calling the action", async () => {
-    const onArchived = vi.fn();
-    render(<SavedEvidenceRow record={record} onArchived={onArchived} />);
-
-    fireEvent.click(screen.getByRole("button", { name: /Archive evidence/ }));
-
-    expect(screen.queryByRole("button", { name: /Manage evidence/ })).toBeNull();
-    expect(mocks.archiveEvidence).not.toHaveBeenCalled();
-    fireEvent.click(
-      screen.getByRole("button", { name: /Confirm archive evidence/ })
-    );
-
-    await waitFor(() =>
-      expect(mocks.archiveEvidence).toHaveBeenCalledWith({
-        evidenceId: "evidence_1",
-      })
-    );
-    expect(onArchived).toHaveBeenCalledWith("evidence_1");
-  });
-
   it("keeps saved-row metadata implicit and avoids repeating structured chips", () => {
-    render(<SavedEvidenceRow record={record} />);
+    render(
+      <SavedEvidenceRow
+        record={record}
+        evidenceTimeZone="America/New_York"
+      />
+    );
 
     expect(screen.queryByText("Validated")).toBeNull();
     expect(screen.queryByText(/Structured details:/)).toBeNull();
@@ -73,9 +55,31 @@ describe("SavedEvidenceRow management", () => {
     expect(screen.getByText("Academic check-in")).toBeTruthy();
   });
 
+  it("uses the teacher-local calendar date in its accessible name", () => {
+    render(
+      <SavedEvidenceRow
+        record={{
+          ...record,
+          evidenceDate: "2026-12-08T23:00:00.000Z",
+        }}
+        evidenceTimeZone="Pacific/Fakaofo"
+      />
+    );
+
+    expect(
+      screen.getByLabelText("Saved evidence for Mary on December 9, 2026")
+    ).toBeTruthy();
+  });
+
   it("states permanence before deleting and reports the successful removal", async () => {
     const onDeleted = vi.fn();
-    render(<SavedEvidenceRow record={record} onDeleted={onDeleted} />);
+    render(
+      <SavedEvidenceRow
+        record={record}
+        evidenceTimeZone="America/New_York"
+        onDeleted={onDeleted}
+      />
+    );
 
     fireEvent.click(screen.getByRole("button", { name: /Delete evidence for/ }));
 

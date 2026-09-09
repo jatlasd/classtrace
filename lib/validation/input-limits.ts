@@ -16,6 +16,8 @@ export const INPUT_LIMITS = {
   evidenceField: 1_000,
   tag: 64,
   tagsPerEvidence: 20,
+  exploreSelectionsPerCondition: 50,
+  exploreTagOptions: 200,
   behaviorItem: 250,
   behaviorItemsPerEvidence: 20,
   followUpItem: 1_000,

@@ -50,14 +50,14 @@ export default async function StudentReportRoute({
   if (!report) {
     return (
       <div className="mx-auto w-full max-w-[860px] px-4 py-7 sm:px-6 lg:px-8">
-        <section className="border border-border bg-card/60 p-5">
-          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+        <section className="plate p-6">
+          <p className="label text-fg-3">
             Student report
           </p>
-          <h1 className="mt-2 font-display text-2xl font-semibold tracking-tight text-foreground">
+          <h1 className="mt-2 font-display text-3xl font-semibold leading-none tracking-[-0.01em] text-fg">
             Student not found on your roster.
           </h1>
-          <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+          <p className="mt-2 text-sm leading-relaxed text-fg-2">
             Choose an active roster student before opening a report.
           </p>
           <Button asChild variant="outline" size="sm" className="mt-4">

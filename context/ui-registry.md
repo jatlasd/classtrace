@@ -1,381 +1,414 @@
 # UI registry
 
-This is the compact current pattern registry. It records reusable contracts, not every historical component.
+This registry records the reusable visual contracts in the current
+implementation. `app/globals.css` and the named components are the evidence for
+exact values. Update an entry when the implementation changes; do not append
+retired variants or implementation history.
 
-## Tokens
+## Tokens and shared utilities
 
 Source: `app/globals.css`
 
-| Role | Token/class |
+| Role | Token or utility | Current use |
+|---|---|---|
+| Page ground | `base`, `bg-base` | Warm ivory application and landing ground |
+| Active surface | `plate`, `.plate` | White, Line border, 16px radius, subtle shadow |
+| Inset surface | `well`, `.well` | Pale violet, Line border, 8px radius |
+| Quiet / strong rules | `line`, `line-2` | Aubergine at 10% / 24% |
+| Primary ink | `fg` | Headings, saved state, durable identity |
+| Supporting ink | `fg-2` | Explanations and secondary controls |
+| Faint ink | `fg-3` | Metadata and quiet context |
+| Live/provisional copy | `live` | Dark amber copy with accessible contrast |
+| Live action/node | `live-bright` | Amber action fills, focus, and provisional nodes |
+| On-live text | `live-fg` | Dark ink on bright amber |
+| Provisional wash | `live-soft` | Mention, set slot, changed state, focus halo |
+| Invalid/destructive | `danger`, `danger-soft` | Errors and permanent deletion |
+| Strong elevation | `shadow-lift` | Overlays, menus, mobile sheet, live capture glow |
+| Field | `.field` | Well input, 44px mobile / 40px desktop, live focus halo |
+| Label | `.label` | 13px/18px semibold sentence-case context |
+| Question slot | `.slot` | Dashed unset phrase; amber-backed solid set phrase |
+| Evidence trace | `.trace`, `.trace-node` | Vertical rule and ink node; `data-live` supports amber |
+| Atmospheric field | `.grain` | Landing-only pale radial Live Soft / Well treatment |
+
+The compatibility Tailwind roles (`background`, `card`, `primary`, and so on)
+map back to these tokens. New UI should prefer the redesign's semantic names
+and must not reintroduce the former indigo/mint system.
+
+## Typography
+
+Sources: `app/layout.tsx`, `app/globals.css`
+
+| Role | Pattern |
 |---|---|
-| Page background | `bg-background text-foreground` |
-| Work surface | `bg-card text-card-foreground` |
-| Quiet surface | `bg-muted`, `bg-card/60` |
-| Border | `border-border` |
-| Primary action/focus | `primary`, `ring` |
-| Link/tag | `link` |
-| Validated state | `validated`, `validated-foreground` |
-| Destructive state | `destructive` |
-| Panel radius | `rounded-card` |
-| Controls | `rounded-md` or `rounded-lg` |
-| Paper elevation | `shadow-paper` (small, active surfaces only) |
+| Loaded family | Bricolage Grotesque with `opsz` and `wdth` axes |
+| Product display | `font-display`; optical size 96, `-0.03em` tracking |
+| Landing statement | `font-display-wide`; optical size 96, `-0.045em` tracking |
+| Compressed display | `font-display-narrow`; width 80, `-0.02em` tracking |
+| Body/evidence | 15–17px, usually 1.5–1.6 line height |
+| Label/context | `.label`; 13px, semibold |
+| Compact technical role | `font-mono`; currently resolves to Bricolage, used for handles, tags, counters, and dates |
 
-## App shell
+Do not require Inter and do not add a separate handwritten, serif, or monospace
+family without an approved system change.
 
-Files: `app/app/layout.tsx`, `components/dashboard/app-top-nav.tsx`,
-`components/layout/site-footer.tsx`
+## Brand lockup
 
-- Sticky `bg-card/95` top bar with bottom border.
-- One `main#main-content`; child pages do not render another `main`.
-- Focus-visible skip link before navigation.
-- Primary nav is named, uses 44 px links, and sets `aria-current="page"`.
-- Every rendered route shell ends with the shared site footer. A `min-h-dvh`
-  flex column and flexing main region keep it at the viewport bottom on short
-  pages and after the content on long pages. Public pages include access links;
-  authenticated, auth-provider, operator, and error surfaces keep only the
-  shared trust and support links.
-- Content widths: feed up to `1560px`; report around `1180px`; roster `880px`; settings/timeline narrower as content requires.
-
-## Site footer
-
-File: `components/layout/site-footer.tsx`
-
-Last updated: 2026-07-22
+File: `components/layout/brand-lockup.tsx`
 
 | Property | Pattern |
 |---|---|
-| Background | Inherits the route surface; no separate fill |
-| Border | `border-t border-border/70` |
-| Radius / shadow | None |
-| Brand text | `font-display text-lg font-semibold text-foreground` |
-| Link text | `text-sm text-muted-foreground`; access link may use `font-medium text-foreground/80` |
-| Spacing | `gap-4 px-4 py-6`; link group uses `gap-x-6 gap-y-2` |
-| Interaction | `transition-colors hover:text-foreground` |
-| Accent | `text-navy` on the shared notebook icon only |
+| Mark | Large circle plus smaller amber lower-right trace node |
+| Default tone | Ink circle, amber node, Base ring around node |
+| Inverse tone | Base circle, amber node, ink ring around node |
+| Wordmark | Bricolage `font-display font-semibold` |
+| Sizes | 20/24/32px mark with approximately 17/22/28px wordmark |
+| Geometry | Circular; no background tile, border, or shadow |
 
-The footer is a quiet final rule, not a card or call-to-action surface. Public
-pages may show sign-in and invited sign-up links; non-public shells expose only
-trust and support destinations. Print views remove the footer.
+The mark is decorative beside the visible `ClassTrace` wordmark. Links provide
+their destination name. Do not recreate the retired lettered `CT` tile.
 
-## Buttons and fields
+## App shell and navigation
 
-Files: `components/ui/button.tsx`, `components/ui/textarea.tsx`
-
-- Buttons use `rounded-lg`, targeted color transitions, visible focus ring, disabled opacity, and a small active press.
-- Primary uses rust without decorative shadow; outline/ghost remain visually secondary.
-- Inputs use semantic border/background tokens and a visible 3 px focus ring.
-- Errors use destructive text/border plus accessible live/focus behavior.
-- Pending labels use `…`.
-
-## Inline confirmation panel
-
-File: `components/ui/confirmation-panel.tsx`
-
-Last updated: 2026-07-22
+Files: `app/app/layout.tsx`,
+`components/dashboard/app-shell-navigation.tsx`,
+`components/dashboard/app-tab-bar.tsx`,
+`components/dashboard/app-shell-drawer.tsx`
 
 | Property | Pattern |
 |---|---|
-| Background | Default `bg-muted/20`; destructive `bg-destructive/5` |
-| Border | `border-y border-border`; destructive uses `border-destructive/30` |
-| Radius / shadow | None; stays part of its ledger row |
-| Message | `text-xs font-medium leading-relaxed`; muted or destructive semantic text |
-| Spacing | `space-y-3 px-3 py-3`; actions use `gap-2` |
-| Interaction | Shared `Button` variants; confirmation receives focus; Escape cancels |
-| Accent | Destructive tokens only when the confirmed action is destructive |
+| Shell | Sticky Base header on every viewport; no desktop sidebar |
+| Header frame | `max-w-[1240px]`; 56px mobile, 72px desktop |
+| Desktop primary nav | Centered text destinations; Bricolage display at 1.35rem |
+| Desktop active state | Foreground destination plus 6px amber dot |
+| Mobile primary nav | Fixed four-column bottom tab bar with icon and label |
+| Mobile Capture | Amber circular icon treatment; first destination |
+| Mobile menu | Top-right trigger opens a rounded-top bottom sheet |
+| Drawer contents | Trust/support links, product boundary copy, Sign out; no primary-nav duplication |
+| Workspace | Bottom padding for mobile tabs; no sidebar offset |
 
-Use this for compact, in-context confirmation where removing the user from the
-working row would be disruptive. Keep consequence copy explicit, provide a
-visible Cancel action, and return focus to the trigger when cancellation closes
-the panel.
+Primary order is Capture, Explore, Students, Settings. The header keeps the
+small mark visible at desktop and visually hides the wordmark there. Non-Capture
+mobile routes show a quiet route label. The bottom sheet traps focus, supports
+Escape/backdrop close, restores trigger focus, and locks body scrolling.
 
-## Settings help and feedback form
+## Surfaces, spacing, and radius
 
-File: `components/settings/help-feedback-form.tsx`
+- `.plate`: white, 1px Line border, 16px radius, subtle shadow. Used for the live
+  composer, provisional drafts, filter editor, setup/empty surfaces, and class
+  management ledgers.
+- `.well`: pale violet, 1px Line border, 8px radius. Used for fields, expanded
+  management, selected-photo details, secondary evidence, and view controls.
+- Ordinary controls use 8px radius. Compact panels commonly use 12px. Full
+  rounding is established for major calls to action, search, tabs, filter
+  values, and circular icon/identity controls.
+- App pages use `px-4 sm:px-6 lg:px-8`; page padding is normally `py-8 lg:py-12`.
+  Feed is slightly tighter at `py-5 sm:py-7 lg:py-9`.
+- Feed, timeline, and report use `max-w-[880px]`; Explore and Students use
+  `max-w-[1100px]`; navigation and landing use `max-w-[1240px]`.
+- `shadow-lift` is reserved for true overlays, suggestion menus, the mobile
+  sheet, and the active live glow. Do not nest lifted surfaces.
 
-Last updated: 2026-07-28
+Use the content-specific pattern already implemented: Plate for active or
+bounded work, Well for inset structure, trace for chronological evidence,
+linked Plate grid for student entry points, divided rows for dense management.
 
-| Property | Pattern |
+## Buttons, fields, and state
+
+Files: `components/ui/button.tsx`, `components/ui/textarea.tsx`,
+`components/ui/badge.tsx`, `components/ui/confirmation-panel.tsx`
+
+### Buttons
+
+| Variant | Pattern |
 |---|---|
-| Section surface | Single working surface: `rounded-card border border-border bg-card shadow-paper` |
-| Fields | Shared 40 px roster input treatment and `Textarea`; semantic invalid border/ring |
-| Labels | `text-sm font-medium text-foreground` |
-| Guidance | Inline icon plus `text-xs leading-relaxed text-muted-foreground` |
-| Field errors | Adjacent `text-sm text-destructive` with `aria-describedby` |
-| Form status | Full border with semantic destructive/validated tint; error receives focus |
-| Attached reference | `border-y border-border/70`; selectable monospace value; non-editable |
-| Submit action | Shared primary `Button`, 40 px high, pending label uses an ellipsis |
-| Spacing | `space-y-5`; paired short fields stack below `sm` |
+| `default` | Live Bright fill with Live Ink; advances active work |
+| `solid` | Ink fill with Base text; durable/commit action |
+| `outline` | Strong Line border, transparent ground |
+| `secondary` | Well fill |
+| `ghost` | Supporting ink with Plate hover |
+| `destructive` | Danger border/copy, fills Danger on hover |
+| `link` | Ink underline with stronger hover decoration |
 
-The form keeps diagnostic metadata out of editable controls. Validation and
-delivery failures preserve teacher-entered values, while success clears only
-the category and description. Error-report entry may preselect **Something
-broke** and attach one validated reference; successful delivery removes it from
-state and the URL. Use this status/focus pattern for future Settings forms that
-submit to a Server Action.
+Default height is 44px on mobile and 40px at `lg`; smaller and icon sizes follow
+the same mobile-target logic. Shared buttons use an 8px radius, while specific
+high-emphasis actions and filter/navigation controls opt into full rounding.
+Focus is a Live Bright ring with Base offset. Active press shifts by one pixel.
+Pending labels use an ellipsis.
 
-## Quick capture
+### Fields
+
+`.field` is the shared input contract: Well background, Strong Line border, 8px
+radius, 44px mobile / 40px desktop minimum height, 16px mobile / 15px desktop
+text, Faint Ink placeholder, and Live Bright border with a four-pixel Live Soft
+focus halo. `Textarea` adds relaxed leading and an 80px minimum height.
+
+Visible labels use `.label text-fg-2`. Invalid fields add Danger and adjacent
+accessible error copy. Search may opt into full rounding. Multi-select values
+use Live Soft pills with named, keyboard-reachable removal controls.
+
+### Badges and confirmation
+
+Badges are full pills. `live` is amber; `validated` is Ink on Base. Other
+variants use Line, Well, or supporting ink without introducing new colors.
+Inline confirmation uses a rounded panel with a semantic left rule: Well for
+ordinary confirmation, Danger Soft for destructive confirmation. Escape cancels
+and focus returns to the trigger where the owner supports it.
+
+## Capture composer
 
 File: `components/dashboard/quick-capture-card.tsx`
 
-- `rounded-card border border-border bg-card shadow-paper`.
-- “What happened?” is the visual anchor.
-- The header states the review-before-save boundary once; compact composer
-  guidance explains `@` student mentions and `#tags` without repeating it as
-  decorative hint controls.
-- Mention input remains text-only and offers roster-backed suggestions. Adjacent Take photo and Choose photo controls add one temporary work-sample photo without turning capture into a general upload form.
-- The textarea and mention-highlighter layers share the same font metrics,
-  padding, border, wrapping, and box sizing. Mention emphasis uses a tonal
-  background without changing glyph weight or spacing.
-- Footer is the single live guidance line: it shows the quiet draft/keyboard
-  hint when empty, then swaps in student-resolution feedback beside the clear
-  Capture action.
-- After the workspace's first successful save, one inline success panel links to the student's timeline/report and can return focus to this composer.
-- Do not turn capture into a multi-field form.
-- A selected photo is previewed in the capture surface with Replace and Remove controls, visible local-only guidance, and a written processing state.
+- One Plate inside an `880px` feed. The amber “What happened?” label and node
+  establish the live moment.
+- The sentence input uses 23px Bricolage, 34px line height, and a two-line
+  minimum. Textarea and mention highlighter share exact metrics.
+- Resolved mentions use dark amber on Live Soft. Tags use supporting ink.
+- With content, the Plate receives `glow-live`: amber border/focus halo and a
+  restrained amber-tinted lift.
+- Photo inputs stay visually hidden; Take photo / Choose photo are quiet actions.
+  A selected photo appears in a Well with local-only copy and replace/remove.
+- Student-resolution guidance is explicit. Capture is enabled only for a valid
+  one-student path, one unresolved mention that can be resolved in review, or a
+  photo-only draft to be assigned during review.
+- The Capture action is a full-rounded amber button. Capture creates a temporary
+  draft; it does not persist evidence.
 
-## Capture review
+Do not turn the composer into a multi-field form or separate its guidance into
+decorative controls.
+
+## Provisional draft and review
 
 Files: `components/dashboard/evidence-capture-card.tsx`,
 `components/dashboard/interpretation-review-panel.tsx`,
 `components/dashboard/student-resolution-field.tsx`
 
-Last imprinted: 2026-07-22
+- A draft is a Plate with explicit needs-review state, timestamp, and “clears at
+  midnight” boundary. Pending drafts may use an amber left border.
+- Collapsed drafts lead with the mentioned student, raw note, compact structured
+  suggestions, unresolved guidance, optional photo, and Review before saving.
+- Review expands inside the same Plate below a rule. Evidence note is first and
+  prominent; date and structured fields follow in a two-column grid from `sm`.
+- The draft/saved legend is an amber node connected to an ink node.
+- Student resolution and follow-up use Live Soft or an amber semantic left rule.
+- “Validate and save” uses the Ink `solid` variant. The first-save payoff is an
+  Ink panel with Base text and direct timeline/report/capture-another actions.
+- “Review later” collapses without deleting. Editing the original capture is a
+  separate action. Delete uses explicit confirmation.
+- A missing restored photo remains an actionable Danger state until reattached
+  or explicitly omitted where a note remains.
 
-- Fresh, restored, and deferred drafts remain collapsed until the teacher
-  chooses **Review before saving**.
-- The Evidence note and structured fields are editable as soon as review opens;
-  that one action reveals the editable form with no separate generic Edit mode.
-- **Review later** collapses the review without deleting the draft. Keep the
-  mounted form state intact while the draft remains in the feed.
-- Editing the original capture is a separate, explicitly labeled action. Draft
-  deletion opens the shared inline confirmation panel, moves focus to the
-  destructive confirmation, and supports Cancel or Escape before deleting.
-- One unmatched mention may enter review. Its Student field uses an
-  accent-tinted border-y panel with a searchable roster combobox instead of a
-  native resolution dropdown or a full roster list. The compact field exposes
-  at most five matching students, supports keyboard selection, and keeps inline
-  student creation as a quiet secondary action. The search uses the shared
-  roster input treatment; its temporary result surface uses `bg-card`,
-  `border-border`, and `rounded-md`, with `bg-muted` for the active result and
-  `text-muted-foreground` for handles. The teacher may add a student with an
-  editable name, fixed captured handle, and required class. A
-  successful match collapses to one validated-tint row and remains reflected
-  if review is deferred; resolving the student never saves the evidence.
-- Attempting to save while the Student field remains unresolved shows an
-  accessible error and moves focus to that highlighted field.
-- Use one ledger row: capture icon, compact status metadata, full-width source
-  or review content, then inline actions. Do not add a nested card, shadow, or
-  narrow action rail.
-- Photo-only drafts use the existing student-resolution control, keep structured fields empty unless the teacher supplies them, and may save only after one student and an evidence date within the workspace-created-to-today local calendar window are confirmed.
-- Draft photos use the shared Photo thumbnails pattern; they do not widen the ledger row or consume the viewport before the teacher chooses to expand them. Saved thumbnails preserve their intrinsic dimensions and expose a quiet retry action if a photo request fails.
+Never make parser suggestions look saved. Only the reviewed Evidence note,
+reviewed structured values, and validated photo cross into permanent evidence.
 
-## Public trust and support pages
+## Feed and saved evidence trace
 
-File: `components/public/public-info-page.tsx`
+Files: `components/dashboard/evidence-feed.tsx`,
+`components/dashboard/evidence-feed-header.tsx`,
+`components/dashboard/evidence-feed-controls.tsx`,
+`components/dashboard/saved-evidence-row.tsx`
 
-Last updated: 2026-07-14
+- Feed is one focused `880px` journal: a quiet Now context, the live composer,
+  then All evidence.
+- Search is a full-rounded Well field. All / Needs review / Validated are
+  full-rounded filters; Needs review uses amber and the other selected states
+  use Ink.
+- Drafts appear first as Plates. Saved records sit directly on the page in the
+  open `.trace` motif with ink nodes.
+- Saved records are grouped by sticky calendar-date headings. Student identity
+  leads, followed by class, approved note, compact details/tags, optional photo,
+  and a quiet Delete action.
+- Saved feed rows do not repeat a Validated badge. Their location below the
+  saved-date heading and accessible article label establish permanence.
+- Delete remains visible on touch layouts and may recede until row hover/focus
+  at desktop. Permanent confirmation uses Danger Soft and explicit copy.
+- Work samples are bounded and uncropped beside text from `sm`, below text on
+  smaller screens. Photo-only records remain supported.
+- Pagination uses explicit Newer evidence / Older evidence actions and retains
+  URL-backed feed filters/search.
 
-| Property | Pattern |
-|---|---|
-| Page background | `landing-paper-texture bg-background` |
-| Reading column | Narrow article beside a numbered in-page ledger at `lg`; naturally stacked below |
-| Dividers | `border-border` / `border-border/70`; structure uses rules rather than cards |
-| Heading text | `font-display text-foreground`; 4xl/5xl page title and 2xl section titles |
-| Body text | `text-[15px] leading-7 text-muted-foreground`; strong text returns to `text-foreground` |
-| Important note | Full-width `border-y border-border bg-card/50`, no radius or shadow |
-| Action link | `min-h-11 rounded-lg border border-border bg-card`; link-color hover and visible ring |
-| Spacing | 9–11 section padding, 12 between sections, 4 between body paragraphs |
+## Shared evidence presentation
 
-These static Server Component pages share one public header/footer and one
-`main#main-content` skip-link target. Use this editorial ledger pattern for
-future policy or support information; do not turn trust content into a card
-grid, add legal-looking decoration, or introduce client JavaScript.
+Files: `components/evidence/evidence-record-content.tsx`,
+`components/evidence/validated-stamp.tsx`,
+`components/evidence/photo-thumbnail.tsx`
 
-## Invitation-only public and sign-up copy
+- The teacher-approved Evidence note or legacy summary is the first reading
+  target: 15px compact, 16px default, or 17px journal with 1.5–1.55 leading.
+- Structured summary appears only where it adds information. Legacy-only copy is
+  labeled honestly.
+- Evidence type is a small bordered pill. Class, topic, performance, behavior,
+  and tags use compact Bricolage technical text; tags are not colored chips.
+- Follow-up is 13px supporting copy with an amber left rule and live label.
+- The Validated stamp is an ink circle/check plus the word “Validated.”
+- Default photos are 96/112px rounded thumbnails with cover cropping; feed work
+  samples use bounded, proportion-preserving `object-contain` previews.
+- Expansion uses an Ink 90% backdrop, contained image, 44px close control,
+  Escape/backdrop close, scroll lock, and trigger-focus restoration.
+- Printed photos show the full image without interactive affordances.
 
-Files: `components/landing/landing-header.tsx`,
-`components/landing/landing-hero.tsx`,
-`components/landing/landing-closing-cta.tsx`,
-`components/layout/site-footer.tsx`,
-`app/sign-up/[[...sign-up]]/page.tsx`
+Reuse this component set in every authenticated read surface.
 
-Last updated: 2026-07-20
+## Explore
 
-- Public calls to action name invited sign-up instead of implying open account
-  creation.
-- The landing hero states that the beta is invitation-only near its primary
-  action.
-- `/sign-up` remains available for Clerk invitation links and introduces the
-  provider flow with the same invitation-only language.
-- Existing-user sign-in stays visually secondary but always available.
+Files: `components/explore/explore-evidence-page.tsx`,
+`components/explore/explore-multi-select.tsx`
 
-## Beta acknowledgement flow
+- `1100px` page with a compact Explore context and a prominent sentence:
+  “Show me evidence for … tagged … from …”.
+- Every phrase is a `.slot` button. Unset slots use a dashed underline; set
+  slots use a solid amber underline plus Live Soft fill. Activating a slot opens
+  the filter editor and focuses its field.
+- Filters is an outline/Well disclosure. Evidence / Group by student use a
+  full-rounded Well toggle with the selected view in Ink.
+- The optional filter editor is one Plate split into Who / What / When columns
+  at `md`, stacked with rules below that breakpoint.
+- Student, class-at-capture, and tag selectors are searchable multi-selects.
+  Date and photo use `.field`. Secondary tag groups and exclusion appear only
+  when requested.
+- The Plate footer uses a light Well, Clear filters, Close, and explicit Show
+  results / Update results. Draft edits never query implicitly.
+- Unapplied changes use an amber-bordered Live Soft status. Query failures use
+  Danger Soft and retain the last successful results.
+- Result counts, ordering, and applied-filter pills stay at the result heading.
+  Evidence results use the open trace. Grouped students use divided rows and
+  reveal supporting evidence inside a rounded Well.
+- Explore state is transient. View changes and pagination use the applied query,
+  and applying filters collapses the editor and focuses results.
 
-File: `components/beta-agreement/beta-acknowledgement-flow.tsx`
+Do not replace the sentence with standing dashboard controls, metric cards,
+charts, summaries, or database-filter jargon.
 
-Last updated: 2026-07-27
-
-| Property | Pattern |
-|---|---|
-| Background | Page `bg-background`; active surface `bg-card`; checkbox row `bg-muted/25` |
-| Border | Surface and dividers use `border-border`; errors use semantic destructive borders |
-| Border radius | One outer `rounded-card`; internal ledger rows remain square |
-| Primary text | Headings `font-display text-foreground`; acknowledgement label `text-sm font-medium text-foreground` |
-| Secondary text | Body `text-[15px] leading-7 text-muted-foreground` |
-| Spacing | Surface sections `px-5 py-6`, widening to `px-7 py-7`; content uses `space-y-3` |
-| Interaction | Native checkbox with visible semantic focus ring; shared primary Button at `min-h-11` |
-| Shadow | `shadow-paper` on the single active acknowledgement surface |
-| Accent | `text-link` for terms/privacy links; destructive tokens only for submission errors |
-
-The authenticated flow has no app navigation because acceptance precedes
-teacher-product access. Show exactly one numbered acknowledgement at a time,
-keep its checkbox and action in the same reading surface, and move focus to the
-next heading after progression. Do not persist partial progress, add a card per
-step, or introduce decorative beta imagery.
-
-## Evidence record content
-
-File: `components/evidence/evidence-record-content.tsx`
-
-Last imprinted: 2026-07-12
-
-| Property | Pattern |
-|---|---|
-| Primary text | `text-[15px] leading-relaxed text-foreground` |
-| Secondary structure | `text-xs leading-relaxed text-muted-foreground` |
-| Chips | `rounded-full border px-2.5 py-0.5 text-xs font-medium` |
-| Tag | `bg-muted/60 text-link` |
-| Evidence type | `border-primary/25 bg-primary/10 text-primary` |
-| Follow-up | top divider, muted body, foreground label |
-| Overflow | `break-words [overflow-wrap:anywhere]` |
-
-This component owns Evidence note versus legacy structured-entry copy, reviewed summary, structured chips, tags, follow-up, and authenticated photo display across feed, timeline, and report. Do not copy that markup into a new read surface.
-Authenticated photos use the shared Photo thumbnails pattern. Printed reports render the full image without the interactive affordance.
-Feed, timeline, and report rows may suppress the prose structured summary when
-the same reviewed fields are already visible as chips.
-
-## Photo thumbnails
-
-File: `components/evidence/photo-thumbnail.tsx`
-
-Last updated: 2026-08-22
-
-| Property | Pattern |
-|---|---|
-| Thumbnail background | `bg-muted/20` |
-| Border | `border border-border` |
-| Border radius | `rounded-md` |
-| Expand affordance | `bg-foreground/85 text-background`; `shadow-sm` |
-| Hover state | `group-hover:bg-foreground` |
-| Focus state | `focus-visible:ring-3 focus-visible:ring-ring/30` |
-| Expanded backdrop | `bg-foreground/85`; responsive page-edge padding |
-| Close control | 44px target, `bg-card text-foreground`, visible focus ring |
-
-Draft and authenticated evidence photos use one compact square thumbnail on screen. The image uses `object-cover` for scanning; a visible icon and accessible button name disclose expansion. The focused overlay uses `object-contain`, closes from its named control, backdrop, or Escape key, and returns focus to the thumbnail. Printed reports hide the affordance and render the complete image.
-
-## Evidence rows and timeline/report entries
-
-Files: `components/dashboard/saved-evidence-row.tsx`, `components/students/student-timeline-page.tsx`, `components/students/student-report-page.tsx`
-
-- Evidence content is primary; student, class, and date are compact supporting
-  metadata.
-- Feed rows use a fixed desktop date column as the ledger anchor; on mobile the
-  same date collapses above the content.
-- Saved feed rows do not repeat a “Validated” badge. Their placement, evidence
-  content, and Archive/Delete controls already establish that they are saved
-  records; an accessible article label preserves that distinction for screen
-  readers.
-- Feed rows are divided inside one ledger container.
-- Feed rows expose **Archive** and **Delete** as explicit footer actions with
-  inline confirmations; archive precedes permanent delete.
-- Timeline and report headers label class context explicitly (`Class …`) rather
-  than relying on slash-separated metadata.
-- Timeline/report entries use a restrained bordered surface at the full reading
-  width; they do not sit beside a duplicate explanatory card. Report entries
-  avoid print splitting.
-
-## Feed controls and paging
-
-File: `components/dashboard/evidence-feed-controls.tsx`
-
-- Search is a labeled native search field with a named clear control.
-- Filters are a named button group using `aria-pressed`.
-- Empty states include one quiet icon, heading, explanation, and optional next action.
-- Evidence paging uses a named nav with explicit Newer/Older links and current page text.
-- The feed remains one evidence ledger. Do not add pattern summaries,
-  pseudo-analytics, evidence cues, or review-prompt side panels.
-
-## Roster ledgers
+## Students and roster
 
 Files: `app/app/roster/page.tsx`,
 `components/roster/class-roster-manager.tsx`,
-`components/roster/manual-student-entry-form.tsx`,
-`components/roster/roster-student-row.tsx`
+`components/roster/roster-student-row.tsx`,
+`components/roster/manual-student-entry-form.tsx`
 
-Last updated: 2026-07-20
+- `1100px` page with a large Students or class name and direct supporting copy.
+- The overview groups students beneath class headings. Student entry points are
+  small linked Plates in a responsive `sm:grid-cols-2 lg:grid-cols-3` grid, with
+  name, handle, and arrow. This grid is an intentional identity pattern.
+- Each class heading carries its student count and Manage class link. New class
+  and archived classes remain quiet inline actions after the sections.
+- Empty first-class setup uses one Plate. Capture readiness uses an amber action
+  or a Live Soft explanatory panel.
+- Inside a class, students live in one Plate with divided rows. Each row has an
+  Ink initials circle, name, compact handle metadata, and Manage.
+- Manage expands a dashed-top Well with edit/archive/delete controls. Add student
+  is the final row and expands an inline Well.
+- Bulk paste and Class settings are separate ruled disclosure rows beneath the
+  roster Plate.
+- Manual entry leads with Student name; derived handle and local ID are under
+  Optional details. Shared `.field` and Button patterns apply.
+- Needs-class and destructive states may use semantic amber or Danger left
+  rules. Actions and long content remain reachable without hover.
 
-- Roster is a single ~880px column. Classes and students render as
-  `rounded-card` ledgers with row dividers; section labels are small caps with
-  a count on the trailing edge.
-- On the overview each class row is one whole-row link (name, student count,
-  Open + chevron). A quiet **+ New class** `<details>` row ends the ledger;
-  the create form is inline only when no classes exist.
-- Inside a class, student rows are one line (initials, name, meta joined with
-  `·`) plus one collapsed **Manage** toggle that reveals the edit form and
-  archive/delete actions in a tonal `bg-muted/20` panel. Do not render
-  always-open per-row actions.
-- **Add student** is a quiet `<details>` row at the end of the student ledger
-  (expanded inline only for an empty class). Import and class rename/archive
-  live under collapsed **Paste several students** / **Class settings**
-  `border-y` utility rows below the ledger.
-- A successful manual create inserts the returned student into the selected
-  class ledger immediately, then refreshes to reconcile server-owned counts and
-  roster state.
-- Student name is the primary manual-entry field. The derived mention handle and
-  school/local ID live under **Optional details**.
-- Use full borders/tonal surfaces for guidance; do not use colored side stripes.
-- Long names and handles must wrap or truncate intentionally without hiding the action.
+Do not convert the student grid into metrics, add class-scoped capture, or make
+each dense management row an independently floating card.
 
-## Route states
+## Student timeline and report
 
-Files: `app/app/loading.tsx`, `app/app/error.tsx`, `app/global-error.tsx`,
-`app/not-found.tsx`, `app/app/not-found.tsx`,
-`components/errors/unexpected-error-fallback.tsx`
+Files: `components/students/student-timeline-page.tsx`,
+`components/students/student-report-page.tsx`
 
-Last updated: 2026-07-14
+- Both use an `880px` work area.
+- The timeline opens with Students/class breadcrumb context, a large student
+  name, record count and date span, then report/export/capture actions.
+- Evidence is grouped by sticky month labels and uses the open trace with Ink
+  nodes. Each entry shows date, the explicit Validated stamp, approved content,
+  compact details, optional photo, and follow-up.
+- The report uses a strong ruled header, date-filter controls, oldest-to-newest
+  divided evidence rows, and an explicit Validated stamp.
+- Print removes shell/footer controls, flattens colors, hides trace decoration,
+  expands images appropriately, and prevents entry splitting.
 
-- Loading uses simple token-colored skeleton blocks and screen-reader text.
-- Unexpected errors use one `rounded-card border border-border bg-card shadow-paper` recovery surface with restrained destructive icon tint, direct copy, and no technical details.
-- Reference IDs sit in a `border-y border-border/70` ledger row with selectable monospace text and safe wrapping.
-- Retry is the primary action; **Report this problem** is an outline action into the existing Settings feedback flow. Actions stack on mobile and align horizontally from `sm`.
-- The authenticated boundary remains inside the app shell. The global boundary owns its document wrapper and does not depend on Clerk or app navigation.
-- Authenticated not-found copy offers feed and roster recovery paths. The public
-  not-found page offers home and support paths inside the public header/footer
-  shell.
-- Reduced-motion CSS makes loading animation effectively instant when requested.
+## Landing page
 
-## Operator console
+Files: `app/page.tsx`, `components/landing/*`,
+`components/layout/site-footer.tsx`
 
-Files: `app/operator/page.tsx`, `components/operator/operator-console.tsx`
+- Warm Base page with sticky translucent Base header and the default brand
+  lockup. Sign in is quiet; invited sign-up is a full-rounded Ink action.
+- `1240px` composition with 80px section rhythm, increasing to 112px at `lg`.
+- Opening uses the established pale radial `.grain`, an amber Now label, a very
+  large Wide Display statement, a live composer Plate, and direct beta copy.
+- The next section renders Explore as a large sentence with set slots and a
+  small open saved-evidence trace.
+- Capture / Review / Trace appears as a three-step line: amber for the first two
+  provisional moments, Ink for the saved trace.
+- Product boundaries use a two-column section with a divided definition list on
+  Plate; the closing invitation returns to open Base.
+- Footer is a quiet Line rule with beta identity and trust/access links; it does
+  not repeat the brand mark.
 
-Last imprinted: 2026-07-14
+The landing page may be more expressive in scale, whitespace, and the existing
+radial field. Do not reintroduce dark indigo bands, mint accents, the retired CT
+tile, classroom decoration, fake product claims, or orchestrated motion.
 
-| Property | Pattern |
-|---|---|
-| Page/work surface | `bg-background`; one `border border-border bg-card/60` work surface |
-| Account metadata | Definition-list rows divided with `border-t border-border/70` |
-| Aggregate counts | One border-y ledger with tabular numbers; columns divide at `sm` |
-| Primary/secondary text | `text-foreground`; `text-muted-foreground` |
-| Controls | Shared input focus treatment and `Button` variants |
-| Destructive actions | One divided section, explicit consequence copy, exact-email field, `destructive` button |
-| Status | Full border plus semantic token tint; accessible `status` or `alert` role |
-| Radius/shadow | Controls follow shared radius; work sections add no decorative radius or shadow |
+## Settings and feedback
 
-The operator surface is intentionally utilitarian and direct-URL-only. Safe
-metadata and counts use ledger rows rather than a dashboard card grid. Database
-and identity-provider deletion remain visually and behaviorally separate, and
-the second action is unavailable until app-owned data is absent.
+Files: `app/app/settings/page.tsx`,
+`components/settings/help-feedback-form.tsx`
+
+- `1100px` page with an Ink-ruled heading. At `xl`, the Help and feedback Plate
+  sits beside a 20rem account/resources column; the sections stack below that
+  breakpoint.
+- The feedback form uses shared Fields, a Plate-backed description textarea,
+  adjacent field errors, a focused full-form alert after failure, and a live
+  status after success. Validation and delivery failure preserve teacher-entered
+  values; success clears the category, description, and any attached error
+  reference while preserving the reply email.
+- An attached error reference is read-only compact technical text in a ruled
+  row. It never becomes an editable diagnostic field.
+- Account/workspace context uses a Well, trust links use a divided Plate, and
+  Sign out remains a quiet ruled section. Do not turn these facts into metrics,
+  tabs, or a settings card grid.
+
+## Acknowledgement, recovery, and operator surfaces
+
+Files: `components/beta-agreement/beta-acknowledgement-flow.tsx`,
+`components/errors/unexpected-error-fallback.tsx`,
+`components/operator/operator-console.tsx`
+
+- The beta acknowledgement shows exactly one numbered step in one bordered
+  Plate-like surface. Its Well checkbox row, explicit error, next-step heading
+  focus, and no-partial-persistence behavior remain part of the contract.
+- Unexpected-error recovery uses one `760px` Plate with direct copy, a safe
+  selectable reference, Retry, and Report this problem. It does not expose
+  technical details.
+- The operator console stays utilitarian: ruled metadata, counts, shared Fields,
+  and visibly separate destructive operations. It is direct-URL-only and must
+  not adopt dashboard ornament or merge database and identity deletion.
+
+## Public information pages
+
+File: `components/public/public-info-page.tsx`
+
+Public trust/support pages use Well as the page ground, a `max-w-6xl` frame, a
+numbered left in-page index at `lg`, and a narrow article with Ink rules. Page
+and section headings use Bricolage Display. Important notes use a Live Bright
+semantic left rule on Live Soft; action links are small Plates. The layout
+stacks naturally on mobile and shares the footer.
+
+## Accessibility and motion contract
+
+- Every route has one semantic `main`. Where a layout provides a skip link, it
+  targets `main#main-content`. Navigation is named, active destinations use
+  `aria-current`, icon controls have accessible names, focus remains visible,
+  and errors are explicit.
+- Color never acts alone. Live/saved state has text and node position; validation
+  has a check and label; selection has pressed state and shape.
+- Targets approach 44px on mobile. Long teacher text and identifiers wrap.
+- Mobile sheet and image dialog manage focus, Escape, backdrop close, and body
+  scroll intentionally.
+- Only the sheet entrance and capture caret have custom keyframes. The global
+  reduced-motion rule shortens all animation and transition duration.
+- Printable reports remove app chrome and preserve complete evidence entries.
 
 ## Update rule
 
-Update an existing entry when a reusable contract changes. Add an entry only for a genuinely new shared component type. Do not append per-feature implementation history, retired navigation, screenshots, speculative variants, or duplicate entries.
+Implementation is authoritative. Update an existing entry when a reusable
+contract changes. Add an entry only for a genuinely new shared component type.
+Do not preserve retired palette names, navigation models, brand marks, or
+component rules as compatibility guidance.

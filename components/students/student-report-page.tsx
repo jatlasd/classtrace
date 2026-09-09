@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { ReactElement } from "react";
-import { Circle, FileText } from "lucide-react";
 import { EvidenceRecordContent } from "@/components/evidence/evidence-record-content";
+import { ValidatedStamp } from "@/components/evidence/validated-stamp";
 import { Button } from "@/components/ui/button";
 import { StudentReportDateRangeForm } from "@/components/students/student-report-date-range-form";
 import { StudentReportPrintAction } from "@/components/students/student-report-print-action";
@@ -78,45 +78,41 @@ function ReportHeader({
   ].filter(Boolean);
 
   return (
-    <header className="mb-6 border-b border-border pb-6">
-      <div className="student-report-screen-only mb-4 flex flex-wrap items-center justify-between gap-3">
+    <header className="mb-6 border-b-2 border-fg pb-6">
+      <div className="student-report-screen-only mb-3 flex flex-wrap items-center justify-between gap-3">
         <Button asChild variant="ghost" size="sm" className="-ml-2">
-          <Link href={routes.student(student.id)}>Back to timeline</Link>
+          <Link href={routes.student(student.id)}>Back to {student.displayName}</Link>
         </Button>
         <div className="flex flex-wrap items-center gap-2">
           <StudentReportPrintAction />
-          <Button asChild variant="outline" size="sm">
-            <Link href={routes.feed}>Capture evidence</Link>
+          <Button asChild variant="ghost" size="sm">
+            <Link href={routes.feed}>Capture something</Link>
           </Button>
         </div>
       </div>
 
-      <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div className="min-w-0">
-          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            Student report
-          </p>
-          <h1 className="mt-2 font-display text-2xl font-semibold tracking-tight text-foreground">
-            Evidence report for {student.displayName}
+          <p className="label text-fg-3">Evidence report</p>
+          <h1 className="mt-1 break-words font-display text-4xl font-semibold leading-none text-fg [overflow-wrap:anywhere] sm:text-5xl">
+            {student.displayName}
           </h1>
-          <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground">
+          <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-[13px] text-fg-2">
             <span>@{student.mentionHandle}</span>
             {metadata.map((item) => (
-              <span key={item} className="border-l border-border pl-3">
-                {item}
-              </span>
+              <span key={item}>{item}</span>
             ))}
           </div>
         </div>
 
-        <div className="text-sm sm:text-right">
-          <p className="text-muted-foreground">
-            <span className="font-semibold tabular-nums text-foreground">
+        <div className="sm:text-right">
+          <p className="text-[15px] text-fg-2">
+            <span className="font-display text-3xl font-semibold leading-none text-fg">
               {evidenceCount}
             </span>{" "}
             {evidenceCount === 1 ? "record" : "records"} shown
           </p>
-          <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+          <p className="label mt-1 text-fg-3">
             {getRangeLabel(dateRange)}
           </p>
         </div>
@@ -127,26 +123,24 @@ function ReportHeader({
 
 function ReportEvidenceItem({ record }: ReportEvidenceItemProps) {
   return (
-    <li>
-      <article className="student-report-entry rounded-lg border border-border bg-card p-4">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-          <div className="min-w-0">
-            <p className="text-sm font-medium text-foreground">
-              {formatReportDate(record.evidenceDate)}
-            </p>
+    <li className="border-b border-line last:border-b-0">
+      <article className="student-report-entry grid gap-3 py-5 sm:grid-cols-[10rem_minmax(0,1fr)_auto] sm:gap-6">
+        <div className="flex items-start justify-between gap-3 sm:block">
+          <time dateTime={record.evidenceDate} className="pt-0.5 text-[13px] font-semibold text-fg-2">
+            {formatReportDate(record.evidenceDate)}
+          </time>
+          <ValidatedStamp className="text-fg-3 sm:hidden" />
+        </div>
+        <div className="min-w-0">
             <EvidenceRecordContent
               record={record}
               includeClassGroup
               showStructuredSummary={false}
-              textClassName="mt-2"
               photoLoading="eager"
+              compact
             />
-          </div>
-          <span className="inline-flex w-fit items-center gap-2 rounded-lg border border-validated/60 bg-validated/35 px-2.5 py-1 text-xs font-semibold text-validated-foreground">
-            <Circle className="size-2 fill-current" />
-            Validated
-          </span>
         </div>
+        <ValidatedStamp className="hidden self-start text-fg-3 sm:inline-flex" />
       </article>
     </li>
   );
@@ -161,22 +155,19 @@ function ReportEmptyState({
     dateRange.status === "valid" && Boolean(dateRange.start || dateRange.end);
 
   return (
-    <div className="border border-border bg-card/60 p-5 text-sm leading-relaxed text-muted-foreground">
-      <div className="mb-3 flex size-10 items-center justify-center rounded-md border border-border bg-muted/50 text-primary">
-        <FileText className="size-5" strokeWidth={1.75} />
-      </div>
+    <div className="plate px-6 py-12 text-center text-[15px] leading-relaxed text-fg-2">
       {isFiltered || dateRange.status === "invalid" ? (
         <>
-          <p className="font-medium text-foreground">No evidence in this range.</p>
-          <p className="mt-1">
+          <p className="font-display text-2xl font-semibold text-fg">No evidence in this range.</p>
+          <p className="mx-auto mt-2 max-w-[48ch]">
             Try a wider date range or clear the dates to view all evidence for
             this student.
           </p>
         </>
       ) : (
         <>
-          <p className="font-medium text-foreground">No validated evidence yet.</p>
-          <p className="mt-1">
+          <p className="font-display text-2xl font-semibold text-fg">No validated evidence yet.</p>
+          <p className="mx-auto mt-2 max-w-[48ch]">
             Capture a student-specific note, review it, and this report will
             have evidence to show.
           </p>
@@ -195,15 +186,15 @@ function ReportEvidenceList({
       className="student-report-print-root"
       aria-labelledby="report-evidence-heading"
     >
-      <div className="student-report-print-context mb-4">
+      <div className="student-report-print-context mb-1 flex flex-wrap items-baseline justify-between gap-3 border-b border-line pb-3">
         <h2
           id="report-evidence-heading"
-          className="font-display text-xl font-semibold text-foreground"
+          className="font-display text-2xl font-semibold text-fg"
         >
           Evidence
         </h2>
-        <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-          Ordered from oldest to newest for reporting.
+        <p className="label text-fg-3">
+          Oldest to newest
         </p>
       </div>
       <div className="min-w-0">
@@ -212,7 +203,7 @@ function ReportEvidenceList({
             dateRange={dateRange}
           />
         ) : (
-          <ol className="space-y-4">
+          <ol>
             {records.map((record) => (
               <ReportEvidenceItem key={record.id} record={record} />
             ))}
@@ -229,7 +220,7 @@ export function StudentReportPage({
   dateRange,
 }: StudentReportPageProps): ReactElement {
   return (
-    <div className="student-report-page mx-auto w-full max-w-[980px] px-4 py-7 sm:px-6 lg:px-8">
+    <div className="student-report-page mx-auto w-full max-w-[880px] px-4 py-8 sm:px-6 lg:px-8 lg:py-12">
       <ReportHeader
         student={student}
         evidenceCount={evidenceRecords.length}

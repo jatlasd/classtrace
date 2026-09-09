@@ -1,8 +1,10 @@
 # Product
 
-## Register
+<!-- impeccable:product-schema 1 -->
 
-product
+## Platform
+
+web
 
 ## Users
 
@@ -17,17 +19,88 @@ review what will become permanent, and retrieve trustworthy evidence later.
 ClassTrace turns a quick, messy classroom observation into a deterministic
 structured draft, requires the teacher to review it, and saves the approved
 evidence to exactly one teacher-owned roster student. Success means capture is
-fast, validation is unambiguous, and the resulting feed, timeline, report, or
-export remains easy to trust.
+fast, validation is unambiguous, and the resulting feed, Explore results,
+timeline, report, or export remains easy to trust.
 
-## Brand Personality
+## Positioning
 
-Calm, trustworthy, and direct. The product should feel like a focused evidence
-inbox made for a working teacher: warm enough to feel humane, restrained enough
-to keep the observation and the teacher's judgment at the center, and honest
-about the limits of an invitation-only beta.
+ClassTrace is a teacher-owned evidence inbox, not a notebook, gradebook, SIS,
+or generative-AI documentation product. Its mechanism is deterministic parsing
+plus required teacher validation before anything becomes permanent, and every
+saved record belongs to exactly one resolved roster student. Neighboring tools
+can store notes or generate language; they cannot honestly claim this
+one-student, teacher-reviewed, non-generative path.
 
-## Anti-references
+## Operating Context
+
+A signed-in teacher works in one personal workspace. Classes exist to organize
+roster setup; every active student belongs to one active class. Capture stays
+global and student-specific rather than class-scoped. Teachers capture from a
+phone or desktop during or right after instruction, then retrieve records later
+for conversations, documentation, or print.
+
+The product is an invitation-only limited beta. Existing users sign in; a new
+teacher must be approved or invited before creating an account. Before teacher
+product access, every teacher completes a versioned six-step beta
+acknowledgement. That posture does not represent ClassTrace as production-ready,
+compliant, district-approved, or a system of record.
+
+## Capabilities and Constraints
+
+Confirmed capability:
+
+- Class-first roster management and one-student capture from a global feed.
+- A capture may name one active roster student or one unmatched mention; review
+  must resolve it to exactly one active roster student before save.
+- Deterministic rules suggest evidence type, topic, performance, behavior, tags,
+  follow-up, and summary. Parser output is never final by itself.
+- Teacher review covers student, date, optional Evidence note, optional photo,
+  and structured fields. Evidence dates are limited to the teacher-local window
+  from workspace creation through today.
+- Saved evidence contains a reviewed note, one validated photo, or both. Raw
+  capture text and original photo bytes are not part of the durable record.
+- Unvalidated drafts may use a workspace-scoped, versioned `sessionStorage`
+  manifest plus encrypted local photo bytes in IndexedDB until validation,
+  deletion, or the next device-local midnight.
+- Paged global feed, student timeline, date-filtered printable report, and
+  one-student CSV export.
+- Explore Evidence runs an explicit transient question across active saved
+  evidence using student, exact normalized tag, local-calendar date,
+  class-at-validation, and photo-presence conditions. It returns either paged
+  evidence or alphabetical student groups with inspectable supporting records.
+- Intentional archive and permanent-delete paths for evidence, students, and
+  classes.
+- Settings Help and Feedback sends a bounded support report through Resend
+  without storing it in the ClassTrace database.
+- Public privacy, terms, support, and account-deletion pages describe current
+  beta boundaries.
+
+Confirmed constraints:
+
+- No generative AI, classwide or multi-student capture, multiple photos, audio,
+  video, PDFs, arbitrary files, or a general attachment repository.
+- No gradebook, SIS, LMS, IEP writer, parent communication, district/admin
+  organization model, analytics, billing, or surveillance.
+- Never log raw notes or photo bytes. Never store raw notes in the database,
+  exports, timelines, reports, `localStorage`, analytics, or server-side draft
+  storage.
+- Do not send student notes or photos to external AI or telemetry services.
+- Do not claim compliance, legal de-identification, district approval, or
+  production safety.
+- Fictional examples use only Jeremy, Stacy, Jeff, and Mary. Do not use real
+  student names or `Jayden`.
+
+Preferred vocabulary: Capture, Evidence feed, What happened?, Review before
+saving, Evidence note, Student, Class, Tags, Follow-up, Timeline, Report,
+Validate. Avoid intelligence, insights, automation, compliance,
+case-management platform, data lake, and AI-powered documentation.
+
+## Brand Commitments
+
+The product name is ClassTrace. Voice is calm, trustworthy, and direct: a
+focused evidence inbox for a working teacher, warm enough to feel humane,
+restrained enough to keep the observation and the teacher's judgment at the
+center, and honest about invitation-only beta limits.
 
 ClassTrace must not look or behave like an enterprise dashboard, a decorative
 classroom theme, a generic teacher notebook, or a card-grid analytics product.
@@ -36,22 +109,39 @@ language. Avoid ornamental school imagery, fake controls, dashboard metrics,
 glass effects, gradient text, noisy textures, excessive cards, and invented
 affordances that compete with capture and review.
 
-## Design Principles
+There is no separate image asset library. The shared brand lockup pairs the
+Bricolage Grotesque wordmark with the implemented abstract trace mark: a large
+ink circle and a smaller amber node. Product type and this compact mark carry
+the name; do not substitute the retired lettered `CT` tile.
 
-1. **Capture leads.** The shortest path through the product begins with one
+## Evidence on Hand
+
+Real product surfaces, copy, and in-app demonstrations exist: the public
+landing page, privacy/terms/support/data-deletion pages, and the teacher
+product (capture, review, feed, roster, timeline, report, settings). The
+landing product preview is a UI demonstration of those flows, not a customer
+case study.
+
+There are no real testimonials, named customer schools, press clips, usage
+metrics, or photographic brand assets. Future work must not invent them, must
+not present fictional students as real people, and must not imply production
+readiness, FERPA compliance, or district approval.
+
+## Product Principles
+
+1. **Capture is the primary action.** The shortest path begins with one
    student-specific observation, not navigation, setup, or reporting.
-2. **Teacher judgment stays visible.** Draft state, review state, and permanent
-   evidence must remain distinct so the interface never implies that an
-   interpretation saved itself.
-3. **Evidence earns the visual hierarchy.** Student observations are primary;
-   dates, structure, status, tags, and actions support scanning without
-   overtaking the record.
-4. **Familiarity builds trust.** Use standard form, list, navigation, and
+2. **Teacher judgment is the authority.** Draft, review, and permanent evidence
+   stay distinct so the product never implies that an interpretation saved
+   itself.
+3. **One student, one record.** Saved evidence belongs to exactly one resolved
+   roster student in one teacher workspace.
+4. **Describe data honestly.** Stored and inferred fields must match what the
+   product actually does; privacy shows up in behavior, not in unsupported
+   claims.
+5. **Familiarity builds trust.** Use standard capture, list, review, and
    confirmation behavior so teachers can work without learning ornamental
    interaction patterns.
-5. **Privacy appears in the behavior.** The interface uses bounded, truthful
-   language and never suggests unsupported storage, intelligence, compliance,
-   or readiness.
 
 ## Accessibility & Inclusion
 

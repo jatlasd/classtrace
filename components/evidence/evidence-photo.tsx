@@ -10,6 +10,7 @@ type EvidencePhotoProps = {
   width?: number;
   height?: number;
   className?: string;
+  presentation?: "thumbnail" | "work-sample";
   loading?: "eager" | "lazy";
 };
 
@@ -30,6 +31,7 @@ export function EvidencePhoto({
   width,
   height,
   className = "",
+  presentation = "thumbnail",
   loading = "lazy",
 }: EvidencePhotoProps) {
   const [unavailable, setUnavailable] = useState(false);
@@ -39,12 +41,12 @@ export function EvidencePhoto({
   if (unavailable) {
     return (
       <div className={`flex flex-wrap items-center gap-2 ${className}`}>
-        <p className="text-xs text-muted-foreground">
+        <p className="text-xs text-fg-2">
           Photo evidence is unavailable.
         </p>
         <button
           type="button"
-          className="rounded-md text-xs font-medium text-link underline-offset-4 outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/30"
+          className="rounded-sm text-xs font-medium text-fg underline underline-offset-4 outline-none hover:decoration-2 focus-visible:ring-2 focus-visible:ring-live-bright focus-visible:ring-offset-2 focus-visible:ring-offset-base"
           onClick={() => {
             setRetryKey((current) => current + 1);
             setUnavailable(false);
@@ -65,6 +67,7 @@ export function EvidencePhoto({
       width={width}
       height={height}
       className={className}
+      presentation={presentation}
     />
   );
 }

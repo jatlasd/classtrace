@@ -83,7 +83,7 @@ export function RosterStudentEditForm({
     >
       <div className="grid gap-3 sm:grid-cols-2">
         <div className="space-y-1.5">
-          <label htmlFor={`student-name-${student.id}`} className="text-sm font-medium text-foreground">
+          <label htmlFor={`student-name-${student.id}`} className="label block text-fg-2">
             Student name
           </label>
           <input
@@ -97,11 +97,11 @@ export function RosterStudentEditForm({
           />
         </div>
         <div className="space-y-1.5">
-          <label htmlFor={`student-handle-${student.id}`} className="text-sm font-medium text-foreground">
+          <label htmlFor={`student-handle-${student.id}`} className="label block text-fg-2">
             Mention handle
           </label>
-          <div className="flex h-10 rounded-md border border-border bg-background/50 focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/20">
-            <span className="flex items-center border-r border-border px-3 text-sm text-muted-foreground">
+          <div className="flex h-10 rounded-md border border-line-2 bg-well focus-within:border-fg focus-within:ring-3 focus-within:ring-live-bright/20">
+            <span className="flex items-center border-r border-line px-3 text-sm text-fg-2">
               @
             </span>
             <input
@@ -112,7 +112,7 @@ export function RosterStudentEditForm({
                 setHandleWasEdited(true);
                 setError("");
               }}
-              className="min-w-0 flex-1 bg-transparent px-3 text-sm text-foreground outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
+              className="min-w-0 flex-1 bg-transparent px-3 text-sm text-fg outline-none placeholder:text-fg-2 disabled:cursor-not-allowed disabled:opacity-50"
               aria-invalid={Boolean(error)}
               aria-describedby={error ? `student-edit-error-${student.id}` : undefined}
               disabled={isPending}
@@ -120,7 +120,7 @@ export function RosterStudentEditForm({
           </div>
         </div>
         <div className="space-y-1.5">
-          <label htmlFor={`student-class-${student.id}`} className="text-sm font-medium text-foreground">
+          <label htmlFor={`student-class-${student.id}`} className="label block text-fg-2">
             Class
           </label>
           <select
@@ -144,7 +144,7 @@ export function RosterStudentEditForm({
           </select>
         </div>
         <div className="space-y-1.5">
-          <label htmlFor={`student-local-id-${student.id}`} className="text-sm font-medium text-foreground">
+          <label htmlFor={`student-local-id-${student.id}`} className="label block text-fg-2">
             School/local ID
           </label>
           <input

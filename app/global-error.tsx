@@ -13,7 +13,7 @@ export default function GlobalError({
 }) {
   return (
     <html lang="en" className="h-full antialiased">
-      <body className="paper-grain flex min-h-dvh flex-col font-sans">
+      <body className="flex min-h-dvh flex-col bg-well font-sans text-fg">
         <title>Something went wrong | ClassTrace</title>
         <main
           id="main-content"

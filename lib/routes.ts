@@ -7,6 +7,7 @@ export const routes = {
   betaAcknowledgements: "/beta-acknowledgements",
   app: "/app",
   feed: "/app/feed",
+  explore: "/app/explore",
   roster: "/app/roster",
   studentsPrefix: "/app/students",
   student: (studentId: string): string => `/app/students/${studentId}`,

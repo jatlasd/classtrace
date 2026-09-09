@@ -5,11 +5,11 @@ export default function AppLoading() {
       role="status"
       aria-live="polite"
     >
-      <div className="h-5 w-28 animate-pulse rounded bg-muted" />
-      <div className="mt-3 h-8 w-full max-w-md animate-pulse rounded bg-muted" />
+      <div className="h-5 w-28 animate-pulse rounded-sm bg-well" />
+      <div className="mt-3 h-8 w-full max-w-md animate-pulse rounded-sm bg-well" />
       <div className="mt-8 space-y-3" aria-hidden="true">
-        <div className="h-24 animate-pulse rounded-card bg-card" />
-        <div className="h-40 animate-pulse rounded-card bg-card" />
+        <div className="h-24 animate-pulse rounded-sm border border-dashed border-line bg-well" />
+        <div className="h-40 animate-pulse rounded-sm border border-line bg-well" />
       </div>
       <span className="sr-only">Loading ClassTrace…</span>
     </div>

@@ -1,51 +1,34 @@
 import Link from "next/link";
-import { NotebookPen } from "lucide-react";
 import { routes } from "@/lib/routes";
 
 type SiteFooterProps = {
   showAccessLinks?: boolean;
 };
 
+const linkClassName =
+  "inline-flex min-h-11 items-center rounded-sm text-[13px] font-medium text-fg-3 transition-colors hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-live-bright focus-visible:ring-offset-2 focus-visible:ring-offset-base sm:min-h-9";
+
 export function SiteFooter({ showAccessLinks = false }: SiteFooterProps) {
   return (
-    <footer className="site-footer mt-auto border-t border-border/70">
-      <div className="mx-auto flex max-w-[1360px] flex-col gap-4 px-4 py-5 md:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8">
-        <div className="flex items-center gap-2.5">
-          <NotebookPen
-            className="size-6 text-navy"
-            strokeWidth={2}
-            aria-hidden="true"
-          />
-          <span className="font-display text-lg font-semibold tracking-tight text-foreground">
-            ClassTrace
-          </span>
-        </div>
+    <footer className="site-footer mt-auto border-t border-line">
+      <div className="mx-auto flex max-w-[1240px] flex-col gap-3 px-4 py-5 md:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8">
+        <p className="text-[13px] font-medium text-fg-3">
+          ClassTrace · invitation-only beta
+        </p>
         <nav
           aria-label="Footer"
-          className="grid w-full max-w-2xl grid-cols-2 gap-x-6 gap-y-3 sm:flex sm:w-auto sm:flex-wrap sm:items-center sm:gap-y-2"
+          className="grid w-full max-w-2xl grid-cols-2 gap-x-6 gap-y-1 sm:flex sm:w-auto sm:flex-wrap sm:items-center sm:gap-x-6"
         >
-          <Link
-            href={routes.privacy}
-            className="inline-flex min-h-11 items-center text-sm text-muted-foreground transition-colors hover:text-foreground sm:min-h-9"
-          >
+          <Link href={routes.privacy} className={linkClassName}>
             Privacy
           </Link>
-          <Link
-            href={routes.terms}
-            className="inline-flex min-h-11 items-center text-sm text-muted-foreground transition-colors hover:text-foreground sm:min-h-9"
-          >
+          <Link href={routes.terms} className={linkClassName}>
             Beta terms
           </Link>
-          <Link
-            href={routes.support}
-            className="inline-flex min-h-11 items-center text-sm text-muted-foreground transition-colors hover:text-foreground sm:min-h-9"
-          >
+          <Link href={routes.support} className={linkClassName}>
             Support
           </Link>
-          <Link
-            href={routes.dataDeletion}
-            className="inline-flex min-h-11 items-center text-sm text-muted-foreground transition-colors hover:text-foreground sm:min-h-9"
-          >
+          <Link href={routes.dataDeletion} className={linkClassName}>
             Account deletion
           </Link>
           {showAccessLinks ? (
@@ -53,15 +36,11 @@ export function SiteFooter({ showAccessLinks = false }: SiteFooterProps) {
               <Link
                 href={routes.signIn}
                 prefetch={false}
-                className="text-sm font-medium text-foreground/80 transition-colors hover:text-foreground"
+                className={`${linkClassName} text-fg`}
               >
                 Sign in
               </Link>
-              <Link
-                href={routes.signUp}
-                prefetch={false}
-                className="text-sm text-muted-foreground transition-colors hover:text-foreground"
-              >
+              <Link href={routes.signUp} prefetch={false} className={`${linkClassName} text-live`}>
                 Invited sign-up →
               </Link>
             </>

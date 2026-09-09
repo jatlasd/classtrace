@@ -22,7 +22,7 @@ type ClassRosterManagerProps = {
 };
 
 const UTILITY_SUMMARY_CLASS_NAME =
-  "flex min-h-12 cursor-pointer list-none items-center gap-2 py-2 text-sm font-medium text-foreground outline-none transition-colors hover:text-primary focus-visible:ring-3 focus-visible:ring-ring/20 [&::-webkit-details-marker]:hidden";
+  "flex min-h-11 cursor-pointer list-none items-center gap-2 py-2 font-display text-lg font-semibold text-fg outline-none transition-colors hover:text-fg-2 focus-visible:ring-2 focus-visible:ring-live-bright focus-visible:ring-offset-2 focus-visible:ring-offset-base [&::-webkit-details-marker]:hidden";
 
 export function ClassRosterManager({
   classGroupId,
@@ -51,23 +51,23 @@ export function ClassRosterManager({
   }
 
   return (
-    <div className="space-y-7">
+    <div className="space-y-5">
       <section className="space-y-2.5">
         <div className="flex items-baseline justify-between gap-3 px-1">
-          <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          <h2 className="font-display text-lg font-semibold text-fg">
             Students
           </h2>
-          <p className="text-xs tabular-nums text-muted-foreground">
+          <p className="text-xs tabular-nums text-fg-2">
             {students.length} {students.length === 1 ? "student" : "students"}
           </p>
         </div>
 
         {students.length === 0 ? (
-          <div className="rounded-card border border-border bg-card p-5 shadow-paper sm:p-6">
-            <p className="font-medium text-foreground">
+          <div className="plate p-4 sm:p-5">
+            <p className="font-medium text-fg">
               No students in this class yet.
             </p>
-            <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+            <p className="mt-1 text-sm leading-relaxed text-fg-2">
               Add one student to make the evidence feed available for capture.
             </p>
             <div className="mt-4 max-w-xl">
@@ -82,7 +82,7 @@ export function ClassRosterManager({
           </div>
         ) : (
           <ul
-            className="overflow-hidden rounded-card border border-border bg-card/60"
+            className="plate overflow-hidden"
             aria-label={`${students.length} ${
               students.length === 1 ? "student" : "students"
             } in ${className}`}
@@ -97,11 +97,11 @@ export function ClassRosterManager({
             ))}
             <li>
               <details className="group/add">
-                <summary className="flex min-h-12 cursor-pointer list-none items-center gap-2 px-4 text-sm font-medium text-primary outline-none transition-colors hover:bg-muted/40 focus-visible:ring-3 focus-visible:ring-ring/20 sm:px-5 [&::-webkit-details-marker]:hidden">
+                <summary className="flex min-h-12 cursor-pointer list-none items-center gap-2 px-4 text-sm font-medium text-fg outline-none transition-colors hover:bg-well focus-visible:ring-2 focus-visible:ring-live-bright focus-visible:ring-offset-2 focus-visible:ring-offset-base sm:px-5 [&::-webkit-details-marker]:hidden">
                   <Plus className="size-4" aria-hidden="true" />
                   Add student
                 </summary>
-                <div className="max-w-xl border-t border-border/60 bg-muted/20 px-4 py-4 sm:px-5">
+                <div className="max-w-xl border-t border-dashed border-line-2 bg-well px-4 py-4 sm:px-5">
                   <ManualStudentEntryForm
                     isFirstStudent={false}
                     classGroupId={classGroupId}
@@ -116,11 +116,11 @@ export function ClassRosterManager({
         )}
       </section>
 
-      <section className="divide-y divide-border/70 border-y border-border/70">
+      <section className="divide-y divide-line border-y border-line">
         <details className="group/import">
           <summary className={UTILITY_SUMMARY_CLASS_NAME}>
             <ChevronRight
-              className="size-4 text-muted-foreground transition-transform group-open/import:rotate-90"
+              className="size-4 text-fg-2 transition-transform group-open/import:rotate-90"
               aria-hidden="true"
             />
             Paste several students
@@ -136,7 +136,7 @@ export function ClassRosterManager({
         <details className="group/settings">
           <summary className={UTILITY_SUMMARY_CLASS_NAME}>
             <ChevronRight
-              className="size-4 text-muted-foreground transition-transform group-open/settings:rotate-90"
+              className="size-4 text-fg-2 transition-transform group-open/settings:rotate-90"
               aria-hidden="true"
             />
             Class settings

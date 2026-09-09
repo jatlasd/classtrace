@@ -51,6 +51,21 @@ afterEach(() => {
 });
 
 describe("QuickCaptureCard mentions editor", () => {
+  it("keeps capture unavailable while session drafts are restoring", () => {
+    render(
+      <QuickCaptureCard disabled rosterStudents={roster} onDraft={vi.fn()} />
+    );
+
+    expect((screen.getByLabelText("What happened?") as HTMLTextAreaElement).disabled).toBe(
+      true
+    );
+    expect(
+      (screen.getByRole("button", { name: "Capture" }) as HTMLButtonElement)
+        .disabled
+    ).toBe(true);
+    expect(screen.getByText("Restoring drafts before capture opens…")).toBeTruthy();
+  });
+
   it("keeps the input and highlight layers on identical text metrics", () => {
     render(<QuickCaptureCard rosterStudents={roster} onDraft={vi.fn()} />);
     const input = screen.getByLabelText("What happened?") as HTMLTextAreaElement;
@@ -76,7 +91,7 @@ describe("QuickCaptureCard mentions editor", () => {
     }
 
     expect(input.style.border).toBe("0px");
-    expect(input.style.lineHeight).toBe("22.5px");
+    expect(input.style.lineHeight).toBe("34px");
   });
 
   it("selects a mention without changing its text width", async () => {
@@ -97,7 +112,7 @@ describe("QuickCaptureCard mentions editor", () => {
     });
     expect(mention).toBeTruthy();
     expect((mention as HTMLElement).style.fontWeight).toBe("inherit");
-    expect((mention as HTMLElement).style.backgroundColor).toContain("var(--link)");
+    expect((mention as HTMLElement).style.backgroundColor).toContain("var(--live-soft)");
   });
 
   it("captures one unresolved handle for later review", async () => {

@@ -10,7 +10,7 @@ This file is the compact operating contract for coding agents. Keep the project 
    - Product/scope: `context/project-overview.md`
    - Auth, database, privacy, data flow: `context/architecture.md`
    - Implementation/testing conventions: `context/code-standards.md`
-   - UI work: `context/ui-context.md` and the relevant entry in `context/ui-registry.md`
+   - UI work: `DESIGN.md`, `context/ui-context.md`, and the relevant entry in `context/ui-registry.md`
    - Future product direction: `context/post-v1-roadmap.md`
 4. Inspect the actual source and tests. Documentation is authoritative intent, not proof that the implementation matches it.
 
@@ -101,3 +101,13 @@ Additional requirements:
 - Do not claim a command passed unless it was actually run.
 
 When reporting work, state files changed, behavior changed, checks run, anything not verified, and remaining risk. Do not claim production or compliance readiness.
+
+<!-- BEGIN:nextjs-agent-rules -->
+
+# This is NOT the Next.js you know
+
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+
+This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+
+<!-- END:nextjs-agent-rules -->

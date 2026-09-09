@@ -3,7 +3,7 @@
 ClassTrace is a teacher-first student evidence capture app. It helps an individual teacher turn a quick classroom observation into a structured draft, review it, and save trustworthy evidence to one roster student.
 
 ```text
-quick capture → deterministic draft → teacher review → saved evidence → timeline/report
+quick capture → deterministic draft → teacher review → saved evidence → Explore/timeline/report
 ```
 
 ClassTrace is currently an invitation-only limited beta. It is not represented as production-ready, compliant, district-approved, or suitable as a system of record.
@@ -15,7 +15,7 @@ ClassTrace is currently an invitation-only limited beta. It is not represented a
 - Resolves exactly one roster student before evidence can be saved.
 - Uses deterministic parsing to suggest structured fields.
 - Requires teacher review before permanent save.
-- Provides a bounded feed, student timeline, printable report, and one-student CSV export.
+- Provides a bounded feed, explicit multi-condition Explore retrieval, student timeline, printable report, and one-student CSV export.
 - Supports intentional archive and permanent-delete flows.
 
 ClassTrace is not a gradebook, SIS, IEP writer, parent communication tool, admin dashboard, analytics product, file repository, or generative-AI system.
@@ -39,7 +39,11 @@ These are engineering boundaries, not claims of FERPA compliance or district app
 - Prisma 7 with PostgreSQL
 - Resend for outbound beta-support email
 - Sentry for privacy-scrubbed error monitoring and sampled tracing
-- Vitest and Testing Library
+- Vitest, Testing Library, and Playwright
+
+The `package.json` overrides for Next.js transitive `postcss` and `sharp`
+dependencies keep those bundled packages on security-patched versions until the
+framework's pinned dependency versions catch up.
 
 ## Local development
 
@@ -77,6 +81,7 @@ The default `onboarding@resend.dev` sender can deliver only to the email associa
 | `npm run lint` | Run ESLint |
 | `npm run test` | Run the normal test suite |
 | `npm run test:coverage` | Run the coverage-enforced test suite |
+| `npm run test:e2e` | Run Clerk-authenticated Playwright visual QA |
 | `npm run test:db` | Reset a disposable database, replay migrations, and run integration tests |
 | `npm run build` | Create a production build |
 | `npm run db:migrate` | Create or apply development migrations |
@@ -84,6 +89,8 @@ The default `onboarding@resend.dev` sender can deliver only to the email associa
 | `npm run db:studio` | Open Prisma Studio |
 
 `npm run test:db` is deliberately opt-in and destructive. It requires a separate `TEST_DATABASE_URL`, refuses the configured `DATABASE_URL`, and requires `TEST_DATABASE_RESET_ALLOWED=1`.
+
+For authenticated visual QA, set `E2E_CLERK_USER_EMAIL` to an existing user in the configured Clerk development instance and install Chromium once with `npx playwright install chromium`. The Playwright setup project signs that user in through Clerk, writes ignored reusable state under `playwright/.auth/`, and then opens the protected Settings page headlessly.
 
 CI runs install, lint, coverage-enforced tests, and a production build. Database integration tests remain a separate gate until a dedicated disposable CI database is configured.
 

@@ -3,11 +3,6 @@
 import { revalidatePath } from "next/cache";
 import { getCurrentWorkspace } from "@/lib/auth/get-current-workspace";
 import {
-  archiveEvidenceForWorkspace,
-  type ArchiveEvidenceInput,
-  type ArchiveEvidenceResult,
-} from "@/lib/evidence/archive-evidence";
-import {
   deleteEvidenceForWorkspace,
   type DeleteEvidenceInput,
   type DeleteEvidenceResult,
@@ -28,8 +23,6 @@ import { INPUT_LIMITS } from "@/lib/validation/input-limits";
 
 export type SaveValidatedEvidenceActionInput = SaveValidatedEvidenceInput;
 export type SaveValidatedEvidenceActionResult = SaveValidatedEvidenceResult;
-export type ArchiveEvidenceActionInput = ArchiveEvidenceInput;
-export type ArchiveEvidenceActionResult = ArchiveEvidenceResult;
 export type DeleteEvidenceActionInput = DeleteEvidenceInput;
 export type DeleteEvidenceActionResult = DeleteEvidenceResult;
 export type ExportStudentEvidenceActionInput = ExportStudentEvidenceInput;
@@ -148,6 +141,7 @@ export async function saveValidatedEvidence(
 
     if (result.success) {
       revalidatePath(routes.feed);
+      revalidatePath(routes.explore);
       revalidatePath(routes.student(input.rosterStudentId));
       revalidatePath(routes.studentReport(input.rosterStudentId));
     }
@@ -156,29 +150,6 @@ export async function saveValidatedEvidence(
   } catch (error) {
     captureOperationalError("evidence.save", error);
     return { success: false, error: "Failed to save evidence." };
-  }
-}
-
-export async function archiveEvidence(
-  input: ArchiveEvidenceActionInput
-): Promise<ArchiveEvidenceActionResult> {
-  try {
-    const workspace = await getCurrentWorkspace();
-    const result = await archiveEvidenceForWorkspace({
-      workspaceId: workspace.workspaceId,
-      input,
-    });
-
-    if (result.success) {
-      revalidatePath(routes.feed);
-      revalidatePath(routes.student(result.rosterStudentId));
-      revalidatePath(routes.studentReport(result.rosterStudentId));
-    }
-
-    return result;
-  } catch (error) {
-    captureOperationalError("evidence.archive", error);
-    return { success: false, error: "Failed to archive evidence." };
   }
 }
 
@@ -194,6 +165,7 @@ export async function deleteEvidence(
 
     if (result.success) {
       revalidatePath(routes.feed);
+      revalidatePath(routes.explore);
       revalidatePath(routes.student(result.rosterStudentId));
       revalidatePath(routes.studentReport(result.rosterStudentId));
     }

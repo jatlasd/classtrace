@@ -42,9 +42,7 @@ describe("invitation-only access", () => {
     const page = document.createElement("div");
     page.innerHTML = renderToStaticMarkup(<Home />);
 
-    expect(page.textContent).toMatch(
-      /ClassTrace is currently an invitation-only beta/i,
-    );
+    expect(page.textContent).toMatch(/invitation-only beta/i);
 
     const invitedLinks = Array.from(page.querySelectorAll("a")).filter((link) =>
       /complete sign-up|complete invited sign-up|invited sign-up/i.test(

@@ -27,9 +27,6 @@ function buildStudent() {
     displayName: "Mary",
     mentionHandle: "mary",
     schoolLocalId: "local-7",
-    classGroup: {
-      name: "Reading group",
-    },
   };
 }
 
@@ -51,6 +48,7 @@ function buildEvidenceRecord() {
     followUpNotes: "Check comprehension,\nthen fade prompt.",
     validatedAt: new Date("2026-06-17T14:05:00.000Z"),
     createdAt: new Date("2026-06-17T14:06:00.000Z"),
+    classGroup: { name: "Reading group" },
     photo: null,
   };
 }
@@ -106,11 +104,6 @@ describe("exportStudentEvidenceForWorkspace", () => {
           displayName: true,
           mentionHandle: true,
           schoolLocalId: true,
-          classGroup: {
-            select: {
-              name: true,
-            },
-          },
         },
       },
     ]);
@@ -139,6 +132,7 @@ describe("exportStudentEvidenceForWorkspace", () => {
           followUpNotes: true,
           validatedAt: true,
           createdAt: true,
+          classGroup: { select: { name: true } },
           photo: { select: { id: true } },
         },
       },
@@ -175,6 +169,35 @@ describe("exportStudentEvidenceForWorkspace", () => {
       'Mary,\'@mary,Reading group,local-7,2026-06-17T14:00:00.000Z,2026-06-17T14:05:00.000Z,Academic check-in,"used a ""chunking"" strategy, then explained her answer.",reading,one prompt,small group,"Mary used a ""chunking"" strategy, then explained her answer.",worked through the passage,explained answer,used a strategy,reading; prompt,Yes,"Check comprehension,'
     );
     expect(result.content).toContain('then fade prompt.",No');
+  });
+
+  it("exports the class recorded on each evidence row after a class move", async () => {
+    const { database } = buildDatabase({
+      evidenceRecords: [
+        buildEvidenceRecord(),
+        {
+          ...buildEvidenceRecord(),
+          id: "evidence_2",
+          evidenceDate: new Date("2026-06-18T14:00:00.000Z"),
+          classGroup: { name: "Math" },
+        },
+      ],
+    });
+
+    const result = await exportStudentEvidenceForWorkspace(
+      {
+        workspaceId: "workspace_1",
+        input: { studentId: "student_mary" },
+      },
+      database
+    );
+
+    expect(result.success).toBe(true);
+    if (!result.success) return;
+
+    const rows = result.content.split("\r\n");
+    expect(rows[1]).toContain("Mary,'@mary,Reading group,");
+    expect(rows[2]).toContain("Mary,'@mary,Math,");
   });
 
   it("returns a header-only export for students without evidence", async () => {

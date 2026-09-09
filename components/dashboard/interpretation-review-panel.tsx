@@ -26,6 +26,7 @@ import type { DraftDisplay } from "@/lib/note-processing/draft-to-display";
 import { routes } from "@/lib/routes";
 import type { CaptureRosterStudent } from "@/lib/students/resolve-capture-students";
 import { CheckCircle2 } from "lucide-react";
+import { ValidatedStamp } from "@/components/evidence/validated-stamp";
 
 type InterpretationReviewPanelProps = {
   display: DraftDisplay;
@@ -44,6 +45,8 @@ type InterpretationReviewPanelProps = {
   onSavePendingChange?: (isPending: boolean) => void;
   onResolvedStudentChange?: (student: CaptureRosterStudent | null) => void;
   hasPhoto?: boolean;
+  photoChangePending?: boolean;
+  photoResolutionRequired?: boolean;
   capturedAt?: number;
   workspaceCreatedAt?: string;
 };
@@ -131,8 +134,7 @@ function formStateToFields(
   };
 }
 
-const fieldInputClass =
-  "h-8 w-full rounded-md border border-border bg-background px-2.5 text-sm text-foreground outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/30";
+const fieldInputClass = "field";
 
 function FieldRow({
   label,
@@ -145,10 +147,7 @@ function FieldRow({
 }) {
   return (
     <div className="space-y-1">
-      <label
-        htmlFor={htmlFor}
-        className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground"
-      >
+      <label htmlFor={htmlFor} className="label text-fg-2">
         {label}
       </label>
       {children}
@@ -183,6 +182,8 @@ function InterpretationReviewPanelContent({
   onSavePendingChange,
   onResolvedStudentChange,
   hasPhoto = false,
+  photoChangePending = false,
+  photoResolutionRequired = false,
   capturedAt,
   workspaceCreatedAt = "1970-01-01T00:00:00.000Z",
 }: InterpretationReviewPanelProps) {
@@ -284,7 +285,7 @@ function InterpretationReviewPanelContent({
   }
 
   async function handleConfirm() {
-    if (isBusy || savedEvidenceId) {
+    if (isBusy || photoChangePending || photoResolutionRequired || savedEvidenceId) {
       return;
     }
 
@@ -374,24 +375,26 @@ function InterpretationReviewPanelContent({
   }
 
   return (
-    <div className="mt-4 border-t border-border pt-4">
-      <div className="mb-4 space-y-1">
-        <p className="text-xs font-semibold text-primary">Teacher review</p>
-        <h3 className="font-display text-xl font-semibold text-foreground">
-          Review before saving
-        </h3>
-        <p className="text-sm leading-relaxed text-muted-foreground">
-          Review the student, date, optional Evidence note, and photo before
-          anything is saved permanently.
+    <div className="mt-2 border-t border-line pt-5">
+      <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <h3 className="font-display text-[1.6rem] font-semibold leading-none text-fg">
+            Review before saving
+          </h3>
+          <p className="mt-2 text-sm leading-relaxed text-fg-2">
+            Check the student, date, optional Evidence note, and photo. Only what you approve here becomes permanent.
+          </p>
+        </div>
+        <p aria-hidden="true" className="label flex items-center gap-2 text-fg-3">
+          <span className="size-2 rounded-full bg-live-bright" /> draft
+          <span className="h-px w-8 bg-line-2" />
+          <span className="size-2 rounded-full bg-fg" /> saved
         </p>
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2">
         <div className="space-y-1 sm:col-span-2">
-          <label
-            htmlFor={evidenceNoteId}
-            className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground"
-          >
+          <label htmlFor={evidenceNoteId} className="label text-fg-2">
             Evidence note
           </label>
           <Textarea
@@ -400,9 +403,9 @@ function InterpretationReviewPanelContent({
             onChange={(e) => updateField("evidenceNote", e.target.value)}
             rows={3}
             disabled={isBusy || Boolean(savedEvidenceId)}
-            className="min-h-[84px] resize-none text-sm"
+            className="min-h-[96px] resize-none text-[17px]"
           />
-          <p className="text-xs leading-relaxed text-muted-foreground">
+          <p className="text-xs leading-relaxed text-fg-3">
             {hasPhoto
               ? "Optional for photo evidence. Any note is saved exactly as shown."
               : "This note will be saved exactly as shown."}
@@ -423,30 +426,25 @@ function InterpretationReviewPanelContent({
           />
         </FieldRow>
 
-        <div className="border-t border-border/50 pt-3 sm:col-span-2">
-          <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-            Structured details
-          </p>
+        <div className="flex items-center gap-3 pt-2 sm:col-span-2">
+          <p className="label shrink-0 text-fg-3">Structured details</p>
+          <span aria-hidden="true" className="h-px flex-1 bg-line" />
         </div>
 
         {needsStudentResolution ? (
           <div
             ref={studentResolutionRef}
             tabIndex={-1}
-            className={`space-y-3 border-y px-3 py-3 outline-none focus-visible:ring-3 focus-visible:ring-ring/30 sm:col-span-2 sm:px-4 ${
-              resolvedStudentOverride
-                ? "border-validated/50 bg-validated/15"
-                : "border-accent/50 bg-accent/15"
-            }`}
+            className="space-y-3 rounded-md border-l-2 border-live-bright bg-live-soft px-3 py-3 outline-none focus-visible:ring-2 focus-visible:ring-live-bright focus-visible:ring-offset-2 focus-visible:ring-offset-plate sm:col-span-2 sm:px-4"
           >
             {resolvedStudentOverride ? (
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div className="flex min-w-0 items-center gap-2.5">
                   <CheckCircle2
                     aria-hidden="true"
-                    className="size-4 shrink-0 text-validated-foreground"
+                    className="size-4 shrink-0 text-fg"
                   />
-                  <p className="min-w-0 text-sm text-foreground">
+                  <p className="min-w-0 text-sm text-fg">
                     <span className="font-medium">Student:</span>{" "}
                     {resolvedStudentOverride.displayName}
                   </p>
@@ -465,7 +463,7 @@ function InterpretationReviewPanelContent({
               </div>
             ) : (
               <>
-                <p className="text-sm font-medium text-foreground">
+                <p className="text-sm font-medium text-fg">
                   {unresolvedMention
                     ? `Resolve @${unresolvedMention}`
                     : "Choose one student"}
@@ -490,7 +488,7 @@ function InterpretationReviewPanelContent({
                   <p
                     id={studentResolutionErrorId}
                     role="alert"
-                    className="text-sm text-destructive"
+                    className="text-sm text-danger"
                   >
                     {studentResolutionError}
                   </p>
@@ -500,10 +498,10 @@ function InterpretationReviewPanelContent({
           </div>
         ) : (
           <div className="space-y-1">
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+            <p className="label text-fg-2">
               Student
             </p>
-            <p className="text-sm leading-snug text-foreground">
+            <p className="font-display text-[1.35rem] font-semibold leading-snug text-fg">
               {studentValidation.status === "valid_one_student"
                 ? studentValidation.studentName
                 : studentValidation.status === "no_student"
@@ -581,10 +579,7 @@ function InterpretationReviewPanelContent({
         </FieldRow>
 
         <div className="space-y-1 sm:col-span-2">
-          <label
-            htmlFor={followUpsId}
-            className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground"
-          >
+          <label htmlFor={followUpsId} className="label text-fg-2">
             Follow-up notes
           </label>
           <Textarea
@@ -593,7 +588,7 @@ function InterpretationReviewPanelContent({
             onChange={(e) => updateField("followUpNotes", e.target.value)}
             rows={2}
             disabled={isBusy || Boolean(savedEvidenceId)}
-            className="min-h-[60px] resize-none text-sm"
+            className="min-h-[64px] resize-none text-[15px]"
           />
         </div>
       </div>
@@ -604,61 +599,73 @@ function InterpretationReviewPanelContent({
             ref={validationErrorRef}
             role="alert"
             tabIndex={-1}
-            className="text-sm text-destructive outline-none focus-visible:ring-3 focus-visible:ring-ring/30"
+            className="text-sm text-danger outline-none focus-visible:ring-2 focus-visible:ring-live-bright focus-visible:ring-offset-2 focus-visible:ring-offset-plate"
           >
             {validationError}
           </p>
         ) : savedEvidenceId &&
           isFirstWorkspaceEvidence &&
           studentValidation.status === "valid_one_student" ? (
-          <section className="rounded-card border border-validated/60 bg-validated/20 p-4 shadow-paper">
-            <p className="text-xs font-semibold uppercase tracking-wider text-validated-foreground">
-              Evidence trail started
-            </p>
-            <h3 className="mt-1 font-display text-lg font-semibold text-foreground">
-              Saved to {studentValidation.studentName}&apos;s timeline.
+          <section className="rounded-lg bg-fg p-4 text-base sm:p-5">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <p className="label text-base/70">Evidence trail started</p>
+              <ValidatedStamp className="text-base [&>span]:bg-base [&>span]:text-fg" />
+            </div>
+            <h3 className="mt-2 font-display text-[1.75rem] font-semibold leading-none text-base">
+              Saved to {studentValidation.studentName}&apos;s folder.
             </h3>
-            <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">
+            <p className="mt-3 max-w-2xl text-sm leading-relaxed text-base/75">
               This observation is now part of the record, ready when you need to
               look back instead of reconstructing the moment from memory.
             </p>
             <div className="mt-4 flex flex-wrap gap-2">
-              <Button asChild size="sm">
+              <Button asChild size="sm" className="bg-base text-fg hover:bg-plate">
                 <Link href={routes.student(studentValidation.studentId)}>
-                  View {studentValidation.studentName}&apos;s timeline
+                  Open {studentValidation.studentName}&apos;s folder
                 </Link>
               </Button>
-              <Button asChild size="sm" variant="outline">
+              <Button asChild size="sm" variant="outline" className="border-base/40 text-base hover:bg-base/10">
                 <Link href={routes.studentReport(studentValidation.studentId)}>
                   Preview report
                 </Link>
               </Button>
-              <Button size="sm" variant="ghost" onClick={onCaptureAnother}>
+              <Button size="sm" variant="ghost" className="text-base/80 hover:bg-base/10 hover:text-base" onClick={onCaptureAnother}>
                 Capture another note
               </Button>
             </div>
           </section>
         ) : savedEvidenceId ? (
-          <p className="text-sm text-validated-foreground">
-            Validated evidence saved.
+          <p className="inline-flex items-center gap-2 text-sm text-fg">
+            <ValidatedStamp /> Validated evidence saved.
           </p>
         ) : isSaving ? (
-          <p className="text-sm text-muted-foreground">Saving evidence…</p>
+          <p className="text-sm text-fg-2">Saving evidence…</p>
+        ) : photoChangePending ? (
+          <p className="text-sm text-fg-2">Finishing photo processing…</p>
+        ) : photoResolutionRequired ? (
+          <p className="text-sm text-danger">
+            Choose the photo again or continue without it before saving.
+          </p>
         ) : (
-          <p className="text-xs leading-relaxed text-muted-foreground">
-            Save validated evidence to your evidence records after review.
+          <p className="text-xs leading-relaxed text-fg-3">
+            Saving makes this draft a permanent record in the student&apos;s trace.
           </p>
         )}
       </div>
 
       <div
-        className={`mt-4 flex flex-wrap items-center gap-2 border-t border-border/50 pt-3 ${
+        className={`mt-4 flex flex-wrap items-center gap-2 border-t border-line pt-4 ${
           savedEvidenceId && isFirstWorkspaceEvidence ? "hidden" : ""
         }`}
       >
         <Button
-          size="sm"
-          disabled={isBusy || Boolean(savedEvidenceId)}
+          variant="solid"
+          disabled={
+            isBusy ||
+            photoChangePending ||
+            photoResolutionRequired ||
+            Boolean(savedEvidenceId)
+          }
           onClick={handleConfirm}
         >
           {savedEvidenceId

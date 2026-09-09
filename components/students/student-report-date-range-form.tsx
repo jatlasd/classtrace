@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { FormEvent, ReactElement } from "react";
+import { FIELD_LABEL_CLASS_NAME, ROSTER_INPUT_CLASS_NAME } from "@/components/roster/form-styles";
 import { Button } from "@/components/ui/button";
 import { routes } from "@/lib/routes";
 
@@ -102,13 +103,13 @@ export function StudentReportDateRangeForm({
   }
 
   return (
-    <section className="student-report-screen-only mb-5 rounded-lg border border-border bg-card/60 p-4 sm:p-5">
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+    <section className="student-report-screen-only mb-8 rounded-xl bg-well px-4 py-4 sm:px-5">
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
         <div className="min-w-0">
-          <h2 className="font-display text-lg font-semibold text-foreground">
+          <h2 className="label text-fg">
             Date range
           </h2>
-          <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+          <p className="mt-1 text-sm leading-relaxed text-fg-2">
             Leave dates blank to include all stored evidence for this student.
           </p>
         </div>
@@ -120,53 +121,46 @@ export function StudentReportDateRangeForm({
           <div className="space-y-1.5">
             <label
               htmlFor="student-report-start"
-              className="text-sm font-medium text-foreground"
+              className={FIELD_LABEL_CLASS_NAME}
             >
               Start date
             </label>
             <input
               id="student-report-start"
+              key={`start-${start ?? ""}`}
               name="start"
               type="date"
               defaultValue={start}
-              className="h-10 w-full rounded-md border border-border bg-background/50 px-3 text-sm text-foreground outline-none transition-colors focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/20"
+              className={ROSTER_INPUT_CLASS_NAME}
             />
           </div>
           <div className="space-y-1.5">
             <label
               htmlFor="student-report-end"
-              className="text-sm font-medium text-foreground"
+              className={FIELD_LABEL_CLASS_NAME}
             >
               End date
             </label>
             <input
               id="student-report-end"
+              key={`end-${end ?? ""}`}
               name="end"
               type="date"
               defaultValue={end}
-              className="h-10 w-full rounded-md border border-border bg-background/50 px-3 text-sm text-foreground outline-none transition-colors focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/20"
+              className={ROSTER_INPUT_CLASS_NAME}
             />
           </div>
-          <Button
-            type="submit"
-            size="sm"
-            className="min-h-11 rounded-lg px-5 sm:min-h-10"
-          >
+          <Button type="submit" size="sm" className="min-h-11 sm:min-h-10">
             Apply range
           </Button>
-          <Button
-            asChild
-            variant="ghost"
-            size="sm"
-            className="min-h-11 rounded-lg px-5 sm:min-h-10"
-          >
+          <Button asChild variant="ghost" size="sm" className="min-h-11 sm:min-h-10">
             <Link href={routes.studentReport(studentId)}>Clear range</Link>
           </Button>
         </form>
       </div>
 
       {error ? (
-        <p className="mt-3 text-sm text-destructive" role="status">
+        <p className="mt-3 text-sm font-medium text-danger" role="status">
           {error}
         </p>
       ) : null}

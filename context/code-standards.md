@@ -144,6 +144,7 @@ Keep one owner for each kind of truth:
 - Product behavior/scope → `project-overview.md`
 - Runtime/data boundaries → `architecture.md`
 - Implementation/testing → this file
+- Visual language, tokens, typography, state, and core compositions → `DESIGN.md`
 - UI principles → `ui-context.md`
 - Exact UI patterns → `ui-registry.md`
 - Possible future direction → `post-v1-roadmap.md`

@@ -50,10 +50,8 @@ export function ConfirmationPanel({
       aria-describedby={descriptionId}
       aria-modal="false"
       className={cn(
-        "space-y-3 border-y px-3 py-3 sm:px-4",
-        isDestructive
-          ? "border-destructive/30 bg-destructive/5"
-          : "border-border bg-muted/20",
+        "space-y-3 rounded-md border-l-2 px-4 py-3",
+        isDestructive ? "border-danger bg-danger-soft" : "border-line-2 bg-well",
         className
       )}
       onKeyDown={handleKeyDown}
@@ -61,8 +59,8 @@ export function ConfirmationPanel({
       <p
         id={descriptionId}
         className={cn(
-          "text-xs font-medium leading-relaxed",
-          isDestructive ? "text-destructive" : "text-muted-foreground"
+          "text-sm font-medium leading-relaxed",
+          isDestructive ? "text-danger" : "text-fg"
         )}
       >
         {description}

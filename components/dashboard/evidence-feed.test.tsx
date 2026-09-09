@@ -19,7 +19,6 @@ vi.mock("next/navigation", () => ({
 }));
 
 vi.mock("@/actions/evidence", () => ({
-  archiveEvidence: vi.fn(),
   deleteEvidence: vi.fn(),
   saveValidatedEvidence: vi.fn(),
 }));
