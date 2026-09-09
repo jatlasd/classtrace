@@ -10,7 +10,7 @@ This file is the compact operating contract for coding agents. Keep the project 
    - Product/scope: `context/project-overview.md`
    - Auth, database, privacy, data flow: `context/architecture.md`
    - Implementation/testing conventions: `context/code-standards.md`
-   - UI work: `context/ui-context.md` and the relevant entry in `context/ui-registry.md`
+   - UI work: `DESIGN.md`, `context/ui-context.md`, and the relevant entry in `context/ui-registry.md`
    - Future product direction: `context/post-v1-roadmap.md`
 4. Inspect the actual source and tests. Documentation is authoritative intent, not proof that the implementation matches it.
 

@@ -9,20 +9,28 @@ describe("public landing page", () => {
   const markup = renderToStaticMarkup(<Home />);
 
   it("presents the supported capture-to-retrieval workflow", () => {
-    expect(markup).toContain("Turn messy capture into teacher-validated evidence.");
-    expect(markup).toContain("Say goodbye to the mental filing cabinet.");
-    expect(markup).toContain("The hard part is not noticing");
-    expect(markup).toContain("A ten-second note keeps the context attached");
-    expect(markup).toContain("You approve the record");
-    expect(markup).toContain("Walk in with a record, not a recollection");
-    expect(markup).toContain("Reports and export");
-    expect(markup).toContain("You review the draft before anything is saved.");
-    expect(markup).toContain('id="how-it-works"');
-    expect(markup).toContain('id="features"');
-    const featuresMarkup = markup.slice(markup.indexOf('id="features"'));
-    expect(featuresMarkup.indexOf("The record stays useful after the bell.")).toBeLessThan(
-      featuresMarkup.indexOf("Evidence feed"),
+    const page = document.createElement("div");
+    page.innerHTML = markup;
+
+    expect(page.querySelector("main#main-content")).not.toBeNull();
+    expect(page.querySelector("h1")?.textContent).toBe(
+      "Write one sentence about one student.",
     );
+
+    const sectionHeadings = Array.from(page.querySelectorAll("h2")).map(
+      (heading) => heading.textContent,
+    );
+    expect(sectionHeadings).toEqual(
+      expect.arrayContaining([
+        "Ask your saved evidence a question",
+        "Yellow means not yet. Ink means saved.",
+        "Small on purpose.",
+      ]),
+    );
+
+    expect(page.textContent).toMatch(/nothing is saved until you review it/i);
+    expect(page.textContent).toMatch(/you approve every record/i);
+    expect(page.textContent).toMatch(/one date-ordered trace of validated evidence/i);
   });
 
   it("keeps every access action aligned with the invitation-only beta", () => {
@@ -39,8 +47,20 @@ describe("public landing page", () => {
   });
 
   it("does not borrow unsupported claims from the visual reference", () => {
-    expect(markup).not.toMatch(/free trial|pricing|app store|google play/i);
-    expect(markup).not.toMatch(/parent communication|parent portal/i);
-    expect(markup).not.toMatch(/\bAI(?:-powered)?\b/i);
+    const page = document.createElement("div");
+    page.innerHTML = markup;
+    const text = page.textContent ?? "";
+
+    expect(text).not.toMatch(/free trial|pricing|app store|google play/i);
+    expect(text).not.toMatch(/parent communication|parent portal/i);
+    expect(text).not.toMatch(
+      /\bAI[- ]powered\b|\bAI-generated\b|\bAI-written\b|\bAI-analy[sz]ed\b/i,
+    );
+    expect(text).toMatch(/no generative AI/i);
+
+    const textWithoutApprovedAiBoundaries = text
+      .replace(/\bno generative AI\b/gi, "")
+      .replace(/\bno AI\b/gi, "");
+    expect(textWithoutApprovedAiBoundaries).not.toMatch(/\bAI\b/i);
   });
 });

@@ -86,8 +86,8 @@ data analysis.
 The feature is named **Explore Evidence**.
 
 - App navigation label: **Explore**
-- Page title: **Explore evidence**
-- Supporting copy: **Ask a question of your saved evidence.**
+- Page context: **Explore**
+- Supporting copy: **Ask questions of the evidence you reviewed and saved.**
 
 The interface describes the teacher's work as a **question**. The
 implementation may call the submitted definition a query, but the teacher does
@@ -108,15 +108,18 @@ evidence**.
 
 ## Core Experience
 
-The page begins with a visible sentence:
+The page begins with a visible sentence composed from interactive slots:
 
-> Show me **Evidence** from **All time**
+> Show me evidence for **any student** tagged **any tags** from **all time**.
 
-The first bounded page of active evidence appears immediately. Under the
-sentence, Student, Tags, Class, and Photo are always available. Empty fields
-do not constrain results. The teacher can change the sentence or fields without
-saving a configuration. **Show results** runs the current valid question;
-**Update results** applies changes after the displayed results no longer match.
+The first bounded page of active evidence appears immediately. Activating a
+sentence slot opens and focuses the corresponding field in the optional
+**Filters** plate. The same plate is available from the explicit Filters
+disclosure and groups Student/Class, Tags/Photo, and Date as Who, What, and
+When. Empty fields do not constrain results. The teacher can change the sentence
+or fields without saving a configuration. **Show results** runs the current
+valid question; **Update results** applies changes after the displayed results
+no longer match.
 
 Example:
 
@@ -305,19 +308,22 @@ The authenticated navigation becomes:
 Capture → Explore → Students → Settings
 ```
 
-The Explore Evidence page uses the established calm evidence-ledger visual
+The Explore Evidence page uses the established warm evidence-trace visual
 system rather than an analytics dashboard.
 
 ### Desktop
 
-- Page title and direct supporting copy
-- One primary sentence-like question surface with standing Student, Tags,
-  Class, and Photo fields
-- Matching counts and evidence-ledger results below
+- Compact page context followed by the primary “Show me evidence for … tagged
+  … from …” question
+- Interactive sentence slots that open and focus the matching Student, Class,
+  Tags, Date, or Photo control in one optional Who / What / When filter plate
+- Explicit Show results / Update results execution
+- Matching counts and open trace results below, or an alphabetical grouped
+  student list with supporting records in inset wells
 
 ### Mobile
 
-- The question surface and results remain one stacked working column.
+- The sentence, filter plate, and results remain one stacked working column.
 - Controls stack or wrap without horizontal scrolling.
 - Evidence and student rows preserve the existing mobile evidence patterns.
 
@@ -346,7 +352,7 @@ action without implying that evidence is missing for instructional reasons.
 - Every control has a persistent accessible label.
 - Multi-select controls support keyboard search, selection, and removal.
 - Selected and unavailable values are not communicated by color alone.
-- Clearing a standing field preserves a predictable focus position.
+- Clearing a filter field preserves a predictable focus position.
 - Dismissing Without or an extra tag group moves focus to Tags.
 - Result-count changes and query failures are announced without repeatedly
   interrupting screen-reader navigation.

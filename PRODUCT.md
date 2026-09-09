@@ -109,8 +109,10 @@ language. Avoid ornamental school imagery, fake controls, dashboard metrics,
 glass effects, gradient text, noisy textures, excessive cards, and invented
 affordances that compete with capture and review.
 
-There is no separate logo or image asset library. Wordmark and in-product
-type carry the name.
+There is no separate image asset library. The shared brand lockup pairs the
+Bricolage Grotesque wordmark with the implemented abstract trace mark: a large
+ink circle and a smaller amber node. Product type and this compact mark carry
+the name; do not substitute the retired lettered `CT` tile.
 
 ## Evidence on Hand
 
