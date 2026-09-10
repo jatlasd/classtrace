@@ -1,4 +1,20 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
+
+async function expectHighlightedRowsToRemainDistinct(page: Page) {
+  const highlightedSlots = page.locator('.public-landing .slot[data-set="true"]');
+  await expect(highlightedSlots.first()).toHaveCSS(
+    "text-decoration-line",
+    "underline",
+  );
+  const styles = await highlightedSlots.first().evaluate((slot) => {
+    const { backgroundColor, fontSize, lineHeight } = getComputedStyle(slot);
+    return { backgroundColor, fontSize, lineHeight };
+  });
+  expect(styles.backgroundColor).not.toBe("rgba(0, 0, 0, 0)");
+  expect(
+    Number.parseFloat(styles.lineHeight) / Number.parseFloat(styles.fontSize),
+  ).toBeGreaterThanOrEqual(1.19);
+}
 
 test("renders the public landing page without desktop or mobile overflow", async ({
   page,
@@ -21,6 +37,7 @@ test("renders the public landing page without desktop or mobile overflow", async
       () => document.documentElement.scrollWidth <= window.innerWidth
     )
   ).toBe(true);
+  await expectHighlightedRowsToRemainDistinct(page);
 
   await page.screenshot({
     path: testInfo.outputPath("landing-desktop.png"),
@@ -41,6 +58,7 @@ test("renders the public landing page without desktop or mobile overflow", async
       () => document.documentElement.scrollWidth <= window.innerWidth
     )
   ).toBe(true);
+  await expectHighlightedRowsToRemainDistinct(page);
 
   await page.screenshot({
     path: testInfo.outputPath("landing-mobile.png"),

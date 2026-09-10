@@ -17,7 +17,7 @@ export function LandingQuestion() {
         </h2>
         <p
           aria-hidden="true"
-          className="mt-6 max-w-[22ch] font-display-wide text-[clamp(2.25rem,6.2vw,5.25rem)] font-semibold leading-[1.02] text-fg"
+          className="mt-6 max-w-[22ch] font-display-wide text-[clamp(2.25rem,6.2vw,5.25rem)] font-semibold leading-[1.2] text-fg"
         >
           Show me{" "}
           <span className="slot" data-set="true">evidence</span>{" "}

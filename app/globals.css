@@ -204,6 +204,10 @@
     -webkit-box-decoration-break: clone;
     box-decoration-break: clone;
   }
+  .public-landing .slot[data-set="true"] {
+    text-decoration-color: var(--live);
+    background: color-mix(in srgb, var(--live-bright) 28%, var(--base));
+  }
   .slot:focus-visible {
     background: var(--live-soft);
     text-decoration-color: var(--live-bright);
