@@ -59,11 +59,12 @@ function CaptureHarness({
   onPhotoRemove,
   onValidate,
 }: CaptureHarnessProps) {
-  const [reviewOpen, setReviewOpen] = useState(false);
+  const [detailsOpen, setDetailsOpen] = useState(false);
+  const [currentDraft, setCurrentDraft] = useState(captureDraft);
 
   return (
     <EvidenceCaptureCard
-      draft={captureDraft}
+      draft={currentDraft}
       workspaceCreatedAt="2026-06-01T12:00:00.000Z"
       rosterStudents={captureRoster}
       classGroups={[{ id: "class_reading", name: "Reading" }]}
@@ -75,11 +76,17 @@ function CaptureHarness({
           isFirstWorkspaceEvidence: false,
         })
       }
-      onEdit={onEdit}
+      onEdit={(rawNote) => {
+        const accepted = onEdit?.(rawNote) ?? true;
+        if (accepted) {
+          setCurrentDraft(buildNoteDraft(rawNote));
+        }
+        return accepted;
+      }}
       onDelete={onDelete}
-      reviewOpen={reviewOpen}
-      onReviewOpenChange={setReviewOpen}
-      onCaptureAnother={vi.fn()}
+      detailsOpen={detailsOpen}
+      onDetailsOpenChange={setDetailsOpen}
+      onSaved={vi.fn()}
       onCreateStudent={vi.fn()}
       photo={photo}
       photoMissing={photoMissing}
@@ -96,14 +103,14 @@ afterEach(() => {
 });
 
 describe("EvidenceCaptureCard review flow", () => {
-  it("opens editable review with one click and preserves edits when collapsed", () => {
+  it("shows compact approval, then preserves edits when details collapse", () => {
     render(<CaptureHarness onEdit={vi.fn(() => true)} onDelete={vi.fn()} />);
 
     expect(
-      screen.queryByRole("heading", { name: "Review before saving" })
-    ).toBeNull();
+      screen.getByRole("heading", { name: "Prepared for approval" })
+    ).toBeTruthy();
     fireEvent.click(
-      screen.getByRole("button", { name: "Review before saving" })
+      screen.getByRole("button", { name: "Edit note or details" })
     );
 
     const evidenceNote = screen.getByLabelText(
@@ -117,10 +124,10 @@ describe("EvidenceCaptureCard review flow", () => {
     fireEvent.change(evidenceNote, {
       target: { value: "Mary used the strategy without prompting." },
     });
-    fireEvent.click(screen.getByRole("button", { name: "Review later" }));
+    fireEvent.click(screen.getByRole("button", { name: "Show prepared record" }));
 
     fireEvent.click(
-      screen.getByRole("button", { name: "Review before saving" })
+      screen.getByRole("button", { name: "Edit note or details" })
     );
     expect(
       (screen.getByLabelText("Evidence note") as HTMLTextAreaElement).value
@@ -160,18 +167,14 @@ describe("EvidenceCaptureCard review flow", () => {
       />
     );
 
-    fireEvent.click(
-      screen.getByRole("button", { name: "Review before saving" })
-    );
     const rosterSearch = screen.getByRole("combobox", {
       name: "Match roster student",
     });
     fireEvent.change(rosterSearch, { target: { value: "@mary" } });
     fireEvent.keyDown(rosterSearch, { key: "Enter" });
-    fireEvent.click(screen.getByRole("button", { name: "Review later" }));
+    fireEvent.click(screen.getByRole("button", { name: "Show prepared record" }));
 
-    expect(screen.queryByText(/isn.t on your roster yet/i)).toBeNull();
-    expect(screen.getByRole("link", { name: /Mary/ })).toBeTruthy();
+    expect(screen.getByText("Mary")).toBeTruthy();
 
     fireEvent.click(
       screen.getByRole("button", { name: "Edit original capture" })
@@ -179,10 +182,9 @@ describe("EvidenceCaptureCard review flow", () => {
     fireEvent.click(
       screen.getByRole("button", { name: "Save original capture" })
     );
-    fireEvent.click(screen.getByRole("button", { name: "Review later" }));
+    fireEvent.click(screen.getByRole("button", { name: "Show prepared record" }));
 
-    expect(screen.queryByText(/isn.t on your roster yet/i)).toBeNull();
-    expect(screen.getByRole("link", { name: /Mary/ })).toBeTruthy();
+    expect(screen.getByText("Mary")).toBeTruthy();
   });
 
   it("clears an existing-student match after the source text changes", () => {
@@ -198,15 +200,12 @@ describe("EvidenceCaptureCard review flow", () => {
       />
     );
 
-    fireEvent.click(
-      screen.getByRole("button", { name: "Review before saving" })
-    );
     const rosterSearch = screen.getByRole("combobox", {
       name: "Match roster student",
     });
     fireEvent.change(rosterSearch, { target: { value: "@mary" } });
     fireEvent.keyDown(rosterSearch, { key: "Enter" });
-    fireEvent.click(screen.getByRole("button", { name: "Review later" }));
+    fireEvent.click(screen.getByRole("button", { name: "Show prepared record" }));
 
     fireEvent.click(
       screen.getByRole("button", { name: "Edit original capture" })
@@ -217,9 +216,9 @@ describe("EvidenceCaptureCard review flow", () => {
     fireEvent.click(
       screen.getByRole("button", { name: "Save original capture" })
     );
-    fireEvent.click(screen.getByRole("button", { name: "Review later" }));
-
-    expect(screen.getByText(/isn.t on your roster yet/i)).toBeTruthy();
+    expect(
+      screen.getByRole("combobox", { name: "Match roster student" })
+    ).toBeTruthy();
   });
 
   it("uses an inline confirmation before deleting a draft", () => {
@@ -270,11 +269,7 @@ describe("EvidenceCaptureCard review flow", () => {
 
     expect(screen.getByText("Photo needs attention")).toBeTruthy();
     expect(screen.getByRole("button", { name: "Choose photo again" })).toBeTruthy();
-    fireEvent.click(screen.getByRole("button", { name: "Review before saving" }));
-    expect(
-      (screen.getByRole("button", { name: "Validate and save" }) as HTMLButtonElement)
-        .disabled
-    ).toBe(true);
+    expect(screen.queryByRole("button", { name: "Approve and save" })).toBeNull();
 
     fireEvent.click(screen.getByRole("button", { name: "Continue without photo" }));
     expect(onPhotoRemove).toHaveBeenCalledOnce();
@@ -329,14 +324,13 @@ describe("EvidenceCaptureCard review flow", () => {
     }
 
     render(<PhotoHarness />);
-    fireEvent.click(screen.getByRole("button", { name: "Review before saving" }));
     fireEvent.change(screen.getByLabelText("Replace photo evidence"), {
       target: {
         files: [new File([new Uint8Array([9])], "replacement.png", { type: "image/png" })],
       },
     });
 
-    const saveButton = screen.getByRole("button", { name: "Validate and save" });
+    const saveButton = screen.getByRole("button", { name: "Approve and save" });
     expect((saveButton as HTMLButtonElement).disabled).toBe(true);
     expect(onValidate).not.toHaveBeenCalled();
 

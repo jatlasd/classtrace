@@ -253,10 +253,19 @@ present, the Plate gains the amber live glow. Photo actions, student-resolution
 guidance, and the rounded amber Capture action sit below a rule.
 
 Capturing creates a device-local draft, not saved evidence. Drafts are Plates
-with explicit status and clearing-time copy. Review opens inside the same Plate
-and exposes the Evidence note first, then date, student resolution, and optional
-structured details. The draft-to-saved key uses an amber node, a line, and an ink
-node. “Validate and save” is an ink-solid action because it commits the record.
+collected behind a counted Drafts to review pill below the composer. Capture is
+confirmed with a transient toast rather than a large prepared-state panel. The
+queue opens as an anchored dialog at desktop and bottom sheet on mobile, keeps
+rows compact, scrolls as drafts accumulate, and expands only one draft at a
+time.
+
+An ordinary expanded draft reads as a prepared record, not a read-only long
+form: the exact Evidence note leads, with student, date, optional photo state,
+and a concise filing result visible before approval. “Approve and save” is the
+ink-solid commit action. Detailed fields remain behind progressive editing;
+unsaveable or semantically unresolved drafts expose correction directly.
+Successful save confirmation is a transient toast, separate from feed filters,
+with a direct path to the student's trace.
 
 ### Saved evidence trace
 

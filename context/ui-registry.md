@@ -176,26 +176,37 @@ File: `components/dashboard/quick-capture-card.tsx`
 Do not turn the composer into a multi-field form or separate its guidance into
 decorative controls.
 
-## Provisional draft and review
+## Draft review queue and approval
 
-Files: `components/dashboard/evidence-capture-card.tsx`,
+Files: `components/dashboard/draft-review-queue.tsx`,
+`components/dashboard/evidence-capture-card.tsx`,
 `components/dashboard/interpretation-review-panel.tsx`,
 `components/dashboard/student-resolution-field.tsx`
 
-- A draft is a Plate with explicit needs-review state, timestamp, and “clears at
-  midnight” boundary. Pending drafts may use an amber left border.
-- Collapsed drafts lead with the mentioned student, raw note, compact structured
-  suggestions, unresolved guidance, optional photo, and Review before saving.
-- Review expands inside the same Plate below a rule. Evidence note is first and
-  prominent; date and structured fields follow in a two-column grid from `sm`.
-- The draft/saved legend is an amber node connected to an ink node.
+- Captured drafts live behind a counted Drafts to review pill below the composer
+  and remain separate from saved-feed filtering. Capture confirmation is a
+  transient toast with a direct Review action.
+- The queue is an anchored dialog at desktop and a bottom sheet on mobile. Rows
+  stay compact and show student, age, note, concise filing result, optional
+  photo state, and any correction requirement. The queue scrolls when several
+  drafts accumulate, and only one row expands at a time.
+- An ordinary expanded draft is a compact prepared-record view, not a read-only
+  long form. The exact Evidence note is visually central; student and date,
+  concise structured filing, optional follow-up, and photo state remain
+  inspectable before approval. Optional absent values disappear.
+- “Approve and save” is the dominant action. Detailed fields remain behind
+  “Edit note or details.” Parser confidence or `needsTeacherValidation` alone
+  does not force editing; explicit approval is validation for an otherwise
+  meaningful prepared record.
 - Student resolution and follow-up use Live Soft or an amber semantic left rule.
-- “Validate and save” uses the Ink `solid` variant. The first-save payoff is an
-  Ink panel with Base text and direct timeline/report/capture-another actions.
-- “Review later” collapses without deleting. Editing the original capture is a
-  separate action. Delete uses explicit confirmation.
+- Unsaveable or semantically unresolved drafts expose the necessary correction
+  controls and do not offer a misleading approval action. Editing the original
+  capture remains separate. Delete uses explicit confirmation.
 - A missing restored photo remains an actionable Danger state until reattached
   or explicitly omitted where a note remains.
+- Successful saves use a transient toast, separate from feed results and
+  filters, stating that evidence was saved to the student's trace and linking
+  to that trace. If the queue becomes empty, Capture regains focus.
 
 Never make parser suggestions look saved. Only the reviewed Evidence note,
 reviewed structured values, and validated photo cross into permanent evidence.
@@ -212,8 +223,8 @@ Files: `components/dashboard/evidence-feed.tsx`,
 - Search is a full-rounded Well field. All / Needs review / Validated are
   full-rounded filters; Needs review uses amber and the other selected states
   use Ink.
-- Drafts appear first as Plates. Saved records sit directly on the page in the
-  open `.trace` motif with ink nodes.
+- The counted draft queue sits below the composer. Saved records alone appear
+  in the feed's open `.trace` motif with ink nodes.
 - Saved records are grouped by sticky calendar-date headings. Student identity
   leads, followed by class, approved note, compact details/tags, optional photo,
   and a quiet Delete action.

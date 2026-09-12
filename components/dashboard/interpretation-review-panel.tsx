@@ -1,7 +1,6 @@
 "use client";
 
-import Link from "next/link";
-import { useId, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import {
   StudentResolutionField,
   type CreateStudentFromReviewInput,
@@ -23,10 +22,8 @@ import {
   type InterpretationFields,
 } from "@/lib/evidence/capture-validation";
 import type { DraftDisplay } from "@/lib/note-processing/draft-to-display";
-import { routes } from "@/lib/routes";
 import type { CaptureRosterStudent } from "@/lib/students/resolve-capture-students";
 import { CheckCircle2 } from "lucide-react";
-import { ValidatedStamp } from "@/components/evidence/validated-stamp";
 
 type InterpretationReviewPanelProps = {
   display: DraftDisplay;
@@ -35,8 +32,13 @@ type InterpretationReviewPanelProps = {
     fields: InterpretationFields,
     saveInput: ValidatedEvidenceSaveInput
   ) => Promise<ValidatedEvidenceSaveResult>;
-  onReviewLater: () => void;
-  onCaptureAnother: () => void;
+  detailsOpen: boolean;
+  onDetailsOpenChange: (open: boolean) => void;
+  onSaved?: (
+    result: ValidatedEvidenceSaveSuccess,
+    fields: InterpretationFields,
+    saveInput: ValidatedEvidenceSaveInput
+  ) => void;
   rosterStudents: CaptureRosterStudent[];
   classGroups: StudentResolutionClassOption[];
   onCreateStudent: (
@@ -49,6 +51,7 @@ type InterpretationReviewPanelProps = {
   photoResolutionRequired?: boolean;
   capturedAt?: number;
   workspaceCreatedAt?: string;
+  embedded?: boolean;
 };
 
 type ValidatedEvidenceSaveInput = {
@@ -66,12 +69,14 @@ type ValidatedEvidenceSaveInput = {
 };
 
 type ValidatedEvidenceSaveResult =
-  | {
-      success: true;
-      evidenceId: string;
-      isFirstWorkspaceEvidence: boolean;
-    }
+  | ValidatedEvidenceSaveSuccess
   | { success: false; error: string };
+
+type ValidatedEvidenceSaveSuccess = {
+  success: true;
+  evidenceId: string;
+  isFirstWorkspaceEvidence: boolean;
+};
 
 type FormState = {
   evidenceDate: string;
@@ -115,6 +120,43 @@ function parseOptionalList(value: string): string[] {
     .split(",")
     .map((item) => item.trim())
     .filter(Boolean);
+}
+
+type ApprovalBlocker =
+  | "student"
+  | "evidence_type"
+  | "content"
+  | "date"
+  | "photo";
+
+function approvalBlockerMessage(blocker: ApprovalBlocker): string {
+  switch (blocker) {
+    case "student":
+      return "Resolve one student before this record can be approved.";
+    case "evidence_type":
+      return "Choose a meaningful evidence type before approving this record.";
+    case "content":
+      return "Add an Evidence note or photo before approving this record.";
+    case "date":
+      return "Choose a valid evidence date before approving this record.";
+    case "photo":
+      return "Choose the photo again or continue without it before approving this record.";
+  }
+}
+
+function formatPreparedDate(value: string): string {
+  const [year, month, day] = value.split("-").map(Number);
+  const date = new Date(year, month - 1, day);
+
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
+
+  return new Intl.DateTimeFormat(undefined, {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  }).format(date);
 }
 
 function formStateToFields(
@@ -174,8 +216,9 @@ function draftDisplayKey(display: DraftDisplay): string {
 function InterpretationReviewPanelContent({
   display,
   onConfirm,
-  onReviewLater,
-  onCaptureAnother,
+  detailsOpen,
+  onDetailsOpenChange,
+  onSaved,
   rosterStudents,
   classGroups,
   onCreateStudent,
@@ -186,6 +229,7 @@ function InterpretationReviewPanelContent({
   photoResolutionRequired = false,
   capturedAt,
   workspaceCreatedAt = "1970-01-01T00:00:00.000Z",
+  embedded = false,
 }: InterpretationReviewPanelProps) {
   const fieldIdPrefix = useId();
   const evidenceNoteId = `${fieldIdPrefix}-evidence-note`;
@@ -211,8 +255,6 @@ function InterpretationReviewPanelContent({
   const [isResolvingStudent, setIsResolvingStudent] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [savedEvidenceId, setSavedEvidenceId] = useState("");
-  const [isFirstWorkspaceEvidence, setIsFirstWorkspaceEvidence] =
-    useState(false);
   const parsedStudentValidation = validateSingleStudentForInterpretation(display);
   const studentValidation = resolvedStudentOverride
     ? {
@@ -234,6 +276,33 @@ function InterpretationReviewPanelContent({
     new Date(workspaceCreatedAt).getTime()
   );
   const maximumEvidenceDate = localDateInputValue();
+  const evidenceNote = form.evidenceNote.trim();
+  const preparedFields =
+    studentValidation.status === "valid_one_student"
+      ? formStateToFields(form, studentValidation.studentName)
+      : null;
+  const approvalBlocker: ApprovalBlocker | null =
+    studentValidation.status !== "valid_one_student"
+      ? "student"
+      : photoResolutionRequired
+        ? "photo"
+        : !evidenceNote && !hasPhoto
+          ? "content"
+          : !photoOnly &&
+              (!form.evidenceType.trim() || form.evidenceType === "Unclear")
+            ? "evidence_type"
+            : !form.evidenceDate ||
+                form.evidenceDate < minimumEvidenceDate ||
+                form.evidenceDate > maximumEvidenceDate
+              ? "date"
+              : null;
+  const showDetails = detailsOpen || approvalBlocker !== null;
+
+  useEffect(() => {
+    if (approvalBlocker && !detailsOpen) {
+      onDetailsOpenChange(true);
+    }
+  }, [approvalBlocker, detailsOpen, onDetailsOpenChange]);
 
   function updateField<K extends keyof FormState>(key: K, value: FormState[K]) {
     setForm((current) => ({ ...current, [key]: value }));
@@ -285,7 +354,12 @@ function InterpretationReviewPanelContent({
   }
 
   async function handleConfirm() {
-    if (isBusy || photoChangePending || photoResolutionRequired || savedEvidenceId) {
+    if (
+      isBusy ||
+      photoChangePending ||
+      approvalBlocker ||
+      savedEvidenceId
+    ) {
       return;
     }
 
@@ -295,27 +369,6 @@ function InterpretationReviewPanelContent({
       } else {
         showValidationError(studentValidationMessage());
       }
-      return;
-    }
-
-    if (!photoOnly && !form.evidenceType.trim()) {
-      showValidationError("Choose an evidence type before validating this draft.");
-      return;
-    }
-
-    const evidenceNote = form.evidenceNote.trim();
-
-    if (!evidenceNote && !hasPhoto) {
-      showValidationError("Add an evidence note or photo before saving evidence.");
-      return;
-    }
-
-    if (
-      !form.evidenceDate ||
-      form.evidenceDate < minimumEvidenceDate ||
-      form.evidenceDate > maximumEvidenceDate
-    ) {
-      showValidationError("Choose a valid evidence date before saving.");
       return;
     }
 
@@ -343,21 +396,22 @@ function InterpretationReviewPanelContent({
     onSavePendingChange?.(true);
 
     let result: ValidatedEvidenceSaveResult;
+    const saveInput: ValidatedEvidenceSaveInput = {
+      rosterStudentId: studentValidation.studentId,
+      evidenceDate: form.evidenceDate,
+      evidenceDateOffsetMinutes: new Date().getTimezoneOffset(),
+      evidenceNote: evidenceNote || undefined,
+      summary,
+      evidenceType: fields.evidenceType || undefined,
+      topic: fields.topic,
+      performance: fields.performance,
+      behavior: fields.behavior,
+      tags: fields.tags,
+      followUpNotes: fields.followUpNotes,
+    };
 
     try {
-      result = await onConfirm(fields, {
-        rosterStudentId: studentValidation.studentId,
-        evidenceDate: form.evidenceDate,
-        evidenceDateOffsetMinutes: new Date().getTimezoneOffset(),
-        evidenceNote: evidenceNote || undefined,
-        summary,
-        evidenceType: fields.evidenceType || undefined,
-        topic: fields.topic,
-        performance: fields.performance,
-        behavior: fields.behavior,
-        tags: fields.tags,
-        followUpNotes: fields.followUpNotes,
-      });
+      result = await onConfirm(fields, saveInput);
     } catch {
       result = { success: false, error: "Failed to save evidence." };
     } finally {
@@ -367,7 +421,7 @@ function InterpretationReviewPanelContent({
 
     if (result.success) {
       setSavedEvidenceId(result.evidenceId);
-      setIsFirstWorkspaceEvidence(result.isFirstWorkspaceEvidence);
+      onSaved?.(result, fields, saveInput);
       return;
     }
 
@@ -375,24 +429,96 @@ function InterpretationReviewPanelContent({
   }
 
   return (
-    <div className="mt-2 border-t border-line pt-5">
-      <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h3 className="font-display text-[1.6rem] font-semibold leading-none text-fg">
-            Review before saving
-          </h3>
-          <p className="mt-2 text-sm leading-relaxed text-fg-2">
-            Check the student, date, optional Evidence note, and photo. Only what you approve here becomes permanent.
+    <div
+      aria-busy={isBusy || photoChangePending}
+      className={embedded ? "pt-3" : "mt-2 border-t border-line pt-5"}
+    >
+      <div className="mb-4">
+        <h3 className={`label ${approvalBlocker ? "text-danger" : "text-live"}`}>
+          {approvalBlocker
+            ? "Needs correction"
+            : showDetails
+              ? "Edit note or details"
+              : "Prepared for approval"}
+        </h3>
+        {approvalBlocker || showDetails ? (
+          <p className="mt-1.5 text-sm leading-relaxed text-fg-2">
+            {approvalBlocker
+              ? approvalBlockerMessage(approvalBlocker)
+              : "Adjust what ClassTrace prepared. Only the record you approve becomes permanent."}
           </p>
-        </div>
-        <p aria-hidden="true" className="label flex items-center gap-2 text-fg-3">
-          <span className="size-2 rounded-full bg-live-bright" /> draft
-          <span className="h-px w-8 bg-line-2" />
-          <span className="size-2 rounded-full bg-fg" /> saved
-        </p>
+        ) : null}
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-2">
+      {!showDetails && preparedFields ? (
+        <section aria-label="Prepared evidence record" className="space-y-4">
+          <div className="flex flex-wrap items-baseline justify-between gap-x-5 gap-y-2">
+            <div>
+              <p className="label text-fg-3">Student</p>
+              <p className="font-display text-[1.2rem] font-semibold leading-snug text-fg">
+                {studentValidation.status === "valid_one_student"
+                  ? studentValidation.studentName
+                  : ""}
+              </p>
+            </div>
+            <div className="sm:text-right">
+              <p className="label text-fg-3">Evidence date</p>
+              <time
+                dateTime={form.evidenceDate}
+                className="font-mono text-sm tabular-nums text-fg-2"
+              >
+                {formatPreparedDate(form.evidenceDate)}
+              </time>
+            </div>
+          </div>
+
+          <div className="border-y border-line py-3">
+            <p className="label text-fg-3">Evidence note</p>
+            {evidenceNote ? (
+              <p className="mt-1.5 max-w-3xl whitespace-pre-wrap text-[17px] leading-relaxed text-fg">
+                {evidenceNote}
+              </p>
+            ) : (
+              <p className="mt-2 text-sm italic text-fg-2">
+                No Evidence note — photo only.
+              </p>
+            )}
+          </div>
+
+          {!photoOnly ? (
+            <p className="text-sm leading-relaxed text-fg-2">
+              <span className="label mr-2 text-fg-3">Filed as</span>
+              <span className="font-mono">
+                {[
+                  preparedFields.evidenceType,
+                  preparedFields.topic,
+                  preparedFields.performance,
+                  ...(preparedFields.behavior ?? []),
+                  ...preparedFields.tags.map(formatTagLabel),
+                ]
+                  .filter(Boolean)
+                  .join(" · ")}
+              </span>
+            </p>
+          ) : null}
+
+          {preparedFields.followUpNotes.length > 0 ? (
+            <p className="border-l-2 border-live-bright pl-3 text-sm leading-relaxed text-fg-2">
+              <span className="label mr-2 text-live">Follow up</span>
+              {preparedFields.followUpNotes.join(" · ")}
+            </p>
+          ) : null}
+
+          {hasPhoto ? (
+            <p className="text-sm text-fg-2">
+              <span className="label mr-2 text-live">Photo included</span>
+              The photo shown above will be saved with this record.
+            </p>
+          ) : null}
+        </section>
+      ) : null}
+
+      {showDetails ? <div id={`${fieldIdPrefix}-details`} className="grid gap-3 sm:grid-cols-2">
         <div className="space-y-1 sm:col-span-2">
           <label htmlFor={evidenceNoteId} className="label text-fg-2">
             Evidence note
@@ -591,7 +717,7 @@ function InterpretationReviewPanelContent({
             className="min-h-[64px] resize-none text-[15px]"
           />
         </div>
-      </div>
+      </div> : null}
 
       <div aria-live="polite" className="mt-3 min-h-5">
         {validationError ? (
@@ -603,48 +729,13 @@ function InterpretationReviewPanelContent({
           >
             {validationError}
           </p>
-        ) : savedEvidenceId &&
-          isFirstWorkspaceEvidence &&
-          studentValidation.status === "valid_one_student" ? (
-          <section className="rounded-lg bg-fg p-4 text-base sm:p-5">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <p className="label text-base/70">Evidence trail started</p>
-              <ValidatedStamp className="text-base [&>span]:bg-base [&>span]:text-fg" />
-            </div>
-            <h3 className="mt-2 font-display text-[1.75rem] font-semibold leading-none text-base">
-              Saved to {studentValidation.studentName}&apos;s folder.
-            </h3>
-            <p className="mt-3 max-w-2xl text-sm leading-relaxed text-base/75">
-              This observation is now part of the record, ready when you need to
-              look back instead of reconstructing the moment from memory.
-            </p>
-            <div className="mt-4 flex flex-wrap gap-2">
-              <Button asChild size="sm" className="bg-base text-fg hover:bg-plate">
-                <Link href={routes.student(studentValidation.studentId)}>
-                  Open {studentValidation.studentName}&apos;s folder
-                </Link>
-              </Button>
-              <Button asChild size="sm" variant="outline" className="border-base/40 text-base hover:bg-base/10">
-                <Link href={routes.studentReport(studentValidation.studentId)}>
-                  Preview report
-                </Link>
-              </Button>
-              <Button size="sm" variant="ghost" className="text-base/80 hover:bg-base/10 hover:text-base" onClick={onCaptureAnother}>
-                Capture another note
-              </Button>
-            </div>
-          </section>
-        ) : savedEvidenceId ? (
-          <p className="inline-flex items-center gap-2 text-sm text-fg">
-            <ValidatedStamp /> Validated evidence saved.
-          </p>
         ) : isSaving ? (
           <p className="text-sm text-fg-2">Saving evidence…</p>
         ) : photoChangePending ? (
           <p className="text-sm text-fg-2">Finishing photo processing…</p>
-        ) : photoResolutionRequired ? (
+        ) : approvalBlocker ? (
           <p className="text-sm text-danger">
-            Choose the photo again or continue without it before saving.
+            {approvalBlockerMessage(approvalBlocker)}
           </p>
         ) : (
           <p className="text-xs leading-relaxed text-fg-3">
@@ -653,35 +744,42 @@ function InterpretationReviewPanelContent({
         )}
       </div>
 
-      <div
-        className={`mt-4 flex flex-wrap items-center gap-2 border-t border-line pt-4 ${
-          savedEvidenceId && isFirstWorkspaceEvidence ? "hidden" : ""
-        }`}
-      >
-        <Button
-          variant="solid"
-          disabled={
-            isBusy ||
-            photoChangePending ||
-            photoResolutionRequired ||
-            Boolean(savedEvidenceId)
-          }
-          onClick={handleConfirm}
-        >
-          {savedEvidenceId
-            ? "Evidence saved"
-            : isSaving
-              ? "Saving evidence…"
-              : "Validate and save"}
-        </Button>
-        {!savedEvidenceId ? (
+      <div className="mt-4 flex flex-col gap-2 border-t border-line pt-4 sm:flex-row sm:flex-wrap sm:items-center">
+        {!approvalBlocker ? (
+          <Button
+            variant="solid"
+            className="w-full sm:w-auto"
+            disabled={isBusy || photoChangePending || Boolean(savedEvidenceId)}
+            onClick={handleConfirm}
+          >
+            {savedEvidenceId
+              ? "Evidence saved"
+              : isSaving
+                ? "Saving evidence…"
+                : "Approve and save"}
+          </Button>
+        ) : null}
+        {!showDetails ? (
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={isBusy}
+            aria-expanded={false}
+            aria-controls={`${fieldIdPrefix}-details`}
+            onClick={() => onDetailsOpenChange(true)}
+          >
+            Edit note or details
+          </Button>
+        ) : !approvalBlocker ? (
           <Button
             size="sm"
             variant="ghost"
             disabled={isBusy}
-            onClick={onReviewLater}
+            aria-expanded={true}
+            aria-controls={`${fieldIdPrefix}-details`}
+            onClick={() => onDetailsOpenChange(false)}
           >
-            Review later
+            Show prepared record
           </Button>
         ) : null}
       </div>

@@ -68,10 +68,19 @@ small lower-right node is amber. There is no `CT` tile.
 - Capture is a large sentence field in a live Plate, not a conventional
   multi-field form. It uses `@student` and optional `#tag` language, with photo
   actions and one amber Capture action below.
-- Capturing creates a device-local provisional draft. Drafts remain in Plates
-  and expose explicit review and clearing boundaries. Review expands in place.
+- Capturing creates a device-local provisional draft and confirms that outcome
+  with a transient toast. Drafts collect behind a counted Drafts to review
+  trigger instead of entering the saved feed. The queue is a compact list; one
+  selected draft may expand at a time, in an anchored dialog at desktop and a
+  bottom sheet on mobile.
+- An ordinary valid draft opens to a compact prepared record with its exact
+  Evidence note as the center, a concise filing result, and dominant explicit
+  approval. Detailed editing is progressive. Genuinely unsaveable or
+  semantically unresolved drafts open the necessary correction controls.
 - Teacher validation is the transition from amber/provisional to ink/saved.
   Never make a deterministic interpretation look permanently saved.
+- Successful approval produces a separate transient toast stating that the
+  record was saved to the student's trace and linking directly to that trace.
 - Saved evidence appears in an open chronological trace rather than repeated
   cards. Evidence text leads; identity, date, class, structured details, photo,
   follow-up, and actions support scanning.

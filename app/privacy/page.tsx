@@ -82,7 +82,7 @@ export default function PrivacyPage() {
           exports, timelines, analytics, or application logs. A permanent
           evidence record is created only after you review and approve the
           Evidence note or approve a photo. Photo bytes do not leave the device
-          until you choose Validate and save. The reviewed note, optional
+          until you choose Approve and save. The reviewed note, optional
           structured fields, and validated photo are then saved to your
           workspace. If local browser storage is unavailable, the current
           preview may not survive a refresh.

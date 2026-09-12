@@ -1,20 +1,16 @@
 "use client";
 
-import Link from "next/link";
 import { useId, useRef, useState } from "react";
 import { InterpretationReviewPanel } from "@/components/dashboard/interpretation-review-panel";
 import { LocalPhotoPreview } from "@/components/evidence/local-photo-preview";
-import { NoteContent } from "@/components/dashboard/note-content";
 import type {
   CreateStudentFromReviewInput,
   CreateStudentFromReviewResult,
   StudentResolutionClassOption,
 } from "@/components/dashboard/student-resolution-field";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ConfirmationPanel } from "@/components/ui/confirmation-panel";
 import { Textarea } from "@/components/ui/textarea";
-import { formatTagLabel } from "@/lib/format-tag";
 import {
   resolveCaptureDisplay,
   type CaptureValidation,
@@ -22,17 +18,12 @@ import {
 } from "@/lib/evidence/capture-validation";
 import { draftToDisplay } from "@/lib/note-processing/draft-to-display";
 import type { NoteDraft } from "@/lib/note-processing/types";
-import { routes } from "@/lib/routes";
 import type { CaptureRosterStudent } from "@/lib/students/resolve-capture-students";
 import {
   normalizeEvidencePhoto,
   type PhotoDraft,
 } from "@/lib/evidence/photo-draft-storage";
-import {
-  type StudentMentionDisplay,
-  type StudentMentionRef,
-} from "@/lib/students/student-mention-display";
-import { ArrowRight, ImagePlus, Trash2, X } from "lucide-react";
+import { ImagePlus, Trash2, X } from "lucide-react";
 
 type EvidenceCaptureCardProps = {
   draft: NoteDraft;
@@ -49,9 +40,14 @@ type EvidenceCaptureCardProps = {
   ) => Promise<ValidatedEvidenceSaveResult>;
   onEdit?: (rawNote: string) => boolean;
   onDelete?: () => void;
-  reviewOpen: boolean;
-  onReviewOpenChange: (open: boolean) => void;
-  onCaptureAnother: () => void;
+  detailsOpen: boolean;
+  onDetailsOpenChange: (open: boolean) => void;
+  onSaved: (
+    result: ValidatedEvidenceSaveSuccess,
+    fields: InterpretationFields,
+    saveInput: ValidatedEvidenceSaveInput
+  ) => void;
+  onResolvedStudentChange?: (student: CaptureRosterStudent | null) => void;
   onCreateStudent: (
     input: CreateStudentFromReviewInput
   ) => Promise<CreateStudentFromReviewResult>;
@@ -60,6 +56,7 @@ type EvidenceCaptureCardProps = {
   photoRecoveryWarning?: string;
   onPhotoChange?: (photo: PhotoDraft) => Promise<void> | void;
   onPhotoRemove?: () => void;
+  embedded?: boolean;
 };
 
 type ValidatedEvidenceSaveInput = {
@@ -77,79 +74,14 @@ type ValidatedEvidenceSaveInput = {
 };
 
 type ValidatedEvidenceSaveResult =
-  | {
-      success: true;
-      evidenceId: string;
-      isFirstWorkspaceEvidence: boolean;
-    }
+  | ValidatedEvidenceSaveSuccess
   | { success: false; error: string };
 
-function DetailLabel({
-  children,
-  kind,
-}: {
-  children: React.ReactNode;
-  kind?: "type" | "tag" | "detail";
-}) {
-  return (
-    <span
-      className={`inline-flex max-w-full items-center break-words font-mono text-[0.75rem] [overflow-wrap:anywhere] ${
-        kind === "tag"
-          ? "text-fg-2"
-          : kind === "type"
-            ? "rounded-full border border-dashed border-line-2 px-2 py-px text-fg-2"
-            : "text-fg-3"
-      }`}
-    >
-      {children}
-    </span>
-  );
-}
-
-function ResolvedStudentChip({ student }: { student: StudentMentionDisplay }) {
-  return (
-    <Link
-      href={routes.student(student.id)}
-      className="inline-flex max-w-full items-center break-words font-display text-[1.35rem] font-semibold leading-tight text-fg underline-offset-4 outline-none hover:underline focus-visible:ring-2 focus-visible:ring-live-bright focus-visible:ring-offset-2 focus-visible:ring-offset-plate"
-    >
-      {student.displayName}
-    </Link>
-  );
-}
-
-function UnresolvedStudentChip({ mention }: { mention: string }) {
-  return (
-    <span className="inline-flex items-center gap-2 font-display text-[1.35rem] font-semibold leading-tight text-fg-2">
-      Unmatched student
-      <span className="font-mono text-sm text-live">@{mention}</span>
-    </span>
-  );
-}
-
-function StudentMentionChip({ mentionRef }: { mentionRef: StudentMentionRef }) {
-  if (mentionRef.status === "resolved") {
-    return <ResolvedStudentChip student={mentionRef.student} />;
-  }
-  return <UnresolvedStudentChip mention={mentionRef.mention} />;
-}
-
-function StatusFlag({
-  status,
-  needsReview,
-}: {
-  status: "pending" | "validated";
-  needsReview: boolean;
-}) {
-  if (status === "validated") {
-    return <Badge variant="validated">Validated</Badge>;
-  }
-
-  if (!needsReview) {
-    return <Badge variant="ghost">Ready to review</Badge>;
-  }
-
-  return <Badge variant="live">Needs review</Badge>;
-}
+type ValidatedEvidenceSaveSuccess = {
+  success: true;
+  evidenceId: string;
+  isFirstWorkspaceEvidence: boolean;
+};
 
 export function EvidenceCaptureCard({
   draft,
@@ -162,15 +94,17 @@ export function EvidenceCaptureCard({
   onValidate,
   onEdit,
   onDelete,
-  reviewOpen,
-  onReviewOpenChange,
-  onCaptureAnother,
+  detailsOpen,
+  onDetailsOpenChange,
+  onSaved,
+  onResolvedStudentChange,
   onCreateStudent,
   photo,
   photoMissing = false,
   photoRecoveryWarning,
   onPhotoChange,
   onPhotoRemove,
+  embedded = false,
 }: EvidenceCaptureCardProps) {
   const sourceEditorId = useId();
   const photoErrorId = useId();
@@ -180,7 +114,7 @@ export function EvidenceCaptureCard({
   const [editText, setEditText] = useState("");
   const [resolvedStudentOverride, setResolvedStudentOverride] =
     useState<CaptureRosterStudent | null>(null);
-  const [reviewWasOpenBeforeEdit, setReviewWasOpenBeforeEdit] =
+  const [detailsWereOpenBeforeEdit, setDetailsWereOpenBeforeEdit] =
     useState(false);
   const deleteButtonRef = useRef<HTMLButtonElement>(null);
   const photoInputRef = useRef<HTMLInputElement>(null);
@@ -201,17 +135,7 @@ export function EvidenceCaptureCard({
             : student
         )
       : rosterStudents;
-  const display = resolveCaptureDisplay(
-    draft,
-    validation,
-    displayRosterStudents
-  );
-  const reviewDisplay = draftToDisplay(draft, rosterStudents);
-  const isPending = display.validationStatus !== "validated";
-  const unresolvedMentions = display.studentMentions.filter(
-    (ref) => ref.status === "unresolved"
-  );
-  const hasUnresolvedMentions = unresolvedMentions.length > 0;
+  const reviewDisplay = draftToDisplay(draft, displayRosterStudents);
   const showActions = Boolean((onEdit && draft.parsed.rawNote.trim()) || onDelete);
   const canSaveEdit = editText.trim().length > 0;
 
@@ -258,9 +182,9 @@ export function EvidenceCaptureCard({
     }
 
     setEditText(draft.parsed.rawNote);
-    setReviewWasOpenBeforeEdit(reviewOpen);
+    setDetailsWereOpenBeforeEdit(detailsOpen);
     setIsConfirmingDelete(false);
-    onReviewOpenChange(false);
+    onDetailsOpenChange(false);
     setIsEditing(true);
   }
 
@@ -273,15 +197,16 @@ export function EvidenceCaptureCard({
     if (saved) {
       if (trimmed !== draft.parsed.rawNote) {
         setResolvedStudentOverride(null);
+        onResolvedStudentChange?.(null);
       }
       setIsEditing(false);
-      onReviewOpenChange(true);
+      onDetailsOpenChange(true);
     }
   }
 
   function handleCancelEdit() {
     setIsEditing(false);
-    onReviewOpenChange(reviewWasOpenBeforeEdit);
+    onDetailsOpenChange(detailsWereOpenBeforeEdit);
   }
 
   function handleRequestDraftDelete() {
@@ -304,21 +229,25 @@ export function EvidenceCaptureCard({
 
   return (
     <article
-      className={`plate overflow-hidden ${
-        isPending ? "border-l-2 border-l-live-bright" : ""
-      }`}
+      className={
+        embedded
+          ? "overflow-hidden border-t border-line bg-plate"
+          : "plate overflow-hidden border-l-2 border-l-live-bright"
+      }
     >
-      <div className="flex flex-col gap-2 px-4 pt-3.5 sm:flex-row sm:items-center sm:justify-between sm:px-5">
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-          <StatusFlag
-            status={display.validationStatus}
-            needsReview={display.needsReview}
-          />
-          <span className="label text-fg-3">
-            {timestamp}
-            {isPending ? " · clears at midnight" : ""}
-          </span>
-        </div>
+      <div
+        className={`flex flex-col gap-2 px-4 pt-3.5 sm:flex-row sm:items-center ${
+          embedded ? "sm:justify-end sm:px-4" : "sm:justify-between sm:px-5"
+        }`}
+      >
+        {!embedded ? (
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+            <span className="label text-live">Pending approval</span>
+            <span className="label text-fg-3">
+              {timestamp} · clears at midnight
+            </span>
+          </div>
+        ) : null}
 
         {showActions && !isEditing ? (
           <div className="flex flex-wrap items-center gap-1">
@@ -351,7 +280,7 @@ export function EvidenceCaptureCard({
         ) : null}
       </div>
 
-      <div className="px-4 pb-4 pt-3 sm:px-5">
+      <div className={`px-4 pb-4 pt-3 ${embedded ? "" : "sm:px-5"}`}>
         {isConfirmingDelete ? (
           <ConfirmationPanel
             ariaLabel="Confirm draft deletion"
@@ -371,7 +300,9 @@ export function EvidenceCaptureCard({
             type="file"
             accept="image/jpeg,image/png,image/webp,image/avif"
             className="sr-only"
-            aria-label={photo ? "Replace photo evidence" : "Choose photo evidence again"}
+            aria-label={
+              photo ? "Replace photo evidence" : "Choose photo evidence again"
+            }
             aria-invalid={Boolean(photoError)}
             aria-describedby={photoError ? photoErrorId : undefined}
             disabled={isProcessingPhoto || isReviewSavePending}
@@ -390,7 +321,7 @@ export function EvidenceCaptureCard({
             <div className="space-y-2">
               <p className="label text-live">Temporary photo</p>
               <p className="text-[13px] leading-relaxed text-fg-2">
-                This photo stays on this device until you validate and save it.
+                This photo stays on this device until you approve and save it.
               </p>
               {photoRecoveryWarning ? (
                 <p role="alert" className="text-xs leading-relaxed text-danger">
@@ -434,7 +365,9 @@ export function EvidenceCaptureCard({
         ) : photoMissing ? (
           <div className="mb-4 space-y-3 rounded-lg border-l-2 border-danger bg-danger-soft p-3">
             <div>
-              <p className="text-sm font-medium text-danger">Photo needs attention</p>
+              <p className="text-sm font-medium text-danger">
+                Photo needs attention
+              </p>
               <p role="alert" className="mt-1 text-xs leading-relaxed text-danger">
                 {photoRecoveryWarning}
               </p>
@@ -482,7 +415,8 @@ export function EvidenceCaptureCard({
                 Original capture
               </label>
               <p className="text-[13px] leading-relaxed text-fg-2">
-                Correct the source note or student mention, then return to review.
+                Correct the source note or student mention, then return to the
+                prepared record.
               </p>
             </div>
             <Textarea
@@ -512,103 +446,28 @@ export function EvidenceCaptureCard({
           </div>
         ) : null}
 
-        {!isEditing && !reviewOpen ? (
-          <div className="space-y-3">
-            {draft.parsed.rawNote.trim() ? (
-              <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-                {display.studentMentions.map((mentionRef, index) => (
-                  <StudentMentionChip
-                    key={
-                      mentionRef.status === "resolved"
-                        ? mentionRef.student.id
-                        : `${mentionRef.mention}-${index}`
-                    }
-                    mentionRef={mentionRef}
-                  />
-                ))}
-              </div>
-            ) : null}
-
-            {draft.parsed.rawNote.trim() ? (
-              <NoteContent text={draft.parsed.rawNote} />
-            ) : (
-              <p className="text-sm text-fg-2">Photo evidence without a note.</p>
-            )}
-
-            {draft.parsed.rawNote.trim() ? (
-              <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
-                <DetailLabel kind="type">{display.evidenceType}</DetailLabel>
-                {display.topic ? <DetailLabel>{display.topic}</DetailLabel> : null}
-                {display.performance ? <DetailLabel>{display.performance}</DetailLabel> : null}
-                {display.behavior?.map((item) => (
-                  <DetailLabel key={item}>{item}</DetailLabel>
-                ))}
-                {display.tags.map((tag) => (
-                  <DetailLabel key={tag} kind="tag">
-                    {formatTagLabel(tag)}
-                  </DetailLabel>
-                ))}
-              </div>
-            ) : null}
-
-            {hasUnresolvedMentions ? (
-              <p className="rounded-md bg-live-soft px-3 py-2 text-[13px] leading-relaxed text-fg">
-                {unresolvedMentions.length === 1 ? (
-                  <>
-                    <span className="font-mono font-medium text-live">
-                      @{unresolvedMentions[0].mention}
-                    </span>{" "}
-                    isn&apos;t on your roster yet. Match or add the student when
-                    you review.
-                  </>
-                ) : (
-                  <>
-                    Some @mentions aren&apos;t on your roster yet. Correct the
-                    original capture before saving.
-                  </>
-                )}
-              </p>
-            ) : null}
-
-            {display.followUps.length > 0 ? (
-              <ul className="space-y-1 border-l-2 border-live-bright pl-3">
-                {display.followUps.map((item) => (
-                  <li key={item} className="text-[13px] leading-relaxed text-fg-2">
-                    <span className="label mr-2 text-live">Follow up</span>
-                    {item}
-                  </li>
-                ))}
-              </ul>
-            ) : null}
-
-            {isPending ? (
-              <div className="pt-1">
-                <Button type="button" variant="outline" onClick={() => onReviewOpenChange(true)}>
-                  Review before saving
-                  <ArrowRight aria-hidden="true" className="size-4" />
-                </Button>
-              </div>
-            ) : null}
-          </div>
-        ) : null}
-
-        <div hidden={!reviewOpen || isEditing}>
+        <div hidden={isEditing}>
           <InterpretationReviewPanel
             display={reviewDisplay}
             resetKey={draft.parsed.rawNote}
             onConfirm={handleConfirm}
-            onReviewLater={() => onReviewOpenChange(false)}
-            onCaptureAnother={onCaptureAnother}
+            detailsOpen={detailsOpen}
+            onDetailsOpenChange={onDetailsOpenChange}
+            onSaved={onSaved}
             rosterStudents={rosterStudents}
             classGroups={classGroups}
             onCreateStudent={onCreateStudent}
             onSavePendingChange={setIsReviewSavePending}
-            onResolvedStudentChange={setResolvedStudentOverride}
+            onResolvedStudentChange={(student) => {
+              setResolvedStudentOverride(student);
+              onResolvedStudentChange?.(student);
+            }}
             hasPhoto={Boolean(photo)}
             photoChangePending={isProcessingPhoto}
             photoResolutionRequired={photoMissing && !photo}
             capturedAt={capturedAt}
             workspaceCreatedAt={workspaceCreatedAt}
+            embedded={embedded}
           />
         </div>
       </div>

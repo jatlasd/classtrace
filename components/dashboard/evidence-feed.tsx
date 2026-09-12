@@ -9,6 +9,10 @@ import {
   type SaveValidatedEvidenceActionResult,
 } from "@/actions/evidence";
 import { createRosterStudent } from "@/actions/roster";
+import {
+  DraftReviewQueue,
+  type DraftReviewQueueItem,
+} from "@/components/dashboard/draft-review-queue";
 import { EvidenceCaptureCard } from "@/components/dashboard/evidence-capture-card";
 import type {
   CreateStudentFromReviewInput,
@@ -30,14 +34,12 @@ import {
 import { QuickCaptureCard } from "@/components/dashboard/quick-capture-card";
 import { SavedEvidenceRow } from "@/components/dashboard/saved-evidence-row";
 import { Button } from "@/components/ui/button";
-import type { InterpretationFields } from "@/lib/evidence/capture-validation";
 import {
-  captureMatchesSearch,
-  evidenceRecordMatchesSearch,
-  isValidated,
-  needsReview,
-  type FeedItem,
-} from "@/lib/evidence/evidence-feed-filtering";
+  resolveCaptureDisplay,
+  validateSingleStudentForInterpretation,
+  type InterpretationFields,
+} from "@/lib/evidence/capture-validation";
+import { evidenceRecordMatchesSearch } from "@/lib/evidence/evidence-feed-filtering";
 import {
   evidenceCalendarDayKey,
   formatEvidenceDayLabel,
@@ -80,12 +82,32 @@ type EvidenceFeedProps = {
   initialSearchQuery: string;
 };
 
-type DraftFeedItem = FeedItem & {
-  reviewOpen: boolean;
+type DraftFeedItem = {
+  id: string;
+  draft: NoteDraft;
+  timestamp: string;
+  timestampMs: number;
+  detailsOpen: boolean;
   photo?: PhotoDraft;
   photoMissing?: boolean;
   photoRecoveryWarning?: string;
+  resolvedStudent?: CaptureRosterStudent;
 };
+
+type FeedToast =
+  | {
+      id: number;
+      kind: "draft";
+      draftId: string;
+      message: string;
+    }
+  | {
+      id: number;
+      kind: "saved";
+      studentId: string;
+      studentName: string;
+      message: string;
+    };
 
 type BlockedCaptureStudentResolution = Extract<
   CaptureStudentResolution,
@@ -161,6 +183,9 @@ export function EvidenceFeed({
   const [captureEditError, setCaptureEditError] = useState("");
   const captureEditErrorRef = useRef<HTMLParagraphElement | null>(null);
   const [composerFocusRequestKey, setComposerFocusRequestKey] = useState(0);
+  const [isDraftQueueOpen, setIsDraftQueueOpen] = useState(false);
+  const [activeDraftId, setActiveDraftId] = useState<string | null>(null);
+  const [toast, setToast] = useState<FeedToast | null>(null);
   const [hiddenSavedEvidenceIds, setHiddenSavedEvidenceIds] = useState<
     Set<string>
   >(() => new Set());
@@ -199,7 +224,7 @@ export function EvidenceFeed({
             draft: buildNoteDraft(sessionDraft.rawNote),
             timestamp: formatSessionDraftTimestamp(sessionDraft.capturedAt),
             timestampMs: sessionDraft.capturedAt,
-            reviewOpen: false,
+            detailsOpen: false,
             photo: photo ?? undefined,
             photoMissing: sessionDraft.hasPhoto && !photo,
             photoRecoveryWarning:
@@ -235,9 +260,7 @@ export function EvidenceFeed({
     saveSessionDrafts(
       sessionStorageRef.current,
       workspaceId,
-      draftItems
-        .filter((item) => !isValidated(item))
-        .map((item) => ({
+      draftItems.map((item) => ({
           id: item.id,
           rawNote: item.draft.parsed.rawNote,
           capturedAt: item.timestampMs,
@@ -258,8 +281,8 @@ export function EvidenceFeed({
       const now = Date.now();
       loadSessionDrafts(storage, workspaceId, now);
       setDraftItems((current) => {
-        const active = current.filter(
-          (item) => isValidated(item) || isCurrentLocalDay(item.timestampMs, now)
+        const active = current.filter((item) =>
+          isCurrentLocalDay(item.timestampMs, now)
         );
         void pruneExpiredPhotoDrafts(now);
         return active;
@@ -311,43 +334,72 @@ export function EvidenceFeed({
     }
   }, [captureEditError]);
 
-  const savedEvidenceIds = useMemo(
-    () => new Set(initialEvidenceRecords.map((record) => record.id)),
-    [initialEvidenceRecords]
+  useEffect(() => {
+    if (!toast) return;
+
+    const timer = window.setTimeout(() => setToast(null), 5000);
+    return () => window.clearTimeout(timer);
+  }, [toast]);
+
+  const queueItems = useMemo<DraftReviewQueueItem[]>(
+    () =>
+      activeDraftItems.map((item) => {
+        const rosterForDisplay = item.resolvedStudent
+          ? activeRosterStudents.map((student) =>
+              student.id === item.resolvedStudent?.id &&
+              item.draft.parsed.mentions.length === 1
+                ? {
+                    ...student,
+                    mentionHandle: item.draft.parsed.mentions[0],
+                  }
+                : student
+            )
+          : activeRosterStudents;
+        const display = resolveCaptureDisplay(
+          item.draft,
+          undefined,
+          rosterForDisplay
+        );
+        const studentValidation = validateSingleStudentForInterpretation(display);
+        const studentLabel =
+          studentValidation.status === "valid_one_student"
+            ? studentValidation.studentName
+            : studentValidation.status === "unresolved_student" &&
+                studentValidation.studentNames.length === 1
+              ? `@${studentValidation.studentNames[0]}`
+              : "Student needed";
+        const note = display.cleanText.trim() || "Photo evidence without a note.";
+        const photoOnly = Boolean(item.photo) && !display.cleanText.trim();
+        const needsCorrection =
+          studentValidation.status !== "valid_one_student" ||
+          Boolean(item.photoMissing) ||
+          (!display.cleanText.trim() && !item.photo) ||
+          (!photoOnly &&
+            (!display.evidenceType.trim() || display.evidenceType === "Unclear"));
+        const filing = photoOnly
+          ? "Photo evidence"
+          : [
+              display.evidenceType,
+              display.topic,
+              display.performance,
+              ...(display.behavior ?? []),
+              ...display.tags.map((tag) => `#${tag.replace(/^#/, "")}`),
+            ]
+              .filter(Boolean)
+              .join(" · ");
+
+        return {
+          id: item.id,
+          studentLabel,
+          note,
+          filing,
+          timestamp: item.timestamp,
+          needsCorrection,
+          hasPhoto: Boolean(item.photo) || Boolean(item.photoMissing),
+        };
+      }),
+    [activeDraftItems, activeRosterStudents]
   );
-
-  const visibleDraftItems = useMemo(() => {
-    let result = activeDraftItems.filter(
-      (item) =>
-        !(
-          item.validation?.status === "validated" &&
-          item.validation.savedEvidenceId &&
-          (savedEvidenceIds.has(item.validation.savedEvidenceId) ||
-            hiddenSavedEvidenceIds.has(item.validation.savedEvidenceId))
-        )
-    );
-
-    if (filter === "validated") {
-      result = result.filter(isValidated);
-    } else if (filter === "needs_review") {
-      result = result.filter(needsReview);
-    }
-
-    if (searchQuery.trim()) {
-      result = result.filter((item) =>
-        captureMatchesSearch(item, searchQuery, activeRosterStudents)
-      );
-    }
-
-    return result;
-  }, [
-    activeDraftItems,
-    filter,
-    searchQuery,
-    activeRosterStudents,
-    savedEvidenceIds,
-    hiddenSavedEvidenceIds,
-  ]);
 
   const visibleEvidenceRecords = useMemo(() => {
     if (filter === "needs_review") {
@@ -365,12 +417,15 @@ export function EvidenceFeed({
     }
 
     return activeEvidenceRecords;
-  }, [filter, hiddenSavedEvidenceIds, initialEvidenceRecords, searchQuery]);
+  }, [
+    filter,
+    hiddenSavedEvidenceIds,
+    initialEvidenceRecords,
+    searchQuery,
+  ]);
 
-  const hasAnyFeedItems =
-    activeDraftItems.length > 0 || initialEvidenceRecords.length > 0;
-  const visibleFeedItemCount =
-    visibleDraftItems.length + visibleEvidenceRecords.length;
+  const hasAnyFeedItems = initialEvidenceRecords.length > 0;
+  const visibleFeedItemCount = visibleEvidenceRecords.length;
   const hasVisibleFeedItems = visibleFeedItemCount > 0;
 
   async function handleDraft(
@@ -398,7 +453,7 @@ export function EvidenceFeed({
       draft,
       timestamp: "Just now",
       timestampMs: identity.capturedAt,
-      reviewOpen: false,
+      detailsOpen: false,
       photo,
     };
     const photoStored = photo
@@ -420,6 +475,19 @@ export function EvidenceFeed({
       hasPhoto: Boolean(photo),
     });
     setDraftItems((current) => [newItem, ...current]);
+    setIsDraftQueueOpen(false);
+    setActiveDraftId(null);
+    setToast({
+      id: identity.capturedAt,
+      kind: "draft",
+      draftId: identity.id,
+      message:
+        resolution.status === "resolved_one_student"
+          ? `Draft added for ${resolution.student.displayName}.`
+          : resolution.status === "unresolved_student"
+            ? `Draft added for @${resolution.unresolvedMentions[0]}.`
+            : "Photo draft added.",
+    });
   }
 
   function handleInvalidCaptureEdit(
@@ -454,7 +522,7 @@ export function EvidenceFeed({
 
   async function handleValidate(
     id: string,
-    fields: InterpretationFields,
+    _fields: InterpretationFields,
     saveInput: SaveValidatedEvidenceActionInput,
     reviewedPhoto?: PhotoDraft
   ): Promise<SaveValidatedEvidenceActionResult> {
@@ -473,25 +541,33 @@ export function EvidenceFeed({
     removeSessionDraft(sessionStorageRef.current, workspaceId, id);
     await removePhotoDraft(workspaceId, id);
 
-    setDraftItems((current) =>
-      current.map((item) =>
-        item.id === id
-          ? {
-              ...item,
-              validation: {
-                status: "validated" as const,
-                fields,
-                evidenceNote: saveInput.evidenceNote,
-                validatedAt: Date.now(),
-                savedEvidenceId: result.evidenceId,
-                savedAt: Date.now(),
-              },
-            }
-          : item
-      )
-    );
-    router.refresh();
     return result;
+  }
+
+  function handleSaveCompleted(
+    id: string,
+    result: Extract<SaveValidatedEvidenceActionResult, { success: true }>,
+    fields: InterpretationFields,
+    saveInput: SaveValidatedEvidenceActionInput
+  ): void {
+    const studentName = fields.students[0];
+    const wasLastDraft = activeDraftItems.length === 1;
+    setDraftItems((current) => current.filter((item) => item.id !== id));
+    setActiveDraftId(null);
+    if (wasLastDraft) {
+      setIsDraftQueueOpen(false);
+      setComposerFocusRequestKey((current) => current + 1);
+    }
+    setToast({
+      id: Date.now(),
+      kind: "saved",
+      studentId: saveInput.rosterStudentId,
+      studentName,
+      message: result.isFirstWorkspaceEvidence
+        ? `First observation saved to ${studentName}'s trace.`
+        : `Saved to ${studentName}'s trace.`,
+    });
+    router.refresh();
   }
 
   function handleEditCapture(id: string, rawNote: string): boolean {
@@ -530,12 +606,13 @@ export function EvidenceFeed({
           return item;
         }
 
-        const rawChanged = trimmed !== item.draft.parsed.rawNote;
-
         return {
           ...item,
           draft: nextDraft,
-          validation: rawChanged ? undefined : item.validation,
+          resolvedStudent:
+            trimmed === item.draft.parsed.rawNote
+              ? item.resolvedStudent
+              : undefined,
         };
       })
     );
@@ -547,6 +624,9 @@ export function EvidenceFeed({
     removeSessionDraft(sessionStorageRef.current, workspaceId, id);
     void removePhotoDraft(workspaceId, id);
     setDraftItems((current) => current.filter((item) => item.id !== id));
+    setToast((current) =>
+      current?.kind === "draft" && current.draftId === id ? null : current
+    );
   }
 
   async function handlePhotoChanged(id: string, photo: PhotoDraft): Promise<void> {
@@ -595,10 +675,23 @@ export function EvidenceFeed({
     );
   }
 
-  function handleReviewOpenChange(id: string, reviewOpen: boolean): void {
+  function handleDetailsOpenChange(id: string, detailsOpen: boolean): void {
     setDraftItems((current) =>
       current.map((item) =>
-        item.id === id ? { ...item, reviewOpen } : item
+        item.id === id ? { ...item, detailsOpen } : item
+      )
+    );
+  }
+
+  function handleResolvedStudentChange(
+    id: string,
+    student: CaptureRosterStudent | null
+  ): void {
+    setDraftItems((current) =>
+      current.map((item) =>
+        item.id === id
+          ? { ...item, resolvedStudent: student ?? undefined }
+          : item
       )
     );
   }
@@ -656,6 +749,41 @@ export function EvidenceFeed({
     return `${routes.feed}${params.size ? `?${params}` : ""}`;
   }
 
+  function renderCaptureCard(item: DraftFeedItem) {
+    return (
+      <EvidenceCaptureCard
+        draft={item.draft}
+        timestamp={item.timestamp}
+        capturedAt={item.timestampMs}
+        workspaceCreatedAt={workspaceCreatedAt}
+        rosterStudents={activeRosterStudents}
+        classGroups={classGroups}
+        onValidate={(fields, saveInput, reviewedPhoto) =>
+          handleValidate(item.id, fields, saveInput, reviewedPhoto)
+        }
+        onSaved={(result, fields, saveInput) =>
+          handleSaveCompleted(item.id, result, fields, saveInput)
+        }
+        onResolvedStudentChange={(student) =>
+          handleResolvedStudentChange(item.id, student)
+        }
+        onCreateStudent={handleCreateStudent}
+        photo={item.photo}
+        photoMissing={item.photoMissing}
+        photoRecoveryWarning={item.photoRecoveryWarning}
+        onPhotoChange={(photo) => handlePhotoChanged(item.id, photo)}
+        onPhotoRemove={() => handlePhotoRemoved(item.id)}
+        onEdit={(rawNote) => handleEditCapture(item.id, rawNote)}
+        onDelete={() => handleDeleteCapture(item.id)}
+        detailsOpen={item.detailsOpen}
+        onDetailsOpenChange={(detailsOpen) =>
+          handleDetailsOpenChange(item.id, detailsOpen)
+        }
+        embedded
+      />
+    );
+  }
+
   function renderFeedList() {
     if (rosterSetupNeeded) {
       return (
@@ -675,7 +803,7 @@ export function EvidenceFeed({
       return (
         <FeedEmptyState
           title="Nothing here yet"
-          body="Drafts stay in this browser until you save or delete them, and clear at midnight. Saved evidence stays in the student's trace."
+          body="Approved observations will collect here. Drafts stay in the review queue until you save or delete them, and clear at midnight."
         />
       );
     }
@@ -694,51 +822,9 @@ export function EvidenceFeed({
     }
 
     return (
-      <div className="space-y-3">
-        {visibleDraftItems.length > 0 ? (
-          <h3 className="flex items-baseline gap-3 pb-1">
-            <span className="label flex items-center gap-2 text-live">
-              <span aria-hidden="true" className="size-1.5 rounded-full bg-live-bright" />
-              Drafts
-            </span>
-            <span className="font-mono text-sm tabular-nums text-fg-3">
-              {visibleDraftItems.filter(needsReview).length} need review
-            </span>
-          </h3>
-        ) : null}
-        {visibleDraftItems.map((item) => (
-          <div key={item.id}>
-            <EvidenceCaptureCard
-              draft={item.draft}
-              timestamp={item.timestamp}
-              capturedAt={item.timestampMs}
-              workspaceCreatedAt={workspaceCreatedAt}
-              validation={item.validation}
-              rosterStudents={activeRosterStudents}
-              classGroups={classGroups}
-              onValidate={(fields, saveInput, reviewedPhoto) =>
-                handleValidate(item.id, fields, saveInput, reviewedPhoto)
-              }
-              onCreateStudent={handleCreateStudent}
-              photo={item.photo}
-              photoMissing={item.photoMissing}
-              photoRecoveryWarning={item.photoRecoveryWarning}
-              onPhotoChange={(photo) => handlePhotoChanged(item.id, photo)}
-              onPhotoRemove={() => handlePhotoRemoved(item.id)}
-              onEdit={(rawNote) => handleEditCapture(item.id, rawNote)}
-              onDelete={() => handleDeleteCapture(item.id)}
-              reviewOpen={item.reviewOpen}
-              onReviewOpenChange={(reviewOpen) =>
-                handleReviewOpenChange(item.id, reviewOpen)
-              }
-              onCaptureAnother={() =>
-                setComposerFocusRequestKey((current) => current + 1)
-              }
-            />
-          </div>
-        ))}
+      <div>
         {visibleEvidenceRecords.length > 0 ? (
-          <div className={visibleDraftItems.length > 0 ? "pt-6" : ""}>
+          <div>
             {visibleEvidenceRecords.map((record, index) => {
               const newDay =
                 index === 0 ||
@@ -791,6 +877,20 @@ export function EvidenceFeed({
             onDraft={handleDraft}
           />
         )}
+
+        {!rosterSetupNeeded ? (
+          <DraftReviewQueue
+            items={queueItems}
+            open={isDraftQueueOpen}
+            onOpenChange={setIsDraftQueueOpen}
+            activeDraftId={activeDraftId}
+            onActiveDraftChange={setActiveDraftId}
+            renderReview={(id) => {
+              const item = activeDraftItems.find((draft) => draft.id === id);
+              return item ? renderCaptureCard(item) : null;
+            }}
+          />
+        ) : null}
       </section>
 
       <section
@@ -804,7 +904,7 @@ export function EvidenceFeed({
               <p className="label mt-2 text-fg-3">
                 {hasVisibleFeedItems
                   ? feedItemCountLabel(visibleFeedItemCount)
-                  : "Drafts and saved evidence will appear here."}
+                  : "Saved evidence will appear here."}
                 <span aria-hidden="true"> · </span>
                 Newest first
               </p>
@@ -865,6 +965,51 @@ export function EvidenceFeed({
           ) : null}
         </div>
       </section>
+
+      {toast ? (
+        <div
+          role="status"
+          aria-live="polite"
+          className={`fixed inset-x-4 bottom-[calc(5.5rem+env(safe-area-inset-bottom))] z-[80] mx-auto flex max-w-md items-center gap-3 rounded-xl border bg-plate px-3.5 py-3 shadow-lift lg:inset-x-auto lg:bottom-6 lg:right-6 lg:mx-0 ${
+            toast.kind === "draft" ? "border-live-bright" : "border-line-2"
+          }`}
+        >
+          <p className="min-w-0 flex-1 text-sm font-medium text-fg">
+            {toast.message}
+          </p>
+          {toast.kind === "draft" ? (
+            <Button
+              type="button"
+              size="sm"
+              variant="ghost"
+              onClick={() => {
+                setActiveDraftId(toast.draftId);
+                setIsDraftQueueOpen(true);
+                setToast(null);
+              }}
+            >
+              Review
+            </Button>
+          ) : (
+            <Button asChild size="sm" variant="ghost">
+              <Link
+                href={routes.student(toast.studentId)}
+                onClick={() => setToast(null)}
+              >
+                Open trace
+              </Link>
+            </Button>
+          )}
+          <button
+            type="button"
+            aria-label="Dismiss notification"
+            onClick={() => setToast(null)}
+            className="flex size-8 shrink-0 items-center justify-center rounded-full text-fg-3 outline-none transition-colors hover:bg-well hover:text-fg focus-visible:ring-2 focus-visible:ring-live-bright"
+          >
+            <span aria-hidden="true">×</span>
+          </button>
+        </div>
+      ) : null}
     </div>
   );
 }
