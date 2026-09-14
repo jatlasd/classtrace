@@ -5,6 +5,7 @@ import {
   useCallback,
   useEffect,
   useId,
+  useLayoutEffect,
   useRef,
   type ReactNode,
 } from "react";
@@ -17,6 +18,10 @@ const FOCUSABLE_SELECTOR = [
   "textarea:not([disabled])",
   "[tabindex]:not([tabindex='-1'])",
 ].join(",");
+
+const DESKTOP_QUEUE_EDGE_GAP = 24;
+const DESKTOP_QUEUE_MIN_HEIGHT = 320;
+const DESKTOP_QUEUE_TRIGGER_GAP = 8;
 
 function getVisibleTabStops(dialog: HTMLElement | null): HTMLElement[] {
   if (!dialog) {
@@ -71,6 +76,58 @@ export function DraftReviewQueue({
   const previousItemIdsRef = useRef(items.map((item) => item.id));
   const previousActiveDraftIdRef = useRef(activeDraftId);
   const visibleOpen = open && items.length > 0;
+
+  useLayoutEffect(() => {
+    if (!visibleOpen) return;
+
+    const dialog = dialogRef.current;
+    const trigger = triggerRef.current;
+    if (!dialog || !trigger) return;
+
+    function positionDesktopQueue(): void {
+      if (window.innerWidth < 640) return;
+
+      const triggerBounds = trigger.getBoundingClientRect();
+      const latestViewportHeight = window.visualViewport?.height ?? window.innerHeight;
+      const latestViewportWidth = window.visualViewport?.width ?? window.innerWidth;
+      const latestViewportOffsetTop = window.visualViewport?.offsetTop ?? 0;
+      const latestViewportOffsetLeft = window.visualViewport?.offsetLeft ?? 0;
+      const maximumTop =
+        latestViewportOffsetTop +
+        latestViewportHeight -
+        DESKTOP_QUEUE_EDGE_GAP -
+        DESKTOP_QUEUE_MIN_HEIGHT;
+      const top = Math.max(
+        latestViewportOffsetTop + DESKTOP_QUEUE_EDGE_GAP,
+        Math.min(
+          triggerBounds.bottom + DESKTOP_QUEUE_TRIGGER_GAP,
+          maximumTop
+        )
+      );
+      const right = Math.max(
+        DESKTOP_QUEUE_EDGE_GAP,
+        latestViewportOffsetLeft +
+          latestViewportWidth -
+          triggerBounds.right
+      );
+
+      dialog.style.setProperty("--draft-queue-top", `${top}px`);
+      dialog.style.setProperty("--draft-queue-right", `${right}px`);
+      dialog.style.setProperty(
+        "--draft-queue-max-height",
+        `${latestViewportOffsetTop + latestViewportHeight - top - DESKTOP_QUEUE_EDGE_GAP}px`
+      );
+    }
+
+    positionDesktopQueue();
+    window.addEventListener("resize", positionDesktopQueue);
+    window.visualViewport?.addEventListener("resize", positionDesktopQueue);
+
+    return () => {
+      window.removeEventListener("resize", positionDesktopQueue);
+      window.visualViewport?.removeEventListener("resize", positionDesktopQueue);
+    };
+  }, [visibleOpen]);
 
   const closeQueue = useCallback(() => {
     onOpenChange(false);
@@ -202,7 +259,7 @@ export function DraftReviewQueue({
           role="dialog"
           aria-modal="true"
           aria-labelledby={titleId}
-          className="fixed inset-x-0 bottom-0 z-50 flex max-h-[88dvh] flex-col rounded-t-3xl border-t border-line bg-plate pb-[env(safe-area-inset-bottom)] shadow-lift sm:absolute sm:inset-x-auto sm:bottom-auto sm:right-0 sm:top-[calc(100%+0.5rem)] sm:max-h-[min(72dvh,46rem)] sm:w-[min(42rem,calc(100vw-3rem))] sm:rounded-xl sm:border"
+          className="fixed inset-x-0 bottom-0 z-50 flex max-h-[88dvh] flex-col rounded-t-3xl border-t border-line bg-plate pb-[env(safe-area-inset-bottom)] shadow-lift sm:inset-x-auto sm:bottom-auto sm:right-[var(--draft-queue-right)] sm:top-[var(--draft-queue-top)] sm:max-h-[var(--draft-queue-max-height)] sm:w-[min(42rem,calc(100vw-3rem))] sm:rounded-xl sm:border sm:pb-0"
         >
             <header className="flex shrink-0 items-center justify-between gap-4 border-b border-line px-4 py-3 sm:px-5">
               <div>
@@ -228,7 +285,10 @@ export function DraftReviewQueue({
               </button>
             </header>
 
-            <ul className="min-h-0 overflow-y-auto overscroll-contain">
+            <ul
+              aria-label="Drafts awaiting review"
+              className="min-h-0 flex-1 overflow-y-auto overscroll-contain [scrollbar-gutter:stable]"
+            >
               {items.map((item) => {
                 const expanded = activeDraftId === item.id;
                 const reviewId = `${panelId}-${item.id}`;
