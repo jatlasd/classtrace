@@ -80,9 +80,9 @@ export function DraftReviewQueue({
   useLayoutEffect(() => {
     if (!visibleOpen) return;
 
+    if (!dialogRef.current || !triggerRef.current) return;
     const dialog = dialogRef.current;
     const trigger = triggerRef.current;
-    if (!dialog || !trigger) return;
 
     function positionDesktopQueue(): void {
       if (window.innerWidth < 640) return;

@@ -111,7 +111,7 @@ afterEach(() => {
 
 describe("DraftReviewQueue", () => {
   it("keeps the desktop queue between its trigger and the viewport edge", () => {
-    vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockImplementation(function () {
+    vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockImplementation(function (this: HTMLElement) {
       if (this.getAttribute("aria-label") === "Drafts to review, 3") {
         return {
           bottom: 520,
