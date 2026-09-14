@@ -1,7 +1,10 @@
 "use client";
 
-import { useId, useRef, useState } from "react";
-import { InterpretationReviewPanel } from "@/components/dashboard/interpretation-review-panel";
+import { useEffect, useId, useRef, useState } from "react";
+import {
+  InterpretationReviewPanel,
+  type DraftReviewProjection,
+} from "@/components/dashboard/interpretation-review-panel";
 import { LocalPhotoPreview } from "@/components/evidence/local-photo-preview";
 import type {
   CreateStudentFromReviewInput,
@@ -25,6 +28,10 @@ import {
 } from "@/lib/evidence/photo-draft-storage";
 import { ImagePlus, Trash2, X } from "lucide-react";
 
+export type CaptureEditResult =
+  | { success: true }
+  | { success: false; error: string };
+
 type EvidenceCaptureCardProps = {
   draft: NoteDraft;
   timestamp?: string;
@@ -38,7 +45,7 @@ type EvidenceCaptureCardProps = {
     saveInput: ValidatedEvidenceSaveInput,
     reviewedPhoto?: PhotoDraft
   ) => Promise<ValidatedEvidenceSaveResult>;
-  onEdit?: (rawNote: string) => boolean;
+  onEdit?: (rawNote: string) => CaptureEditResult;
   onDelete?: () => void;
   detailsOpen: boolean;
   onDetailsOpenChange: (open: boolean) => void;
@@ -48,6 +55,7 @@ type EvidenceCaptureCardProps = {
     saveInput: ValidatedEvidenceSaveInput
   ) => void;
   onResolvedStudentChange?: (student: CaptureRosterStudent | null) => void;
+  onReviewProjectionChange?: (projection: DraftReviewProjection) => void;
   onCreateStudent: (
     input: CreateStudentFromReviewInput
   ) => Promise<CreateStudentFromReviewResult>;
@@ -98,6 +106,7 @@ export function EvidenceCaptureCard({
   onDetailsOpenChange,
   onSaved,
   onResolvedStudentChange,
+  onReviewProjectionChange,
   onCreateStudent,
   photo,
   photoMissing = false,
@@ -107,16 +116,19 @@ export function EvidenceCaptureCard({
   embedded = false,
 }: EvidenceCaptureCardProps) {
   const sourceEditorId = useId();
+  const sourceEditErrorId = useId();
   const photoErrorId = useId();
   const [isReviewSavePending, setIsReviewSavePending] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
   const [editText, setEditText] = useState("");
+  const [sourceEditError, setSourceEditError] = useState("");
   const [resolvedStudentOverride, setResolvedStudentOverride] =
     useState<CaptureRosterStudent | null>(null);
   const [detailsWereOpenBeforeEdit, setDetailsWereOpenBeforeEdit] =
     useState(false);
   const deleteButtonRef = useRef<HTMLButtonElement>(null);
+  const sourceEditErrorRef = useRef<HTMLParagraphElement>(null);
   const photoInputRef = useRef<HTMLInputElement>(null);
   const [photoError, setPhotoError] = useState("");
   const [isProcessingPhoto, setIsProcessingPhoto] = useState(false);
@@ -138,6 +150,12 @@ export function EvidenceCaptureCard({
   const reviewDisplay = draftToDisplay(draft, displayRosterStudents);
   const showActions = Boolean((onEdit && draft.parsed.rawNote.trim()) || onDelete);
   const canSaveEdit = editText.trim().length > 0;
+
+  useEffect(() => {
+    if (sourceEditError) {
+      sourceEditErrorRef.current?.focus();
+    }
+  }, [sourceEditError]);
 
   async function handlePhotoFile(file: File | undefined): Promise<void> {
     if (!file) return;
@@ -182,6 +200,7 @@ export function EvidenceCaptureCard({
     }
 
     setEditText(draft.parsed.rawNote);
+    setSourceEditError("");
     setDetailsWereOpenBeforeEdit(detailsOpen);
     setIsConfirmingDelete(false);
     onDetailsOpenChange(false);
@@ -193,18 +212,23 @@ export function EvidenceCaptureCard({
     if (!trimmed) {
       return;
     }
-    const saved = onEdit?.(trimmed) ?? true;
-    if (saved) {
-      if (trimmed !== draft.parsed.rawNote) {
-        setResolvedStudentOverride(null);
-        onResolvedStudentChange?.(null);
-      }
-      setIsEditing(false);
-      onDetailsOpenChange(true);
+    const result = onEdit?.(trimmed) ?? { success: true };
+    if (!result.success) {
+      setSourceEditError(result.error);
+      return;
     }
+
+    setSourceEditError("");
+    if (trimmed !== draft.parsed.rawNote) {
+      setResolvedStudentOverride(null);
+      onResolvedStudentChange?.(null);
+    }
+    setIsEditing(false);
+    onDetailsOpenChange(true);
   }
 
   function handleCancelEdit() {
+    setSourceEditError("");
     setIsEditing(false);
     onDetailsOpenChange(detailsWereOpenBeforeEdit);
   }
@@ -305,6 +329,7 @@ export function EvidenceCaptureCard({
             }
             aria-invalid={Boolean(photoError)}
             aria-describedby={photoError ? photoErrorId : undefined}
+            tabIndex={-1}
             disabled={isProcessingPhoto || isReviewSavePending}
             onChange={(event) => void handlePhotoFile(event.target.files?.[0])}
           />
@@ -422,9 +447,27 @@ export function EvidenceCaptureCard({
             <Textarea
               id={sourceEditorId}
               value={editText}
-              onChange={(event) => setEditText(event.target.value)}
+              onChange={(event) => {
+                setEditText(event.target.value);
+                setSourceEditError("");
+              }}
+              aria-invalid={Boolean(sourceEditError)}
+              aria-describedby={
+                sourceEditError ? sourceEditErrorId : undefined
+              }
               className="min-h-[120px] text-[17px] leading-relaxed"
             />
+            {sourceEditError ? (
+              <p
+                ref={sourceEditErrorRef}
+                id={sourceEditErrorId}
+                role="alert"
+                tabIndex={-1}
+                className="text-sm text-danger outline-none focus-visible:ring-2 focus-visible:ring-live-bright focus-visible:ring-offset-2 focus-visible:ring-offset-plate"
+              >
+                {sourceEditError}
+              </p>
+            ) : null}
             <div className="flex flex-wrap gap-2">
               <Button
                 type="button"
@@ -458,6 +501,7 @@ export function EvidenceCaptureCard({
             classGroups={classGroups}
             onCreateStudent={onCreateStudent}
             onSavePendingChange={setIsReviewSavePending}
+            onReviewProjectionChange={onReviewProjectionChange}
             onResolvedStudentChange={(student) => {
               setResolvedStudentOverride(student);
               onResolvedStudentChange?.(student);

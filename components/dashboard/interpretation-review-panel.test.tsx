@@ -35,6 +35,9 @@ type PanelHarnessProps = {
   photoResolutionRequired?: boolean;
   onConfirm?: React.ComponentProps<typeof InterpretationReviewPanel>["onConfirm"];
   onSaved?: React.ComponentProps<typeof InterpretationReviewPanel>["onSaved"];
+  onReviewProjectionChange?: React.ComponentProps<
+    typeof InterpretationReviewPanel
+  >["onReviewProjectionChange"];
 };
 
 function PanelHarness({
@@ -47,6 +50,7 @@ function PanelHarness({
     isFirstWorkspaceEvidence: false,
   }),
   onSaved,
+  onReviewProjectionChange,
 }: PanelHarnessProps) {
   const [detailsOpen, setDetailsOpen] = useState(false);
 
@@ -57,6 +61,7 @@ function PanelHarness({
       onDetailsOpenChange={setDetailsOpen}
       onConfirm={onConfirm}
       onSaved={onSaved}
+      onReviewProjectionChange={onReviewProjectionChange}
       rosterStudents={roster}
       classGroups={classGroups}
       onCreateStudent={vi.fn()}
@@ -106,6 +111,95 @@ describe("InterpretationReviewPanel", () => {
       screen.getByText("Mary used the strategy without prompting.")
     ).toBeTruthy();
     expect(screen.queryByLabelText("Evidence note")).toBeNull();
+  });
+
+  it("reports the current reviewed note and filing projection", async () => {
+    const onReviewProjectionChange = vi.fn();
+    render(<PanelHarness onReviewProjectionChange={onReviewProjectionChange} />);
+
+    await waitFor(() =>
+      expect(onReviewProjectionChange).toHaveBeenLastCalledWith({
+        note: "used a reading strategy independently #reading",
+        filing: "General observation · reading · independent · #reading",
+        needsCorrection: false,
+      })
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Edit note or details" }));
+    fireEvent.change(screen.getByLabelText("Evidence note"), {
+      target: { value: "Mary explained the strategy carefully." },
+    });
+    fireEvent.change(screen.getByLabelText("Evidence type"), {
+      target: { value: "Academic check-in" },
+    });
+    fireEvent.change(screen.getByLabelText("Topic / skill"), {
+      target: { value: "fractions" },
+    });
+    fireEvent.change(screen.getByLabelText("Performance"), {
+      target: { value: "independent" },
+    });
+    fireEvent.change(screen.getByLabelText("Behavior / work habit"), {
+      target: { value: "careful, persistent" },
+    });
+    fireEvent.change(screen.getByLabelText("Tags"), {
+      target: { value: "#math, review" },
+    });
+
+    await waitFor(() =>
+      expect(onReviewProjectionChange).toHaveBeenLastCalledWith({
+        note: "Mary explained the strategy carefully.",
+        filing:
+          "Academic check-in · fractions · independent · careful · persistent · #math · #review",
+        needsCorrection: false,
+      })
+    );
+  });
+
+  it("reports correction changes for unclear type, invalid date, and empty note", async () => {
+    const onReviewProjectionChange = vi.fn();
+    render(
+      <PanelHarness
+        display={{ ...buildDisplay(), evidenceType: "Unclear" }}
+        onReviewProjectionChange={onReviewProjectionChange}
+      />
+    );
+
+    await waitFor(() =>
+      expect(onReviewProjectionChange).toHaveBeenLastCalledWith(
+        expect.objectContaining({ needsCorrection: true })
+      )
+    );
+    fireEvent.change(screen.getByLabelText("Evidence type"), {
+      target: { value: "Academic check-in" },
+    });
+    await waitFor(() =>
+      expect(onReviewProjectionChange).toHaveBeenLastCalledWith(
+        expect.objectContaining({ needsCorrection: false })
+      )
+    );
+
+    fireEvent.change(screen.getByLabelText("Evidence date"), {
+      target: { value: "2026-05-31" },
+    });
+    await waitFor(() =>
+      expect(onReviewProjectionChange).toHaveBeenLastCalledWith(
+        expect.objectContaining({ needsCorrection: true })
+      )
+    );
+
+    fireEvent.change(screen.getByLabelText("Evidence date"), {
+      target: { value: "2026-06-16" },
+    });
+    fireEvent.change(screen.getByLabelText("Evidence note"), {
+      target: { value: "" },
+    });
+    await waitFor(() =>
+      expect(onReviewProjectionChange).toHaveBeenLastCalledWith({
+        note: "Evidence note needed.",
+        filing: "Academic check-in · reading · independent · #reading",
+        needsCorrection: true,
+      })
+    );
   });
 
   it("submits exactly the normalized prepared record without the raw capture", async () => {

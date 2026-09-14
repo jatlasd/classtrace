@@ -6,6 +6,7 @@ import {
   fireEvent,
   render,
   screen,
+  waitFor,
   within,
 } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
@@ -35,7 +36,9 @@ const draft = {
 };
 
 type CaptureHarnessProps = {
-  onEdit?: (rawNote: string) => boolean;
+  onEdit?: (rawNote: string) =>
+    | { success: true }
+    | { success: false; error: string };
   onDelete?: () => void;
   captureDraft?: typeof draft;
   captureRoster?: typeof roster;
@@ -77,11 +80,11 @@ function CaptureHarness({
         })
       }
       onEdit={(rawNote) => {
-        const accepted = onEdit?.(rawNote) ?? true;
-        if (accepted) {
+        const result = onEdit?.(rawNote) ?? { success: true as const };
+        if (result.success) {
           setCurrentDraft(buildNoteDraft(rawNote));
         }
-        return accepted;
+        return result;
       }}
       onDelete={onDelete}
       detailsOpen={detailsOpen}
@@ -104,7 +107,12 @@ afterEach(() => {
 
 describe("EvidenceCaptureCard review flow", () => {
   it("shows compact approval, then preserves edits when details collapse", () => {
-    render(<CaptureHarness onEdit={vi.fn(() => true)} onDelete={vi.fn()} />);
+    render(
+      <CaptureHarness
+        onEdit={vi.fn(() => ({ success: true as const }))}
+        onDelete={vi.fn()}
+      />
+    );
 
     expect(
       screen.getByRole("heading", { name: "Prepared for approval" })
@@ -135,7 +143,7 @@ describe("EvidenceCaptureCard review flow", () => {
   }, 10_000);
 
   it("keeps original-capture editing distinct from evidence review", () => {
-    const onEdit = vi.fn(() => true);
+    const onEdit = vi.fn(() => ({ success: true as const }));
     render(<CaptureHarness onEdit={onEdit} onDelete={vi.fn()} />);
 
     fireEvent.click(
@@ -154,6 +162,42 @@ describe("EvidenceCaptureCard review flow", () => {
     expect(onEdit).toHaveBeenCalledWith("@Mary read independently #reading");
   });
 
+  it("keeps an invalid original edit local to the active review", async () => {
+    const onEdit = vi.fn(() => ({
+      success: false as const,
+      error: "Mention one student before saving this edit.",
+    }));
+    render(<CaptureHarness onEdit={onEdit} onDelete={vi.fn()} />);
+
+    fireEvent.click(
+      screen.getByRole("button", { name: "Edit original capture" })
+    );
+    const sourceNote = screen.getByLabelText(
+      "Original capture"
+    ) as HTMLTextAreaElement;
+    fireEvent.change(sourceNote, {
+      target: { value: "This has no student mention." },
+    });
+    fireEvent.click(
+      screen.getByRole("button", { name: "Save original capture" })
+    );
+
+    const alert = await screen.findByRole("alert");
+    expect(alert.textContent).toBe("Mention one student before saving this edit.");
+    expect(document.activeElement).toBe(alert);
+    expect(sourceNote.value).toBe("This has no student mention.");
+    expect(sourceNote.getAttribute("aria-invalid")).toBe("true");
+    expect(sourceNote.getAttribute("aria-describedby")).toBe(alert.id);
+    expect(screen.getByRole("button", { name: "Cancel" })).toBeTruthy();
+
+    fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
+    expect(screen.queryByRole("alert")).toBeNull();
+    fireEvent.click(
+      screen.getByRole("button", { name: "Edit original capture" })
+    );
+    await waitFor(() => expect(screen.queryByRole("alert")).toBeNull());
+  });
+
   it("keeps an existing-student match after an unchanged source edit", () => {
     const unresolvedDraft = {
       ...buildNoteDraft("@Stacy used a reading strategy independently #reading"),
@@ -162,7 +206,7 @@ describe("EvidenceCaptureCard review flow", () => {
     render(
       <CaptureHarness
         captureDraft={unresolvedDraft}
-        onEdit={vi.fn(() => true)}
+        onEdit={vi.fn(() => ({ success: true as const }))}
         onDelete={vi.fn()}
       />
     );
@@ -195,7 +239,7 @@ describe("EvidenceCaptureCard review flow", () => {
     render(
       <CaptureHarness
         captureDraft={unresolvedDraft}
-        onEdit={vi.fn(() => true)}
+        onEdit={vi.fn(() => ({ success: true as const }))}
         onDelete={vi.fn()}
       />
     );
@@ -223,7 +267,12 @@ describe("EvidenceCaptureCard review flow", () => {
 
   it("uses an inline confirmation before deleting a draft", () => {
     const onDelete = vi.fn();
-    render(<CaptureHarness onEdit={vi.fn(() => true)} onDelete={onDelete} />);
+    render(
+      <CaptureHarness
+        onEdit={vi.fn(() => ({ success: true as const }))}
+        onDelete={onDelete}
+      />
+    );
 
     const deleteButton = screen.getByRole("button", { name: "Delete draft" });
     fireEvent.click(deleteButton);
@@ -273,6 +322,25 @@ describe("EvidenceCaptureCard review flow", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Continue without photo" }));
     expect(onPhotoRemove).toHaveBeenCalledOnce();
+  });
+
+  it("keeps the proxied review photo input out of the tab order", () => {
+    const inputClick = vi.spyOn(HTMLInputElement.prototype, "click");
+    render(
+      <CaptureHarness
+        photoMissing
+        photoRecoveryWarning="Choose the photo again before saving."
+      />
+    );
+
+    const input = screen.getByLabelText("Choose photo evidence again");
+    expect(input.getAttribute("tabindex")).toBe("-1");
+    const replaceButton = screen.getByRole("button", {
+      name: "Choose photo again",
+    });
+    expect((replaceButton as HTMLButtonElement).disabled).toBe(false);
+    fireEvent.click(replaceButton);
+    expect(inputClick).toHaveBeenCalled();
   });
 
   it("waits for replacement persistence and submits the reviewed photo snapshot", async () => {

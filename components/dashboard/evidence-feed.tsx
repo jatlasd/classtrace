@@ -13,7 +13,11 @@ import {
   DraftReviewQueue,
   type DraftReviewQueueItem,
 } from "@/components/dashboard/draft-review-queue";
-import { EvidenceCaptureCard } from "@/components/dashboard/evidence-capture-card";
+import {
+  EvidenceCaptureCard,
+  type CaptureEditResult,
+} from "@/components/dashboard/evidence-capture-card";
+import type { DraftReviewProjection } from "@/components/dashboard/interpretation-review-panel";
 import type {
   CreateStudentFromReviewInput,
   CreateStudentFromReviewResult,
@@ -185,6 +189,14 @@ export function EvidenceFeed({
   const [composerFocusRequestKey, setComposerFocusRequestKey] = useState(0);
   const [isDraftQueueOpen, setIsDraftQueueOpen] = useState(false);
   const [activeDraftId, setActiveDraftId] = useState<string | null>(null);
+  const [reviewProjections, setReviewProjections] = useState<
+    Map<string, DraftReviewProjection>
+  >(() => new Map());
+  const [suppressQueueFocusRecovery, setSuppressQueueFocusRecovery] =
+    useState(false);
+  const draftItemsRef = useRef<DraftFeedItem[]>([]);
+  const previousDraftCountRef = useRef(0);
+  const draftRemovalShouldRecoverFocusRef = useRef(false);
   const [toast, setToast] = useState<FeedToast | null>(null);
   const [hiddenSavedEvidenceIds, setHiddenSavedEvidenceIds] = useState<
     Set<string>
@@ -207,6 +219,70 @@ export function EvidenceFeed({
     );
   }, [locallyCreatedRosterStudents, rosterStudents]);
   const rosterSetupNeeded = activeRosterStudents.length === 0;
+
+  function setReviewProjection(
+    id: string,
+    projection: DraftReviewProjection
+  ): void {
+    setReviewProjections((current) => {
+      const previous = current.get(id);
+      if (
+        previous &&
+        previous.note === projection.note &&
+        previous.filing === projection.filing &&
+        previous.needsCorrection === projection.needsCorrection
+      ) {
+        return current;
+      }
+
+      const next = new Map(current);
+      next.set(id, projection);
+      return next;
+    });
+  }
+
+  function clearReviewProjection(id: string): void {
+    setReviewProjections((current) => {
+      if (!current.has(id)) {
+        return current;
+      }
+
+      const next = new Map(current);
+      next.delete(id);
+      return next;
+    });
+  }
+
+  function markDraftRemovalIntent(
+    intent: "user" | "passive",
+    recoverFocus = intent === "user"
+  ): void {
+    draftRemovalShouldRecoverFocusRef.current = recoverFocus;
+    setSuppressQueueFocusRecovery(!recoverFocus);
+  }
+
+  useEffect(() => {
+    draftItemsRef.current = draftItems;
+  }, [draftItems]);
+
+  useEffect(() => {
+    if (!sessionDraftsReady) {
+      previousDraftCountRef.current = 0;
+      return;
+    }
+
+    const currentCount = draftItems.length;
+    if (previousDraftCountRef.current > 0 && currentCount === 0) {
+      setIsDraftQueueOpen(false);
+      setActiveDraftId(null);
+      if (draftRemovalShouldRecoverFocusRef.current) {
+        setComposerFocusRequestKey((current) => current + 1);
+      }
+    }
+
+    previousDraftCountRef.current = currentCount;
+    draftRemovalShouldRecoverFocusRef.current = false;
+  }, [draftItems.length, sessionDraftsReady]);
 
   useEffect(() => {
     const storage = getBrowserSessionStorage();
@@ -242,6 +318,11 @@ export function EvidenceFeed({
         .sort((a, b) => b.timestampMs - a.timestampMs);
       await pruneExpiredPhotoDrafts();
       if (cancelled) return;
+      setReviewProjections(new Map());
+      setActiveDraftId(null);
+      setIsDraftQueueOpen(false);
+      setSuppressQueueFocusRecovery(true);
+      previousDraftCountRef.current = 0;
       setDraftItems(usableItems);
       setHydratedWorkspaceId(workspaceId);
     }, 0);
@@ -280,13 +361,29 @@ export function EvidenceFeed({
     function purgeExpiredDrafts(): void {
       const now = Date.now();
       loadSessionDrafts(storage, workspaceId, now);
-      setDraftItems((current) => {
-        const active = current.filter((item) =>
-          isCurrentLocalDay(item.timestampMs, now)
+      const currentItems = draftItemsRef.current;
+      const active = currentItems.filter((item) =>
+        isCurrentLocalDay(item.timestampMs, now)
+      );
+      void pruneExpiredPhotoDrafts(now);
+      if (active.length !== currentItems.length) {
+        const activeElement = document.activeElement;
+        const focusIsInsideQueue = Boolean(
+          activeElement?.closest("[data-draft-review-queue]")
         );
-        void pruneExpiredPhotoDrafts(now);
-        return active;
-      });
+        markDraftRemovalIntent("passive", focusIsInsideQueue);
+        const activeIds = new Set(active.map((item) => item.id));
+        setReviewProjections((current) => {
+          const next = new Map(current);
+          for (const id of current.keys()) {
+            if (!activeIds.has(id)) {
+              next.delete(id);
+            }
+          }
+          return next.size === current.size ? current : next;
+        });
+        setDraftItems(active);
+      }
     }
 
     function scheduleMidnightPurge(): void {
@@ -368,9 +465,13 @@ export function EvidenceFeed({
                 studentValidation.studentNames.length === 1
               ? `@${studentValidation.studentNames[0]}`
               : "Student needed";
-        const note = display.cleanText.trim() || "Photo evidence without a note.";
+        const note =
+          display.cleanText.trim() ||
+          (item.photo
+            ? "Photo evidence without a note."
+            : "Evidence note needed.");
         const photoOnly = Boolean(item.photo) && !display.cleanText.trim();
-        const needsCorrection =
+        const parserNeedsCorrection =
           studentValidation.status !== "valid_one_student" ||
           Boolean(item.photoMissing) ||
           (!display.cleanText.trim() && !item.photo) ||
@@ -387,18 +488,19 @@ export function EvidenceFeed({
             ]
               .filter(Boolean)
               .join(" · ");
+        const projection = reviewProjections.get(item.id);
 
         return {
           id: item.id,
           studentLabel,
-          note,
-          filing,
+          note: projection?.note ?? note,
+          filing: projection?.filing ?? filing,
           timestamp: item.timestamp,
-          needsCorrection,
+          needsCorrection: projection?.needsCorrection ?? parserNeedsCorrection,
           hasPhoto: Boolean(item.photo) || Boolean(item.photoMissing),
         };
       }),
-    [activeDraftItems, activeRosterStudents]
+    [activeDraftItems, activeRosterStudents, reviewProjections]
   );
 
   const visibleEvidenceRecords = useMemo(() => {
@@ -551,14 +653,12 @@ export function EvidenceFeed({
     saveInput: SaveValidatedEvidenceActionInput
   ): void {
     const studentName = fields.students[0];
-    const wasLastDraft = activeDraftItems.length === 1;
+    markDraftRemovalIntent("user");
+    clearReviewProjection(id);
     setDraftItems((current) => current.filter((item) => item.id !== id));
-    setActiveDraftId(null);
-    if (wasLastDraft) {
-      setIsDraftQueueOpen(false);
-      setComposerFocusRequestKey((current) => current + 1);
-    }
     setToast({
+      // Saved toast IDs intentionally use the current timestamp for replacement semantics.
+      // eslint-disable-next-line react-hooks/purity
       id: Date.now(),
       kind: "saved",
       studentId: saveInput.rosterStudentId,
@@ -570,10 +670,13 @@ export function EvidenceFeed({
     router.refresh();
   }
 
-  function handleEditCapture(id: string, rawNote: string): boolean {
+  function handleEditCapture(id: string, rawNote: string): CaptureEditResult {
     const trimmed = rawNote.trim();
     if (!trimmed) {
-      return false;
+      return {
+        success: false,
+        error: "Enter an original capture before saving this edit.",
+      };
     }
 
     const nextDraft = buildNoteDraft(trimmed);
@@ -586,12 +689,16 @@ export function EvidenceFeed({
       resolution.status !== "resolved_one_student" &&
       resolution.status !== "unresolved_student"
     ) {
-      handleInvalidCaptureEdit(resolution);
-      return false;
+      return {
+        success: false,
+        error: studentResolutionErrorMessage(resolution),
+      };
     }
 
     setCaptureEditError("");
     const currentItem = draftItems.find((item) => item.id === id);
+    const sourceChanged =
+      currentItem !== undefined && trimmed !== currentItem.draft.parsed.rawNote;
     if (currentItem) {
       upsertSessionDraft(sessionStorageRef.current, workspaceId, {
         id,
@@ -599,6 +706,9 @@ export function EvidenceFeed({
         capturedAt: currentItem.timestampMs,
         hasPhoto: Boolean(currentItem.photo),
       });
+    }
+    if (sourceChanged) {
+      clearReviewProjection(id);
     }
     setDraftItems((current) =>
       current.map((item) => {
@@ -616,11 +726,13 @@ export function EvidenceFeed({
         };
       })
     );
-    return true;
+    return { success: true };
   }
 
   function handleDeleteCapture(id: string) {
     setCaptureEditError("");
+    markDraftRemovalIntent("user");
+    clearReviewProjection(id);
     removeSessionDraft(sessionStorageRef.current, workspaceId, id);
     void removePhotoDraft(workspaceId, id);
     setDraftItems((current) => current.filter((item) => item.id !== id));
@@ -655,6 +767,12 @@ export function EvidenceFeed({
   }
 
   function handlePhotoRemoved(id: string): void {
+    const item = draftItems.find((candidate) => candidate.id === id);
+    const removesDraft = Boolean(item && !item.draft.parsed.rawNote.trim());
+    if (removesDraft) {
+      markDraftRemovalIntent("user");
+      clearReviewProjection(id);
+    }
     void removePhotoDraft(workspaceId, id);
     setDraftItems((current) =>
       current
@@ -774,6 +892,9 @@ export function EvidenceFeed({
         onPhotoChange={(photo) => handlePhotoChanged(item.id, photo)}
         onPhotoRemove={() => handlePhotoRemoved(item.id)}
         onEdit={(rawNote) => handleEditCapture(item.id, rawNote)}
+        onReviewProjectionChange={(projection) =>
+          setReviewProjection(item.id, projection)
+        }
         onDelete={() => handleDeleteCapture(item.id)}
         detailsOpen={item.detailsOpen}
         onDetailsOpenChange={(detailsOpen) =>
@@ -885,6 +1006,7 @@ export function EvidenceFeed({
             onOpenChange={setIsDraftQueueOpen}
             activeDraftId={activeDraftId}
             onActiveDraftChange={setActiveDraftId}
+            suppressFocusRecovery={suppressQueueFocusRecovery}
             renderReview={(id) => {
               const item = activeDraftItems.find((draft) => draft.id === id);
               return item ? renderCaptureCard(item) : null;

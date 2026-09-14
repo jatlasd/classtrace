@@ -46,12 +46,19 @@ type InterpretationReviewPanelProps = {
   ) => Promise<CreateStudentFromReviewResult>;
   onSavePendingChange?: (isPending: boolean) => void;
   onResolvedStudentChange?: (student: CaptureRosterStudent | null) => void;
+  onReviewProjectionChange?: (projection: DraftReviewProjection) => void;
   hasPhoto?: boolean;
   photoChangePending?: boolean;
   photoResolutionRequired?: boolean;
   capturedAt?: number;
   workspaceCreatedAt?: string;
   embedded?: boolean;
+};
+
+export type DraftReviewProjection = {
+  note: string;
+  filing: string;
+  needsCorrection: boolean;
 };
 
 type ValidatedEvidenceSaveInput = {
@@ -176,6 +183,18 @@ function formStateToFields(
   };
 }
 
+function formatFiling(fields: InterpretationFields): string {
+  return [
+    fields.evidenceType,
+    fields.topic,
+    fields.performance,
+    ...(fields.behavior ?? []),
+    ...fields.tags.map(formatTagLabel),
+  ]
+    .filter(Boolean)
+    .join(" · ");
+}
+
 const fieldInputClass = "field";
 
 function FieldRow({
@@ -224,6 +243,7 @@ function InterpretationReviewPanelContent({
   onCreateStudent,
   onSavePendingChange,
   onResolvedStudentChange,
+  onReviewProjectionChange,
   hasPhoto = false,
   photoChangePending = false,
   photoResolutionRequired = false,
@@ -297,6 +317,52 @@ function InterpretationReviewPanelContent({
               ? "date"
               : null;
   const showDetails = detailsOpen || approvalBlocker !== null;
+  const projectionFields = formStateToFields(
+    form,
+    studentValidation.status === "valid_one_student"
+      ? studentValidation.studentName
+      : ""
+  );
+  const reviewProjectionNote =
+    evidenceNote ||
+    (hasPhoto ? "Photo evidence without a note." : "Evidence note needed.");
+  const reviewProjectionFiling = photoOnly
+    ? "Photo evidence"
+    : formatFiling(projectionFields);
+  const reviewProjectionNeedsCorrection = approvalBlocker !== null;
+  const reviewProjectionKey = [
+    reviewProjectionNote,
+    reviewProjectionFiling,
+    String(reviewProjectionNeedsCorrection),
+  ].join("\u0000");
+  const projectionCallbackRef = useRef(onReviewProjectionChange);
+  const previousProjectionKeyRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    projectionCallbackRef.current = onReviewProjectionChange;
+  }, [onReviewProjectionChange]);
+
+  useEffect(() => {
+    if (
+      !projectionCallbackRef.current ||
+      previousProjectionKeyRef.current === reviewProjectionKey
+    ) {
+      return;
+    }
+
+    previousProjectionKeyRef.current = reviewProjectionKey;
+    projectionCallbackRef.current({
+      note: reviewProjectionNote,
+      filing: reviewProjectionFiling,
+      needsCorrection: reviewProjectionNeedsCorrection,
+    });
+  }, [
+    onReviewProjectionChange,
+    reviewProjectionFiling,
+    reviewProjectionKey,
+    reviewProjectionNeedsCorrection,
+    reviewProjectionNote,
+  ]);
 
   useEffect(() => {
     if (approvalBlocker && !detailsOpen) {
@@ -489,15 +555,7 @@ function InterpretationReviewPanelContent({
             <p className="text-sm leading-relaxed text-fg-2">
               <span className="label mr-2 text-fg-3">Filed as</span>
               <span className="font-mono">
-                {[
-                  preparedFields.evidenceType,
-                  preparedFields.topic,
-                  preparedFields.performance,
-                  ...(preparedFields.behavior ?? []),
-                  ...preparedFields.tags.map(formatTagLabel),
-                ]
-                  .filter(Boolean)
-                  .join(" · ")}
+                {formatFiling(preparedFields)}
               </span>
             </p>
           ) : null}

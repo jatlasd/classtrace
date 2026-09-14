@@ -18,6 +18,21 @@ const FOCUSABLE_SELECTOR = [
   "[tabindex]:not([tabindex='-1'])",
 ].join(",");
 
+function getVisibleTabStops(dialog: HTMLElement | null): HTMLElement[] {
+  if (!dialog) {
+    return [];
+  }
+
+  return Array.from(
+    dialog.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR)
+  ).filter(
+    (element) =>
+      element.tabIndex >= 0 &&
+      !element.matches("[aria-disabled='true']") &&
+      !element.closest("[hidden], [aria-hidden='true']")
+  );
+}
+
 export type DraftReviewQueueItem = {
   id: string;
   studentLabel: string;
@@ -34,6 +49,7 @@ type DraftReviewQueueProps = {
   onOpenChange: (open: boolean) => void;
   activeDraftId: string | null;
   onActiveDraftChange: (id: string | null) => void;
+  suppressFocusRecovery?: boolean;
   renderReview: (id: string) => ReactNode;
 };
 
@@ -43,6 +59,7 @@ export function DraftReviewQueue({
   onOpenChange,
   activeDraftId,
   onActiveDraftChange,
+  suppressFocusRecovery = false,
   renderReview,
 }: DraftReviewQueueProps) {
   const panelId = useId();
@@ -50,6 +67,9 @@ export function DraftReviewQueue({
   const triggerRef = useRef<HTMLButtonElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const dialogRef = useRef<HTMLElement>(null);
+  const rowButtonRefs = useRef(new Map<string, HTMLButtonElement>());
+  const previousItemIdsRef = useRef(items.map((item) => item.id));
+  const previousActiveDraftIdRef = useRef(activeDraftId);
   const visibleOpen = open && items.length > 0;
 
   const closeQueue = useCallback(() => {
@@ -76,18 +96,27 @@ export function DraftReviewQueue({
 
       if (event.key !== "Tab") return;
 
-      const focusableElements = Array.from(
-        dialogRef.current?.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR) ?? []
-      );
+      const focusableElements = getVisibleTabStops(dialogRef.current);
       if (focusableElements.length === 0) return;
 
       const firstElement = focusableElements[0];
       const lastElement = focusableElements[focusableElements.length - 1];
+      const activeElement = document.activeElement;
 
-      if (event.shiftKey && document.activeElement === firstElement) {
+      if (
+        !activeElement ||
+        !dialogRef.current?.contains(activeElement) ||
+        !focusableElements.includes(activeElement as HTMLElement)
+      ) {
+        event.preventDefault();
+        (event.shiftKey ? lastElement : firstElement).focus();
+        return;
+      }
+
+      if (event.shiftKey && activeElement === firstElement) {
         event.preventDefault();
         lastElement.focus();
-      } else if (!event.shiftKey && document.activeElement === lastElement) {
+      } else if (!event.shiftKey && activeElement === lastElement) {
         event.preventDefault();
         firstElement.focus();
       }
@@ -101,6 +130,36 @@ export function DraftReviewQueue({
       document.removeEventListener("keydown", handleKeyDown);
     };
   }, [closeQueue, visibleOpen]);
+
+  useEffect(() => {
+    const previousItemIds = previousItemIdsRef.current;
+    const removedActiveDraftId = previousActiveDraftIdRef.current;
+    const currentItemIds = items.map((item) => item.id);
+    const removedActiveIndex = removedActiveDraftId
+      ? previousItemIds.indexOf(removedActiveDraftId)
+      : -1;
+
+    if (removedActiveIndex !== -1 && !currentItemIds.includes(removedActiveDraftId!)) {
+      onActiveDraftChange(null);
+
+      if (!suppressFocusRecovery && visibleOpen && currentItemIds.length > 0) {
+        const nextIndex = Math.min(
+          removedActiveIndex,
+          currentItemIds.length - 1
+        );
+        rowButtonRefs.current.get(currentItemIds[nextIndex])?.focus();
+      }
+    }
+
+    previousItemIdsRef.current = currentItemIds;
+    previousActiveDraftIdRef.current = activeDraftId;
+  }, [
+    activeDraftId,
+    items,
+    onActiveDraftChange,
+    suppressFocusRecovery,
+    visibleOpen,
+  ]);
 
   if (items.length === 0) {
     return null;
@@ -138,6 +197,7 @@ export function DraftReviewQueue({
         />
         <section
           ref={dialogRef}
+          data-draft-review-queue
           id={panelId}
           role="dialog"
           aria-modal="true"
@@ -176,6 +236,13 @@ export function DraftReviewQueue({
                 return (
                   <li key={item.id} className="border-b border-line last:border-b-0">
                     <button
+                      ref={(element) => {
+                        if (element) {
+                          rowButtonRefs.current.set(item.id, element);
+                        } else {
+                          rowButtonRefs.current.delete(item.id);
+                        }
+                      }}
                       type="button"
                       aria-expanded={expanded}
                       aria-controls={reviewId}
