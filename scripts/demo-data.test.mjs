@@ -15,8 +15,8 @@ describe("canonical demo dataset", () => {
       studentCount: 14,
       evidenceCount: 81,
       photoCount: 4,
-      earliestEvidenceDate: "2026-08-17T13:05:00.000Z",
-      latestEvidenceDate: "2026-09-15T18:26:00.000Z",
+      earliestEvidenceDate: "2026-08-31T13:05:00.000Z",
+      latestEvidenceDate: "2026-09-15T19:56:00.000Z",
     });
 
     expect(Object.fromEntries(DEMO_DATASET.students.map((student) => [
@@ -82,9 +82,9 @@ describe("canonical demo dataset", () => {
     [{ followUpNeeded: false }, /follow-up/],
     [{ evidenceDate: "2026-03-09T13:05:00.000Z" }, /timestamps/],
     [{ evidenceDate: "2026-09-16T13:05:00.000Z" }, /timestamps/],
-    [{ evidenceDate: "2026-08-17T10:00:00.000Z" }, /timestamps/],
-    [{ evidenceDate: "2026-08-17" }, /fixed timestamp/],
-    [{ validatedAt: "2026-08-17T12:00:00.000Z" }, /timestamps/],
+    [{ evidenceDate: "2026-08-30T10:00:00.000Z" }, /timestamps/],
+    [{ evidenceDate: "2026-08-31" }, /fixed timestamp/],
+    [{ validatedAt: "2026-08-31T12:00:00.000Z" }, /timestamps/],
     [{ validatedAt: "2026-09-16T13:25:00.000Z" }, /timestamps/],
     [{ createdAt: "2026-09-15T13:25:00.000Z" }, /timestamps/],
     [{ updatedAt: "2026-09-15T13:25:00.000Z" }, /timestamps/],
@@ -113,6 +113,20 @@ describe("canonical demo dataset", () => {
     const lateStudent = structuredClone(DEMO_DATASET);
     lateStudent.students[0].createdAt = "2026-09-01T12:00:00.000Z";
     expect(() => validateDemoDataset(lateStudent)).toThrow(/timestamps/);
+  });
+
+  it("rejects weekend and Labor Day timestamps inside the date window", () => {
+    for (const evidenceDate of [
+      "2026-09-05T13:05:00.000Z",
+      "2026-09-07T13:05:00.000Z",
+    ]) {
+      const dataset = structuredClone(DEMO_DATASET);
+      dataset.evidence[0].evidenceDate = evidenceDate;
+      dataset.evidence[0].validatedAt = "2026-09-07T13:25:00.000Z";
+      dataset.evidence[0].createdAt = "2026-09-07T13:25:00.000Z";
+      dataset.evidence[0].updatedAt = "2026-09-07T13:25:00.000Z";
+      expect(() => validateDemoDataset(dataset)).toThrow(/school day/);
+    }
   });
 
   it("retains broad demo coverage without exact category quotas", () => {

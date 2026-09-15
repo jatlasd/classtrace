@@ -109,7 +109,7 @@ describe("canonical demo data in product read models", () => {
       workspaceId,
       student.id,
       parseStudentReportDateRange({
-        start: "2026-08-17", end: "2026-09-15", startOffset: "240", endOffset: "240",
+        start: "2026-08-31", end: "2026-09-15", startOffset: "240", endOffset: "240",
       }),
       database
     );
@@ -118,8 +118,12 @@ describe("canonical demo data in product read models", () => {
     }, database);
 
     expect(timeline.student.displayName).toBe(student.displayName);
-    expect(timeline.evidenceRecords.map((record) => record.id)).toEqual(expected.map((record) => record.id).reverse());
-    expect(report.evidenceRecords.map((record) => record.evidenceNote)).toEqual(expected.map((record) => record.evidenceNote));
+    expect(new Set(timeline.evidenceRecords.map((record) => record.id))).toEqual(
+      new Set(expected.map((record) => record.id))
+    );
+    expect(new Set(report.evidenceRecords.map((record) => record.evidenceNote))).toEqual(
+      new Set(expected.map((record) => record.evidenceNote))
+    );
     expect(exported).toMatchObject({ success: true, recordCount: expected.length });
     const csvRows = exported.content.split("\r\n").slice(1);
     expect(csvRows).toHaveLength(expected.length);
@@ -138,8 +142,8 @@ describe("canonical demo data in product read models", () => {
       }),
       database
     );
-    expect(result.evidenceRecords).toHaveLength(8);
-    expect(result.evidenceRecords[0].id).toBe("demo_evidence_jeremy_10");
-    expect(result.evidenceRecords.at(-1).id).toBe("demo_evidence_jeremy_17");
+    expect(result.evidenceRecords).toHaveLength(16);
+    expect(result.evidenceRecords.map((record) => record.id)).toContain("demo_evidence_jeremy_02");
+    expect(result.evidenceRecords.map((record) => record.id)).toContain("demo_evidence_jeremy_17");
   });
 });

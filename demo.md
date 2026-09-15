@@ -33,11 +33,11 @@ inside the selected workspace are replaced.
 
 Version: `2026-27-school-fall-v3`.
 
-The fictional 2026–27 school calendar starts **August 17, 2026**. Evidence runs
-through **September 15, 2026**, using fixed classroom times in America/New_York
-and normalized UTC timestamps. Dates never move with the reset date. Classes
-and most students were added before the first observation on August 17; Miles
-was added September 8 and Iris September 10.
+The fictional 2026–27 school calendar starts **August 31, 2026** for this demo
+window. Evidence runs through **September 15, 2026**, using fixed classroom
+times in America/New_York and normalized UTC timestamps. Dates never move with
+the reset date. Classes and most students were added before the first
+observation on August 31; Miles was added September 8 and Iris September 10.
 
 The canonical state contains:
 
@@ -113,10 +113,10 @@ family contact and contain no names or contact details.
 The four existing anonymous synthetic WebP work samples remain in
 `scripts/demo-assets/`, together with their provenance files:
 
-- Stacy's decimal place-value work, August 18
-- Jeremy's one-step equations, September 1
-- Mary's paragraph organizer, September 8
-- Jeff's annotated reading passage, September 9
+- Stacy's decimal place-value work, September 1
+- Jeremy's one-step equations, September 15
+- Mary's paragraph organizer, September 15
+- Jeff's annotated reading passage, September 15
 
 Photos are occasional: **77 records have no photo**, and **10 students have no
 photo**. Each photo belongs to one evidence record; no record has multiple photos.
@@ -271,7 +271,7 @@ After a separately authorized reset, the canonical data should support:
   the currently loaded page; Explore Evidence searches saved evidence across
   the workspace and supports student/class/tag conditions.
 - **Timelines and reports:** compare Jeremy's 17 records with Owen's single
-  observation. An August 17–September 15 report includes the per-student totals
+  observation. An August 31–September 15 report includes the per-student totals
   above; a September-only report includes just that month's observations.
 - **Photos:** Explore distinguishes 4 records with photos from 77 without.
 - **CSV exports:** each student exports exactly their own history, with the
