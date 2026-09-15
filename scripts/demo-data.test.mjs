@@ -16,7 +16,7 @@ describe("canonical demo dataset", () => {
       evidenceCount: 81,
       photoCount: 4,
       earliestEvidenceDate: "2026-08-31T13:05:00.000Z",
-      latestEvidenceDate: "2026-09-15T19:56:00.000Z",
+      latestEvidenceDate: "2026-09-15T18:26:00.000Z",
     });
 
     expect(Object.fromEntries(DEMO_DATASET.students.map((student) => [
@@ -41,6 +41,24 @@ describe("canonical demo dataset", () => {
       "demo_evidence_jeff_10",
       "demo_evidence_mary_07",
     ]);
+  });
+
+  it("keeps each student's authored evidence in ascending timestamp order", () => {
+    for (const student of DEMO_DATASET.students) {
+      const records = DEMO_DATASET.evidence.filter(
+        (record) => record.studentId === student.id
+      );
+      for (let index = 1; index < records.length; index += 1) {
+        expect(Date.parse(records[index].evidenceDate)).toBeGreaterThan(
+          Date.parse(records[index - 1].evidenceDate)
+        );
+      }
+
+      const recordsPerDay = Object.values(
+        Object.groupBy(records, (record) => record.evidenceDate.slice(0, 10))
+      ).map((dayRecords) => dayRecords.length);
+      expect(Math.max(...recordsPerDay)).toBeLessThanOrEqual(2);
+    }
   });
 
   it("allows changes in history size, type mix, follow-ups, and photo count", () => {

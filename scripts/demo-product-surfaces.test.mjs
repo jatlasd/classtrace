@@ -118,15 +118,18 @@ describe("canonical demo data in product read models", () => {
     }, database);
 
     expect(timeline.student.displayName).toBe(student.displayName);
-    expect(new Set(timeline.evidenceRecords.map((record) => record.id))).toEqual(
-      new Set(expected.map((record) => record.id))
+    expect(timeline.evidenceRecords.map((record) => record.id)).toEqual(
+      expected.map((record) => record.id).reverse()
     );
-    expect(new Set(report.evidenceRecords.map((record) => record.evidenceNote))).toEqual(
-      new Set(expected.map((record) => record.evidenceNote))
+    expect(report.evidenceRecords.map((record) => record.id)).toEqual(
+      expected.map((record) => record.id)
     );
     expect(exported).toMatchObject({ success: true, recordCount: expected.length });
     const csvRows = exported.content.split("\r\n").slice(1);
     expect(csvRows).toHaveLength(expected.length);
+    expect(csvRows.map((row) => row.split(",")[4])).toEqual(
+      expected.map((record) => record.evidenceDate)
+    );
     expect(csvRows.every((row) => row.startsWith(`${student.displayName},'@${student.mentionHandle},`))).toBe(true);
     for (const record of expected) {
       expect(exported.content).toContain(record.evidenceNote.replaceAll('"', '""'));
@@ -143,7 +146,7 @@ describe("canonical demo data in product read models", () => {
       database
     );
     expect(result.evidenceRecords).toHaveLength(16);
-    expect(result.evidenceRecords.map((record) => record.id)).toContain("demo_evidence_jeremy_02");
-    expect(result.evidenceRecords.map((record) => record.id)).toContain("demo_evidence_jeremy_17");
+    expect(result.evidenceRecords[0].id).toBe("demo_evidence_jeremy_02");
+    expect(result.evidenceRecords.at(-1).id).toBe("demo_evidence_jeremy_17");
   });
 });

@@ -113,10 +113,10 @@ family contact and contain no names or contact details.
 The four existing anonymous synthetic WebP work samples remain in
 `scripts/demo-assets/`, together with their provenance files:
 
-- Stacy's decimal place-value work, September 1
-- Jeremy's one-step equations, September 15
-- Mary's paragraph organizer, September 15
-- Jeff's annotated reading passage, September 15
+- Stacy's decimal place-value work, August 31
+- Jeremy's one-step equations, September 9
+- Mary's paragraph organizer, September 9
+- Jeff's annotated reading passage, September 11
 
 Photos are occasional: **77 records have no photo**, and **10 students have no
 photo**. Each photo belongs to one evidence record; no record has multiple photos.

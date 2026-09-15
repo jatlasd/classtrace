@@ -182,7 +182,7 @@ const authoredEvidence = {
       tags: ["focus","behavior"],
     },
     {
-      at: "2026-09-03T09:31:00.000-04:00",
+      at: "2026-09-01T09:31:00.000-04:00",
       note: "got 4 out of 10 on the decimal exit ticket and mixed up place values",
       type: "Assessment observation",
       topic: "decimal addition",
@@ -191,7 +191,7 @@ const authoredEvidence = {
       followUpNotes: ["Reteach place-value alignment in small group"],
     },
     {
-      at: "2026-09-08T09:22:00.000-04:00",
+      at: "2026-09-02T09:22:00.000-04:00",
       note: "worked one problem at a time after I covered the rest of the page",
       type: "Accommodation log",
       topic: "decimal addition",
@@ -199,7 +199,7 @@ const authoredEvidence = {
       tags: ["math","support"],
     },
     {
-      at: "2026-09-09T09:03:00.000-04:00",
+      at: "2026-09-03T09:03:00.000-04:00",
       note: "forgot homework",
       type: "General observation",
       topic: "organization",
@@ -207,14 +207,14 @@ const authoredEvidence = {
       tags: ["homework","organization"],
     },
     {
-      at: "2026-09-10T15:42:00.000-04:00",
+      at: "2026-09-03T15:42:00.000-04:00",
       note: "called home about the missing work. family is going to check the folder tonight",
       type: "Communication log",
       topic: "missing work",
       tags: ["homework","communication"],
     },
     {
-      at: "2026-09-11T09:06:00.000-04:00",
+      at: "2026-09-04T09:06:00.000-04:00",
       note: "remembered to ask for missing work when out",
       type: "Academic check-in",
       topic: "organization",
@@ -222,7 +222,7 @@ const authoredEvidence = {
       tags: ["self-advocacy","organization"],
     },
     {
-      at: "2026-09-15T09:19:00.000-04:00",
+      at: "2026-09-08T09:19:00.000-04:00",
       note: "refused to answer when called on and put his pencil down",
       type: "Behavior observation",
       topic: "variables",
@@ -231,7 +231,7 @@ const authoredEvidence = {
       followUpNotes: ["Offer a private check-in before the next discussion"],
     },
     {
-      at: "2026-09-15T09:08:00.000-04:00",
+      at: "2026-09-09T09:08:00.000-04:00",
       note: "apologized for getting an attitude and came back ready to work",
       type: "General observation",
       topic: "self-regulation",
@@ -239,7 +239,7 @@ const authoredEvidence = {
       tags: ["behavior","progress"],
     },
     {
-      at: "2026-09-15T09:34:00.000-04:00",
+      at: "2026-09-09T09:34:00.000-04:00",
       note: "moved himself to another spot to focus and finished the last four equations",
       type: "Academic check-in",
       topic: "equations",
@@ -248,7 +248,7 @@ const authoredEvidence = {
       tags: ["focus","math"],
     },
     {
-      at: "2026-09-15T09:26:00.000-04:00",
+      at: "2026-09-10T09:26:00.000-04:00",
       note: "was finally able to explain variables in his own words",
       type: "Progress monitoring",
       topic: "equations",
@@ -256,7 +256,7 @@ const authoredEvidence = {
       tags: ["progress","math"],
     },
     {
-      at: "2026-09-15T09:38:00.000-04:00",
+      at: "2026-09-10T09:38:00.000-04:00",
       note: "got 6 out of 10 on equations. still subtracting when he needs to add",
       type: "Assessment observation",
       topic: "equations",
@@ -264,7 +264,7 @@ const authoredEvidence = {
       tags: ["assessment","math"],
     },
     {
-      at: "2026-09-15T09:16:00.000-04:00",
+      at: "2026-09-11T09:16:00.000-04:00",
       note: "asked a really good question and sparked discussion",
       type: "Academic check-in",
       topic: "variables",
@@ -273,7 +273,7 @@ const authoredEvidence = {
       tags: ["participation","math"],
     },
     {
-      at: "2026-09-15T09:11:00.000-04:00",
+      at: "2026-09-14T09:11:00.000-04:00",
       note: "on point today - finished the warmup without a reminder",
       type: "General observation",
       topic: "equations",
@@ -281,7 +281,7 @@ const authoredEvidence = {
       tags: ["math","focus"],
     },
     {
-      at: "2026-09-15T09:29:00.000-04:00",
+      at: "2026-09-14T09:29:00.000-04:00",
       note: "decimal warmup was rough again. got started once the place-value chart was out",
       type: "Academic check-in",
       topic: "decimal addition",
@@ -309,7 +309,7 @@ const authoredEvidence = {
   ],
   stacy: [
     {
-      at: "2026-09-01T09:27:00.000-04:00",
+      at: "2026-08-31T09:27:00.000-04:00",
       note: "struggling with decimal addition and kept lining the numbers up from the left",
       type: "Academic check-in",
       topic: "decimal addition",
@@ -318,7 +318,7 @@ const authoredEvidence = {
       followUpNotes: ["Review place-value alignment tomorrow"],
     },
     {
-      at: "2026-09-03T09:14:00.000-04:00",
+      at: "2026-09-01T09:14:00.000-04:00",
       note: "raised her hand to answer a question!",
       type: "General observation",
       topic: "decimal addition",
@@ -326,7 +326,7 @@ const authoredEvidence = {
       tags: ["participation","math"],
     },
     {
-      at: "2026-09-03T09:32:00.000-04:00",
+      at: "2026-09-01T09:32:00.000-04:00",
       note: "used the place-value chart for every problem and did not need me to point to it",
       type: "Accommodation log",
       topic: "decimal addition",
@@ -334,7 +334,7 @@ const authoredEvidence = {
       tags: ["math","support"],
     },
     {
-      at: "2026-09-08T09:36:00.000-04:00",
+      at: "2026-09-02T09:36:00.000-04:00",
       note: "got 6 out of 10 on the quiz. regrouping errors on three problems",
       type: "Assessment observation",
       topic: "decimal addition",
@@ -343,7 +343,7 @@ const authoredEvidence = {
       followUpNotes: ["Practice regrouping in the next small group"],
     },
     {
-      at: "2026-09-10T09:21:00.000-04:00",
+      at: "2026-09-03T09:21:00.000-04:00",
       note: "stared off into space for a while today and only finished half the practice",
       type: "Academic check-in",
       topic: "math practice",
@@ -352,14 +352,14 @@ const authoredEvidence = {
       tags: ["focus","math"],
     },
     {
-      at: "2026-09-15T09:04:00.000-04:00",
+      at: "2026-09-04T09:04:00.000-04:00",
       note: "had the quiz corrections done, just forgot to turn them in",
       type: "General observation",
       topic: "quiz corrections",
       tags: ["organization","assessment"],
     },
     {
-      at: "2026-09-15T09:17:00.000-04:00",
+      at: "2026-09-08T09:17:00.000-04:00",
       note: "asked what the question was really asking before she started the word problem",
       type: "General observation",
       topic: "word problems",
@@ -367,7 +367,7 @@ const authoredEvidence = {
       tags: ["self-advocacy","math"],
     },
     {
-      at: "2026-09-15T09:33:00.000-04:00",
+      at: "2026-09-09T09:33:00.000-04:00",
       note: "completed all six decimal problems after one worked example",
       type: "Academic check-in",
       topic: "decimal addition",
@@ -375,13 +375,13 @@ const authoredEvidence = {
       tags: ["math","support"],
     },
     {
-      at: "2026-09-15T09:07:00.000-04:00",
+      at: "2026-09-10T09:07:00.000-04:00",
       note: "borrowed a pencil, got going with everyone else",
       type: "General observation",
       tags: ["math"],
     },
     {
-      at: "2026-09-15T09:35:00.000-04:00",
+      at: "2026-09-11T09:35:00.000-04:00",
       note: "used extra time and checked her answers with the calculator",
       type: "Accommodation log",
       topic: "decimal operations",
@@ -389,7 +389,7 @@ const authoredEvidence = {
       tags: ["math","support"],
     },
     {
-      at: "2026-09-15T09:38:00.000-04:00",
+      at: "2026-09-11T09:38:00.000-04:00",
       note: "7 out of 10 this time. lined them up right but still missed the regrouping",
       type: "Assessment observation",
       topic: "decimal operations",
@@ -397,7 +397,7 @@ const authoredEvidence = {
       tags: ["assessment","math"],
     },
     {
-      at: "2026-09-15T09:24:00.000-04:00",
+      at: "2026-09-14T09:24:00.000-04:00",
       note: "explained why the decimal points need to line up to her partner",
       type: "Progress monitoring",
       topic: "decimal addition",
@@ -424,7 +424,7 @@ const authoredEvidence = {
       tags: ["reading","participation"],
     },
     {
-      at: "2026-09-02T13:26:00.000-04:00",
+      at: "2026-09-01T13:26:00.000-04:00",
       note: "head down for most of independent reading. read when I sat nearby",
       type: "General observation",
       topic: "independent reading",
@@ -433,7 +433,7 @@ const authoredEvidence = {
       followUpNotes: ["Check in about the best time and place for reading"],
     },
     {
-      at: "2026-09-04T13:32:00.000-04:00",
+      at: "2026-09-02T13:32:00.000-04:00",
       note: "had a hard time finding the main idea even after rereading",
       type: "Academic check-in",
       topic: "main idea",
@@ -441,7 +441,7 @@ const authoredEvidence = {
       tags: ["reading","comprehension"],
     },
     {
-      at: "2026-09-09T13:34:00.000-04:00",
+      at: "2026-09-03T13:34:00.000-04:00",
       note: "finished the written response when the directions were read aloud and chunked",
       type: "Accommodation log",
       topic: "written response",
@@ -449,7 +449,7 @@ const authoredEvidence = {
       tags: ["writing","support"],
     },
     {
-      at: "2026-09-11T13:11:00.000-04:00",
+      at: "2026-09-04T13:11:00.000-04:00",
       note: "volunteered to read out loud",
       type: "General observation",
       topic: "oral reading",
@@ -457,7 +457,7 @@ const authoredEvidence = {
       tags: ["reading","participation"],
     },
     {
-      at: "2026-09-15T13:22:00.000-04:00",
+      at: "2026-09-08T13:22:00.000-04:00",
       note: "sent to reset room after yelling across the room. came back for the last ten minutes",
       type: "Behavior observation",
       topic: "self-regulation",
@@ -466,20 +466,20 @@ const authoredEvidence = {
       followUpNotes: ["Check in before reading group tomorrow"],
     },
     {
-      at: "2026-09-15T15:48:00.000-04:00",
+      at: "2026-09-08T15:48:00.000-04:00",
       note: "called home after the reset room. shared what happened and that he came back to class",
       type: "Communication log",
       topic: "self-regulation",
       tags: ["behavior","communication"],
     },
     {
-      at: "2026-09-15T13:28:00.000-04:00",
+      at: "2026-09-09T13:28:00.000-04:00",
       note: "apologized for getting an attitude. read along with the group today",
       type: "General observation",
       tags: ["reading","participation"],
     },
     {
-      at: "2026-09-15T13:19:00.000-04:00",
+      at: "2026-09-10T13:19:00.000-04:00",
       note: "answered the inference question after I asked him to point to one clue",
       type: "Academic check-in",
       topic: "inference",
@@ -487,7 +487,7 @@ const authoredEvidence = {
       tags: ["reading","support"],
     },
     {
-      at: "2026-09-15T13:37:00.000-04:00",
+      at: "2026-09-11T13:37:00.000-04:00",
       note: "underlined two clues in the passage. got 3 out of 5 on the exit ticket",
       type: "Assessment observation",
       topic: "supporting details",
@@ -495,7 +495,7 @@ const authoredEvidence = {
       tags: ["assessment","reading"],
     },
     {
-      at: "2026-09-15T13:16:00.000-04:00",
+      at: "2026-09-14T13:16:00.000-04:00",
       note: "read the same short passage as last week. fewer stops, still skipping the endings on longer words",
       type: "Progress monitoring",
       topic: "oral reading",
@@ -514,7 +514,7 @@ const authoredEvidence = {
   ],
   mary: [
     {
-      at: "2026-09-01T13:06:00.000-04:00",
+      at: "2026-08-31T13:06:00.000-04:00",
       note: "on point today",
       type: "General observation",
       topic: "reading discussion",
@@ -522,7 +522,7 @@ const authoredEvidence = {
       tags: ["reading","participation"],
     },
     {
-      at: "2026-09-03T13:23:00.000-04:00",
+      at: "2026-09-01T13:23:00.000-04:00",
       note: "asked a really good question about why the character went back",
       type: "Academic check-in",
       topic: "text evidence",
@@ -530,7 +530,7 @@ const authoredEvidence = {
       tags: ["reading","participation"],
     },
     {
-      at: "2026-09-08T13:35:00.000-04:00",
+      at: "2026-09-02T13:35:00.000-04:00",
       note: "included three details in the paragraph but did not have a clear topic sentence",
       type: "Assessment observation",
       topic: "paragraph organization",
@@ -539,7 +539,7 @@ const authoredEvidence = {
       followUpNotes: ["Conference on topic sentences during writing group"],
     },
     {
-      at: "2026-09-15T13:17:00.000-04:00",
+      at: "2026-09-03T13:17:00.000-04:00",
       note: "volunteered to read out loud",
       type: "Academic check-in",
       topic: "oral reading",
@@ -547,7 +547,7 @@ const authoredEvidence = {
       tags: ["reading","participation"],
     },
     {
-      at: "2026-09-15T13:31:00.000-04:00",
+      at: "2026-09-04T13:31:00.000-04:00",
       note: "erased the opening sentence three times. left it for now and wrote the middle",
       type: "Academic check-in",
       topic: "revision",
@@ -556,13 +556,13 @@ const authoredEvidence = {
       performance: "needed support",
     },
     {
-      at: "2026-09-15T13:24:00.000-04:00",
+      at: "2026-09-08T13:24:00.000-04:00",
       note: "book out, read quietly, finished the response",
       type: "General observation",
       tags: ["reading","work-completion"],
     },
     {
-      at: "2026-09-15T13:33:00.000-04:00",
+      at: "2026-09-09T13:33:00.000-04:00",
       note: "used the graphic organizer. moved one detail to a different box before writing",
       type: "Accommodation log",
       topic: "paragraph organization",
@@ -570,7 +570,7 @@ const authoredEvidence = {
       tags: ["writing","support"],
     },
     {
-      at: "2026-09-15T13:36:00.000-04:00",
+      at: "2026-09-10T13:36:00.000-04:00",
       note: "topic sentence fits this paragraph better than the first one. still had to remind her to explain the last detail",
       type: "Progress monitoring",
       topic: "paragraph organization",
@@ -578,7 +578,7 @@ const authoredEvidence = {
       tags: ["writing","progress"],
     },
     {
-      at: "2026-09-15T13:08:00.000-04:00",
+      at: "2026-09-14T13:08:00.000-04:00",
       note: "remembered to ask for missing work when out",
       type: "Academic check-in",
       topic: "organization",
@@ -597,13 +597,13 @@ const authoredEvidence = {
   ],
   nina: [
     {
-      at: "2026-09-03T09:24:00.000-04:00",
+      at: "2026-08-31T09:24:00.000-04:00",
       note: "finished the warmup before I got around to her table",
       type: "General observation",
       tags: ["math","work-completion"],
     },
     {
-      at: "2026-09-08T09:28:00.000-04:00",
+      at: "2026-09-03T09:28:00.000-04:00",
       note: "can do the subtraction until there is a zero in the top number. then gets stuck",
       type: "Academic check-in",
       topic: "decimal subtraction",
@@ -612,7 +612,7 @@ const authoredEvidence = {
       followUpNotes: ["Pull a couple examples with zeros for small group"],
     },
     {
-      at: "2026-09-15T09:25:00.000-04:00",
+      at: "2026-09-08T09:25:00.000-04:00",
       note: "used grid paper to keep the columns straight",
       type: "Accommodation log",
       topic: "decimal subtraction",
@@ -620,7 +620,7 @@ const authoredEvidence = {
       tags: ["math","support"],
     },
     {
-      at: "2026-09-15T09:36:00.000-04:00",
+      at: "2026-09-11T09:36:00.000-04:00",
       note: "4 out of 6. both mistakes were regrouping across a zero",
       type: "Assessment observation",
       topic: "decimal subtraction",
@@ -628,7 +628,7 @@ const authoredEvidence = {
       tags: ["math","assessment"],
     },
     {
-      at: "2026-09-15T09:23:00.000-04:00",
+      at: "2026-09-14T09:23:00.000-04:00",
       note: "asked for grid paper again",
       type: "General observation",
       tags: ["support","self-advocacy"],
@@ -636,7 +636,7 @@ const authoredEvidence = {
   ],
   caleb: [
     {
-      at: "2026-09-15T09:35:00.000-04:00",
+      at: "2026-09-02T09:35:00.000-04:00",
       note: "got the answers right but no work on the page",
       type: "Academic check-in",
       topic: "decimal addition",
@@ -644,7 +644,7 @@ const authoredEvidence = {
       tags: ["math","work-completion"],
     },
     {
-      at: "2026-09-15T09:06:00.000-04:00",
+      at: "2026-09-11T09:06:00.000-04:00",
       note: "forgot homework. started the warmup while I found another copy",
       type: "General observation",
       topic: "organization",
@@ -653,7 +653,7 @@ const authoredEvidence = {
   ],
   owen: [
     {
-      at: "2026-09-15T09:32:00.000-04:00",
+      at: "2026-09-04T09:32:00.000-04:00",
       note: "quiet today, finished the practice and put it in the tray",
       type: "General observation",
       tags: ["math","work-completion"],
@@ -661,7 +661,7 @@ const authoredEvidence = {
   ],
   tessa: [
     {
-      at: "2026-09-03T13:14:00.000-04:00",
+      at: "2026-09-01T13:14:00.000-04:00",
       note: "had plenty to say to her partner, passed when it was her turn with the whole group",
       type: "General observation",
       topic: "class discussion",
@@ -669,7 +669,7 @@ const authoredEvidence = {
       tags: ["reading","participation"],
     },
     {
-      at: "2026-09-10T13:32:00.000-04:00",
+      at: "2026-09-08T13:32:00.000-04:00",
       note: "copied a whole chunk of the passage for her answer. not sure which sentence she needs",
       type: "Academic check-in",
       topic: "text evidence",
@@ -678,7 +678,7 @@ const authoredEvidence = {
       followUpNotes: ["Have her choose just one sentence with me"],
     },
     {
-      at: "2026-09-15T13:38:00.000-04:00",
+      at: "2026-09-10T13:38:00.000-04:00",
       note: "read the directions together. she wrote the first answer and wanted me to check it before going on",
       type: "Accommodation log",
       topic: "written response",
@@ -696,13 +696,13 @@ const authoredEvidence = {
   ],
   jonah: [
     {
-      at: "2026-09-08T13:09:00.000-04:00",
+      at: "2026-09-02T13:09:00.000-04:00",
       note: "remembered exactly where we stopped in the book",
       type: "General observation",
       tags: ["reading"],
     },
     {
-      at: "2026-09-15T13:13:00.000-04:00",
+      at: "2026-09-09T13:13:00.000-04:00",
       note: "kept talking while his partner was reading. stopped after I moved closer",
       type: "Behavior observation",
       topic: "partner reading",
@@ -710,7 +710,7 @@ const authoredEvidence = {
       tags: ["reading","behavior"],
     },
     {
-      at: "2026-09-15T13:22:00.000-04:00",
+      at: "2026-09-14T13:22:00.000-04:00",
       note: "picked a detail that fits, explanation just repeats it",
       type: "Academic check-in",
       topic: "text evidence",
@@ -720,7 +720,7 @@ const authoredEvidence = {
   ],
   iris: [
     {
-      at: "2026-09-15T13:07:00.000-04:00",
+      at: "2026-09-11T13:07:00.000-04:00",
       note: "found the page with a little help and followed along",
       type: "General observation",
       tags: ["reading","support"],
@@ -736,7 +736,7 @@ const authoredEvidence = {
       tags: ["organization"],
     },
     {
-      at: "2026-09-03T14:19:00.000-04:00",
+      at: "2026-09-02T14:19:00.000-04:00",
       note: "sorted the papers with me. two assignments were already done but never turned in",
       type: "Accommodation log",
       topic: "missing work",
@@ -744,7 +744,7 @@ const authoredEvidence = {
       tags: ["organization","work-completion"],
     },
     {
-      at: "2026-09-10T14:08:00.000-04:00",
+      at: "2026-09-04T14:08:00.000-04:00",
       note: "planner still blank. copied the assignments when I pointed to the board",
       type: "Academic check-in",
       topic: "planner",
@@ -753,20 +753,20 @@ const authoredEvidence = {
       followUpNotes: ["Check the planner before he leaves this week"],
     },
     {
-      at: "2026-09-15T14:24:00.000-04:00",
+      at: "2026-09-08T14:24:00.000-04:00",
       note: "finished the science questions here and put them straight in the turn-in folder",
       type: "General observation",
       tags: ["work-completion","organization"],
     },
     {
-      at: "2026-09-15T15:56:00.000-04:00",
+      at: "2026-09-08T15:56:00.000-04:00",
       note: "emailed home about the folder. asked them to send it back even if the work is unfinished",
       type: "Communication log",
       topic: "missing work",
       tags: ["organization","communication"],
     },
     {
-      at: "2026-09-15T14:17:00.000-04:00",
+      at: "2026-09-09T14:17:00.000-04:00",
       note: "folder made it back, planner did not",
       type: "General observation",
       topic: "organization",
@@ -783,14 +783,14 @@ const authoredEvidence = {
   ],
   eli: [
     {
-      at: "2026-09-08T14:15:00.000-04:00",
+      at: "2026-09-01T14:15:00.000-04:00",
       note: "spent most of the period looking for the assignment. it was in the front pocket",
       type: "General observation",
       topic: "organization",
       tags: ["organization","work-completion"],
     },
     {
-      at: "2026-09-15T14:21:00.000-04:00",
+      at: "2026-09-08T14:21:00.000-04:00",
       note: "set a ten minute timer and got the first section done",
       type: "Accommodation log",
       topic: "work initiation",
@@ -798,7 +798,7 @@ const authoredEvidence = {
       tags: ["focus","support"],
     },
     {
-      at: "2026-09-15T14:11:00.000-04:00",
+      at: "2026-09-14T14:11:00.000-04:00",
       note: "needed a few reminders to close the game and open the assignment",
       type: "Behavior observation",
       topic: "work initiation",
@@ -808,13 +808,13 @@ const authoredEvidence = {
   ],
   lena: [
     {
-      at: "2026-09-10T14:18:00.000-04:00",
+      at: "2026-09-03T14:18:00.000-04:00",
       note: "used the whole period to finish the history questions. nothing missing today",
       type: "General observation",
       tags: ["work-completion"],
     },
     {
-      at: "2026-09-15T14:09:00.000-04:00",
+      at: "2026-09-11T14:09:00.000-04:00",
       note: "asked if she could quiz herself with the vocabulary cards when her work was done",
       type: "General observation",
       tags: ["self-advocacy"],
@@ -822,7 +822,7 @@ const authoredEvidence = {
   ],
   miles: [
     {
-      at: "2026-09-15T14:16:00.000-04:00",
+      at: "2026-09-10T14:16:00.000-04:00",
       note: "brought his folder and got started without a check-in",
       type: "General observation",
       tags: ["organization","work-completion"],
