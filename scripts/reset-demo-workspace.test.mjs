@@ -2,11 +2,20 @@ import { describe, expect, it } from "vitest";
 import {
   DEMO_CLERK_USER_ID,
   DEMO_DATABASE_IDENTITY,
+  DEMO_DATASET,
 } from "./demo-data.mjs";
 import {
   DemoResetError,
   resetDemoWorkspace,
 } from "./reset-demo-workspace.mjs";
+
+const canonicalCounts = {
+  classCount: DEMO_DATASET.classes.length,
+  studentCount: DEMO_DATASET.students.length,
+  evidenceCount: DEMO_DATASET.evidence.length,
+  photoCount: DEMO_DATASET.photos.length,
+};
+const insertCount = Object.values(canonicalCounts).reduce((sum, count) => sum + count, 0);
 
 class FakeDatabaseClient {
   constructor({ targetRows, counts, serializationFailures = 0 } = {}) {
@@ -17,10 +26,7 @@ class FakeDatabaseClient {
     this.counts =
       counts ??
       {
-        classCount: 2,
-        studentCount: 4,
-        evidenceCount: 56,
-        photoCount: 4,
+        ...canonicalCounts,
         invalidStudentRelations: 0,
         invalidEvidenceRelations: 0,
       };
@@ -55,12 +61,7 @@ describe("demo workspace reset transaction", () => {
 
     await expect(
       resetDemoWorkspace({ client, clerkUserId: DEMO_CLERK_USER_ID })
-    ).resolves.toMatchObject({
-      classCount: 2,
-      studentCount: 4,
-      evidenceCount: 56,
-      photoCount: 4,
-    });
+    ).resolves.toMatchObject(canonicalCounts);
 
     const deleteCalls = client.calls.filter((call) =>
       call.text.startsWith("DELETE")
@@ -69,11 +70,29 @@ describe("demo workspace reset transaction", () => {
     expect(deleteCalls.every((call) => call.values[0] === "workspace_demo")).toBe(
       true
     );
-    expect(client.calls.filter((call) => call.text.startsWith("INSERT"))).toHaveLength(
-      66
+    const insertCalls = client.calls.filter((call) => call.text.startsWith("INSERT"));
+    expect(insertCalls).toHaveLength(insertCount);
+    expect(insertCalls.every((call) => call.values[1] === "workspace_demo")).toBe(true);
+    const evidenceCalls = insertCalls.filter((call) => call.text.includes('"EvidenceRecord"'));
+    expect(evidenceCalls.map((call) => call.values.slice(0, 6))).toEqual(
+      DEMO_DATASET.evidence.map((record) => [
+        record.id, "workspace_demo", record.studentId, record.classId,
+        record.evidenceDate, record.evidenceNote,
+      ])
     );
     expect(client.calls.at(-1)?.text).toBe("COMMIT");
     expect(client.calls.some((call) => call.text === "ROLLBACK")).toBe(false);
+  });
+
+  it("rejects invalid dataset relations before opening a transaction", async () => {
+    const client = new FakeDatabaseClient();
+    const dataset = structuredClone(DEMO_DATASET);
+    dataset.evidence[0].classId = "other_workspace_class";
+
+    await expect(resetDemoWorkspace({
+      client, clerkUserId: DEMO_CLERK_USER_ID, dataset,
+    })).rejects.toThrow(/ownership relation/);
+    expect(client.calls).toEqual([]);
   });
 
   it("rolls back before deletion when the canonical target is missing", async () => {
@@ -109,15 +128,17 @@ describe("demo workspace reset transaction", () => {
     expect(client.calls.at(-1)?.text).toBe("ROLLBACK");
   });
 
-  it("rolls back when post-insert ownership verification fails", async () => {
+  it.each([
+    { evidenceCount: canonicalCounts.evidenceCount - 1 },
+    { invalidStudentRelations: 1 },
+    { invalidEvidenceRelations: 1 },
+  ])("rolls back when post-insert verification fails: %j", async (invalidCounts) => {
     const client = new FakeDatabaseClient({
       counts: {
-        classCount: 2,
-        studentCount: 4,
-        evidenceCount: 55,
-        photoCount: 4,
+        ...canonicalCounts,
         invalidStudentRelations: 0,
         invalidEvidenceRelations: 0,
+        ...invalidCounts,
       },
     });
 
@@ -133,7 +154,7 @@ describe("demo workspace reset transaction", () => {
 
     await expect(
       resetDemoWorkspace({ client, clerkUserId: DEMO_CLERK_USER_ID })
-    ).resolves.toMatchObject({ evidenceCount: 56 });
+    ).resolves.toMatchObject({ evidenceCount: canonicalCounts.evidenceCount });
 
     expect(
       client.calls.filter(
@@ -150,6 +171,7 @@ describe("demo workspace reset transaction", () => {
       client,
       clerkUserId: DEMO_CLERK_USER_ID,
     });
+    const firstInserts = client.calls.filter((call) => call.text.startsWith("INSERT"));
     const second = await resetDemoWorkspace({
       client,
       clerkUserId: DEMO_CLERK_USER_ID,
@@ -160,8 +182,8 @@ describe("demo workspace reset transaction", () => {
     expect(
       client.calls.filter((call) => call.text.startsWith("DELETE"))
     ).toHaveLength(6);
-    expect(
-      client.calls.filter((call) => call.text.startsWith("INSERT"))
-    ).toHaveLength(132);
+    const allInserts = client.calls.filter((call) => call.text.startsWith("INSERT"));
+    expect(allInserts).toHaveLength(insertCount * 2);
+    expect(allInserts.slice(insertCount)).toEqual(firstInserts);
   });
 });

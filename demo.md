@@ -1,289 +1,233 @@
-# ClassTrace demo account specification
+# ClassTrace canonical demo account
 
 ## Purpose
 
-Build one durable, hosted ClassTrace account that can be used for repeatable
-product demonstrations. The account should feel like a teacher has used
-ClassTrace consistently for several weeks: the roster is ready, the evidence
-feed is populated, each student has a useful timeline, reports contain a
-coherent history, filters return meaningful results, and CSV export has enough
-records to be credible.
+This fictional workspace should feel like a teacher has been using ClassTrace
+since the start of school: a ready roster, a growing evidence feed, a few busy
+student timelines, and other students the teacher has barely documented yet.
+The history includes unfinished work, quiet days, routine positives, supports,
+participation, and occasional behavior observations. It does not give every
+student an improvement story.
 
-This is a canonical fictional workspace, not a generic development seed and
-not a template copied into real teacher accounts.
+The dataset is authored in `scripts/demo-data.mjs`. It is loaded only by an
+explicit operator reset, never generated at runtime or copied into new teacher
+accounts. The redesign changes the reset contents, not the product UI or schema.
 
-## Confirmed production target
+## Canonical production identity
 
 - Neon project: `classtrace` (`floral-forest-27181712`)
 - Neon branch: `production` (`br-wild-recipe-atxbdvko`)
 - Database: `neondb`
 - Clerk user ID: `user_3HQButQuO16dX0RvhZbZ7jtQb2m`
-- Current state verified on August 3, 2026:
-  - teacher profile exists
-  - personal workspace exists
-  - current beta acknowledgement exists
-  - 0 classes
-  - 0 students
-  - 0 evidence records
 
-The Clerk identity, teacher profile, workspace, and beta acceptance are
-preserved during every reset. Only the classes, roster students, and evidence
-inside this exact workspace are replaced.
+The profile, workspace, and beta acceptance were verified on August 3, 2026.
+That historical verification is not a statement of the account's current row
+counts. Updating the canonical dataset does not change the hosted account until
+an operator runs the reset.
 
-## Language
-
-- **Demo account**: the real Clerk account above and its one production
-  ClassTrace workspace.
-- **Canonical dataset**: the versioned classes, students, validated evidence,
-  and synthetic work-sample photos that define the reset state.
-- **Evidence note**: the teacher-reviewed observation stored permanently and
-  displayed in the feed, timeline, report, and export.
-- **Source note**: prose used while authoring the dataset. Source notes are not
-  stored as raw captures or added to a raw-note field.
-- **Reset**: an explicit operator-run replacement of the demo workspace's
-  classes, students, and evidence with the canonical dataset.
+Every reset preserves the Clerk identity, `TeacherProfile`, `Workspace`, and
+`BetaAgreementAcceptance`. Only classes, students, evidence, and related photos
+inside the selected workspace are replaced.
 
 ## Dataset shape
 
-Dataset version: `2026-school-spring-v2`
+Version: `2026-27-school-fall-v3`.
 
-Use fixed timestamps between March 9 and May 1, 2026. Dates never move when the
-dataset is reset. Store explicit `evidenceDate`, `validatedAt`, `createdAt`, and
-`updatedAt` values so ordering is deterministic across resets.
+The fictional 2026–27 school calendar starts **August 17, 2026**. Evidence runs
+through **September 15, 2026**, using fixed classroom times in America/New_York
+and normalized UTC timestamps. Dates never move with the reset date. Classes
+and most students were added before the first observation on August 17; Miles
+was added September 8 and Iris September 10.
 
-The starting state contains:
+The canonical state contains:
 
-- 2 active classes
-- 4 active fictional students
-- 56 active evidence records: 14 per student
-- 4 validated evidence photos: one anonymous synthetic work sample per student
-- no archived classes, students, or evidence
-- no pending or session-stored captures
-- no legacy records with a missing Evidence note
+- **3 active classes**
+- **14 active fictional students**
+- **81 active evidence records**
+- **4 validated photos**, attached to four of those records
+- No archived rows, pending captures, or records missing an Evidence note
 
-Fifty-six records intentionally exceed the 50-record feed page size. This makes
-both feed pages demonstrable while keeping most evidence on the first page.
+IDs are deterministic and demo-prefixed. Every record has explicit
+`evidenceDate`, `validatedAt`, `createdAt`, and `updatedAt` values. Validation is
+fixed at 20 minutes after the observation, with creation and update timestamps
+matching validation. Observation times differ, giving deterministic feed and
+timeline ordering even when several records share a date.
 
-### Classes and roster
+### Classes and student histories
 
-| Class | Students | Purpose in the demo |
-|---|---|---|
-| 6th Grade Math Support | Jeremy, Stacy | Academic skill development, accommodations, assessment, attention, organization, and self-advocacy |
-| 7th Grade ELA Support | Jeff, Mary | Reading engagement, oral participation, writing, behavior, communication, and progress monitoring |
+These are authored counts, not per-student quotas enforced by the validator.
+Jeremy, Stacy, Jeff, and Mary retain the four most developed histories. The ten
+additional first names are fictional demo roster entries, extending the usual
+four-name examples for this dataset only. No real student identities, surnames,
+school-local IDs, family names, or contact details are used.
 
-Mention handles are the lowercase first names: `jeremy`, `stacy`, `jeff`, and
-`mary`. School-local IDs remain empty. Every student belongs to exactly one
-active class.
+| Class | Student / mention handle | Evidence records | Photos |
+|---|---|---:|---:|
+| 6th Grade Math Support | Jeremy / `@jeremy` | 17 | 1 |
+| 6th Grade Math Support | Stacy / `@stacy` | 13 | 1 |
+| 6th Grade Math Support | Nina / `@nina` | 5 | 0 |
+| 6th Grade Math Support | Caleb / `@caleb` | 2 | 0 |
+| 6th Grade Math Support | Owen / `@owen` | 1 | 0 |
+| 7th Grade ELA Support | Jeff / `@jeff` | 12 | 1 |
+| 7th Grade ELA Support | Mary / `@mary` | 10 | 1 |
+| 7th Grade ELA Support | Tessa / `@tessa` | 4 | 0 |
+| 7th Grade ELA Support | Jonah / `@jonah` | 3 | 0 |
+| 7th Grade ELA Support | Iris / `@iris` | 1 | 0 |
+| 8th Grade Study Skills | Rowan / `@rowan` | 7 | 0 |
+| 8th Grade Study Skills | Eli / `@eli` | 3 | 0 |
+| 8th Grade Study Skills | Lena / `@lena` | 2 | 0 |
+| 8th Grade Study Skills | Miles / `@miles` | 1 | 0 |
 
-Only Jeremy, Stacy, Jeff, and Mary may appear as student names anywhere in the
-dataset, tests, command output, or documentation.
+Class totals are **38 math**, **30 ELA**, and **13 study-skills** records. Every
+student belongs to exactly one active class; Capture remains global.
 
-### Evidence-type coverage
+Jeremy has scattered math successes alongside missing work and continuing
+trouble getting through a page. Stacy participates and uses supports, but
+regrouping and word problems still need attention. Jeff's reading interest
+coexists with a difficult day and incomplete writing; the family call follows
+the reset-room observation on the same day. Mary's discussion contributions do
+not always translate into finished written responses.
 
-The 56 records should use every current teacher-facing evidence type except
-`Unclear`. `Unclear` is a temporary interpretation state and should not appear
-as teacher-approved demo evidence.
+The shorter histories do not resolve neatly either. Nina keeps getting stuck
+on subtraction across zero. Tessa still copies too much text for her answers.
+Rowan's folder comes back without the planner. Lena has two ordinary positive
+notes. Owen, Iris, and Miles have just one observation each. Sparse documentation
+does not imply absence, difficulty, or success.
 
-| Evidence type | Target count | Demo purpose |
-|---|---:|---|
-| Academic check-in | 14 | Everyday skill and work observations |
-| General observation | 10 | Authentic moments that do not need inflated categorization |
-| Behavior observation | 8 | Focus, refusal, redirection, regulation, and repair |
-| Assessment observation | 8 | Quizzes, exit tickets, and demonstrated performance |
-| Accommodation log | 6 | Read-aloud, chunking, breaks, prompting, and small-group support |
-| Progress monitoring | 6 | Change over time without becoming an analytics story |
-| Communication log | 4 | Brief, factual family-contact records with no family names or contact details |
+### Evidence mix and photos
 
-Exact counts may move by one while authoring if a more natural teacher-approved
-classification calls for it, but all seven types must remain represented and
-the total must remain 56.
+| Evidence type | Authored count |
+|---|---:|
+| General observation | 28 |
+| Academic check-in | 25 |
+| Accommodation log | 9 |
+| Assessment observation | 7 |
+| Behavior observation | 5 |
+| Progress monitoring | 4 |
+| Communication log | 3 |
 
-### Student story arcs
+All seven saved evidence types appear; `Unclear` remains a draft state. Type
+counts may change with future edits. The three communication notes record brief
+family contact and contain no names or contact details.
 
-Each student's 14 records form a small, non-linear story. Students should have
-strengths, ordinary days, setbacks, and improvement. No student is reduced to a
-diagnosis, deficit, or behavior label.
+The four existing anonymous synthetic WebP work samples remain in
+`scripts/demo-assets/`, together with their provenance files:
 
-| Student | Beginning | Middle | Later evidence |
-|---|---|---|---|
-| Jeremy | Difficulty sustaining focus and incomplete math work | Begins choosing strategies, asking about missing work, and responding to redirection | Explains variables, asks a discussion-opening question, and completes selected work more independently |
-| Stacy | Quiet participation and inconsistent confidence with decimal operations | Uses supports, asks for clarification, and begins volunteering answers | Shows more accurate work and explains a strategy while still needing occasional check-ins |
-| Jeff | Avoidance, fatigue, refusal, and a reset-room incident alongside flashes of reading interest | Re-engages through the class read-aloud and repairs an interaction | Volunteers to read, participates in discussion, and completes a short written response with support |
-| Mary | Consistent engagement with some difficulty organizing written responses | Uses planning and revision supports and asks specific questions | Produces a stronger paragraph, contributes text evidence, and shows increased independence |
+- Stacy's decimal place-value work, August 18
+- Jeremy's one-step equations, September 1
+- Mary's paragraph organizer, September 8
+- Jeff's annotated reading passage, September 9
 
-Progress must remain credible: later records do not erase continuing needs, and
-one strong day is not described as mastery.
+Photos are occasional: **77 records have no photo**, and **10 students have no
+photo**. Each photo belongs to one evidence record; no record has multiple photos.
 
-### Structured-field coverage
+### Structured fields and voice
 
-Across the dataset:
+There are 18 recurring tags, including `math`, `reading`, `writing`, `focus`,
+`participation`, `organization`, `work-completion`, `homework`, `assessment`,
+`support`, and `self-advocacy`. They overlap across students and classes instead
+of forming isolated student-specific categories. Sixteen observations need
+follow-up; the other 65 do not. Topics, performance, and behavior are optional
+and omitted where the observation does not need them.
 
-- At least 40 records have a topic or skill.
-- At least 24 records have a performance value.
-- At least 12 records have a behavior or work-habit value.
-- Between 10 and 14 records have a follow-up note and `followUpNeeded = true`.
-- Every record has 1 to 3 normalized lowercase tags.
-- At least 10 distinct tags appear across the account.
-- At least 4 records for each student have no follow-up, showing routine evidence
-  rather than making every observation an intervention.
-
-Recommended recurring tags are `math`, `reading`, `writing`, `focus`,
-`participation`, `organization`, `assessment`, `homework`, `self-advocacy`,
-`behavior`, `support`, and `progress`.
-
-Summaries use the application's established composition:
+Summaries keep the product's composition:
 
 ```text
 Student · optional topic · optional performance · optional behavior · Evidence type
 ```
 
-Do not invent fields or store parser confidence, raw captures, diagnoses,
-grades, disability categories, parent contact details, or official-plan goals.
-
-## Voice and content rules
-
-Evidence notes should sound like quick teacher observations that were reviewed
-for saving, not generated case notes. Prefer short fragments, plain verbs,
-specific classroom moments, occasional excitement, and natural variation in
-detail. Do not make all notes grammatical, clinical, or uniformly structured.
-
-The starting voice examples are:
+The Evidence note is the approved observation, separate from that structured
+summary. Keep the informal voice and vary length and detail:
 
 - "had a really hard time staying focused today"
 - "raised her hand to answer a question!"
 - "on point today"
-- "stared off into space for a while today"
-- "struggling with decimal addition"
-- "volunteered to read out loud"
-- "apologized for getting an attitude"
-- "sent to reset room"
-- "really into this chapter of the read aloud"
-- "moved himself to another spot to focus"
-- "refused to answer when called on"
-- "was finally able to explain variables"
-- "remembered to ask for missing work when out"
-- "drawing on desk"
-- "fell asleep again"
-- "forgot homework"
-- "asked a really good question and sparked discussion"
+- "borrowed a pencil, got going with everyone else"
+- "folder made it back, planner did not"
+- "same thing with text evidence today, copied most of the paragraph"
 
-Use these as tone anchors and, where they fit a student arc, as approved
-Evidence notes. Add concrete details selectively. A realistic mix is:
+Avoid uniform sentence templates, diagnoses, polished case-note language such
+as "demonstrated growth," and guaranteed improvement arcs. These are saved
+observations, not raw captures: no `rawNote`, `sourceNote`, `captureText`, or
+unresolved `@student` mention belongs in a persisted Evidence note. Do not store
+parser confidence, grades, disability categories, official-plan goals, or family
+contact information.
 
-- about one third very short notes
-- about one half one-sentence observations with a task or outcome
-- the remainder two-sentence notes containing support, response, or next step
+## Dataset validation
 
-Avoid polished phrases such as "demonstrated commendable growth," diagnostic
-claims, moral judgment, fake quotations, exact family details, and repetitive
-sentence templates.
+`validateDemoDataset()` checks:
+
+- The current version, 3 classes, 12–15 students, and 70–90 evidence records
+- Some photos, fewer than the number of students
+- Unique IDs, class name keys, mention handles, photo assets, and photo relations
+- Approved fictional names, normalized names/handles/tags, and shared input limits
+- Valid class/student/evidence relations and a populated roster for every class
+- All seven saved evidence types, recurring tags, and records with and without
+  follow-up, without exact type or structured-field quotas
+- At least one record per student and uneven history sizes
+- Nonempty approved notes, no raw-capture fields or mentions, and summaries that
+  agree with the structured fields
+- Fixed ISO timestamps within the school-year window: classes precede students,
+  students precede evidence, and validation follows the observation
+- Bounded WebP metadata, one photo per evidence record, and safe asset filenames
+
+The tests pin the authored 14-student / 81-record composition. The validator
+allows natural variation within the intended size range. It does not require
+14 records per student, a growth arc, a photo per student, or exact type totals.
+Workspace ownership is assigned by the reset transaction and checked again
+inside that transaction; the dataset never supplies its own workspace ID.
 
 ## Local development reset
 
-`npm run demo:reset:local` loads this same canonical dataset and its four
-photos into one existing Clerk development user's ClassTrace workspace. It is a
-localhost operator command, not an application route or authentication bypass.
-It preserves the selected development `TeacherProfile`, `Workspace`, and beta
-acceptance, while replacing every class, roster student, evidence record, and
-evidence photo inside that one workspace.
+`npm run demo:reset:local` loads the same dataset and four photos into one
+existing Clerk development user's workspace. It preserves that profile,
+workspace, and beta acceptance and replaces that workspace's demo contents.
+Development IDs receive a deterministic suffix scoped to the selected Clerk
+user, including every class, student, evidence, and photo relation.
 
-The command intentionally refuses to run unless all of these checks pass:
+The command requires all of these guards:
 
-- `.env.local` supplies `DATABASE_URL` for a Neon database named exactly
-  `classtrace_dev`.
-- The connected Neon project, branch, and database identity are present and do
-  not match the canonical production project, branch, or database.
-- `CLERK_SECRET_KEY` is a Clerk development key beginning with `sk_test_`.
-- Exactly one `--email` or `--clerk-user-id` target is supplied, followed by
-  the explicit `--confirm` flag.
-- The target resolves uniquely in the configured Clerk development instance
-  and owns exactly one database workspace with a beta acceptance.
+- `.env.local` supplies a Neon `DATABASE_URL` named exactly `classtrace_dev`.
+- The connected project, branch, and database identities are present and differ
+  from the canonical production identities.
+- `CLERK_SECRET_KEY` starts with `sk_test_`.
+- The runtime is neither production nor Vercel.
+- Exactly one `--email` or `--clerk-user-id` target is followed by `--confirm`.
+- The target resolves uniquely in Clerk development and owns exactly one
+  database workspace with a beta acceptance.
 
-To load the canonical data for the `jatlasdev2` development account, stop any
-work you need to preserve in that workspace, then run from the repository root:
+For the existing `jatlasdev2` development account, after preserving any work you
+need from that workspace:
 
-```powershell
-npm run demo
+```bash
+npm run demo:reset:local -- --email jatlasdev2@gmail.com --confirm
 ```
 
-Then start the app with `npm.cmd run dev`.
+Or use the Clerk ID form:
 
-The equivalent Clerk-ID form is:
-
-```powershell
-npm.cmd run demo:reset:local -- --clerk-user-id <development-clerk-user-id> --confirm
+```bash
+npm run demo:reset:local -- --clerk-user-id <development-clerk-user-id> --confirm
 ```
 
-The production `demo:reset` command, its dedicated database URL, canonical
-account, and production identity guards remain separate and unchanged.
+Then start the app with `npm run dev`. The command is an explicit operator
+operation, separate from application routes and the production reset.
 
-## Production reset design
+## Production reset safeguards
 
-Add an operator-only command named `npm run demo:reset`. It is not exposed in
-the teacher product, operator console, or deployed UI.
+`npm run demo:reset` remains an operator-only local command. It is not exposed
+in the product or operator console. It requires:
 
-### Required inputs and guards
+1. A dedicated `DEMO_DATABASE_URL`, never the ordinary `DATABASE_URL` by default
+2. `DEMO_RESET_ALLOWED=1`
+3. `DEMO_CLERK_USER_ID` equal to the canonical Clerk ID above
+4. `--confirm` followed by that same Clerk ID
+5. A PostgreSQL URL with a Neon hostname and database name `neondb`
+6. The exact connected Neon project, branch, and database identities above
+7. One matching teacher profile, one workspace, and a beta acceptance
+8. Successful dataset validation before opening the replacement transaction
 
-The reset command:
-
-1. Reads a dedicated `DEMO_DATABASE_URL`, never the application's ordinary
-   `DATABASE_URL` by default.
-2. Requires `DEMO_RESET_ALLOWED=1`.
-3. Requires `DEMO_CLERK_USER_ID` to equal the canonical Clerk ID above.
-4. Requires a command-line confirmation value equal to that same Clerk ID.
-5. Parses the database URL and requires a Neon hostname and database name
-   `neondb`.
-6. Queries Neon connection settings and requires the exact production project
-   ID, branch ID, and database name recorded above.
-7. Queries the exact Clerk ID and requires one teacher profile, one workspace,
-   and at least one beta agreement acceptance.
-8. Stops before deletion if any guard or dataset validation fails.
-9. Never prints the connection string, credentials, Evidence notes, or other
-   record content.
-
-The production account ID is intentionally part of the canonical operational
-contract, but database credentials remain environment-only.
-
-### Transaction behavior
-
-Within one serializable transaction scoped to the resolved workspace:
-
-1. Delete that workspace's evidence records.
-2. Delete that workspace's roster students.
-3. Delete that workspace's classes.
-4. Insert the two canonical classes.
-5. Insert the four canonical students with same-workspace class relations.
-6. Insert all 56 canonical evidence records with same-workspace student and
-   class relations.
-7. Insert all 4 canonical evidence photos with same-workspace evidence
-   relations.
-8. Verify the expected counts and relations before commit.
-
-Use deterministic, demo-prefixed IDs so the same dataset has stable routes and
-stable ordering after every reset. The transaction is all-or-nothing. A failed
-reset leaves the previous account data intact.
-
-Do not delete or recreate the `TeacherProfile`, `Workspace`, or
-`BetaAgreementAcceptance`. Do not use the account-deletion workflow or create
-an operator audit row; a demo reset is not an account deletion.
-
-### Command output
-
-Successful output is limited to:
-
-- dataset version
-- confirmation that the canonical demo workspace was reset
-- class, student, evidence, and photo counts
-- earliest and latest evidence dates
-
-Failure output names the failed safety condition without printing sensitive or
-student-entered content.
-
-### Operator command
-
-Set the three dedicated variables only in the terminal used for the reset. Do
-not add the demo database credential to Vercel or replace the application's
-ordinary `DATABASE_URL`.
+Do not put the demo database credential in Vercel or replace the application's
+ordinary database URL. The guarded command remains:
 
 ```powershell
 $env:DEMO_DATABASE_URL="<production Neon connection string>"
@@ -292,66 +236,57 @@ $env:DEMO_RESET_ALLOWED="1"
 npm.cmd run demo:reset -- --confirm user_3HQButQuO16dX0RvhZbZ7jtQb2m
 ```
 
-Close the terminal or clear the three variables after the reset.
+Close the terminal or clear those three variables afterward. The dataset
+redesign itself does not run or authorize this production reset.
 
-## Implementation plan
+### Transaction and output
 
-1. Convert this specification into a versioned canonical dataset module with
-   deterministic IDs, all 56 fully authored Evidence records, and four
-   anonymous synthetic work-sample photos.
-2. Add pure dataset validation for counts, names, handles, timestamps, field
-   limits, allowed evidence types, tags, references, and the absence of raw-note
-   fields.
-3. Add production reset guards and unit tests proving that missing, mismatched,
-   and ambiguous targets are rejected before mutation.
-4. Implement the workspace-scoped serializable replacement transaction and a
-   small command runner using the project's existing Prisma/Postgres stack.
-5. Add the `demo:reset` package script and document only the required
-   environment variables and confirmation syntax.
-6. Run unit tests and lint for the new modules.
-7. Exercise the reset first against an isolated Neon branch or disposable test
-   database and verify counts, ownership, fixed timestamps, and idempotency.
-8. After explicit approval, run the guarded command once against the confirmed
-   production demo account.
-9. Smoke-test the deployed demo account: feed pages, student timelines, report
-   date filtering and printing, search by student/tag/text, and one CSV export.
+In one serializable transaction scoped to the resolved workspace, the reset:
 
-Vercel access is useful only to confirm the deployed production environment
-points at the expected Neon project before the first live reset. The reset
-itself remains an explicit local operator command with dedicated credentials.
+1. Verifies the database identity and locks the selected profile/workspace.
+2. Deletes its evidence (cascading to photos), then students, then classes.
+3. Inserts 3 classes, 14 students, 81 evidence records, and 4 photos.
+4. Verifies counts and same-workspace student/class/evidence relations.
+5. Commits, or rolls back on failure, with at most three serialization attempts.
 
-## Verification and acceptance criteria
+No profile, workspace, beta acceptance, schema, or operator audit row is created
+or deleted. Repeating the reset produces identical IDs, values, dates, and
+ordering. A failed transaction preserves the previous dataset.
 
-The work is complete when:
+Successful output is limited to the dataset version, reset confirmation,
+aggregate counts, and earliest/latest evidence dates. Failure output names the
+failed safeguard without printing credentials, notes, photo bytes, or record
+content.
 
-- Resetting twice produces the same IDs, counts, field values, and ordering.
-- The reset cannot target a different Clerk user by changing only one input.
-- A failure before commit preserves the previous demo dataset.
-- No non-demo workspace rows change.
-- Every Evidence record belongs to exactly one canonical student in the same
-  workspace and records that student's active class.
-- Every saved record contains an Evidence note and a fixed validation date.
-- The feed has 50 records on page 1 and 6 on page 2.
-- Search returns useful results for all four students and recurring tags.
-- Each student timeline contains 14 chronologically coherent records.
-- The feed contains all 56 records, and a March 9 through May 1 report contains
-  the expected 14 records for each individual student.
-- Explore Evidence distinguishes the four photo-backed records from the 52
-  records without a photo, and each student has one matching work sample.
-- CSV export for each student contains that student's 14 records and no other
-  student's data.
-- No raw source note is persisted or logged.
-- No new schema, dependency, authentication bypass, demo UI, or product scope is
-  introduced.
+## Product checks
+
+After a separately authorized reset, the canonical data should support:
+
+- **Capture and roster:** all 14 handles resolve to one student in the right
+  class, with 5 math, 5 ELA, and 4 study-skills students to browse.
+- **Evidence feed:** 50 records on the first page and 31 on the second, with
+  several students and all three classes on both pages.
+- **Search:** try `@jeremy`, `@rowan`, `#organization`, `#support`,
+  `place-value`, `regrouping`, and `8th Grade Study Skills`. Feed search filters
+  the currently loaded page; Explore Evidence searches saved evidence across
+  the workspace and supports student/class/tag conditions.
+- **Timelines and reports:** compare Jeremy's 17 records with Owen's single
+  observation. An August 17–September 15 report includes the per-student totals
+  above; a September-only report includes just that month's observations.
+- **Photos:** Explore distinguishes 4 records with photos from 77 without.
+- **CSV exports:** each student exports exactly their own history, with the
+  approved note preserved and photo presence indicated.
+
+Automated coverage includes dataset integrity and composition, consumption by
+the existing read models, development ID scoping, production/development reset
+guards, workspace-scoped inserts, rollback, and repeatable reset inputs. Browser
+checks, printing, and an actual database reset require separate execution; unit
+tests do not establish live account state.
 
 ## Out of scope
 
-- Automatically resetting on sign-in, deploy, or a schedule
-- A public reset button or demo-mode banner
-- Shared credentials or authentication bypasses
-- Generating evidence with AI or at runtime
-- Copying the dataset into real or production teacher workspaces; the one
-  explicitly confirmed local development workspace is the only exception
-- Seeding real student information
-- Changing the production schema
-- Using a Neon branch reset as the account-reset mechanism
+No automatic reset on sign-in, deploy, or a schedule; no public reset control,
+authentication bypass, shared credentials, AI generation, new dependencies,
+product UI changes, or schema changes. Never use real student information or
+load this dataset into another teacher's workspace without explicit selection
+and confirmation through the existing operator guard.

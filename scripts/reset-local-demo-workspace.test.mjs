@@ -39,7 +39,14 @@ describe("local demo workspace reset", () => {
     expect(first.photos.map((photo) => photo.assetFilename)).toEqual(
       DEMO_DATASET.photos.map((photo) => photo.assetFilename)
     );
-    expect(validateDemoDataset(first).photoCount).toBe(4);
+    expect(validateDemoDataset(first)).toEqual(validateDemoDataset());
+    const canonicalIds = new Set([
+      ...DEMO_DATASET.classes, ...DEMO_DATASET.students,
+      ...DEMO_DATASET.evidence, ...DEMO_DATASET.photos,
+    ].map((record) => record.id));
+    for (const record of [...first.classes, ...first.students, ...first.evidence, ...first.photos]) {
+      expect(canonicalIds.has(record.id)).toBe(false);
+    }
   });
 
   it("resolves only one exact Clerk development account", async () => {
@@ -83,7 +90,7 @@ describe("local demo workspace reset", () => {
 
   it("passes only the resolved owned account and verified development identity to the reset", async () => {
     const client = databaseClient();
-    const resetWorkspace = vi.fn().mockResolvedValue({ version: "demo-v2" });
+    const resetWorkspace = vi.fn().mockResolvedValue(validateDemoDataset());
     const directory = {
       getUser: vi.fn(),
       findUsersByEmail: vi.fn().mockResolvedValue([developmentUser]),
@@ -106,13 +113,7 @@ describe("local demo workspace reset", () => {
 
   it("repeats the same canonical reset inputs for idempotent local reloads", async () => {
     const client = databaseClient();
-    const summary = {
-      version: "2026-school-spring-v2",
-      classCount: 2,
-      studentCount: 4,
-      evidenceCount: 56,
-      photoCount: 4,
-    };
+    const summary = validateDemoDataset();
     const resetWorkspace = vi.fn().mockResolvedValue(summary);
     const directory = {
       getUser: vi.fn().mockResolvedValue(developmentUser),
