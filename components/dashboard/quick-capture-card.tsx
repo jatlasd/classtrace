@@ -363,7 +363,7 @@ export function QuickCaptureCard({
             <p className="label text-live">Photo ready</p>
             <p className="text-[13px] leading-relaxed text-fg-2">
               Check for other students or identifying details. It stays on this
-              device until you validate and save.
+              device until you approve and save.
             </p>
             <div className="flex flex-wrap gap-1.5">
               <Button

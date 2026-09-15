@@ -10,7 +10,7 @@ The core loop is:
 class-first roster setup
   → quick student-specific capture
   → deterministic structured draft
-  → teacher review and editing
+  → teacher approval or correction
   → permanent evidence
   → feed, Explore, timeline, report, or export
 ```
@@ -42,9 +42,9 @@ The strongest early users are special education teachers, case managers, interve
   student or resolved by creating a student in an active class.
 - Permanent evidence must resolve to exactly one active roster student.
 - Deterministic rules suggest evidence type, topic, performance, behavior, tags, follow-up, and summary.
-- The teacher reviews the student, date, optional Evidence note, optional photo, and structured fields. Evidence dates are limited to the teacher-local calendar window from workspace creation through today.
+- Captured drafts collect in a temporary review queue. Ordinary meaningful drafts show the student, date, exact Evidence note, optional photo state, and a compact deterministic filing result for quick teacher approval. Detailed editing opens only when the teacher requests it or the draft is genuinely unsaveable or semantically unresolved. Evidence dates are limited to the teacher-local calendar window from workspace creation through today.
 - Saving creates a permanent evidence record containing a reviewed note, one validated photo, or both; raw capture text and original photo data are not part of that record.
-- The first successful workspace save offers direct next steps to the student timeline, report, or another capture without creating a separate onboarding state.
+- Every successful save produces transient confirmation that the observation was saved to the student's trace, with a direct link to open that trace. The first workspace save may use stronger copy without creating a separate onboarding state.
 - Saved records appear in a paged global feed and student timeline.
 - Explore Evidence runs an explicit, unsaved, workspace-scoped question across
   active saved evidence and returns either paged evidence records or paged
@@ -106,7 +106,7 @@ Do not add these by implication through navigation, data models, placeholder con
 
 ## Vocabulary
 
-Prefer: Capture, Evidence feed, What happened?, Review before saving, Evidence note, Student, Class, Tags, Follow-up, Timeline, Report, Validate.
+Prefer: Capture, Evidence feed, What happened?, Drafts to review, Evidence note, Student, Class, Tags, Follow-up, Timeline, Report, Approve and save.
 
 Avoid inflated terms such as intelligence, insights, automation, compliance, case-management platform, data lake, or AI-powered documentation.
 

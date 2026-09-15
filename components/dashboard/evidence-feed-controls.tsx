@@ -23,7 +23,7 @@ export function EvidenceSearchControl({
   return (
     <div className="relative min-w-0 flex-1 sm:max-w-[300px]">
       <label htmlFor={searchId} className="sr-only">
-        Search drafts and evidence on this page
+        Search evidence on this page
       </label>
       <div className="relative">
         <input
@@ -120,8 +120,8 @@ export function FilterEmptyMessage({ filter }: { filter: InboxFilter }) {
   if (filter === "needs_review") {
     return (
       <FeedEmptyState
-        title="Nothing waiting on you"
-        body="New captures that need teacher validation will appear here before they become saved evidence."
+        title="Drafts have their own queue"
+        body="Use Drafts to review above. Temporary drafts stay separate from evidence already saved to student traces."
       />
     );
   }
