@@ -16,11 +16,11 @@ accounts. The redesign changes the reset contents, not the product UI or schema.
 ## Canonical production identity
 
 - Neon project: `classtrace` (`floral-forest-27181712`)
-- Neon branch: `production` (`br-wild-recipe-atxbdvko`)
+- Neon branch: `production` (`br-crimson-shadow-atdtagrm`)
 - Database: `neondb`
-- Clerk user ID: `user_3HQButQuO16dX0RvhZbZ7jtQb2m`
+- Clerk user ID: `user_3F2ep7ny1zVEKuEZ2aLpsp4EHRR`
 
-The profile, workspace, and beta acceptance were verified on August 3, 2026.
+The profile, workspace, and beta acceptance were verified on September 17, 2026.
 That historical verification is not a statement of the account's current row
 counts. Updating the canonical dataset does not change the hosted account until
 an operator runs the reset.
@@ -31,7 +31,7 @@ inside the selected workspace are replaced.
 
 ## Dataset shape
 
-Version: `2026-27-school-fall-v3`.
+Version: `2026-27-school-fall-v4`.
 
 The fictional 2026–27 school calendar starts **August 31, 2026** for this demo
 window. Evidence runs through **September 15, 2026**, using fixed classroom
@@ -44,7 +44,7 @@ The canonical state contains:
 - **3 active classes**
 - **14 active fictional students**
 - **81 active evidence records**
-- **4 validated photos**, attached to four of those records
+- **12 validated photos**, attached to twelve of those records
 - No archived rows, pending captures, or records missing an Evidence note
 
 IDs are deterministic and demo-prefixed. Every record has explicit
@@ -63,19 +63,19 @@ school-local IDs, family names, or contact details are used.
 
 | Class | Student / mention handle | Evidence records | Photos |
 |---|---|---:|---:|
-| 6th Grade Math Support | Jeremy / `@jeremy` | 17 | 1 |
-| 6th Grade Math Support | Stacy / `@stacy` | 13 | 1 |
+| 6th Grade Math Support | Jeremy / `@jeremy` | 17 | 2 |
+| 6th Grade Math Support | Stacy / `@stacy` | 13 | 2 |
 | 6th Grade Math Support | Nina / `@nina` | 5 | 0 |
-| 6th Grade Math Support | Caleb / `@caleb` | 2 | 0 |
+| 6th Grade Math Support | Caleb / `@caleb` | 2 | 1 |
 | 6th Grade Math Support | Owen / `@owen` | 1 | 0 |
-| 7th Grade ELA Support | Jeff / `@jeff` | 12 | 1 |
-| 7th Grade ELA Support | Mary / `@mary` | 10 | 1 |
-| 7th Grade ELA Support | Tessa / `@tessa` | 4 | 0 |
+| 7th Grade ELA Support | Jeff / `@jeff` | 12 | 2 |
+| 7th Grade ELA Support | Mary / `@mary` | 10 | 2 |
+| 7th Grade ELA Support | Tessa / `@tessa` | 4 | 1 |
 | 7th Grade ELA Support | Jonah / `@jonah` | 3 | 0 |
 | 7th Grade ELA Support | Iris / `@iris` | 1 | 0 |
-| 8th Grade Study Skills | Rowan / `@rowan` | 7 | 0 |
+| 8th Grade Study Skills | Rowan / `@rowan` | 7 | 1 |
 | 8th Grade Study Skills | Eli / `@eli` | 3 | 0 |
-| 8th Grade Study Skills | Lena / `@lena` | 2 | 0 |
+| 8th Grade Study Skills | Lena / `@lena` | 2 | 1 |
 | 8th Grade Study Skills | Miles / `@miles` | 1 | 0 |
 
 Class totals are **38 math**, **30 ELA**, and **13 study-skills** records. Every
@@ -110,15 +110,23 @@ All seven saved evidence types appear; `Unclear` remains a draft state. Type
 counts may change with future edits. The three communication notes record brief
 family contact and contain no names or contact details.
 
-The four existing anonymous synthetic WebP work samples remain in
+The twelve anonymous synthetic WebP work samples live in
 `scripts/demo-assets/`, together with their provenance files:
 
 - Stacy's decimal place-value work, August 31
 - Jeremy's one-step equations, September 9
 - Mary's paragraph organizer, September 9
 - Jeff's annotated reading passage, September 11
+- Jeremy's unfinished math practice, September 15
+- Stacy's corrected word problems, September 15
+- Jeff's oral-reading running record, September 14
+- Mary's revised paragraph draft, September 10
+- Caleb's decimal answers without shown work, September 2
+- Tessa's copied text-evidence response, September 8
+- Rowan's mostly blank weekly planner, September 4
+- Lena's vocabulary study cards, September 11
 
-Photos are occasional: **77 records have no photo**, and **10 students have no
+Photos are occasional: **69 records have no photo**, and **6 students have no
 photo**. Each photo belongs to one evidence record; no record has multiple photos.
 
 ### Structured fields and voice
@@ -179,7 +187,7 @@ inside that transaction; the dataset never supplies its own workspace ID.
 
 ## Local development reset
 
-`npm run demo:reset:local` loads the same dataset and four photos into one
+`npm run demo:reset:local` loads the same dataset and twelve photos into one
 existing Clerk development user's workspace. It preserves that profile,
 workspace, and beta acceptance and replaces that workspace's demo contents.
 Development IDs receive a deterministic suffix scoped to the selected Clerk
@@ -231,9 +239,9 @@ ordinary database URL. The guarded command remains:
 
 ```powershell
 $env:DEMO_DATABASE_URL="<production Neon connection string>"
-$env:DEMO_CLERK_USER_ID="user_3HQButQuO16dX0RvhZbZ7jtQb2m"
+$env:DEMO_CLERK_USER_ID="user_3F2ep7ny1zVEKuEZ2aLpsp4EHRR"
 $env:DEMO_RESET_ALLOWED="1"
-npm.cmd run demo:reset -- --confirm user_3HQButQuO16dX0RvhZbZ7jtQb2m
+npm.cmd run demo:reset -- --confirm user_3F2ep7ny1zVEKuEZ2aLpsp4EHRR
 ```
 
 Close the terminal or clear those three variables afterward. The dataset
@@ -245,7 +253,7 @@ In one serializable transaction scoped to the resolved workspace, the reset:
 
 1. Verifies the database identity and locks the selected profile/workspace.
 2. Deletes its evidence (cascading to photos), then students, then classes.
-3. Inserts 3 classes, 14 students, 81 evidence records, and 4 photos.
+3. Inserts 3 classes, 14 students, 81 evidence records, and 12 photos.
 4. Verifies counts and same-workspace student/class/evidence relations.
 5. Commits, or rolls back on failure, with at most three serialization attempts.
 
@@ -273,7 +281,7 @@ After a separately authorized reset, the canonical data should support:
 - **Timelines and reports:** compare Jeremy's 17 records with Owen's single
   observation. An August 31–September 15 report includes the per-student totals
   above; a September-only report includes just that month's observations.
-- **Photos:** Explore distinguishes 4 records with photos from 77 without.
+- **Photos:** Explore distinguishes 12 records with photos from 69 without.
 - **CSV exports:** each student exports exactly their own history, with the
   approved note preserved and photo presence indicated.
 

@@ -14,7 +14,7 @@ describe("canonical demo dataset", () => {
       classCount: 3,
       studentCount: 14,
       evidenceCount: 81,
-      photoCount: 4,
+      photoCount: 12,
       earliestEvidenceDate: "2026-08-31T13:05:00.000Z",
       latestEvidenceDate: "2026-09-15T18:26:00.000Z",
     });
@@ -40,6 +40,14 @@ describe("canonical demo dataset", () => {
       "demo_evidence_jeremy_10",
       "demo_evidence_jeff_10",
       "demo_evidence_mary_07",
+      "demo_evidence_jeremy_17",
+      "demo_evidence_stacy_13",
+      "demo_evidence_jeff_11",
+      "demo_evidence_mary_08",
+      "demo_evidence_caleb_01",
+      "demo_evidence_tessa_02",
+      "demo_evidence_rowan_03",
+      "demo_evidence_lena_02",
     ]);
   });
 
@@ -69,7 +77,7 @@ describe("canonical demo dataset", () => {
     };
     expect(validateDemoDataset(revised)).toMatchObject({
       evidenceCount: 80,
-      photoCount: 3,
+      photoCount: 11,
     });
   });
 
@@ -153,8 +161,8 @@ describe("canonical demo dataset", () => {
     const photographedStudents = new Set(DEMO_DATASET.photos.map((photo) =>
       DEMO_DATASET.evidence.find((record) => record.id === photo.evidenceId).studentId
     ));
-    expect(photographedStudents.size).toBe(4);
-    expect(DEMO_DATASET.students.filter((student) => !photographedStudents.has(student.id))).toHaveLength(10);
+    expect(photographedStudents.size).toBe(8);
+    expect(DEMO_DATASET.students.filter((student) => !photographedStudents.has(student.id))).toHaveLength(6);
 
     const noProgressMonitoring = DEMO_DATASET.evidence.filter((record) => record.evidenceType !== "Progress monitoring");
     expect(() =>

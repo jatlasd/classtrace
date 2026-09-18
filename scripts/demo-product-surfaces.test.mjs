@@ -87,7 +87,7 @@ describe("canonical demo data in product read models", () => {
     expect(second.hasOlder).toBe(false);
     const combined = [...first.records, ...second.records];
     expect(new Set(combined.map((record) => record.id)).size).toBe(81);
-    expect(combined.filter((record) => record.hasPhoto)).toHaveLength(4);
+    expect(combined.filter((record) => record.hasPhoto)).toHaveLength(12);
 
     for (const page of [first, second]) {
       expect(new Set(page.records.map((record) => record.classGroupName)).size).toBe(3);

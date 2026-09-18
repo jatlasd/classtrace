@@ -1,10 +1,10 @@
 import { INPUT_LIMITS } from "../lib/validation/input-limits.ts";
 
-export const DEMO_CLERK_USER_ID = "user_3HQButQuO16dX0RvhZbZ7jtQb2m";
-export const DEMO_DATASET_VERSION = "2026-27-school-fall-v3";
+export const DEMO_CLERK_USER_ID = "user_3F2ep7ny1zVEKuEZ2aLpsp4EHRR";
+export const DEMO_DATASET_VERSION = "2026-27-school-fall-v4";
 export const DEMO_DATABASE_IDENTITY = Object.freeze({
   projectId: "floral-forest-27181712",
-  branchId: "br-wild-recipe-atxbdvko",
+  branchId: "br-crimson-shadow-atdtagrm",
   databaseName: "neondb",
 });
 
@@ -912,6 +912,70 @@ const photos = [
     id: "demo_photo_mary_planning_2026",
     evidenceId: "demo_evidence_mary_07",
     assetFilename: "paragraph-planning.webp",
+    contentType: "image/webp",
+    width: 1_000,
+    height: 1_000,
+  },
+  {
+    id: "demo_photo_jeremy_unfinished_math_2026",
+    evidenceId: "demo_evidence_jeremy_17",
+    assetFilename: "unfinished-math-practice.webp",
+    contentType: "image/webp",
+    width: 1_000,
+    height: 1_000,
+  },
+  {
+    id: "demo_photo_stacy_word_problems_2026",
+    evidenceId: "demo_evidence_stacy_13",
+    assetFilename: "corrected-word-problems.webp",
+    contentType: "image/webp",
+    width: 1_000,
+    height: 1_000,
+  },
+  {
+    id: "demo_photo_jeff_running_record_2026",
+    evidenceId: "demo_evidence_jeff_11",
+    assetFilename: "oral-reading-running-record.webp",
+    contentType: "image/webp",
+    width: 1_000,
+    height: 1_000,
+  },
+  {
+    id: "demo_photo_mary_paragraph_draft_2026",
+    evidenceId: "demo_evidence_mary_08",
+    assetFilename: "paragraph-draft-revision.webp",
+    contentType: "image/webp",
+    width: 1_000,
+    height: 1_000,
+  },
+  {
+    id: "demo_photo_caleb_no_work_2026",
+    evidenceId: "demo_evidence_caleb_01",
+    assetFilename: "decimal-answers-no-work.webp",
+    contentType: "image/webp",
+    width: 1_000,
+    height: 1_000,
+  },
+  {
+    id: "demo_photo_tessa_text_evidence_2026",
+    evidenceId: "demo_evidence_tessa_02",
+    assetFilename: "copied-text-evidence-response.webp",
+    contentType: "image/webp",
+    width: 1_000,
+    height: 1_000,
+  },
+  {
+    id: "demo_photo_rowan_planner_2026",
+    evidenceId: "demo_evidence_rowan_03",
+    assetFilename: "weekly-planner-entry.webp",
+    contentType: "image/webp",
+    width: 1_000,
+    height: 1_000,
+  },
+  {
+    id: "demo_photo_lena_vocabulary_2026",
+    evidenceId: "demo_evidence_lena_02",
+    assetFilename: "vocabulary-study-cards.webp",
     contentType: "image/webp",
     width: 1_000,
     height: 1_000,
