@@ -105,6 +105,8 @@ const mentionHighlightStyle = {
 type QuickCaptureCardProps = {
   rosterStudents: CaptureRosterStudent[];
   focusRequestKey?: number;
+  initialStudent?: CaptureRosterStudent;
+  initialStudentError?: string;
   disabled?: boolean;
   onDraft: (
     draft: NoteDraft,
@@ -151,6 +153,8 @@ function resolutionMessage(
 export function QuickCaptureCard({
   rosterStudents,
   focusRequestKey = 0,
+  initialStudent,
+  initialStudentError,
   disabled = false,
   onDraft,
 }: QuickCaptureCardProps) {
@@ -158,8 +162,15 @@ export function QuickCaptureCard({
   const choosePhotoRef = useRef<HTMLInputElement | null>(null);
   const takePhotoRef = useRef<HTMLInputElement | null>(null);
   const postedTimerRef = useRef<number | null>(null);
-  const [markupValue, setMarkupValue] = useState("");
-  const [plainText, setPlainText] = useState("");
+  const initialStudentFocusHandledRef = useRef(false);
+  const [markupValue, setMarkupValue] = useState(() =>
+    initialStudent
+      ? `@[${initialStudent.mentionHandle}](${initialStudent.mentionHandle}) `
+      : ""
+  );
+  const [plainText, setPlainText] = useState(() =>
+    initialStudent ? `@${initialStudent.mentionHandle} ` : ""
+  );
   const [posted, setPosted] = useState(false);
   const [photo, setPhoto] = useState<PhotoDraft | null>(null);
   const [photoError, setPhotoError] = useState("");
@@ -194,6 +205,8 @@ export function QuickCaptureCard({
     trimmedPlainText.length > 0
   );
   const hasCaptureContent = trimmedPlainText.length > 0 || photo !== null;
+  const visibleInitialStudentError =
+    trimmedPlainText.length === 0 ? initialStudentError : undefined;
   const canCapture =
     !disabled &&
     hasCaptureContent &&
@@ -208,6 +221,19 @@ export function QuickCaptureCard({
       inputRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
     }
   }, [focusRequestKey]);
+
+  useEffect(() => {
+    if (
+      disabled ||
+      !initialStudent ||
+      initialStudentFocusHandledRef.current
+    ) {
+      return;
+    }
+
+    initialStudentFocusHandledRef.current = true;
+    inputRef.current?.focus();
+  }, [disabled, initialStudent]);
 
   useEffect(
     () => () => {
@@ -431,12 +457,16 @@ export function QuickCaptureCard({
         <div aria-live="polite" className="min-w-0 flex-1 sm:text-right">
           <p
             className={`text-[13px] leading-relaxed ${
-              guidance?.tone === "error" ? "text-danger" : "text-fg-2"
+              guidance?.tone === "error" || visibleInitialStudentError
+                ? "text-danger"
+                : "text-fg-2"
             }`}
           >
             {disabled
               ? "Restoring drafts before capture opens…"
-              : guidance?.text ?? "Captures become drafts. Nothing saves until you review it."}
+              : guidance?.text ??
+                visibleInitialStudentError ??
+                "Captures become drafts. Nothing saves until you review it."}
           </p>
         </div>
 

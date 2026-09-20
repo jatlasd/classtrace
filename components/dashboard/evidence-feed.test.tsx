@@ -572,7 +572,13 @@ describe("EvidenceFeed capture review", () => {
 
   it("does not steal focus from the navigation dialog during passive expiry", async () => {
     renderFeed();
-    render(<AppShellDrawer isSigningOut={false} onSignOut={vi.fn()} />);
+    render(
+      <AppShellDrawer
+        pathname="/app/feed"
+        isSigningOut={false}
+        onSignOut={vi.fn()}
+      />
+    );
     await finishDraftHydration();
     await capture("@Mary used a reading strategy independently #reading");
 

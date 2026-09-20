@@ -10,6 +10,8 @@ export const routes = {
   explore: "/app/explore",
   roster: "/app/roster",
   studentsPrefix: "/app/students",
+  captureForStudent: (studentId: string): string =>
+    `/app/feed?student=${encodeURIComponent(studentId)}`,
   student: (studentId: string): string => `/app/students/${studentId}`,
   studentReport: (studentId: string): string =>
     `/app/students/${studentId}/report`,

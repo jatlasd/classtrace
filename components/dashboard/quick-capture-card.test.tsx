@@ -94,6 +94,41 @@ describe("QuickCaptureCard mentions editor", () => {
     expect(input.style.lineHeight).toBe("34px");
   });
 
+  it("starts with a validated student mention selected and focuses the composer", async () => {
+    const { container } = render(
+      <QuickCaptureCard
+        rosterStudents={roster}
+        initialStudent={roster[0]}
+        onDraft={vi.fn()}
+      />
+    );
+
+    const input = screen.getByLabelText("What happened?") as HTMLTextAreaElement;
+    await waitFor(() => expect(document.activeElement).toBe(input));
+    expect(input.value).toBe("@mary ");
+    expect(screen.getByText("Ready to capture for Mary.")).toBeTruthy();
+    expect(container.querySelector(".quick-capture-mentions strong")).toBeTruthy();
+  });
+
+  it("shows a safe message when a requested student was not available", () => {
+    render(
+      <QuickCaptureCard
+        rosterStudents={roster}
+        initialStudentError="That student is not available for capture. Mention an active student instead."
+        onDraft={vi.fn()}
+      />
+    );
+
+    expect(
+      screen.getByText(
+        "That student is not available for capture. Mention an active student instead."
+      ).className
+    ).toContain("text-danger");
+    expect((screen.getByLabelText("What happened?") as HTMLTextAreaElement).value).toBe(
+      ""
+    );
+  });
+
   it("selects a mention without changing its text width", async () => {
     const { container } = render(
       <QuickCaptureCard rosterStudents={roster} onDraft={vi.fn()} />

@@ -3,7 +3,12 @@
 import { LogOut, Menu, X } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useId, useRef, useState } from "react";
+import {
+  APP_NAVIGATION_ITEMS,
+  isAppNavigationItemActive,
+} from "@/components/dashboard/app-navigation";
 import { BrandLockup } from "@/components/layout/brand-lockup";
+import { StudentQuickJump } from "@/components/students/student-quick-jump";
 import { routes } from "@/lib/routes";
 
 const FOCUSABLE_SELECTOR = [
@@ -22,9 +27,14 @@ const TRUST_LINKS = [
 type AppShellDrawerProps = {
   isSigningOut: boolean;
   onSignOut: () => void;
+  pathname: string;
 };
 
-export function AppShellDrawer({ isSigningOut, onSignOut }: AppShellDrawerProps) {
+export function AppShellDrawer({
+  isSigningOut,
+  onSignOut,
+  pathname,
+}: AppShellDrawerProps) {
   const [isOpen, setIsOpen] = useState(false);
   const dialogTitleId = useId();
   const menuButtonRef = useRef<HTMLButtonElement>(null);
@@ -100,7 +110,7 @@ export function AppShellDrawer({ isSigningOut, onSignOut }: AppShellDrawerProps)
           role="dialog"
           aria-modal="true"
           aria-labelledby={dialogTitleId}
-          className="app-shell-mobile-dialog fixed inset-0 z-[70] lg:hidden"
+          className="app-shell-mobile-dialog fixed inset-0 z-[90] lg:hidden"
         >
           <button
             type="button"
@@ -130,6 +140,43 @@ export function AppShellDrawer({ isSigningOut, onSignOut }: AppShellDrawerProps)
               <p className="mt-1 text-sm text-fg-2">
                 One teacher. One workspace. Nothing saves until you review it.
               </p>
+
+              <nav aria-label="Primary" className="mt-5">
+                <ul className="grid grid-cols-2 gap-2">
+                  {APP_NAVIGATION_ITEMS.map((item) => {
+                    const active = isAppNavigationItemActive(
+                      pathname,
+                      item.match
+                    );
+
+                    return (
+                      <li key={item.href}>
+                        <Link
+                          href={item.href}
+                          aria-current={active ? "page" : undefined}
+                          onClick={closeMenu}
+                          className={`flex min-h-12 items-center gap-2.5 rounded-lg border px-3 text-[15px] font-semibold outline-none transition-colors focus-visible:ring-2 focus-visible:ring-live-bright focus-visible:ring-offset-2 focus-visible:ring-offset-plate ${
+                            active
+                              ? "border-line-2 bg-well text-fg"
+                              : "border-line bg-plate text-fg-2 hover:bg-well hover:text-fg"
+                          }`}
+                        >
+                          <item.icon
+                            aria-hidden="true"
+                            className="size-4.5 shrink-0"
+                            strokeWidth={active ? 2.2 : 1.8}
+                          />
+                          {item.label}
+                        </Link>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </nav>
+
+              <div className="mt-5">
+                <StudentQuickJump onNavigate={closeMenu} />
+              </div>
 
               <nav aria-label="Trust and support" className="mt-5">
                 <ul className="divide-y divide-line border-y border-line">

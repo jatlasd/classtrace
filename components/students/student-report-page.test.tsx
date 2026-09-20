@@ -57,6 +57,9 @@ describe("StudentReportPage", () => {
     expect(screen.queryByText("Structured details:")).toBeNull();
     expect(screen.getByText("Academic check-in")).toBeTruthy();
     expect(screen.getByText("Review comprehension tomorrow")).toBeTruthy();
+    expect(
+      screen.getByRole("link", { name: "Capture something" }).getAttribute("href")
+    ).toBe("/app/feed?student=student_mary");
   });
 
   it("renders a useful empty state instead of an empty report", () => {

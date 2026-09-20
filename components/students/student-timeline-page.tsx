@@ -3,6 +3,7 @@ import type { ReactElement } from "react";
 import { EvidenceRecordContent } from "@/components/evidence/evidence-record-content";
 import { ValidatedStamp } from "@/components/evidence/validated-stamp";
 import { StudentEvidenceExportAction } from "@/components/students/student-evidence-export-action";
+import { StudentQuickJump } from "@/components/students/student-quick-jump";
 import { Button } from "@/components/ui/button";
 import { routes } from "@/lib/routes";
 
@@ -150,8 +151,13 @@ function StudentProfileHeader({
           evidenceCount={evidenceCount}
         />
         <Button asChild variant="ghost">
-          <Link href={routes.feed}>Capture something</Link>
+          <Link href={routes.captureForStudent(student.id)}>Capture something</Link>
         </Button>
+        <StudentQuickJump
+          currentStudentId={student.id}
+          label="Switch to another student"
+          mode="trigger"
+        />
       </div>
     </header>
   );
@@ -195,7 +201,7 @@ function StudentTimelineEmptyState({
         starts here.
       </p>
       <Button asChild className="mt-5">
-        <Link href={routes.feed}>Capture something</Link>
+        <Link href={routes.captureForStudent(student.id)}>Capture something</Link>
       </Button>
     </div>
   );

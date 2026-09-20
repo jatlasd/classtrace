@@ -38,6 +38,8 @@ vi.mock("@/components/dashboard/evidence-feed", () => ({
     classGroups: unknown[];
     initialEvidenceRecords: unknown[];
     evidencePage: number;
+    initialCaptureStudent?: { id: string };
+    initialCaptureStudentError?: string;
   }) => (
     <div
       data-testid="evidence-feed"
@@ -46,6 +48,8 @@ vi.mock("@/components/dashboard/evidence-feed", () => ({
       data-class-count={props.classGroups.length}
       data-evidence-count={props.initialEvidenceRecords.length}
       data-page={props.evidencePage}
+      data-capture-student-id={props.initialCaptureStudent?.id}
+      data-capture-student-error={props.initialCaptureStudentError}
     />
   ),
 }));
@@ -68,6 +72,7 @@ describe("authenticated app routing", () => {
         displayName: "Mary",
         mentionHandle: "mary",
         classGroupName: "Reading",
+        hasActiveClass: true,
       },
     ]);
     mocks.listActiveClassGroupsForWorkspace.mockResolvedValue([
@@ -132,6 +137,43 @@ describe("authenticated app routing", () => {
     );
   });
 
+  it("validates a student-scoped capture against the active workspace roster", async () => {
+    mocks.getClassRosterReadinessForWorkspace.mockResolvedValue({
+      readyForClassFirstRoster: true,
+    });
+
+    render(
+      await FeedPage({
+        searchParams: Promise.resolve({ student: "student_1" }),
+      })
+    );
+
+    const feed = screen.getByTestId("evidence-feed");
+    expect(feed.getAttribute("data-capture-student-id")).toBe("student_1");
+    expect(feed.getAttribute("data-capture-student-error")).toBeNull();
+    expect(mocks.listActiveRosterStudentsForWorkspace).toHaveBeenCalledWith(
+      "workspace_1"
+    );
+  });
+
+  it("discards an unavailable student-scoped capture with a safe message", async () => {
+    mocks.getClassRosterReadinessForWorkspace.mockResolvedValue({
+      readyForClassFirstRoster: true,
+    });
+
+    render(
+      await FeedPage({
+        searchParams: Promise.resolve({ student: "student_outside_workspace" }),
+      })
+    );
+
+    const feed = screen.getByTestId("evidence-feed");
+    expect(feed.getAttribute("data-capture-student-id")).toBeNull();
+    expect(feed.getAttribute("data-capture-student-error")).toBe(
+      "That student is not available for capture. Mention an active student instead."
+    );
+  });
+
   it("redirects an empty non-first page while preserving feed controls", async () => {
     mocks.getClassRosterReadinessForWorkspace.mockResolvedValue({
       readyForClassFirstRoster: true,
@@ -149,8 +191,11 @@ describe("authenticated app routing", () => {
           page: "4",
           filter: "validated",
           q: "reading",
+          student: "student_1",
         }),
       })
-    ).rejects.toThrow("redirect:/app/feed?filter=validated&q=reading");
+    ).rejects.toThrow(
+      "redirect:/app/feed?filter=validated&q=reading&student=student_1"
+    );
   });
 });

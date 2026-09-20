@@ -10,6 +10,9 @@ describe("routes", () => {
     expect(routes.explore).toBe("/app/explore");
     expect(routes.roster).toBe("/app/roster");
     expect(routes.studentsPrefix).toBe("/app/students");
+    expect(routes.captureForStudent("student mary/1")).toBe(
+      "/app/feed?student=student%20mary%2F1"
+    );
     expect(routes.student("jeremy")).toBe("/app/students/jeremy");
     expect(routes.studentReport("jeremy")).toBe("/app/students/jeremy/report");
     expect(routes.settings).toBe("/app/settings");

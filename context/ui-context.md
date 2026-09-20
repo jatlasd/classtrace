@@ -52,12 +52,13 @@ small lower-right node is amber. There is no `CT` tile.
   fixed route-header rail. Sign-in, beta acknowledgement, and operator routes
   use their own focused layouts.
 - At `lg`, Capture, Explore, Students, and Settings are centered as text-led top
-  navigation; the active destination receives an amber dot.
-- Below `lg`, the same four destinations form a fixed bottom tab bar. The mobile
-  top header keeps the brand, current route label where needed, and a menu.
-- The mobile menu is a bottom sheet for trust/support links and Sign out, not a
-  duplicate primary nav. It traps focus, closes with Escape/backdrop, restores
-  trigger focus, and prevents background scrolling.
+  navigation; the active destination receives an amber dot, and a compact
+  active-student quick-jump sits beside Sign out.
+- Below `lg`, the mobile top header keeps the brand, current route label where
+  needed, and a menu. The menu owns the same four primary destinations, the
+  student quick-jump, trust/support links, and Sign out.
+- The mobile menu traps focus, closes with Escape/backdrop, restores trigger
+  focus, prevents background scrolling, and accounts for device safe areas.
 - Capture remains the first destination and the visual center of the product.
   Student timelines and reports activate Students without joining global nav.
 - Do not add fake search, notification, analytics, review, reporting, or admin
@@ -123,8 +124,8 @@ linked Plates, and dense management data in divided rows.
   selection, archive, or destructive state.
 - Long teacher-entered text, student names, handles, tags, and identifiers wrap
   without horizontal overflow.
-- Mobile layouts stack and controls wrap. Content reserves room for the fixed
-  bottom tabs. Roster actions never depend on hover.
+- Mobile layouts stack and controls wrap without permanent bottom-navigation
+  padding. Roster actions never depend on hover.
 - Printable reports remove app chrome and avoid splitting an evidence entry.
 - All animation and transition behavior respects `prefers-reduced-motion`.
 

@@ -11,12 +11,14 @@ import {
 } from "@/lib/evidence/evidence-feed-records";
 import { routes } from "@/lib/routes";
 import { listActiveRosterStudentsForWorkspace } from "@/lib/students/roster-students";
+import { INPUT_LIMITS } from "@/lib/validation/input-limits";
 
 type FeedPageProps = {
   searchParams?: Promise<{
     page?: string | string[];
     filter?: string | string[];
     q?: string | string[];
+    student?: string | string[];
   }>;
 };
 
@@ -39,23 +41,36 @@ export default async function FeedPage({ searchParams }: FeedPageProps) {
   const requestedPage = pageNumber(singleParam(resolvedSearchParams.page));
   const initialFilter = singleParam(resolvedSearchParams.filter);
   const initialSearchQuery = singleParam(resolvedSearchParams.q);
-  const [classRosterReadiness, classGroups, rosterStudents, evidencePage] =
+  const requestedStudentId = singleParam(resolvedSearchParams.student).trim();
+  const [classRosterReadiness, classGroups, activeStudents, evidencePage] =
     await Promise.all([
       getClassRosterReadinessForWorkspace(workspace.workspaceId),
       listActiveClassGroupsForWorkspace(workspace.workspaceId).then((groups) =>
         groups.map((group) => ({ id: group.id, name: group.name }))
       ),
-      listActiveRosterStudentsForWorkspace(workspace.workspaceId).then(
-        (students) =>
-          students.map((student) => ({
-            id: student.id,
-            displayName: student.displayName,
-            mentionHandle: student.mentionHandle,
-            classGroupName: student.classGroupName,
-          }))
-      ),
+      listActiveRosterStudentsForWorkspace(workspace.workspaceId),
       getEvidenceFeedPageForWorkspace(workspace.workspaceId, requestedPage),
     ]);
+
+  const rosterStudents = activeStudents
+    .filter(
+      (student): student is typeof student & { classGroupName: string } =>
+        student.hasActiveClass && student.classGroupName !== null
+    )
+    .map((student) => ({
+      id: student.id,
+      displayName: student.displayName,
+      mentionHandle: student.mentionHandle,
+      classGroupName: student.classGroupName,
+    }));
+  const initialCaptureStudent =
+    requestedStudentId && requestedStudentId.length <= INPUT_LIMITS.identifier
+      ? rosterStudents.find((student) => student.id === requestedStudentId)
+      : undefined;
+  const initialCaptureStudentError =
+    requestedStudentId && !initialCaptureStudent
+      ? "That student is not available for capture. Mention an active student instead."
+      : undefined;
 
   if (!classRosterReadiness.readyForClassFirstRoster) {
     redirect(routes.roster);
@@ -65,6 +80,7 @@ export default async function FeedPage({ searchParams }: FeedPageProps) {
     const params = new URLSearchParams();
     if (initialFilter) params.set("filter", initialFilter);
     if (initialSearchQuery) params.set("q", initialSearchQuery);
+    if (initialCaptureStudent) params.set("student", initialCaptureStudent.id);
     redirect(`${routes.feed}${params.size ? `?${params}` : ""}`);
   }
 
@@ -80,6 +96,8 @@ export default async function FeedPage({ searchParams }: FeedPageProps) {
       hasOlderEvidence={evidencePage.hasOlder}
       initialFilter={initialFilter}
       initialSearchQuery={initialSearchQuery}
+      initialCaptureStudent={initialCaptureStudent}
+      initialCaptureStudentError={initialCaptureStudentError}
     />
   );
 }

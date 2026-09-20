@@ -113,7 +113,7 @@ Key characteristics:
 - Warm ivory page ground, aubergine ink hierarchy, and focused amber state.
 - Rounded plates for active or contained work and wells for inset controls.
 - A line-and-node trace for chronological saved evidence.
-- A sticky top shell, desktop text navigation, and mobile bottom navigation.
+- A sticky top shell, desktop text navigation, and compact mobile menu navigation.
 - Explicit teacher review between a provisional capture and a saved record.
 
 ## Color and state
@@ -177,17 +177,16 @@ on every viewport. The shell is not sidebar-based. Sign-in, beta
 acknowledgement, and operator routes use their own focused layouts.
 
 - At `lg`, the brand mark sits at the left, the four text-led destinations are
-  centered across the header, and Sign out sits at the right. Active navigation
-  uses foreground text plus a small amber dot.
-- Below `lg`, primary navigation is a fixed four-item bottom tab bar with icons
-  and labels. Capture uses the amber circular affordance; other active items use
-  ink and a white plate treatment.
-- The top-right mobile menu opens a rounded bottom sheet for trust/support links
-  and Sign out. It is not the primary navigation.
+  centered across the header, with the student quick-jump and Sign out at the
+  right. Active navigation uses foreground text plus a small amber dot.
+- Below `lg`, the top-right menu opens a rounded bottom sheet containing the
+  four primary destinations, the student quick-jump, trust/support links, and
+  Sign out. Capture remains the first, directly reachable destination.
 - Primary order is Capture, Explore, Students, Settings. Student timelines and
   reports keep Students active without becoming global destinations.
-- The shell header is 56px on mobile and 72px at desktop. Mobile workspace
-  content reserves space for the bottom tab bar.
+- The shell header is 56px on mobile and 72px at desktop. The menu and other
+  modal surfaces account for safe areas without reserving permanent workspace
+  space.
 
 Content widths are intentionally focused:
 

@@ -6,9 +6,10 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { getAppRouteLabel } from "@/components/dashboard/app-navigation";
+import { AppPrimaryNavigation } from "@/components/dashboard/app-primary-navigation";
 import { AppShellDrawer } from "@/components/dashboard/app-shell-drawer";
-import { AppTabBar } from "@/components/dashboard/app-tab-bar";
 import { BrandLockup } from "@/components/layout/brand-lockup";
+import { StudentQuickJump } from "@/components/students/student-quick-jump";
 import {
   clearTemporaryEvidenceDrafts,
   subscribeToTemporaryDraftCleanup,
@@ -50,8 +51,8 @@ export function AppShellNavigation() {
   return (
     <div className={`app-shell-navigation ${isFeed ? "app-shell-feed-navigation" : ""}`}>
       <header className="sticky top-0 z-50 bg-base/95 pt-[env(safe-area-inset-top)]">
-        <div className="mx-auto flex min-h-14 max-w-[1240px] items-center justify-between gap-4 px-4 sm:px-6 lg:min-h-[4.5rem] lg:px-8">
-          <div className="flex min-w-0 items-center gap-3">
+        <div className="mx-auto flex min-h-14 max-w-[1240px] items-center justify-between gap-4 px-4 sm:px-6 lg:grid lg:min-h-[4.5rem] lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] lg:px-8">
+          <div className="flex min-w-0 items-center gap-3 lg:justify-self-start">
             <Link
               href={routes.feed}
               aria-label="ClassTrace capture"
@@ -66,19 +67,23 @@ export function AppShellNavigation() {
             ) : null}
           </div>
 
-          <AppTabBar pathname={pathname} />
+          <AppPrimaryNavigation pathname={pathname} />
 
-          <div className="flex shrink-0 items-center gap-1">
+          <div className="flex shrink-0 items-center gap-2 lg:justify-self-end">
+            <div className="hidden w-40 lg:block xl:w-60">
+              <StudentQuickJump label="Student quick-jump" showLabel={false} />
+            </div>
             <button
               type="button"
               disabled={isSigningOut}
               onClick={() => void handleSignOut()}
-              className="hidden h-9 items-center gap-2 rounded-full px-3 text-[13px] font-medium text-fg-3 outline-none transition-colors hover:bg-plate hover:text-fg focus-visible:ring-2 focus-visible:ring-live-bright focus-visible:ring-offset-2 focus-visible:ring-offset-base disabled:cursor-wait disabled:opacity-60 lg:inline-flex"
+              className="hidden h-9 shrink-0 items-center gap-2 whitespace-nowrap rounded-full px-3 text-[13px] font-medium text-fg-3 outline-none transition-colors hover:bg-plate hover:text-fg focus-visible:ring-2 focus-visible:ring-live-bright focus-visible:ring-offset-2 focus-visible:ring-offset-base disabled:cursor-wait disabled:opacity-60 lg:inline-flex"
             >
               <LogOut aria-hidden="true" className="size-3.5" strokeWidth={2} />
               <span>{isSigningOut ? "Signing out…" : "Sign out"}</span>
             </button>
             <AppShellDrawer
+              pathname={pathname}
               isSigningOut={isSigningOut}
               onSignOut={() => void handleSignOut()}
             />

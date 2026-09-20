@@ -84,6 +84,8 @@ type EvidenceFeedProps = {
   hasOlderEvidence: boolean;
   initialFilter: string;
   initialSearchQuery: string;
+  initialCaptureStudent?: CaptureRosterStudent;
+  initialCaptureStudentError?: string;
 };
 
 type DraftFeedItem = {
@@ -171,6 +173,8 @@ export function EvidenceFeed({
   hasOlderEvidence,
   initialFilter,
   initialSearchQuery,
+  initialCaptureStudent,
+  initialCaptureStudentError,
 }: EvidenceFeedProps) {
   const router = useRouter();
   const [draftItems, setDraftItems] = useState<DraftFeedItem[]>([]);
@@ -994,6 +998,8 @@ export function EvidenceFeed({
           <QuickCaptureCard
             rosterStudents={activeRosterStudents}
             focusRequestKey={composerFocusRequestKey}
+            initialStudent={initialCaptureStudent}
+            initialStudentError={initialCaptureStudentError}
             disabled={!sessionDraftsReady}
             onDraft={handleDraft}
           />
@@ -1092,7 +1098,7 @@ export function EvidenceFeed({
         <div
           role="status"
           aria-live="polite"
-          className={`fixed inset-x-4 bottom-[calc(5.5rem+env(safe-area-inset-bottom))] z-[80] mx-auto flex max-w-md items-center gap-3 rounded-xl border bg-plate px-3.5 py-3 shadow-lift lg:inset-x-auto lg:bottom-6 lg:right-6 lg:mx-0 ${
+          className={`fixed inset-x-4 bottom-[calc(1rem+env(safe-area-inset-bottom))] z-[60] mx-auto flex max-w-md items-center gap-3 rounded-xl border bg-plate px-3.5 py-3 shadow-lift lg:inset-x-auto lg:bottom-6 lg:right-6 lg:mx-0 ${
             toast.kind === "draft" ? "border-live-bright" : "border-line-2"
           }`}
         >

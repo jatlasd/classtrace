@@ -86,7 +86,7 @@ function ReportHeader({
         <div className="flex flex-wrap items-center gap-2">
           <StudentReportPrintAction />
           <Button asChild variant="ghost" size="sm">
-            <Link href={routes.feed}>Capture something</Link>
+            <Link href={routes.captureForStudent(student.id)}>Capture something</Link>
           </Button>
         </div>
       </div>

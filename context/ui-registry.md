@@ -71,25 +71,30 @@ their destination name. Do not recreate the retired lettered `CT` tile.
 
 Files: `app/app/layout.tsx`,
 `components/dashboard/app-shell-navigation.tsx`,
-`components/dashboard/app-tab-bar.tsx`,
+`components/dashboard/app-primary-navigation.tsx`,
 `components/dashboard/app-shell-drawer.tsx`
 
 | Property | Pattern |
 |---|---|
 | Shell | Sticky Base header on every viewport; no desktop sidebar |
 | Header frame | `max-w-[1240px]`; 56px mobile, 72px desktop |
-| Desktop primary nav | Centered text destinations; Bricolage display at 1.35rem |
+| Desktop primary nav | Centered text destinations; Bricolage display at 1.35rem; student quick-jump beside Sign out |
 | Desktop active state | Foreground destination plus 6px amber dot |
-| Mobile primary nav | Fixed four-column bottom tab bar with icon and label |
-| Mobile Capture | Amber circular icon treatment; first destination |
-| Mobile menu | Top-right trigger opens a rounded-top bottom sheet |
-| Drawer contents | Trust/support links, product boundary copy, Sign out; no primary-nav duplication |
-| Workspace | Bottom padding for mobile tabs; no sidebar offset |
+| Mobile primary nav | Four destinations in the top-right menu; no persistent bottom bar |
+| Mobile Capture | First direct destination in the primary menu |
+| Mobile menu | Top-right trigger opens a safe-area-aware rounded-top bottom sheet |
+| Drawer contents | Primary navigation, student quick-jump, trust/support links, product boundary copy, Sign out |
+| Workspace | No bottom-nav padding and no sidebar offset |
 
 Primary order is Capture, Explore, Students, Settings. The header keeps the
 small mark visible at desktop and visually hides the wordmark there. Non-Capture
 mobile routes show a quiet route label. The bottom sheet traps focus, supports
 Escape/backdrop close, restores trigger focus, and locks body scrolling.
+
+The shared student quick-jump is a labeled combobox over active students in the
+current workspace. It matches display name, `@mentionHandle`, and local student
+ID; results include class and handle context, support arrow keys/Enter/Escape,
+announce result counts, and navigate directly to the selected timeline.
 
 ## Surfaces, spacing, and radius
 
@@ -325,7 +330,12 @@ Files: `components/students/student-timeline-page.tsx`,
 
 - Both use an `880px` work area.
 - The timeline opens with Students/class breadcrumb context, a large student
-  name, record count and date span, then report/export/capture actions.
+  name, record count and date span, then report/export/capture actions and the
+  shared student switcher.
+- Timeline, empty-state, and report Capture actions preserve the active student
+  in the Capture URL. The feed validates that value within the current
+  workspace, selects the mention in the composer, and focuses the composer; an
+  unavailable value falls back to generic Capture with a safe message.
 - Evidence is grouped by sticky month labels and uses the open trace with Ink
   nodes. Each entry shows date, the explicit Validated stamp, approved content,
   compact details, optional photo, and follow-up.
