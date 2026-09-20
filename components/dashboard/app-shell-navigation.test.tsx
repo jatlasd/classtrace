@@ -34,6 +34,10 @@ vi.mock("@/lib/evidence/temporary-draft-cleanup", () => ({
 
 import { AppShellNavigation } from "./app-shell-navigation";
 import { StudentQuickJumpProvider } from "@/components/students/student-quick-jump";
+import {
+  clearSessionDrafts,
+  saveSessionDrafts,
+} from "@/lib/evidence/session-draft-storage";
 
 const quickJumpStudents = [
   {
@@ -48,7 +52,7 @@ const quickJumpStudents = [
 function renderNavigation() {
   return render(
     <StudentQuickJumpProvider students={quickJumpStudents}>
-      <AppShellNavigation />
+      <AppShellNavigation workspaceId="workspace_1" />
     </StudentQuickJumpProvider>
   );
 }
@@ -64,6 +68,7 @@ describe("AppShellNavigation", () => {
     mocks.pathname = "/app/feed";
     mocks.clearTemporaryEvidenceDrafts.mockResolvedValue(undefined);
     mocks.signOut.mockResolvedValue(undefined);
+    window.sessionStorage.clear();
   });
 
   it("renders only real primary destinations with the current route active", () => {
@@ -95,6 +100,47 @@ describe("AppShellNavigation", () => {
     const label = document.querySelector(`label[for="${quickJump.id}"]`);
 
     expect(label?.className).toBe("sr-only");
+  });
+
+  it("shows and updates a content-free pending draft count in navigation", async () => {
+    const capturedAt = Date.now();
+    saveSessionDrafts(window.sessionStorage, "workspace_1", [
+      {
+        id: "draft_1",
+        rawNote: "@Mary practiced reading.",
+        capturedAt,
+        hasPhoto: false,
+      },
+      {
+        id: "draft_2",
+        rawNote: "@Mary explained her strategy.",
+        capturedAt,
+        hasPhoto: false,
+      },
+    ]);
+
+    renderNavigation();
+
+    expect(
+      await screen.findByRole("link", {
+        name: "Capture, 2 drafts to review",
+      })
+    ).toBeTruthy();
+    fireEvent.click(
+      screen.getByRole("button", { name: "Open navigation menu" })
+    );
+    expect(
+      screen.getAllByRole("link", {
+        name: "Capture, 2 drafts to review",
+      })
+    ).toHaveLength(2);
+
+    clearSessionDrafts(window.sessionStorage);
+
+    await waitFor(() =>
+      expect(screen.getAllByRole("link", { name: "Capture" })).toHaveLength(2)
+    );
+    expect(screen.queryByText("@Mary practiced reading.")).toBeNull();
   });
 
   it("pairs authenticated routes with truthful compact context labels", () => {

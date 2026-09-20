@@ -14,6 +14,11 @@ import {
   clearTemporaryEvidenceDrafts,
   subscribeToTemporaryDraftCleanup,
 } from "@/lib/evidence/temporary-draft-cleanup";
+import {
+  loadSessionDrafts,
+  nextLocalMidnight,
+  subscribeToSessionDraftChanges,
+} from "@/lib/evidence/session-draft-storage";
 import { routes } from "@/lib/routes";
 
 function routeContextFor(pathname: string): string | null {
@@ -26,12 +31,61 @@ function routeContextFor(pathname: string): string | null {
   return null;
 }
 
-export function AppShellNavigation() {
+type AppShellNavigationProps = {
+  workspaceId: string;
+};
+
+export function AppShellNavigation({ workspaceId }: AppShellNavigationProps) {
   const pathname = usePathname();
   const { signOut } = useClerk();
   const [isSigningOut, setIsSigningOut] = useState(false);
+  const [draftCount, setDraftCount] = useState(0);
 
   useEffect(() => subscribeToTemporaryDraftCleanup(), []);
+
+  useEffect(() => {
+    let midnightTimer: number | undefined;
+
+    function syncDraftCount(): void {
+      let storage: Storage | null = null;
+      try {
+        storage = window.sessionStorage;
+      } catch {
+        // A blocked storage API behaves like an empty session draft queue.
+      }
+      setDraftCount(loadSessionDrafts(storage, workspaceId).drafts.length);
+    }
+
+    function scheduleMidnightSync(): void {
+      const now = Date.now();
+      const delay = Math.max(0, nextLocalMidnight(now) - now + 50);
+      midnightTimer = window.setTimeout(() => {
+        syncDraftCount();
+        scheduleMidnightSync();
+      }, delay);
+    }
+
+    function handleVisibilityChange(): void {
+      if (document.visibilityState === "visible") {
+        syncDraftCount();
+      }
+    }
+
+    syncDraftCount();
+    scheduleMidnightSync();
+    const unsubscribe = subscribeToSessionDraftChanges(syncDraftCount);
+    window.addEventListener("focus", syncDraftCount);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      if (midnightTimer !== undefined) {
+        window.clearTimeout(midnightTimer);
+      }
+      unsubscribe();
+      window.removeEventListener("focus", syncDraftCount);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, [workspaceId]);
 
   async function handleSignOut(): Promise<void> {
     if (isSigningOut) return;
@@ -67,7 +121,7 @@ export function AppShellNavigation() {
             ) : null}
           </div>
 
-          <AppPrimaryNavigation pathname={pathname} />
+          <AppPrimaryNavigation pathname={pathname} draftCount={draftCount} />
 
           <div className="flex shrink-0 items-center gap-2 lg:justify-self-end">
             <div className="hidden w-40 lg:block xl:w-60">
@@ -83,6 +137,7 @@ export function AppShellNavigation() {
               <span>{isSigningOut ? "Signing out…" : "Sign out"}</span>
             </button>
             <AppShellDrawer
+              draftCount={draftCount}
               pathname={pathname}
               isSigningOut={isSigningOut}
               onSignOut={() => void handleSignOut()}

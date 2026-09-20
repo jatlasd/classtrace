@@ -25,12 +25,14 @@ const TRUST_LINKS = [
 ] as const;
 
 type AppShellDrawerProps = {
+  draftCount?: number;
   isSigningOut: boolean;
   onSignOut: () => void;
   pathname: string;
 };
 
 export function AppShellDrawer({
+  draftCount = 0,
   isSigningOut,
   onSignOut,
   pathname,
@@ -153,6 +155,11 @@ export function AppShellDrawer({
                       <li key={item.href}>
                         <Link
                           href={item.href}
+                          aria-label={
+                            item.match === "capture" && draftCount > 0
+                              ? `Capture, ${draftCount} ${draftCount === 1 ? "draft" : "drafts"} to review`
+                              : undefined
+                          }
                           aria-current={active ? "page" : undefined}
                           onClick={closeMenu}
                           className={`flex min-h-12 items-center gap-2.5 rounded-lg border px-3 text-[15px] font-semibold outline-none transition-colors focus-visible:ring-2 focus-visible:ring-live-bright focus-visible:ring-offset-2 focus-visible:ring-offset-plate ${
@@ -167,6 +174,14 @@ export function AppShellDrawer({
                             strokeWidth={active ? 2.2 : 1.8}
                           />
                           {item.label}
+                          {item.match === "capture" && draftCount > 0 ? (
+                            <span
+                              aria-hidden="true"
+                              className="ml-auto inline-flex min-w-5 items-center justify-center rounded-full bg-live-soft px-1.5 py-1 font-mono text-[11px] font-semibold leading-none text-live"
+                            >
+                              {draftCount > 99 ? "99+" : draftCount}
+                            </span>
+                          ) : null}
                         </Link>
                       </li>
                     );

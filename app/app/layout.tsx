@@ -37,7 +37,7 @@ export default async function AppLayout({
           >
             Skip to main content
           </a>
-          <AppShellNavigation />
+          <AppShellNavigation workspaceId={workspace.workspaceId} />
           <div className="app-shell-workspace flex min-h-0 flex-1 flex-col">
             <main
               id="main-content"

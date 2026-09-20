@@ -9,6 +9,7 @@ import {
   getEvidenceFeedPageForWorkspace,
   MAX_EVIDENCE_FEED_PAGE,
 } from "@/lib/evidence/evidence-feed-records";
+import { listExistingEvidenceTagsForWorkspace } from "@/lib/evidence/explore-evidence";
 import { routes } from "@/lib/routes";
 import { listActiveRosterStudentsForWorkspace } from "@/lib/students/roster-students";
 import { INPUT_LIMITS } from "@/lib/validation/input-limits";
@@ -42,7 +43,13 @@ export default async function FeedPage({ searchParams }: FeedPageProps) {
   const initialFilter = singleParam(resolvedSearchParams.filter);
   const initialSearchQuery = singleParam(resolvedSearchParams.q);
   const requestedStudentId = singleParam(resolvedSearchParams.student).trim();
-  const [classRosterReadiness, classGroups, activeStudents, evidencePage] =
+  const [
+    classRosterReadiness,
+    classGroups,
+    activeStudents,
+    evidencePage,
+    tagSuggestions,
+  ] =
     await Promise.all([
       getClassRosterReadinessForWorkspace(workspace.workspaceId),
       listActiveClassGroupsForWorkspace(workspace.workspaceId).then((groups) =>
@@ -50,6 +57,7 @@ export default async function FeedPage({ searchParams }: FeedPageProps) {
       ),
       listActiveRosterStudentsForWorkspace(workspace.workspaceId),
       getEvidenceFeedPageForWorkspace(workspace.workspaceId, requestedPage),
+      listExistingEvidenceTagsForWorkspace(workspace.workspaceId),
     ]);
 
   const rosterStudents = activeStudents
@@ -98,6 +106,7 @@ export default async function FeedPage({ searchParams }: FeedPageProps) {
       initialSearchQuery={initialSearchQuery}
       initialCaptureStudent={initialCaptureStudent}
       initialCaptureStudentError={initialCaptureStudentError}
+      tagSuggestions={tagSuggestions}
     />
   );
 }

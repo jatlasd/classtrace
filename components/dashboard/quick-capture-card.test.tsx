@@ -64,6 +64,12 @@ describe("QuickCaptureCard mentions editor", () => {
         .disabled
     ).toBe(true);
     expect(screen.getByText("Restoring drafts before capture opens…")).toBeTruthy();
+    expect(
+      screen.getByRole("button", { name: "Take photo with camera" })
+    ).toBeTruthy();
+    expect(
+      screen.getByRole("button", { name: "Choose photo from library" })
+    ).toBeTruthy();
   });
 
   it("keeps the input and highlight layers on identical text metrics", () => {
@@ -150,6 +156,30 @@ describe("QuickCaptureCard mentions editor", () => {
     expect((mention as HTMLElement).style.backgroundColor).toContain("var(--live-soft)");
   });
 
+  it("suggests existing workspace tags with prefix matches first", async () => {
+    render(
+      <QuickCaptureCard
+        rosterStudents={roster}
+        tagSuggestions={["independent", "reflection", "reading"]}
+        onDraft={vi.fn()}
+      />
+    );
+    const input = screen.getByLabelText("What happened?") as HTMLTextAreaElement;
+
+    fireEvent.change(input, { target: { value: "@Mary practiced #re" } });
+    input.setSelectionRange(input.value.length, input.value.length);
+    fireEvent.select(input);
+
+    const options = await screen.findAllByRole("option");
+    expect(options.map((option) => option.textContent)).toEqual([
+      "reading",
+      "reflection",
+    ]);
+
+    fireEvent.click(options[0]);
+    expect(input.value).toContain("#reading ");
+  });
+
   it("captures one unresolved handle for later review", async () => {
     const onDraft = vi.fn();
     render(<QuickCaptureCard rosterStudents={roster} onDraft={onDraft} />);
@@ -192,7 +222,7 @@ describe("QuickCaptureCard mentions editor", () => {
     vi.stubGlobal("fetch", networkRequest);
     render(<QuickCaptureCard rosterStudents={roster} onDraft={onDraft} />);
 
-    fireEvent.change(screen.getByLabelText(photoInputLabel), {
+    fireEvent.change(screen.getByLabelText(photoInputLabel, { selector: "input" }), {
       target: {
         files: [new File([new Uint8Array([9])], "work-sample.png", { type: "image/png" })],
       },

@@ -12,6 +12,7 @@ const mocks = vi.hoisted(() => ({
   listActiveClassGroupsForWorkspace: vi.fn(),
   listActiveRosterStudentsForWorkspace: vi.fn(),
   getEvidenceFeedPageForWorkspace: vi.fn(),
+  listExistingEvidenceTagsForWorkspace: vi.fn(),
 }));
 
 vi.mock("next/navigation", () => ({ redirect: mocks.redirect }));
@@ -31,6 +32,10 @@ vi.mock("@/lib/evidence/evidence-feed-records", () => ({
   getEvidenceFeedPageForWorkspace: mocks.getEvidenceFeedPageForWorkspace,
   MAX_EVIDENCE_FEED_PAGE: 10_000,
 }));
+vi.mock("@/lib/evidence/explore-evidence", () => ({
+  listExistingEvidenceTagsForWorkspace:
+    mocks.listExistingEvidenceTagsForWorkspace,
+}));
 vi.mock("@/components/dashboard/evidence-feed", () => ({
   EvidenceFeed: (props: {
     workspaceId: string;
@@ -40,6 +45,7 @@ vi.mock("@/components/dashboard/evidence-feed", () => ({
     evidencePage: number;
     initialCaptureStudent?: { id: string };
     initialCaptureStudentError?: string;
+    tagSuggestions: string[];
   }) => (
     <div
       data-testid="evidence-feed"
@@ -50,6 +56,7 @@ vi.mock("@/components/dashboard/evidence-feed", () => ({
       data-page={props.evidencePage}
       data-capture-student-id={props.initialCaptureStudent?.id}
       data-capture-student-error={props.initialCaptureStudentError}
+      data-tag-suggestions={props.tagSuggestions.join(",")}
     />
   ),
 }));
@@ -84,6 +91,10 @@ describe("authenticated app routing", () => {
       hasNewer: true,
       hasOlder: false,
     });
+    mocks.listExistingEvidenceTagsForWorkspace.mockResolvedValue([
+      "reading",
+      "independent",
+    ]);
   });
 
   it("routes app entry to roster until class-first setup is ready", async () => {
@@ -131,9 +142,15 @@ describe("authenticated app routing", () => {
     expect(feed.getAttribute("data-class-count")).toBe("1");
     expect(feed.getAttribute("data-evidence-count")).toBe("1");
     expect(feed.getAttribute("data-page")).toBe("2");
+    expect(feed.getAttribute("data-tag-suggestions")).toBe(
+      "reading,independent"
+    );
     expect(mocks.getEvidenceFeedPageForWorkspace).toHaveBeenCalledWith(
       "workspace_1",
       2
+    );
+    expect(mocks.listExistingEvidenceTagsForWorkspace).toHaveBeenCalledWith(
+      "workspace_1"
     );
   });
 

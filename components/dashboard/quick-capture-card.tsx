@@ -26,6 +26,7 @@ import {
   normalizeEvidencePhoto,
   type PhotoDraft,
 } from "@/lib/evidence/photo-draft-storage";
+import { normalizeTag } from "@/lib/format-tag";
 
 const LINE_HEIGHT = 34;
 const MIN_LINES = 2;
@@ -107,6 +108,7 @@ type QuickCaptureCardProps = {
   focusRequestKey?: number;
   initialStudent?: CaptureRosterStudent;
   initialStudentError?: string;
+  tagSuggestions?: string[];
   disabled?: boolean;
   onDraft: (
     draft: NoteDraft,
@@ -155,6 +157,7 @@ export function QuickCaptureCard({
   focusRequestKey = 0,
   initialStudent,
   initialStudentError,
+  tagSuggestions = [],
   disabled = false,
   onDraft,
 }: QuickCaptureCardProps) {
@@ -190,7 +193,28 @@ export function QuickCaptureCard({
     [rosterStudents]
   );
 
-  const tagSuggestions = useMemo(() => [], []);
+  const tagSuggestionProvider = useMemo(() => {
+    const normalizedTags = [
+      ...new Set(
+        tagSuggestions
+          .map((tag) => normalizeTag(tag).toLowerCase())
+          .filter(Boolean)
+      ),
+    ];
+
+    return (query: string) => {
+      const normalizedQuery = normalizeTag(query).toLowerCase();
+      return normalizedTags
+        .filter((tag) => tag.includes(normalizedQuery))
+        .sort((left, right) => {
+          const leftIsPrefix = left.startsWith(normalizedQuery);
+          const rightIsPrefix = right.startsWith(normalizedQuery);
+          if (leftIsPrefix !== rightIsPrefix) return leftIsPrefix ? -1 : 1;
+          return left.localeCompare(right);
+        })
+        .map((tag) => ({ id: tag, display: tag }));
+    };
+  }, [tagSuggestions]);
   const trimmedPlainText = plainText.trim();
   const parsedNote = useMemo(
     () => parseRawNote(trimmedPlainText),
@@ -301,7 +325,7 @@ export function QuickCaptureCard({
 
   return (
     <section
-      className={`plate relative min-w-0 overflow-visible px-5 pb-4 pt-5 transition-shadow sm:px-7 sm:pt-6 ${
+      className={`plate relative min-w-0 overflow-visible px-4 pb-4 pt-4 transition-shadow sm:px-7 sm:pt-6 ${
         hasCaptureContent ? "glow-live" : ""
       }`}
     >
@@ -318,7 +342,7 @@ export function QuickCaptureCard({
         </p>
       </div>
 
-      <div className="quick-capture-mentions mt-3">
+      <div className="quick-capture-mentions mt-2.5 sm:mt-3">
         <MentionsInput
           inputRef={(element: HTMLInputElement | HTMLTextAreaElement | null) => {
             inputRef.current = element;
@@ -333,6 +357,7 @@ export function QuickCaptureCard({
           placeholder={placeholder}
           style={quickCaptureMentionsStyle}
           allowSuggestionsAboveCursor
+          a11ySuggestionsListLabel="Suggested students and tags"
         >
           <Mention
             trigger="@"
@@ -344,7 +369,7 @@ export function QuickCaptureCard({
           />
           <Mention
             trigger="#"
-            data={tagSuggestions}
+            data={tagSuggestionProvider}
             markup="#[__display__](__id__)"
             displayTransform={(id) => `#${id}`}
             appendSpaceOnAdd
@@ -422,39 +447,8 @@ export function QuickCaptureCard({
         </p>
       ) : null}
 
-      <div className="mt-4 flex flex-col gap-3 border-t border-line pt-3 sm:flex-row sm:items-center">
-        {!photo ? (
-          <div className="flex items-center gap-1">
-            <Button
-              type="button"
-              size="sm"
-              variant="ghost"
-              disabled={disabled || isProcessingPhoto}
-              onClick={() => takePhotoRef.current?.click()}
-            >
-              <Camera aria-hidden="true" className="size-4" />
-              Take photo
-            </Button>
-            <Button
-              type="button"
-              size="sm"
-              variant="ghost"
-              disabled={disabled || isProcessingPhoto}
-              onClick={() => choosePhotoRef.current?.click()}
-            >
-              <ImagePlus aria-hidden="true" className="size-4" />
-              Choose photo
-            </Button>
-            {isProcessingPhoto ? (
-              <span role="status" className="inline-flex items-center gap-2 text-xs text-fg-2">
-                <LoaderCircle aria-hidden="true" className="size-4 animate-spin" />
-                Processing photo…
-              </span>
-            ) : null}
-          </div>
-        ) : null}
-
-        <div aria-live="polite" className="min-w-0 flex-1 sm:text-right">
+      <div className="mt-3 border-t border-line pt-3">
+        <div aria-live="polite" className="min-w-0">
           <p
             className={`text-[13px] leading-relaxed ${
               guidance?.tone === "error" || visibleInitialStudentError
@@ -466,28 +460,70 @@ export function QuickCaptureCard({
               ? "Restoring drafts before capture opens…"
               : guidance?.text ??
                 visibleInitialStudentError ??
-                "Captures become drafts. Nothing saves until you review it."}
+                "Draft first. Review before saving."}
           </p>
         </div>
 
-        <Button
-          onClick={() => void handlePost()}
-          disabled={!canCapture}
-          size="lg"
-          className="w-full shrink-0 rounded-full sm:w-auto"
-        >
-          {posted ? (
-            <>
-              <Check aria-hidden="true" className="size-4" strokeWidth={3} />
-              Captured
-            </>
-          ) : (
-            <>
-              Capture
-              <ArrowUp aria-hidden="true" className="size-4" strokeWidth={2.5} />
-            </>
-          )}
-        </Button>
+        <div className="mt-2 flex flex-wrap items-center gap-2">
+          {!photo ? (
+            <div className="flex flex-wrap items-center gap-1">
+              <Button
+                type="button"
+                size="sm"
+                className="h-11"
+                variant="ghost"
+                aria-label="Take photo with camera"
+                disabled={disabled || isProcessingPhoto}
+                onClick={() => takePhotoRef.current?.click()}
+              >
+                <Camera aria-hidden="true" className="size-4" />
+                Camera
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                className="h-11"
+                variant="ghost"
+                aria-label="Choose photo from library"
+                disabled={disabled || isProcessingPhoto}
+                onClick={() => choosePhotoRef.current?.click()}
+              >
+                <ImagePlus aria-hidden="true" className="size-4" />
+                Library
+              </Button>
+              {isProcessingPhoto ? (
+                <span
+                  role="status"
+                  className="inline-flex items-center gap-2 text-xs text-fg-2"
+                >
+                  <LoaderCircle
+                    aria-hidden="true"
+                    className="size-4 animate-spin"
+                  />
+                  Processing photo…
+                </span>
+              ) : null}
+            </div>
+          ) : null}
+
+          <Button
+            onClick={() => void handlePost()}
+            disabled={!canCapture}
+            className="ml-auto shrink-0 rounded-full"
+          >
+            {posted ? (
+              <>
+                <Check aria-hidden="true" className="size-4" strokeWidth={3} />
+                Captured
+              </>
+            ) : (
+              <>
+                Capture
+                <ArrowUp aria-hidden="true" className="size-4" strokeWidth={2.5} />
+              </>
+            )}
+          </Button>
+        </div>
       </div>
     </section>
   );

@@ -141,6 +141,9 @@ Before Capture, text exists only in component state. After Capture, an unvalidat
 The storage helpers reject malformed, mismatched, oversized, or expired data and cap draft count/size. Photo bytes are normalized and metadata-stripped locally, encrypted with a session-scoped key, and stored only in IndexedDB until validation. A draft is removed after successful validation or explicit deletion. Raw notes and unvalidated photos must not use `localStorage`, PostgreSQL, server draft storage, logs, exports, timelines, reports, analytics, or telemetry.
 
 Sign-out waits for current-tab draft cleanup and broadcasts a content-free signal so every other open teacher-product tab clears its own session manifest and photo key before the account session ends.
+The authenticated shell may read and display only the current tab's pending
+draft count. Same-tab updates use a content-free browser event; draft text and
+photo data remain inside the approved temporary stores.
 
 ### Permanent evidence boundary
 

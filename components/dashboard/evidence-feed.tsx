@@ -84,6 +84,7 @@ type EvidenceFeedProps = {
   hasOlderEvidence: boolean;
   initialFilter: string;
   initialSearchQuery: string;
+  tagSuggestions: string[];
   initialCaptureStudent?: CaptureRosterStudent;
   initialCaptureStudentError?: string;
 };
@@ -173,6 +174,7 @@ export function EvidenceFeed({
   hasOlderEvidence,
   initialFilter,
   initialSearchQuery,
+  tagSuggestions,
   initialCaptureStudent,
   initialCaptureStudentError,
 }: EvidenceFeedProps) {
@@ -1000,6 +1002,7 @@ export function EvidenceFeed({
             focusRequestKey={composerFocusRequestKey}
             initialStudent={initialCaptureStudent}
             initialStudentError={initialCaptureStudentError}
+            tagSuggestions={tagSuggestions}
             disabled={!sessionDraftsReady}
             onDraft={handleDraft}
           />
@@ -1022,7 +1025,7 @@ export function EvidenceFeed({
       </section>
 
       <section
-        className="mt-10 min-w-0 sm:mt-12"
+        className="mt-8 min-w-0 sm:mt-12"
         aria-labelledby="evidence-inbox-heading"
       >
         <div className="space-y-4 border-b border-line pb-4">

@@ -113,6 +113,7 @@ describe("EvidenceFeed capture review", () => {
         hasOlderEvidence={false}
         initialFilter={initialFilter}
         initialSearchQuery=""
+        tagSuggestions={["reading", "independent"]}
       />
     );
   }

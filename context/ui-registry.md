@@ -78,9 +78,9 @@ Files: `app/app/layout.tsx`,
 |---|---|
 | Shell | Sticky Base header on every viewport; no desktop sidebar |
 | Header frame | `max-w-[1240px]`; 56px mobile, 72px desktop |
-| Desktop primary nav | Centered text destinations; Bricolage display at 1.35rem; student quick-jump beside Sign out |
+| Desktop primary nav | Centered text destinations; Bricolage display at 1.35rem; student quick-jump beside Sign out; Capture shows a session-local pending-draft count when needed |
 | Desktop active state | Foreground destination plus 6px amber dot |
-| Mobile primary nav | Four destinations in the top-right menu; no persistent bottom bar |
+| Mobile primary nav | Four destinations in the top-right menu; no persistent bottom bar; Capture shows a session-local pending-draft count when needed |
 | Mobile Capture | First direct destination in the primary menu |
 | Mobile menu | Top-right trigger opens a safe-area-aware rounded-top bottom sheet |
 | Drawer contents | Primary navigation, student quick-jump, trust/support links, product boundary copy, Sign out |
@@ -168,9 +168,14 @@ File: `components/dashboard/quick-capture-card.tsx`
 - The sentence input uses 23px Bricolage, 34px line height, and a two-line
   minimum. Textarea and mention highlighter share exact metrics.
 - Resolved mentions use dark amber on Live Soft. Tags use supporting ink.
+- Typing `#` suggests normalized tags already used in active workspace evidence,
+  with prefix matches first; teachers may still enter a new tag.
 - With content, the Plate receives `glow-live`: amber border/focus halo and a
   restrained amber-tinted lift.
-- Photo inputs stay visually hidden; Take photo / Choose photo are quiet actions.
+- Photo inputs stay visually hidden; Camera / Library are quiet actions with
+  explicit Take photo with camera / Choose photo from library accessible
+  names. On phones these actions share a compact wrapping row with Capture
+  while retaining practical touch targets.
   A selected photo appears in a Well with local-only copy and replace/remove.
 - Student-resolution guidance is explicit. Capture is enabled only for a valid
   one-student path, one unresolved mention that can be resolved in review, or a
