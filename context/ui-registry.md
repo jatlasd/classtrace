@@ -392,8 +392,10 @@ Files: `components/beta-agreement/beta-acknowledgement-flow.tsx`,
   optional name/email filtering, safe account metadata and counts, a selected
   account detail, and visibly separate guarded demo, database-deletion, and
   identity-deletion operations. Non-empty demo replacement repeats the target
-  email after an explicit dataset-summary warning. It is direct-URL-only and
-  must not adopt dashboard ornament or merge database and identity deletion.
+  email after an explicit dataset-summary warning. Changing the directory filter
+  or page clears the selected account and every typed confirmation. The console
+  is direct-URL-only and must not adopt dashboard ornament or merge database and
+  identity deletion.
 
 ## Public information pages
 

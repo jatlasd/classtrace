@@ -372,6 +372,7 @@ async function executeOperatorResetAttempt({
   await client.query("BEGIN TRANSACTION ISOLATION LEVEL SERIALIZABLE");
 
   try {
+    await verifyCanonicalDatabase(client, DEMO_DATABASE_IDENTITY);
     const workspaceId = await resolveOperatorWorkspace(client, {
       clerkUserId,
       currentAgreementVersion,

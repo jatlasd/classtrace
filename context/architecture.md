@@ -342,7 +342,10 @@ dataset. It uses only `.env.local` `DATABASE_URL`, requires a Clerk `sk_test_`
 key and an explicit command confirmation, verifies the live Neon identity inside
 the reset transaction, permits only `classtrace_dev`, and refuses the canonical
 production project, branch, and database. The separate production demo reset
-keeps its dedicated URL, account, and exact production identity contract.
+keeps its dedicated URL, account, and exact production identity contract. The
+in-app `/operator` demo action verifies that same exact production identity at
+the start of its transaction, before resolving or modifying the selected target;
+non-production demo loading remains a command-line-only workflow.
 
 Production data is never copied or branched into non-production. Verify a
 database target by project, branch, and database name without printing the

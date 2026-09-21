@@ -198,6 +198,13 @@ export function OperatorConsole({
     );
   }
 
+  function clearConfirmationState(): void {
+    setSeedConfirmationOpen(false);
+    setSeedConfirmation("");
+    setWorkspaceConfirmation("");
+    setClerkConfirmation("");
+  }
+
   function loadDirectory(query: string, offset: number): void {
     setMessage(null);
     setOperation("directory");
@@ -209,6 +216,8 @@ export function OperatorConsole({
         return;
       }
       setDirectory(result.directory);
+      setAccount(null);
+      clearConfirmationState();
       setOperation(null);
     });
   }
@@ -219,12 +228,9 @@ export function OperatorConsole({
   }
 
   function handleSelect(nextAccount: OperatorAccount): void {
-    setAccount(nextAccount);
     setMessage(null);
-    setSeedConfirmationOpen(false);
-    setSeedConfirmation("");
-    setWorkspaceConfirmation("");
-    setClerkConfirmation("");
+    clearConfirmationState();
+    setAccount(nextAccount);
   }
 
   function handleSeedDemo(event: FormEvent<HTMLFormElement>): void {

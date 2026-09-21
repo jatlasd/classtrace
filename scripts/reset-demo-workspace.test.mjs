@@ -202,8 +202,14 @@ describe("demo workspace reset transaction", () => {
 });
 
 class FakeOperatorDatabaseClient {
-  constructor({ profileRows, workspaceRows, counts } = {}) {
+  constructor({
+    databaseIdentity = DEMO_DATABASE_IDENTITY,
+    profileRows,
+    workspaceRows,
+    counts,
+  } = {}) {
     this.calls = [];
+    this.databaseIdentity = databaseIdentity;
     this.profileRows = profileRows ?? [{ id: "teacher_target" }];
     this.workspaceRows = workspaceRows ?? [
       {
@@ -224,6 +230,9 @@ class FakeOperatorDatabaseClient {
 
   async query(text, values = []) {
     this.calls.push({ text, values });
+    if (text.includes("current_setting('neon.project_id'")) {
+      return { rows: [{ ...this.databaseIdentity }] };
+    }
     if (text.includes('FROM "TeacherProfile"')) {
       return { rows: this.profileRows };
     }
@@ -249,6 +258,45 @@ function operatorResetInput(client, clerkUserId = "target_1") {
 }
 
 describe("operator demo workspace reset transaction", () => {
+  it.each([
+    { projectId: "project-not-production" },
+    { branchId: "branch-not-production" },
+    { databaseName: "database_not_production" },
+  ])(
+    "rolls back before target lookup when database identity differs: %j",
+    async (identityOverride) => {
+      const client = new FakeOperatorDatabaseClient({
+        databaseIdentity: {
+          ...DEMO_DATABASE_IDENTITY,
+          ...identityOverride,
+        },
+      });
+
+      await expect(
+        resetOperatorDemoWorkspace(operatorResetInput(client))
+      ).rejects.toMatchObject({ code: "RESET_FAILED" });
+
+      expect(
+        client.calls.some((call) =>
+          call.text.includes("current_setting('neon.project_id'")
+        )
+      ).toBe(true);
+      expect(
+        client.calls.some((call) => call.text.includes('FROM "TeacherProfile"'))
+      ).toBe(false);
+      expect(
+        client.calls.some((call) => call.text.includes('FROM "Workspace"'))
+      ).toBe(false);
+      expect(
+        client.calls.some(
+          (call) =>
+            call.text.startsWith("DELETE") || call.text.startsWith("INSERT")
+        )
+      ).toBe(false);
+      expect(client.calls.at(-1)?.text).toBe("ROLLBACK");
+    }
+  );
+
   it("rejects a missing profile or workspace before deletion", async () => {
     const missingProfile = new FakeOperatorDatabaseClient({ profileRows: [] });
     await expect(

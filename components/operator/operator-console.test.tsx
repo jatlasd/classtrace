@@ -1,6 +1,12 @@
 // @vitest-environment jsdom
 
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import {
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
@@ -105,8 +111,15 @@ describe("OperatorConsole", () => {
     expect(screen.queryByText(/evidence note/i)).toBeNull();
   });
 
-  it("uses optional filtering without requiring an exact email", async () => {
-    render(<OperatorConsole initialDirectory={directoryFor()} />);
+  it("clears the selected account and confirmations after filtering", async () => {
+    selectAccount();
+
+    fireEvent.click(
+      screen.getByRole("button", { name: "Replace with demo workspace" })
+    );
+    fireEvent.change(screen.getByLabelText("Type stacy@example.com to confirm"), {
+      target: { value: "stacy@example.com" },
+    });
 
     fireEvent.change(screen.getByLabelText("Name or email"), {
       target: { value: "Stacy" },
@@ -114,6 +127,25 @@ describe("OperatorConsole", () => {
     fireEvent.click(screen.getByRole("button", { name: "Filter users" }));
 
     expect(mocks.list).toHaveBeenCalledWith({ query: "Stacy", offset: 0 });
+    await waitFor(() => {
+      expect(
+        screen.queryByRole("heading", { name: "Stacy Teacher" })
+      ).toBeNull();
+    });
+
+    const refreshedAccount = screen.getByRole("button", {
+      name: /view account/i,
+    }) as HTMLButtonElement;
+    await waitFor(() => expect(refreshedAccount.disabled).toBe(false));
+    fireEvent.click(refreshedAccount);
+    fireEvent.click(
+      screen.getByRole("button", { name: "Replace with demo workspace" })
+    );
+    expect(
+      (screen.getByLabelText(
+        "Type stacy@example.com to confirm"
+      ) as HTMLInputElement).value
+    ).toBe("");
   });
 
   it("requires email re-entry before replacing a non-empty workspace", async () => {
