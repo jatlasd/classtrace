@@ -13,7 +13,8 @@ export function RecentCapturesLabel() {
   return (
     <h2
       id="evidence-inbox-heading"
-      className="font-display text-[2rem] font-semibold leading-none text-fg"
+      tabIndex={-1}
+      className="font-display text-[2rem] font-semibold leading-none text-fg outline-none focus-visible:ring-2 focus-visible:ring-live-bright focus-visible:ring-offset-2 focus-visible:ring-offset-base"
     >
       All evidence
     </h2>

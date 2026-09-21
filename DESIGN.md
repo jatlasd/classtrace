@@ -263,7 +263,7 @@ form: the exact Evidence note leads, with student, date, optional photo state,
 and a concise filing result visible before approval. “Approve and save” is the
 ink-solid commit action. Detailed fields remain behind progressive editing;
 unsaveable or semantically unresolved drafts expose correction directly.
-Successful save confirmation is a transient toast, separate from feed filters,
+Successful save confirmation is a transient toast, separate from feed retrieval,
 with a direct path to the student's trace.
 
 ### Saved evidence trace

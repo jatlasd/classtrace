@@ -230,9 +230,9 @@ Files: `components/dashboard/evidence-feed.tsx`,
 
 - Feed is one focused `880px` journal: a quiet Now context, the live composer,
   then All evidence.
-- Search is a full-rounded Well field. All / Needs review / Validated are
-  full-rounded filters; Needs review uses amber and the other selected states
-  use Ink.
+- Search is an explicitly submitted, full-rounded field for all saved evidence.
+  Applied search and page state live in the URL; draft edits remain local until
+  Search is submitted.
 - The counted draft queue sits below the composer. Saved records alone appear
   in the feed's open `.trace` motif with ink nodes.
 - Saved records are grouped by sticky calendar-date headings. Student identity
@@ -244,8 +244,9 @@ Files: `components/dashboard/evidence-feed.tsx`,
   at desktop. Permanent confirmation uses Danger Soft and explicit copy.
 - Work samples are bounded and uncropped beside text from `sm`, below text on
   smaller screens. Photo-only records remain supported.
-- Pagination uses explicit Newer evidence / Older evidence actions and retains
-  URL-backed feed filters/search.
+- Twenty-record pagination uses compact controls by the result heading and full
+  Newer evidence / Older evidence actions below the trace. Both retain the
+  applied search and target the result heading.
 
 ## Shared evidence presentation
 

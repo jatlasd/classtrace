@@ -106,7 +106,7 @@ linked Plates, and dense management data in divided rows.
 - Dynamic error summaries use a live region and receive focus when the teacher
   must act on them.
 - Pending buttons use a real ellipsis (`…`) and name the pending action.
-- Feed search/filter state lives in the URL. Explore query state remains
+- Applied Feed search and page state lives in the URL. Explore query state remains
   transient client state; field edits apply only through Show results or Update
   results. View changes and pagination use the last applied query.
 - Destructive actions state permanence, require confirmation, and restore a

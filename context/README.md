@@ -11,6 +11,7 @@ This folder contains the current source of truth for the invitation-only limited
 | [ui-context.md](ui-context.md) | Product UI principles, accessibility, responsiveness, and anti-patterns |
 | [ui-registry.md](ui-registry.md) | Exact reusable visual/component patterns currently in use |
 | [post-v1-roadmap.md](post-v1-roadmap.md) | Small set of possible next product priorities; not an active queue |
+| [qol-build-plan.md](qol-build-plan.md) | Active feed retrieval, evidence scanability, and student timeline interrogation plan |
 
 The current implementation is authoritative for visual behavior; the
 application and tests remain the evidence for everything implemented. If a

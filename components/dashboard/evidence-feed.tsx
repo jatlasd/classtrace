@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Fragment, useEffect, useMemo, useRef, useState } from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import {
   saveValidatedEvidence,
   type SaveValidatedEvidenceActionInput,
@@ -26,10 +27,7 @@ import type {
 import {
   EvidenceSearchControl,
   FeedEmptyState,
-  FilterEmptyMessage,
-  InboxFilterControl,
   RosterRequiredState,
-  type InboxFilter,
 } from "@/components/dashboard/evidence-feed-controls";
 import {
   EvidenceFeedHeader,
@@ -43,7 +41,6 @@ import {
   validateSingleStudentForInterpretation,
   type InterpretationFields,
 } from "@/lib/evidence/capture-validation";
-import { evidenceRecordMatchesSearch } from "@/lib/evidence/evidence-feed-filtering";
 import {
   evidenceCalendarDayKey,
   formatEvidenceDayLabel,
@@ -80,9 +77,9 @@ type EvidenceFeedProps = {
   classGroups: StudentResolutionClassOption[];
   initialEvidenceRecords: EvidenceFeedRecord[];
   evidencePage: number;
+  totalMatches: number;
   hasNewerEvidence: boolean;
   hasOlderEvidence: boolean;
-  initialFilter: string;
   initialSearchQuery: string;
   tagSuggestions: string[];
   initialCaptureStudent?: CaptureRosterStudent;
@@ -122,13 +119,17 @@ type BlockedCaptureStudentResolution = Extract<
 >;
 
 const EMPTY_FEED_ITEMS: DraftFeedItem[] = [];
+const EVIDENCE_RESULTS_HASH = "#evidence-inbox-heading";
 
-function normalizeInboxFilter(value: string): InboxFilter {
-  return value === "needs_review" || value === "validated" ? value : "all";
-}
-
-function feedItemCountLabel(count: number): string {
-  return count === 1 ? "1 item showing" : `${count} items showing`;
+function feedResultCountLabel(count: number, hasQuery: boolean): string {
+  const noun = hasQuery
+    ? count === 1
+      ? "matching observation"
+      : "matching observations"
+    : count === 1
+      ? "saved observation"
+      : "saved observations";
+  return `${count} ${noun}`;
 }
 
 function formatSessionDraftTimestamp(timestampMs: number): string {
@@ -170,9 +171,9 @@ export function EvidenceFeed({
   classGroups,
   initialEvidenceRecords,
   evidencePage,
+  totalMatches,
   hasNewerEvidence,
   hasOlderEvidence,
-  initialFilter,
   initialSearchQuery,
   tagSuggestions,
   initialCaptureStudent,
@@ -186,10 +187,8 @@ export function EvidenceFeed({
     null
   );
   const sessionStorageRef = useRef<SessionDraftStorage | null>(null);
-  const [filter, setFilter] = useState<InboxFilter>(() =>
-    normalizeInboxFilter(initialFilter)
-  );
-  const [searchQuery, setSearchQuery] = useState(initialSearchQuery);
+  const feedNavigationRequestedRef = useRef(false);
+  const [resultsAnnouncement, setResultsAnnouncement] = useState("");
   const [captureEditError, setCaptureEditError] = useState("");
   const captureEditErrorRef = useRef<HTMLParagraphElement | null>(null);
   const [composerFocusRequestKey, setComposerFocusRequestKey] = useState(0);
@@ -421,15 +420,14 @@ export function EvidenceFeed({
   }, [sessionDraftsReady, workspaceId]);
 
   useEffect(() => {
-    function syncFeedStateFromUrl(): void {
-      const params = new URLSearchParams(window.location.search);
-      setSearchQuery(params.get("q") ?? "");
-      setFilter(normalizeInboxFilter(params.get("filter") ?? ""));
-    }
+    if (!feedNavigationRequestedRef.current) return;
 
-    window.addEventListener("popstate", syncFeedStateFromUrl);
-    return () => window.removeEventListener("popstate", syncFeedStateFromUrl);
-  }, []);
+    feedNavigationRequestedRef.current = false;
+    document.getElementById("evidence-inbox-heading")?.focus();
+    setResultsAnnouncement(
+      `${feedResultCountLabel(totalMatches, Boolean(initialSearchQuery))}. Page ${evidencePage}.`
+    );
+  }, [evidencePage, initialSearchQuery, totalMatches]);
 
   useEffect(() => {
     if (captureEditError) {
@@ -509,32 +507,13 @@ export function EvidenceFeed({
     [activeDraftItems, activeRosterStudents, reviewProjections]
   );
 
-  const visibleEvidenceRecords = useMemo(() => {
-    if (filter === "needs_review") {
-      return [];
-    }
-
-    const activeEvidenceRecords = initialEvidenceRecords.filter(
-      (record) => !hiddenSavedEvidenceIds.has(record.id)
-    );
-
-    if (searchQuery.trim()) {
-      return activeEvidenceRecords.filter((record) =>
-        evidenceRecordMatchesSearch(record, searchQuery)
-      );
-    }
-
-    return activeEvidenceRecords;
-  }, [
-    filter,
-    hiddenSavedEvidenceIds,
-    initialEvidenceRecords,
-    searchQuery,
-  ]);
-
-  const hasAnyFeedItems = initialEvidenceRecords.length > 0;
-  const visibleFeedItemCount = visibleEvidenceRecords.length;
-  const hasVisibleFeedItems = visibleFeedItemCount > 0;
+  const visibleEvidenceRecords = useMemo(
+    () =>
+      initialEvidenceRecords.filter(
+        (record) => !hiddenSavedEvidenceIds.has(record.id)
+      ),
+    [hiddenSavedEvidenceIds, initialEvidenceRecords]
+  );
 
   async function handleDraft(
     draft: NoteDraft,
@@ -828,49 +807,97 @@ export function EvidenceFeed({
     });
   }
 
-  function updateFeedUrl(
-    nextQuery: string,
-    nextFilter: InboxFilter,
-    mode: "push" | "replace"
-  ): void {
-    const params = new URLSearchParams(window.location.search);
-
-    if (nextQuery.trim()) {
-      params.set("q", nextQuery);
-    } else {
-      params.delete("q");
-    }
-
-    if (nextFilter === "all") {
-      params.delete("filter");
-    } else {
-      params.set("filter", nextFilter);
-    }
-
-    const href = `${window.location.pathname}${params.size ? `?${params}` : ""}`;
-    window.history[mode === "push" ? "pushState" : "replaceState"](
-      null,
-      "",
-      href
-    );
-  }
-
-  function handleSearchQueryChange(query: string): void {
-    setSearchQuery(query);
-    updateFeedUrl(query, filter, "replace");
-  }
-
-  function handleFilterChange(nextFilter: InboxFilter): void {
-    setFilter(nextFilter);
-    updateFeedUrl(searchQuery, nextFilter, "push");
+  function markFeedNavigation(): void {
+    feedNavigationRequestedRef.current = true;
   }
 
   function evidencePageHref(page: number): string {
     const params = new URLSearchParams();
     if (page > 1) params.set("page", String(page));
-    if (filter !== "all") params.set("filter", filter);
-    if (searchQuery.trim()) params.set("q", searchQuery);
-    return `${routes.feed}${params.size ? `?${params}` : ""}`;
+    if (initialSearchQuery) params.set("q", initialSearchQuery);
+    return `${routes.feed}${params.size ? `?${params}` : ""}${EVIDENCE_RESULTS_HASH}`;
+  }
+
+  function handleSearch(query: string): void {
+    const params = new URLSearchParams();
+    if (query) params.set("q", query);
+    markFeedNavigation();
+    if (query === initialSearchQuery && evidencePage === 1) {
+      feedNavigationRequestedRef.current = false;
+      document.getElementById("evidence-inbox-heading")?.focus();
+      setResultsAnnouncement(
+        `${feedResultCountLabel(totalMatches, Boolean(initialSearchQuery))}. Page 1.`
+      );
+    }
+    router.push(
+      `${routes.feed}${params.size ? `?${params}` : ""}${EVIDENCE_RESULTS_HASH}`
+    );
+  }
+
+  function renderPager(placement: "heading" | "footer") {
+    if (!hasNewerEvidence && !hasOlderEvidence) return null;
+
+    const headingPlacement = placement === "heading";
+    return (
+      <nav
+        aria-label={
+          headingPlacement
+            ? "Evidence pages by results heading"
+            : "Evidence pages after results"
+        }
+        className={
+          headingPlacement
+            ? "flex shrink-0 items-center gap-1.5"
+            : "mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-line pt-4"
+        }
+      >
+        <div>
+          {hasNewerEvidence ? (
+            <Button
+              asChild
+              variant="outline"
+              size={headingPlacement ? "icon-xs" : "sm"}
+              className="rounded-full"
+            >
+              <Link
+                href={evidencePageHref(evidencePage - 1)}
+                onClick={markFeedNavigation}
+                aria-label={`Newer evidence, page ${evidencePage - 1}`}
+              >
+                {headingPlacement ? (
+                  <ChevronLeft aria-hidden="true" />
+                ) : (
+                  "Newer evidence"
+                )}
+              </Link>
+            </Button>
+          ) : null}
+        </div>
+        <p className="label whitespace-nowrap text-fg-3">Page {evidencePage}</p>
+        <div>
+          {hasOlderEvidence ? (
+            <Button
+              asChild
+              variant="outline"
+              size={headingPlacement ? "icon-xs" : "sm"}
+              className="rounded-full"
+            >
+              <Link
+                href={evidencePageHref(evidencePage + 1)}
+                onClick={markFeedNavigation}
+                aria-label={`Older evidence, page ${evidencePage + 1}`}
+              >
+                {headingPlacement ? (
+                  <ChevronRight aria-hidden="true" />
+                ) : (
+                  "Older evidence"
+                )}
+              </Link>
+            </Button>
+          ) : null}
+        </div>
+      </nav>
+    );
   }
 
   function renderCaptureCard(item: DraftFeedItem) {
@@ -926,26 +953,32 @@ export function EvidenceFeed({
       );
     }
 
-    if (!hasAnyFeedItems) {
+    if (totalMatches === 0 && initialSearchQuery) {
       return (
         <FeedEmptyState
-          title="Nothing here yet"
-          body="Approved observations will collect here. Drafts stay in the review queue until you save or delete them, and clear at midnight."
+          title="No saved evidence matches"
+          body="Try another term, student handle, or exact tag."
+          action={
+            <Button asChild variant="outline" size="sm" className="rounded-full">
+              <Link
+                href={`${routes.feed}${EVIDENCE_RESULTS_HASH}`}
+                onClick={markFeedNavigation}
+              >
+                Clear search
+              </Link>
+            </Button>
+          }
         />
       );
     }
 
-    if (!hasVisibleFeedItems) {
-      if (searchQuery.trim()) {
-        return (
-          <FeedEmptyState
-            title="No evidence on this page matches"
-            body="Try another term or move to a newer or older evidence page."
-          />
-        );
-      }
-
-      return <FilterEmptyMessage filter={filter} />;
+    if (totalMatches === 0) {
+      return (
+        <FeedEmptyState
+          title="No saved evidence yet"
+          body="Approved observations will collect here. Drafts stay in the review queue until you save or delete them, and clear at midnight."
+        />
+      );
     }
 
     return (
@@ -1029,28 +1062,31 @@ export function EvidenceFeed({
         aria-labelledby="evidence-inbox-heading"
       >
         <div className="space-y-4 border-b border-line pb-4">
-          <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+          <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
               <RecentCapturesLabel />
               <p className="label mt-2 text-fg-3">
-                {hasVisibleFeedItems
-                  ? feedItemCountLabel(visibleFeedItemCount)
-                  : "Saved evidence will appear here."}
+                {feedResultCountLabel(
+                  totalMatches,
+                  Boolean(initialSearchQuery)
+                )}
                 <span aria-hidden="true"> · </span>
                 Newest first
               </p>
             </div>
-            <EvidenceSearchControl
-              query={searchQuery}
-              onQueryChange={handleSearchQueryChange}
-            />
+            {renderPager("heading")}
           </div>
 
-          <InboxFilterControl
-            filter={filter}
-            onFilterChange={handleFilterChange}
+          <EvidenceSearchControl
+            key={initialSearchQuery}
+            query={initialSearchQuery}
+            onSearch={handleSearch}
           />
         </div>
+
+        <p className="sr-only" role="status" aria-live="polite">
+          {resultsAnnouncement}
+        </p>
 
         {captureEditError ? (
           <p
@@ -1065,35 +1101,7 @@ export function EvidenceFeed({
 
         <div className="pt-5">
           {renderFeedList()}
-          {filter !== "needs_review" &&
-          (hasNewerEvidence || hasOlderEvidence) ? (
-            <nav
-              aria-label="Evidence pages"
-              className="mt-6 flex items-center justify-between gap-3 border-t border-line pt-4"
-            >
-              <div>
-                {hasNewerEvidence ? (
-                  <Button asChild variant="outline" size="sm" className="rounded-full">
-                    <Link href={evidencePageHref(evidencePage - 1)}>
-                      Newer evidence
-                    </Link>
-                  </Button>
-                ) : null}
-              </div>
-              <p className="label text-fg-3">
-                Page {evidencePage}
-              </p>
-              <div>
-                {hasOlderEvidence ? (
-                  <Button asChild variant="outline" size="sm" className="rounded-full">
-                    <Link href={evidencePageHref(evidencePage + 1)}>
-                      Older evidence
-                    </Link>
-                  </Button>
-                ) : null}
-              </div>
-            </nav>
-          ) : null}
+          {renderPager("footer")}
         </div>
       </section>
 

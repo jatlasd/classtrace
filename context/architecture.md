@@ -279,8 +279,12 @@ These limits protect resource usage and database hygiene; they are not substitut
 
 ## Feed and reporting
 
-- The global evidence feed reads at most 50 records plus one lookahead row and exposes explicit newer/older page navigation.
-- Feed search and filter state is represented in the URL; it filters the currently loaded page and survives refresh/back navigation.
+- The global evidence feed applies its bounded free-text query inside the
+  authenticated workspace predicate, counts the same predicate, and reads at
+  most 20 records per page.
+- Applied Feed search and page state is represented in the URL and survives
+  refresh/back navigation. Search and pagination exclude archived evidence and
+  evidence for archived students before count, skip, and take.
 - Explore Evidence uses a versioned direct filter with only result view,
   student IDs, normalized tag any/all/exclude values, one local-calendar date
   rule, class IDs, and a photo-presence rule. Unsaved filter edits remain client

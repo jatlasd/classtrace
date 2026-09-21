@@ -43,6 +43,8 @@ vi.mock("@/components/dashboard/evidence-feed", () => ({
     classGroups: unknown[];
     initialEvidenceRecords: unknown[];
     evidencePage: number;
+    totalMatches: number;
+    initialSearchQuery: string;
     initialCaptureStudent?: { id: string };
     initialCaptureStudentError?: string;
     tagSuggestions: string[];
@@ -54,6 +56,8 @@ vi.mock("@/components/dashboard/evidence-feed", () => ({
       data-class-count={props.classGroups.length}
       data-evidence-count={props.initialEvidenceRecords.length}
       data-page={props.evidencePage}
+      data-total-matches={props.totalMatches}
+      data-search-query={props.initialSearchQuery}
       data-capture-student-id={props.initialCaptureStudent?.id}
       data-capture-student-error={props.initialCaptureStudentError}
       data-tag-suggestions={props.tagSuggestions.join(",")}
@@ -87,8 +91,9 @@ describe("authenticated app routing", () => {
     ]);
     mocks.getEvidenceFeedPageForWorkspace.mockResolvedValue({
       records: [{ id: "evidence_1" }],
-      page: 2,
-      hasNewer: true,
+      page: 1,
+      totalMatches: 1,
+      hasNewer: false,
       hasOlder: false,
     });
     mocks.listExistingEvidenceTagsForWorkspace.mockResolvedValue([
@@ -129,10 +134,17 @@ describe("authenticated app routing", () => {
     mocks.getClassRosterReadinessForWorkspace.mockResolvedValue({
       readyForClassFirstRoster: true,
     });
+    mocks.getEvidenceFeedPageForWorkspace.mockResolvedValue({
+      records: [{ id: "evidence_1" }],
+      page: 2,
+      totalMatches: 21,
+      hasNewer: true,
+      hasOlder: false,
+    });
 
     render(
       await FeedPage({
-        searchParams: Promise.resolve({ page: "2", filter: "validated" }),
+        searchParams: Promise.resolve({ page: "2", q: " reading " }),
       })
     );
 
@@ -142,12 +154,14 @@ describe("authenticated app routing", () => {
     expect(feed.getAttribute("data-class-count")).toBe("1");
     expect(feed.getAttribute("data-evidence-count")).toBe("1");
     expect(feed.getAttribute("data-page")).toBe("2");
+    expect(feed.getAttribute("data-total-matches")).toBe("21");
+    expect(feed.getAttribute("data-search-query")).toBe("reading");
     expect(feed.getAttribute("data-tag-suggestions")).toBe(
       "reading,independent"
     );
     expect(mocks.getEvidenceFeedPageForWorkspace).toHaveBeenCalledWith(
       "workspace_1",
-      2
+      { page: 2, query: "reading" }
     );
     expect(mocks.listExistingEvidenceTagsForWorkspace).toHaveBeenCalledWith(
       "workspace_1"
@@ -171,6 +185,27 @@ describe("authenticated app routing", () => {
     expect(mocks.listActiveRosterStudentsForWorkspace).toHaveBeenCalledWith(
       "workspace_1"
     );
+  });
+
+  it("bounds and trims feed search before database work", async () => {
+    mocks.getClassRosterReadinessForWorkspace.mockResolvedValue({
+      readyForClassFirstRoster: true,
+    });
+    const oversizedQuery = `  ${"r".repeat(220)}  `;
+
+    render(
+      await FeedPage({
+        searchParams: Promise.resolve({ q: oversizedQuery }),
+      })
+    );
+
+    const normalizedQuery = "r".repeat(200);
+    expect(mocks.getEvidenceFeedPageForWorkspace).toHaveBeenCalledWith(
+      "workspace_1",
+      { page: 1, query: normalizedQuery }
+    );
+    expect(screen.getByTestId("evidence-feed").getAttribute("data-search-query"))
+      .toBe(normalizedQuery);
   });
 
   it("discards an unavailable student-scoped capture with a safe message", async () => {
@@ -197,8 +232,9 @@ describe("authenticated app routing", () => {
     });
     mocks.getEvidenceFeedPageForWorkspace.mockResolvedValue({
       records: [],
-      page: 4,
-      hasNewer: true,
+      page: 1,
+      totalMatches: 2,
+      hasNewer: false,
       hasOlder: false,
     });
 
@@ -211,8 +247,6 @@ describe("authenticated app routing", () => {
           student: "student_1",
         }),
       })
-    ).rejects.toThrow(
-      "redirect:/app/feed?filter=validated&q=reading&student=student_1"
-    );
+    ).rejects.toThrow("redirect:/app/feed?q=reading");
   });
 });

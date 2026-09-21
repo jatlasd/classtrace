@@ -389,15 +389,6 @@ Feed search and Explore should share evidence-field normalization where practica
 - No classification rainbow, card redesign, or color-only meaning.
 - No separate control for every structured evidence field on the student timeline; start with text plus type/tag/date.
 
-## Recommended implementation order
+## Selected build plan
 
-1. **Mobile shell safety:** remove `AppTabBar` on mobile, build primary navigation into the compact menu, remove `pb-20`, correct modal/toast layering, and verify safe areas/focus on small phones.
-2. **Student context path:** add the shared quick-jump, reuse it for “Switch student,” and add validated student-preserving Capture links from timeline/report.
-3. **Capture loop:** tighten the mobile composer, add workspace tag suggestions, and expose the existing session draft count in navigation without exposing draft content.
-4. **Feed retrieval:** move free-text search into the workspace-scoped server query, remove redundant status filters, change the page size to 20, add top/bottom page controls, and land navigation at the evidence heading.
-5. **Timeline retrieval:** add URL-backed text/type/tag/date filtering and 20-record server pagination; retain only deterministic total/date-span summary.
-6. **Explore durability:** parse applied query/page/view from the URL and update browser history while preserving the current collapsed mobile filter experience and timezone semantics.
-7. **Evidence scanability:** introduce the shared accessible icon-plus-label classification mapping across feed, timeline, Explore, and reports.
-8. **Mobile finishing pass:** re-test Capture, long/correction-required draft review, Explore filters/results, roster, timelines, photo dialogs, keyboard-open states, 320–430px widths, landscape, and installed-PWA safe areas; simplify the authenticated footer if the replacement menu makes it redundant.
-
-This order fixes the interaction collision first, then removes the most repeated context rebuilding, then improves retrieval and scanning without expanding the product's scope.
+The implementation specification is maintained in [qol-build-plan.md](qol-build-plan.md). It covers feed retrieval, evidence scanability, and secondary timeline interrogation in the approved order.
