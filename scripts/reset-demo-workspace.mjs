@@ -15,6 +15,13 @@ const MAX_SERIALIZATION_ATTEMPTS = 3;
 
 export class DemoResetError extends Error {}
 
+export class OperatorDemoResetError extends DemoResetError {
+  constructor(code, message) {
+    super(message);
+    this.code = code;
+  }
+}
+
 function isSerializationFailure(error) {
   return (
     typeof error === "object" &&
@@ -284,6 +291,151 @@ async function executeResetAttempt({
     }
     throw error;
   }
+}
+
+async function resolveOperatorWorkspace(
+  client,
+  { clerkUserId, currentAgreementVersion, confirmationEmail, targetEmail }
+) {
+  const profileResult = await client.query(
+    `SELECT id
+     FROM "TeacherProfile"
+     WHERE "clerkUserId" = $1
+     FOR UPDATE`,
+    [clerkUserId]
+  );
+  if (profileResult.rows.length !== 1) {
+    throw new OperatorDemoResetError(
+      "TARGET_MISSING",
+      "The selected account does not have a ClassTrace profile."
+    );
+  }
+
+  const teacherProfileId = profileResult.rows[0].id;
+  const workspaceResult = await client.query(
+    `SELECT
+       w.id AS "workspaceId",
+       EXISTS (
+         SELECT 1
+         FROM "BetaAgreementAcceptance" ba
+         WHERE ba."teacherProfileId" = $1
+           AND ba."agreementVersion" = $2
+       ) AS "hasCurrentAgreementAcceptance",
+       (SELECT COUNT(*)::int FROM "ClassGroup" WHERE "workspaceId" = w.id) AS "classCount",
+       (SELECT COUNT(*)::int FROM "RosterStudent" WHERE "workspaceId" = w.id) AS "studentCount",
+       (SELECT COUNT(*)::int FROM "EvidenceRecord" WHERE "workspaceId" = w.id) AS "evidenceCount",
+       (SELECT COUNT(*)::int FROM "EvidencePhoto" WHERE "workspaceId" = w.id) AS "photoCount"
+     FROM "Workspace" w
+     WHERE w."teacherProfileId" = $1
+     FOR UPDATE OF w`,
+    [teacherProfileId, currentAgreementVersion]
+  );
+  if (workspaceResult.rows.length !== 1) {
+    throw new OperatorDemoResetError(
+      "TARGET_MISSING",
+      "The selected account does not have a ClassTrace workspace."
+    );
+  }
+
+  const workspace = workspaceResult.rows[0];
+  if (workspace.hasCurrentAgreementAcceptance !== true) {
+    throw new OperatorDemoResetError(
+      "BETA_REQUIRED",
+      "The selected account has not completed the current beta acknowledgement."
+    );
+  }
+
+  const containsData =
+    workspace.classCount > 0 ||
+    workspace.studentCount > 0 ||
+    workspace.evidenceCount > 0 ||
+    workspace.photoCount > 0;
+  if (containsData && confirmationEmail !== targetEmail) {
+    throw new OperatorDemoResetError(
+      "CONFIRMATION_REQUIRED",
+      "Enter the selected account email to replace its workspace."
+    );
+  }
+
+  return workspace.workspaceId;
+}
+
+async function executeOperatorResetAttempt({
+  client,
+  clerkUserId,
+  currentAgreementVersion,
+  confirmationEmail,
+  targetEmail,
+  dataset,
+  summary,
+}) {
+  await client.query("BEGIN TRANSACTION ISOLATION LEVEL SERIALIZABLE");
+
+  try {
+    const workspaceId = await resolveOperatorWorkspace(client, {
+      clerkUserId,
+      currentAgreementVersion,
+      confirmationEmail,
+      targetEmail,
+    });
+    await deleteWorkspaceDemoRows(client, workspaceId);
+    await insertClasses(client, workspaceId, dataset);
+    await insertStudents(client, workspaceId, dataset);
+    await insertEvidence(client, workspaceId, dataset);
+    await insertEvidencePhotos(client, workspaceId, dataset);
+    await verifyResetInsideTransaction(client, workspaceId, summary);
+    await client.query("COMMIT");
+    return summary;
+  } catch (error) {
+    try {
+      await client.query("ROLLBACK");
+    } catch {
+      throw new OperatorDemoResetError(
+        "RESET_FAILED",
+        "The demo workspace reset failed and rollback could not be confirmed."
+      );
+    }
+    throw error;
+  }
+}
+
+export async function resetOperatorDemoWorkspace({
+  client,
+  clerkUserId,
+  currentAgreementVersion,
+  confirmationEmail,
+  targetEmail,
+  dataset,
+}) {
+  const summary = validateDemoDataset(dataset);
+
+  for (let attempt = 1; attempt <= MAX_SERIALIZATION_ATTEMPTS; attempt += 1) {
+    try {
+      return await executeOperatorResetAttempt({
+        client,
+        clerkUserId,
+        currentAgreementVersion,
+        confirmationEmail,
+        targetEmail,
+        dataset,
+        summary,
+      });
+    } catch (error) {
+      if (isSerializationFailure(error) && attempt < MAX_SERIALIZATION_ATTEMPTS) {
+        continue;
+      }
+      if (error instanceof OperatorDemoResetError) throw error;
+      throw new OperatorDemoResetError(
+        "RESET_FAILED",
+        "The selected workspace could not be replaced with demo data."
+      );
+    }
+  }
+
+  throw new OperatorDemoResetError(
+    "RESET_FAILED",
+    "The demo workspace reset could not complete after bounded retries."
+  );
 }
 
 export async function resetDemoWorkspace({

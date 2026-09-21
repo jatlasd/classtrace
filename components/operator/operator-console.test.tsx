@@ -4,13 +4,15 @@ import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
-  search: vi.fn(),
+  list: vi.fn(),
+  seedDemo: vi.fn(),
   deleteWorkspace: vi.fn(),
   deleteClerkUser: vi.fn(),
 }));
 
 vi.mock("@/actions/operator", () => ({
-  searchOperatorAccountAction: mocks.search,
+  listOperatorAccountsAction: mocks.list,
+  seedOperatorDemoWorkspaceAction: mocks.seedDemo,
   deleteOperatorWorkspaceDataAction: mocks.deleteWorkspace,
   deleteOperatorClerkUserAction: mocks.deleteClerkUser,
 }));
@@ -33,6 +35,7 @@ const account = {
     workspaceId: "workspace_1",
     workspaceName: "Personal workspace",
     workspaceCreatedAt: "2026-06-02T12:05:00.000Z",
+    hasCurrentBetaAcknowledgement: true,
     counts: {
       classGroups: 2,
       rosterStudents: 12,
@@ -41,10 +44,50 @@ const account = {
   },
 };
 
+function directoryFor(selectedAccount = account) {
+  return {
+    success: true as const,
+    directory: {
+      accounts: [selectedAccount],
+      query: "",
+      offset: 0,
+      limit: 20,
+      totalCount: 1,
+      hasPreviousPage: false,
+      hasNextPage: false,
+    },
+  };
+}
+
+function selectAccount(selectedAccount = account) {
+  render(<OperatorConsole initialDirectory={directoryFor(selectedAccount)} />);
+  fireEvent.click(screen.getByRole("button", { name: /view account/i }));
+}
+
 describe("OperatorConsole", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mocks.search.mockResolvedValue({ success: true, account });
+    mocks.list.mockResolvedValue(directoryFor());
+    mocks.seedDemo.mockResolvedValue({
+      success: true,
+      account: {
+        ...account,
+        classTrace: {
+          ...account.classTrace,
+          counts: {
+            classGroups: 3,
+            rosterStudents: 14,
+            evidenceRecords: 81,
+          },
+        },
+      },
+      counts: {
+        classGroups: 3,
+        rosterStudents: 14,
+        evidenceRecords: 81,
+        photos: 12,
+      },
+    });
     mocks.deleteWorkspace.mockResolvedValue({
       success: true,
       deletedCounts: account.classTrace.counts,
@@ -52,35 +95,95 @@ describe("OperatorConsole", () => {
     mocks.deleteClerkUser.mockResolvedValue({ success: true });
   });
 
-  it("searches one exact email and renders safe metadata with aggregate counts", async () => {
-    render(<OperatorConsole />);
+  it("renders the authorized bounded directory and selects safe account metadata", () => {
+    selectAccount();
 
-    fireEvent.change(screen.getByLabelText("Account email"), {
-      target: { value: "stacy@example.com" },
-    });
-    fireEvent.click(screen.getByRole("button", { name: "Search account" }));
-
-    expect(await screen.findByRole("heading", { name: "Stacy Teacher" })).toBeTruthy();
-    expect(mocks.search).toHaveBeenCalledWith({ email: "stacy@example.com" });
+    expect(screen.getByRole("heading", { name: "User directory" })).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "Stacy Teacher" })).toBeTruthy();
     expect(screen.getByText("12")).toBeTruthy();
     expect(screen.getByText("48")).toBeTruthy();
     expect(screen.queryByText(/evidence note/i)).toBeNull();
   });
 
-  it("keeps database and Clerk deletion as separately confirmed actions", async () => {
-    render(<OperatorConsole />);
+  it("uses optional filtering without requiring an exact email", async () => {
+    render(<OperatorConsole initialDirectory={directoryFor()} />);
 
-    fireEvent.change(screen.getByLabelText("Account email"), {
+    fireEvent.change(screen.getByLabelText("Name or email"), {
+      target: { value: "Stacy" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Filter users" }));
+
+    expect(mocks.list).toHaveBeenCalledWith({ query: "Stacy", offset: 0 });
+  });
+
+  it("requires email re-entry before replacing a non-empty workspace", async () => {
+    selectAccount();
+
+    fireEvent.click(
+      screen.getByRole("button", { name: "Replace with demo workspace" })
+    );
+    expect(
+      screen.getByText(
+        "Existing classes, students, evidence, and photos in this workspace will be replaced."
+      )
+    ).toBeTruthy();
+    expect(
+      screen.getByText(
+        "Demo dataset: 3 classes · 14 students · 81 evidence records · 12 photos"
+      )
+    ).toBeTruthy();
+
+    const confirmButton = screen.getByRole("button", {
+      name: "Replace with demo workspace",
+    }) as HTMLButtonElement;
+    expect(confirmButton.disabled).toBe(true);
+    fireEvent.change(screen.getByLabelText("Type stacy@example.com to confirm"), {
       target: { value: "stacy@example.com" },
     });
-    fireEvent.click(screen.getByRole("button", { name: "Search account" }));
-    await screen.findByRole("heading", { name: "Stacy Teacher" });
+    fireEvent.click(confirmButton);
+
+    expect(mocks.seedDemo).toHaveBeenCalledWith({
+      targetClerkUserId: "target_1",
+      confirmationEmail: "stacy@example.com",
+    });
+    expect(
+      await screen.findByText(
+        "Demo workspace loaded: 3 classes, 14 students, 81 evidence records, and 12 photos."
+      )
+    ).toBeTruthy();
+  });
+
+  it("requires explicit confirmation but no email re-entry for an empty workspace", () => {
+    const emptyAccount = {
+      ...account,
+      classTrace: {
+        ...account.classTrace,
+        counts: {
+          classGroups: 0,
+          rosterStudents: 0,
+          evidenceRecords: 0,
+        },
+      },
+    };
+    selectAccount(emptyAccount);
+
+    fireEvent.click(screen.getByRole("button", { name: "Seed demo workspace" }));
+
+    expect(
+      screen.queryByLabelText("Type stacy@example.com to confirm")
+    ).toBeNull();
+    expect(
+      screen.getByRole("button", { name: "Seed demo workspace" })
+    ).toBeTruthy();
+    expect(mocks.seedDemo).not.toHaveBeenCalled();
+  });
+
+  it("keeps database and Clerk deletion separately confirmed", async () => {
+    selectAccount();
 
     expect(screen.getByText("Delete ClassTrace data first.")).toBeTruthy();
-    expect(screen.queryByRole("button", { name: "Delete Clerk user" })).toBeNull();
-
     const workspaceConfirmation = screen.getByLabelText(
-      "Type stacy@example.com to confirm"
+      "Type stacy@example.com to confirm deletion"
     );
     fireEvent.change(workspaceConfirmation, {
       target: { value: "stacy@example.com" },
@@ -94,10 +197,9 @@ describe("OperatorConsole", () => {
       targetClerkUserId: "target_1",
       confirmationEmail: "stacy@example.com",
     });
-    expect(mocks.deleteClerkUser).not.toHaveBeenCalled();
 
     const clerkConfirmation = screen.getByLabelText(
-      "Type stacy@example.com to confirm"
+      "Type stacy@example.com to confirm deletion"
     );
     fireEvent.change(clerkConfirmation, {
       target: { value: "stacy@example.com" },
@@ -105,65 +207,22 @@ describe("OperatorConsole", () => {
     fireEvent.click(screen.getByRole("button", { name: "Delete Clerk user" }));
 
     expect(
-      await screen.findByText("Clerk user deleted. Search for another account when ready.")
+      await screen.findByText("Clerk user deleted. Select another account when ready.")
     ).toBeTruthy();
-    expect(mocks.deleteClerkUser).toHaveBeenCalledWith({
-      targetClerkUserId: "target_1",
-      confirmationEmail: "stacy@example.com",
-    });
   });
 
-  it("shows search failures as accessible alerts", async () => {
-    mocks.search.mockResolvedValue({
-      success: false,
-      error: "No Clerk account matches that exact email address.",
-    });
-    render(<OperatorConsole />);
-
-    fireEvent.change(screen.getByLabelText("Account email"), {
-      target: { value: "mary@example.com" },
-    });
-    fireEvent.click(screen.getByRole("button", { name: "Search account" }));
-
-    expect((await screen.findByRole("alert")).textContent).toBe(
-      "No Clerk account matches that exact email address."
+  it("shows a safe directory failure as an accessible alert", () => {
+    render(
+      <OperatorConsole
+        initialDirectory={{
+          success: false,
+          error: "The account directory is not available. Try again.",
+        }}
+      />
     );
-  });
 
-  it("clears the selected account after Clerk deletion succeeds but audit completion fails", async () => {
-    mocks.search.mockResolvedValue({
-      success: true,
-      account: { ...account, classTrace: null },
-    });
-    mocks.deleteClerkUser.mockResolvedValue({
-      success: false,
-      clerkUserDeleted: true,
-      error: "The Clerk user was deleted, but the audit outcome was not updated.",
-    });
-    render(<OperatorConsole />);
-
-    const accountEmail = screen.getByLabelText("Account email") as HTMLInputElement;
-    fireEvent.change(accountEmail, {
-      target: { value: "stacy@example.com" },
-    });
-    fireEvent.click(screen.getByRole("button", { name: "Search account" }));
-    await screen.findByRole("heading", { name: "Stacy Teacher" });
-
-    const clerkConfirmation = screen.getByLabelText(
-      "Type stacy@example.com to confirm"
+    expect(screen.getByRole("alert").textContent).toBe(
+      "The account directory is not available. Try again."
     );
-    fireEvent.change(clerkConfirmation, {
-      target: { value: "stacy@example.com" },
-    });
-    fireEvent.click(screen.getByRole("button", { name: "Delete Clerk user" }));
-
-    expect((await screen.findByRole("status")).textContent).toBe(
-      "The Clerk user was deleted, but the audit outcome was not updated."
-    );
-    expect(accountEmail.value).toBe("");
-    expect(screen.queryByRole("heading", { name: "Stacy Teacher" })).toBeNull();
-    expect(
-      screen.queryByLabelText("Type stacy@example.com to confirm")
-    ).toBeNull();
   });
 });

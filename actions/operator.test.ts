@@ -2,7 +2,9 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   requireOperator: vi.fn(),
+  listOperatorAccounts: vi.fn(),
   searchOperatorAccount: vi.fn(),
+  seedOperatorDemoWorkspace: vi.fn(),
   deleteOperatorWorkspaceData: vi.fn(),
   deleteOperatorClerkUser: vi.fn(),
   revalidatePath: vi.fn(),
@@ -13,7 +15,9 @@ vi.mock("@/lib/operator/operator-auth", () => ({
   requireOperator: mocks.requireOperator,
 }));
 vi.mock("@/lib/operator/operator-accounts", () => ({
+  listOperatorAccounts: mocks.listOperatorAccounts,
   searchOperatorAccount: mocks.searchOperatorAccount,
+  seedOperatorDemoWorkspace: mocks.seedOperatorDemoWorkspace,
   deleteOperatorWorkspaceData: mocks.deleteOperatorWorkspaceData,
   deleteOperatorClerkUser: mocks.deleteOperatorClerkUser,
 }));
@@ -21,6 +25,8 @@ vi.mock("@/lib/operator/operator-accounts", () => ({
 import {
   deleteOperatorClerkUserAction,
   deleteOperatorWorkspaceDataAction,
+  listOperatorAccountsAction,
+  seedOperatorDemoWorkspaceAction,
   searchOperatorAccountAction,
 } from "@/actions/operator";
 
@@ -43,6 +49,75 @@ describe("operator actions", () => {
       operatorClerkUserId: "owner_1",
       email: "stacy@example.com",
     });
+  });
+
+  it("authorizes the user directory before listing any accounts", async () => {
+    mocks.listOperatorAccounts.mockResolvedValue({
+      success: true,
+      directory: { accounts: [] },
+    });
+
+    await listOperatorAccountsAction({ query: "Stacy", offset: 20 });
+
+    expect(mocks.requireOperator).toHaveBeenCalledTimes(1);
+    expect(mocks.listOperatorAccounts).toHaveBeenCalledWith({
+      operatorClerkUserId: "owner_1",
+      query: "Stacy",
+      offset: 20,
+    });
+  });
+
+  it("rejects directory access before Clerk or database listing", async () => {
+    mocks.requireOperator.mockRejectedValue(new Error("not authorized"));
+    vi.spyOn(console, "error").mockImplementation(() => {});
+
+    await expect(listOperatorAccountsAction({})).resolves.toEqual({
+      success: false,
+      error: "The account directory is not available.",
+    });
+    expect(mocks.listOperatorAccounts).not.toHaveBeenCalled();
+  });
+
+  it("reauthorizes demo seeding and revalidates only after success", async () => {
+    mocks.seedOperatorDemoWorkspace.mockResolvedValue({
+      success: true,
+      account: { clerkUserId: "target_1" },
+      counts: {
+        classGroups: 3,
+        rosterStudents: 14,
+        evidenceRecords: 81,
+        photos: 12,
+      },
+    });
+
+    await seedOperatorDemoWorkspaceAction({
+      targetClerkUserId: "target_1",
+      confirmationEmail: "stacy@example.com",
+    });
+
+    expect(mocks.requireOperator).toHaveBeenCalledTimes(1);
+    expect(mocks.seedOperatorDemoWorkspace).toHaveBeenCalledWith({
+      operatorClerkUserId: "owner_1",
+      targetClerkUserId: "target_1",
+      confirmationEmail: "stacy@example.com",
+    });
+    expect(mocks.revalidatePath).toHaveBeenCalledWith("/operator");
+  });
+
+  it("rejects demo seeding before the domain reset when unauthorized", async () => {
+    mocks.requireOperator.mockRejectedValue(new Error("not authorized"));
+    vi.spyOn(console, "error").mockImplementation(() => {});
+
+    await expect(
+      seedOperatorDemoWorkspaceAction({
+        targetClerkUserId: "target_1",
+        confirmationEmail: "",
+      })
+    ).resolves.toEqual({
+      success: false,
+      error: "The selected workspace could not be replaced with demo data.",
+    });
+    expect(mocks.seedOperatorDemoWorkspace).not.toHaveBeenCalled();
   });
 
   it("reauthorizes workspace deletion and revalidates only after success", async () => {

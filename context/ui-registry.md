@@ -388,9 +388,12 @@ Files: `components/beta-agreement/beta-acknowledgement-flow.tsx`,
 - Unexpected-error recovery uses one `760px` Plate with direct copy, a safe
   selectable reference, Retry, and Report this problem. It does not expose
   technical details.
-- The operator console stays utilitarian: ruled metadata, counts, shared Fields,
-  and visibly separate destructive operations. It is direct-URL-only and must
-  not adopt dashboard ornament or merge database and identity deletion.
+- The operator console stays utilitarian: a bounded ruled user directory with
+  optional name/email filtering, safe account metadata and counts, a selected
+  account detail, and visibly separate guarded demo, database-deletion, and
+  identity-deletion operations. Non-empty demo replacement repeats the target
+  email after an explicit dataset-summary warning. It is direct-URL-only and
+  must not adopt dashboard ornament or merge database and identity deletion.
 
 ## Public information pages
 

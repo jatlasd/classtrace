@@ -1,13 +1,24 @@
 import "server-only";
 
 import { clerkClient } from "@clerk/nextjs/server";
+import { PrismaPg } from "@prisma/adapter-pg";
+import { CURRENT_BETA_AGREEMENT } from "@/lib/beta-agreement/beta-agreement-versions";
 import { Prisma } from "@/lib/generated/prisma/client";
 import { prisma } from "@/lib/db/prisma";
 import { withSerializableTransactionRetry } from "@/lib/db/serializable-transaction";
 import { INPUT_LIMITS } from "@/lib/validation/input-limits";
+import { DEMO_DATASET } from "@/scripts/demo-data.mjs";
+import {
+  OperatorDemoResetError,
+  resetOperatorDemoWorkspace,
+} from "@/scripts/reset-demo-workspace.mjs";
+import { scopeDemoDatasetForClerkUser } from "@/scripts/scope-demo-dataset.mjs";
 
 const WORKSPACE_DELETE_ACTION = "WORKSPACE_DATA_DELETE";
 const CLERK_DELETE_ACTION = "CLERK_USER_DELETE";
+export const OPERATOR_DIRECTORY_PAGE_SIZE = 20;
+const MAX_DIRECTORY_OFFSET = 10_000;
+const MAX_DIRECTORY_QUERY_LENGTH = 100;
 
 type DirectoryUser = {
   id: string;
@@ -23,6 +34,11 @@ type DirectoryUser = {
 };
 
 export type OperatorIdentityDirectory = {
+  listUsers(input: {
+    limit: number;
+    offset: number;
+    query?: string;
+  }): Promise<{ data: DirectoryUser[]; totalCount: number }>;
   findUsersByEmail(email: string): Promise<DirectoryUser[]>;
   getUser(userId: string): Promise<DirectoryUser>;
   deleteUser(userId: string): Promise<void>;
@@ -36,8 +52,10 @@ type WorkspaceCounts = {
 
 type DatabaseAccount = {
   id: string;
+  clerkUserId: string;
   displayName: string;
   createdAt: Date;
+  betaAgreementAcceptances: Array<{ teacherProfileId: string }>;
   workspace: {
     id: string;
     name: string;
@@ -48,6 +66,7 @@ type DatabaseAccount = {
 
 export type OperatorAccountDatabase = {
   getAccountByClerkUserId(clerkUserId: string): Promise<DatabaseAccount | null>;
+  getAccountsByClerkUserIds(clerkUserIds: string[]): Promise<DatabaseAccount[]>;
   deleteWorkspaceDataWithAudit(input: {
     operatorClerkUserId: string;
     targetClerkUserId: string;
@@ -77,6 +96,7 @@ export type OperatorAccount = {
     workspaceId: string | null;
     workspaceName: string | null;
     workspaceCreatedAt: string | null;
+    hasCurrentBetaAcknowledgement: boolean;
     counts: WorkspaceCounts;
   } | null;
 };
@@ -93,7 +113,39 @@ export type DeleteClerkUserResult =
   | { success: true }
   | { success: false; error: string; clerkUserDeleted?: boolean };
 
+export type OperatorDirectoryPage = {
+  accounts: OperatorAccount[];
+  query: string;
+  offset: number;
+  limit: number;
+  totalCount: number;
+  hasPreviousPage: boolean;
+  hasNextPage: boolean;
+};
+
+export type ListOperatorAccountsResult =
+  | { success: true; directory: OperatorDirectoryPage }
+  | { success: false; error: string };
+
+export type SeedDemoWorkspaceResult =
+  | {
+      success: true;
+      account: OperatorAccount;
+      counts: WorkspaceCounts & { photos: number };
+    }
+  | { success: false; error: string };
+
 const operatorIdentityDirectory: OperatorIdentityDirectory = {
+  async listUsers(input) {
+    const client = await clerkClient();
+    const response = await client.users.getUserList({
+      limit: input.limit,
+      offset: input.offset,
+      orderBy: "-created_at",
+      ...(input.query ? { query: input.query } : {}),
+    });
+    return { data: response.data, totalCount: response.totalCount };
+  },
   async findUsersByEmail(email) {
     const client = await clerkClient();
     const response = await client.users.getUserList({
@@ -118,8 +170,15 @@ const operatorAccountDatabase: OperatorAccountDatabase = {
       where: { clerkUserId },
       select: {
         id: true,
+        clerkUserId: true,
         displayName: true,
         createdAt: true,
+        betaAgreementAcceptances: {
+          where: {
+            agreementVersion: CURRENT_BETA_AGREEMENT.agreementVersion,
+          },
+          select: { teacherProfileId: true },
+        },
         workspace: {
           select: {
             id: true,
@@ -136,6 +195,38 @@ const operatorAccountDatabase: OperatorAccountDatabase = {
         },
       },
     }),
+  getAccountsByClerkUserIds: (clerkUserIds) =>
+    clerkUserIds.length === 0
+      ? Promise.resolve([])
+      : prisma.teacherProfile.findMany({
+          where: { clerkUserId: { in: clerkUserIds } },
+          select: {
+            id: true,
+            clerkUserId: true,
+            displayName: true,
+            createdAt: true,
+            betaAgreementAcceptances: {
+              where: {
+                agreementVersion: CURRENT_BETA_AGREEMENT.agreementVersion,
+              },
+              select: { teacherProfileId: true },
+            },
+            workspace: {
+              select: {
+                id: true,
+                name: true,
+                createdAt: true,
+                _count: {
+                  select: {
+                    classGroups: true,
+                    rosterStudents: true,
+                    evidenceRecords: true,
+                  },
+                },
+              },
+            },
+          },
+        }),
   deleteWorkspaceDataWithAudit: (input) =>
     withSerializableTransactionRetry(() =>
       prisma.$transaction(
@@ -239,6 +330,21 @@ function normalizeIdentifier(value: unknown): string {
   return identifier.length <= INPUT_LIMITS.identifier ? identifier : "";
 }
 
+function normalizeDirectoryQuery(value: unknown): string | null {
+  if (typeof value !== "string") return "";
+  const query = value.trim();
+  return query.length <= MAX_DIRECTORY_QUERY_LENGTH ? query : null;
+}
+
+function normalizeDirectoryOffset(value: unknown): number {
+  return typeof value === "number" &&
+    Number.isInteger(value) &&
+    value >= 0 &&
+    value <= MAX_DIRECTORY_OFFSET
+    ? value
+    : 0;
+}
+
 function getUserEmail(user: DirectoryUser, email: string): string | null {
   const match = user.emailAddresses.find(
     (address) => address.emailAddress.trim().toLowerCase() === email
@@ -246,11 +352,121 @@ function getUserEmail(user: DirectoryUser, email: string): string | null {
   return match?.emailAddress.trim() ?? null;
 }
 
+function getDirectoryEmail(user: DirectoryUser): string | null {
+  const primary = user.emailAddresses.find(
+    (address) => address.id === user.primaryEmailAddressId
+  );
+  return (primary ?? user.emailAddresses[0])?.emailAddress.trim() || null;
+}
+
 function getDisplayName(user: DirectoryUser): string {
   const name = [user.firstName?.trim(), user.lastName?.trim()]
     .filter(Boolean)
     .join(" ");
   return name || "Name unavailable";
+}
+
+function buildOperatorAccount(
+  user: DirectoryUser,
+  account: DatabaseAccount | null,
+  operatorClerkUserId: string,
+  preferredEmail?: string
+): OperatorAccount | null {
+  const email = preferredEmail ?? getDirectoryEmail(user);
+  if (!email) return null;
+
+  return {
+    clerkUserId: user.id,
+    email,
+    displayName: getDisplayName(user),
+    clerkCreatedAt: new Date(user.createdAt).toISOString(),
+    lastSignInAt:
+      user.lastSignInAt === null
+        ? null
+        : new Date(user.lastSignInAt).toISOString(),
+    isCurrentOperator: user.id === operatorClerkUserId,
+    classTrace: account
+      ? {
+          teacherProfileId: account.id,
+          teacherDisplayName: account.displayName,
+          teacherCreatedAt: account.createdAt.toISOString(),
+          workspaceId: account.workspace?.id ?? null,
+          workspaceName: account.workspace?.name ?? null,
+          workspaceCreatedAt: account.workspace?.createdAt.toISOString() ?? null,
+          hasCurrentBetaAcknowledgement:
+            account.betaAgreementAcceptances.length === 1,
+          counts: account.workspace?._count ?? {
+            classGroups: 0,
+            rosterStudents: 0,
+            evidenceRecords: 0,
+          },
+        }
+      : null,
+  };
+}
+
+export async function listOperatorAccounts(
+  input: {
+    operatorClerkUserId: string;
+    query?: unknown;
+    offset?: unknown;
+  },
+  dependencies: {
+    directory: OperatorIdentityDirectory;
+    database: OperatorAccountDatabase;
+  } = {
+    directory: operatorIdentityDirectory,
+    database: operatorAccountDatabase,
+  }
+): Promise<ListOperatorAccountsResult> {
+  const query = normalizeDirectoryQuery(input.query);
+  const offset = normalizeDirectoryOffset(input.offset);
+  if (query === null) {
+    return {
+      success: false,
+      error: "The directory filter is too long.",
+    };
+  }
+
+  try {
+    const page = await dependencies.directory.listUsers({
+      limit: OPERATOR_DIRECTORY_PAGE_SIZE,
+      offset,
+      ...(query ? { query } : {}),
+    });
+    const databaseAccounts = await dependencies.database.getAccountsByClerkUserIds(
+      page.data.map((user) => user.id)
+    );
+    const databaseAccountsByClerkId = new Map(
+      databaseAccounts.map((account) => [account.clerkUserId, account])
+    );
+    const accounts = page.data.flatMap((user) => {
+      const account = buildOperatorAccount(
+        user,
+        databaseAccountsByClerkId.get(user.id) ?? null,
+        input.operatorClerkUserId
+      );
+      return account ? [account] : [];
+    });
+
+    return {
+      success: true,
+      directory: {
+        accounts,
+        query,
+        offset,
+        limit: OPERATOR_DIRECTORY_PAGE_SIZE,
+        totalCount: page.totalCount,
+        hasPreviousPage: offset > 0,
+        hasNextPage: offset + page.data.length < page.totalCount,
+      },
+    };
+  } catch {
+    return {
+      success: false,
+      error: "The account directory is not available. Try again.",
+    };
+  }
 }
 
 async function resolveConfirmedTarget(
@@ -310,38 +526,127 @@ export async function searchOperatorAccount(
     const user = exactMatches[0];
     const account = await dependencies.database.getAccountByClerkUserId(user.id);
 
-    return {
-      success: true,
-      account: {
-        clerkUserId: user.id,
-        email: getUserEmail(user, email) ?? email,
-        displayName: getDisplayName(user),
-        clerkCreatedAt: new Date(user.createdAt).toISOString(),
-        lastSignInAt:
-          user.lastSignInAt === null
-            ? null
-            : new Date(user.lastSignInAt).toISOString(),
-        isCurrentOperator: user.id === input.operatorClerkUserId,
-        classTrace: account
-          ? {
-              teacherProfileId: account.id,
-              teacherDisplayName: account.displayName,
-              teacherCreatedAt: account.createdAt.toISOString(),
-              workspaceId: account.workspace?.id ?? null,
-              workspaceName: account.workspace?.name ?? null,
-              workspaceCreatedAt:
-                account.workspace?.createdAt.toISOString() ?? null,
-              counts: account.workspace?._count ?? {
-                classGroups: 0,
-                rosterStudents: 0,
-                evidenceRecords: 0,
-              },
-            }
-          : null,
-      },
-    };
+    const operatorAccount = buildOperatorAccount(
+      user,
+      account,
+      input.operatorClerkUserId,
+      getUserEmail(user, email) ?? email
+    );
+    if (!operatorAccount) {
+      return { success: false, error: "The Clerk account has no email address." };
+    }
+
+    return { success: true, account: operatorAccount };
   } catch {
     return { success: false, error: "Account search failed. Try again." };
+  }
+}
+
+async function seedDemoWorkspaceWithDatabase(input: {
+  clerkUserId: string;
+  targetEmail: string;
+  confirmationEmail: string;
+}) {
+  const databaseUrl = process.env.DATABASE_URL;
+  if (!databaseUrl) throw new Error("DATABASE_URL is required.");
+
+  const adapter = await new PrismaPg(databaseUrl).connect();
+  const client = await adapter.underlyingDriver().connect();
+  try {
+    return await resetOperatorDemoWorkspace({
+      client,
+      clerkUserId: input.clerkUserId,
+      currentAgreementVersion: CURRENT_BETA_AGREEMENT.agreementVersion,
+      confirmationEmail: input.confirmationEmail,
+      targetEmail: input.targetEmail,
+      dataset: scopeDemoDatasetForClerkUser(DEMO_DATASET, input.clerkUserId),
+    });
+  } finally {
+    client.release();
+    await adapter.dispose();
+  }
+}
+
+export async function seedOperatorDemoWorkspace(
+  input: {
+    operatorClerkUserId: string;
+    targetClerkUserId: unknown;
+    confirmationEmail: unknown;
+  },
+  dependencies: {
+    directory: OperatorIdentityDirectory;
+    database: OperatorAccountDatabase;
+    resetWorkspace: typeof seedDemoWorkspaceWithDatabase;
+  } = {
+    directory: operatorIdentityDirectory,
+    database: operatorAccountDatabase,
+    resetWorkspace: seedDemoWorkspaceWithDatabase,
+  }
+): Promise<SeedDemoWorkspaceResult> {
+  const targetClerkUserId = normalizeIdentifier(input.targetClerkUserId);
+  if (!targetClerkUserId) {
+    return { success: false, error: "Select one Clerk account first." };
+  }
+
+  let user: DirectoryUser;
+  try {
+    user = await dependencies.directory.getUser(targetClerkUserId);
+  } catch {
+    return {
+      success: false,
+      error: "The selected Clerk account could not be resolved.",
+    };
+  }
+
+  try {
+    if (user.id !== targetClerkUserId) {
+      return { success: false, error: "The selected Clerk account was not found." };
+    }
+    const targetEmail = getDirectoryEmail(user)?.toLowerCase();
+    if (!targetEmail) {
+      return { success: false, error: "The selected Clerk account has no email address." };
+    }
+
+    const confirmationEmail = normalizeEmail(input.confirmationEmail);
+    const summary = await dependencies.resetWorkspace({
+      clerkUserId: user.id,
+      targetEmail,
+      confirmationEmail,
+    });
+    const databaseAccount = await dependencies.database.getAccountByClerkUserId(
+      user.id
+    );
+    const account = buildOperatorAccount(
+      user,
+      databaseAccount,
+      input.operatorClerkUserId,
+      getDirectoryEmail(user) ?? targetEmail
+    );
+    if (!account?.classTrace?.workspaceId) {
+      return {
+        success: false,
+        error: "The demo workspace was loaded, but refreshed counts are unavailable.",
+      };
+    }
+
+    return {
+      success: true,
+      account,
+      counts: {
+        classGroups: summary.classCount,
+        rosterStudents: summary.studentCount,
+        evidenceRecords: summary.evidenceCount,
+        photos: summary.photoCount,
+      },
+    };
+  } catch (error) {
+    if (error instanceof OperatorDemoResetError) {
+      return { success: false, error: error.message };
+    }
+    return {
+      success: false,
+      error: "The selected workspace could not be replaced with demo data.",
+    };
   }
 }
 

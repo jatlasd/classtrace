@@ -7,6 +7,8 @@ vi.mock("@/lib/db/prisma", () => ({ prisma: {} }));
 import {
   deleteOperatorClerkUser,
   deleteOperatorWorkspaceData,
+  listOperatorAccounts,
+  seedOperatorDemoWorkspace,
   searchOperatorAccount,
   type OperatorAccountDatabase,
   type OperatorIdentityDirectory,
@@ -26,6 +28,7 @@ const targetUser = {
 
 function createDependencies() {
   const directory: OperatorIdentityDirectory = {
+    listUsers: vi.fn().mockResolvedValue({ data: [targetUser], totalCount: 1 }),
     findUsersByEmail: vi.fn().mockResolvedValue([targetUser]),
     getUser: vi.fn().mockResolvedValue(targetUser),
     deleteUser: vi.fn().mockResolvedValue(undefined),
@@ -33,8 +36,10 @@ function createDependencies() {
   const database: OperatorAccountDatabase = {
     getAccountByClerkUserId: vi.fn().mockResolvedValue({
       id: "teacher_1",
+      clerkUserId: "target_1",
       displayName: "Stacy",
       createdAt: new Date("2026-06-02T12:00:00.000Z"),
+      betaAgreementAcceptances: [{ teacherProfileId: "teacher_1" }],
       workspace: {
         id: "workspace_1",
         name: "Personal workspace",
@@ -46,6 +51,25 @@ function createDependencies() {
         },
       },
     }),
+    getAccountsByClerkUserIds: vi.fn().mockResolvedValue([
+      {
+        id: "teacher_1",
+        clerkUserId: "target_1",
+        displayName: "Stacy",
+        createdAt: new Date("2026-06-02T12:00:00.000Z"),
+        betaAgreementAcceptances: [{ teacherProfileId: "teacher_1" }],
+        workspace: {
+          id: "workspace_1",
+          name: "Personal workspace",
+          createdAt: new Date("2026-06-02T12:05:00.000Z"),
+          _count: {
+            classGroups: 2,
+            rosterStudents: 12,
+            evidenceRecords: 48,
+          },
+        },
+      },
+    ]),
     deleteWorkspaceDataWithAudit: vi.fn().mockResolvedValue({
       classGroups: 2,
       rosterStudents: 12,
@@ -104,6 +128,7 @@ describe("operator account search", () => {
           workspaceId: "workspace_1",
           workspaceName: "Personal workspace",
           workspaceCreatedAt: "2026-06-02T12:05:00.000Z",
+          hasCurrentBetaAcknowledgement: true,
           counts: {
             classGroups: 2,
             rosterStudents: 12,
@@ -136,6 +161,165 @@ describe("operator account search", () => {
       error: "No Clerk account matches that exact email address.",
     });
     expect(dependencies.database.getAccountByClerkUserId).not.toHaveBeenCalled();
+  });
+});
+
+describe("operator account directory", () => {
+  it("lists a bounded page with safe aggregate metadata", async () => {
+    const dependencies = createDependencies();
+
+    const result = await listOperatorAccounts(
+      { operatorClerkUserId: "owner_1", offset: 0 },
+      dependencies
+    );
+
+    expect(dependencies.directory.listUsers).toHaveBeenCalledWith({
+      limit: 20,
+      offset: 0,
+    });
+    expect(dependencies.database.getAccountsByClerkUserIds).toHaveBeenCalledWith([
+      "target_1",
+    ]);
+    expect(result).toMatchObject({
+      success: true,
+      directory: {
+        totalCount: 1,
+        hasNextPage: false,
+        accounts: [
+          {
+            email: "stacy@example.com",
+            classTrace: {
+              counts: {
+                classGroups: 2,
+                rosterStudents: 12,
+                evidenceRecords: 48,
+              },
+            },
+          },
+        ],
+      },
+    });
+    expect(JSON.stringify(result)).not.toMatch(
+      /evidenceNote|studentName|displayName":"Jeremy|rawNote|imageData/
+    );
+  });
+
+  it("passes a bounded optional filter and page offset to Clerk", async () => {
+    const dependencies = createDependencies();
+    vi.mocked(dependencies.directory.listUsers).mockResolvedValue({
+      data: [targetUser],
+      totalCount: 42,
+    });
+
+    const result = await listOperatorAccounts(
+      {
+        operatorClerkUserId: "owner_1",
+        query: " stacy@example.com ",
+        offset: 20,
+      },
+      dependencies
+    );
+
+    expect(dependencies.directory.listUsers).toHaveBeenCalledWith({
+      limit: 20,
+      offset: 20,
+      query: "stacy@example.com",
+    });
+    expect(result).toMatchObject({
+      success: true,
+      directory: {
+        query: "stacy@example.com",
+        offset: 20,
+        hasPreviousPage: true,
+        hasNextPage: true,
+      },
+    });
+  });
+});
+
+describe("operator demo seeding", () => {
+  it("resolves one Clerk user and returns refreshed canonical counts", async () => {
+    const dependencies = {
+      ...createDependencies(),
+      resetWorkspace: vi.fn().mockResolvedValue({
+        classCount: 3,
+        studentCount: 14,
+        evidenceCount: 81,
+        photoCount: 12,
+      }),
+    };
+
+    const result = await seedOperatorDemoWorkspace(
+      {
+        operatorClerkUserId: "owner_1",
+        targetClerkUserId: "target_1",
+        confirmationEmail: "stacy@example.com",
+      },
+      dependencies
+    );
+
+    expect(dependencies.directory.getUser).toHaveBeenCalledWith("target_1");
+    expect(dependencies.resetWorkspace).toHaveBeenCalledWith({
+      clerkUserId: "target_1",
+      targetEmail: "stacy@example.com",
+      confirmationEmail: "stacy@example.com",
+    });
+    expect(result).toMatchObject({
+      success: true,
+      counts: {
+        classGroups: 3,
+        rosterStudents: 14,
+        evidenceRecords: 81,
+        photos: 12,
+      },
+    });
+  });
+
+  it("rejects a missing target before opening a reset", async () => {
+    const dependencies = {
+      ...createDependencies(),
+      resetWorkspace: vi.fn(),
+    };
+
+    await expect(
+      seedOperatorDemoWorkspace(
+        {
+          operatorClerkUserId: "owner_1",
+          targetClerkUserId: "",
+          confirmationEmail: "",
+        },
+        dependencies
+      )
+    ).resolves.toEqual({
+      success: false,
+      error: "Select one Clerk account first.",
+    });
+    expect(dependencies.resetWorkspace).not.toHaveBeenCalled();
+  });
+
+  it("returns a safe error when the selected Clerk account no longer resolves", async () => {
+    const dependencies = {
+      ...createDependencies(),
+      resetWorkspace: vi.fn(),
+    };
+    vi.mocked(dependencies.directory.getUser).mockRejectedValue(
+      new Error("provider details")
+    );
+
+    await expect(
+      seedOperatorDemoWorkspace(
+        {
+          operatorClerkUserId: "owner_1",
+          targetClerkUserId: "target_1",
+          confirmationEmail: "",
+        },
+        dependencies
+      )
+    ).resolves.toEqual({
+      success: false,
+      error: "The selected Clerk account could not be resolved.",
+    });
+    expect(dependencies.resetWorkspace).not.toHaveBeenCalled();
   });
 });
 

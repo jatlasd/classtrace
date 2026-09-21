@@ -83,13 +83,17 @@ and do not remove an existing user as a substitute for revoking future sign-up.
 ### Sanctioned operator exception
 
 The private owner-only operator console is the sole sanctioned exception to
-the normal current-workspace resolution rule. Its server-only domain functions
-may locate one target account by an exact email after independently authorizing
-the current Clerk user against the configured operator allowlist. The exception
-is limited to safe account metadata, aggregate class/student/evidence counts,
+the normal current-workspace resolution rule. After independently authorizing
+the current Clerk user against the configured operator allowlist, its
+server-only domain functions may list a bounded page of Clerk users, filter by
+name or email, and select one target account. The exception is limited to safe
+account metadata, aggregate class/student/evidence counts, guarded loading of
+the canonical fictional demo dataset into one existing acknowledged workspace,
 whole-account deletion, and destructive-action auditing. It does not expose
-evidence content, allow impersonation, or create a reusable cross-workspace
-access layer.
+evidence or roster content, allow impersonation, or create a reusable
+cross-workspace access layer. Demo loading uses deterministic per-Clerk-user
+IDs and rechecks the target workspace and current beta acceptance inside the
+same serializable replacement transaction.
 
 Operator audit rows deliberately have no relation to a teacher profile or
 workspace, so they survive deletion without retaining student names, roster
@@ -225,9 +229,9 @@ operator mailbox or add a second unauthenticated message endpoint.
    student information. For sign-in trouble, use the invitation reply path so
    the operator can confirm the intended email.
 2. Correlate the message using its release, route, error reference when
-   present, and authenticated Clerk/workspace identifiers. Use `/operator`
-   with an exact email only when account metadata is needed; do not inspect
-   evidence content or production database rows.
+   present, and authenticated Clerk/workspace identifiers. Use the `/operator`
+   directory only when account metadata is needed; do not inspect evidence
+   content or production database rows.
 3. Reply through the operator mailbox, record no support content in
    ClassTrace, and request a fresh safe report if the original message lacks
    enough detail.
