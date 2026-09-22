@@ -52,8 +52,9 @@ const JAVASCRIPT_FAILURES = {
   },
 } as const;
 
-type SafeErrorSource = "javascript" | "postgresql" | "prisma";
+type SafeErrorSource = "javascript" | "postgresql" | "prisma" | "react";
 export type SafeOperationStage = "operation.execute" | "workspace.resolve";
+export type SafeHydrationMismatch = "html" | "text";
 
 const ERROR_STAGE = Symbol.for("classtrace.monitoring.operation-stage");
 
@@ -64,6 +65,7 @@ export type SafeErrorDiagnostic = {
   failureKind: string;
   summary: string;
   databaseObject?: (typeof SAFE_DATABASE_OBJECTS)[number];
+  hydrationMismatch?: SafeHydrationMismatch;
 };
 
 type UnknownRecord = Record<string, unknown>;
@@ -94,6 +96,69 @@ function getConstructorName(error: UnknownRecord): string | undefined {
   );
 
   return typeof constructorName === "string" ? constructorName : undefined;
+}
+
+function getReactInvariant(
+  message: unknown
+): SafeErrorDiagnostic | undefined {
+  if (typeof message !== "string" || message.length > 4_000) {
+    return undefined;
+  }
+
+  const productionMatch = message.match(
+    /^Minified React error #(\d{1,4}); visit (https:\/\/react\.dev\/errors\/\d{1,4}(?:\?[^\s]{0,2000})?)/
+  );
+  if (productionMatch?.[1] && productionMatch[2]) {
+    const code = productionMatch[1];
+
+    try {
+      const documentationUrl = new URL(productionMatch[2]);
+      if (
+        documentationUrl.hostname !== "react.dev" ||
+        documentationUrl.pathname !== `/errors/${code}`
+      ) {
+        return undefined;
+      }
+
+      if (code === "418") {
+        const mismatch = documentationUrl.searchParams.getAll("args[]")[0];
+        const hydrationMismatch =
+          mismatch === "text" ? "text" : mismatch === "HTML" ? "html" : undefined;
+
+        return {
+          source: "react",
+          errorType: "ReactInvariantError",
+          code,
+          failureKind: "framework.react.hydration-mismatch",
+          summary: "React detected a server/client hydration mismatch",
+          ...(hydrationMismatch ? { hydrationMismatch } : undefined),
+        };
+      }
+
+      return {
+        source: "react",
+        errorType: "ReactInvariantError",
+        code,
+        failureKind: "framework.react.invariant",
+        summary: "React reported a production runtime invariant",
+      };
+    } catch {
+      return undefined;
+    }
+  }
+
+  const developmentMatch = message.match(
+    /^Hydration failed because the server rendered (text|HTML) didn't match the client\./
+  );
+  if (!developmentMatch?.[1]) return undefined;
+
+  return {
+    source: "react",
+    errorType: "ReactHydrationError",
+    failureKind: "framework.react.hydration-mismatch",
+    summary: "React detected a server/client hydration mismatch",
+    hydrationMismatch: developmentMatch[1] === "text" ? "text" : "html",
+  };
 }
 
 function getSafeDatabaseObject(
@@ -248,6 +313,9 @@ function getPostgresFailure(code: string): {
 }
 
 function diagnoseOneError(error: UnknownRecord): SafeErrorDiagnostic | undefined {
+  const reactDiagnostic = getReactInvariant(readProperty(error, "message"));
+  if (reactDiagnostic) return reactDiagnostic;
+
   const rawErrorName = readProperty(error, "name");
   const errorName =
     typeof rawErrorName === "string" ? rawErrorName : undefined;
@@ -314,6 +382,9 @@ export function getSafeErrorDiagnostic(
   error: unknown
 ): SafeErrorDiagnostic | undefined {
   try {
+    const directReactDiagnostic = getReactInvariant(error);
+    if (directReactDiagnostic) return directReactDiagnostic;
+
     const seen = new Set<unknown>();
     let current = error;
 
@@ -404,8 +475,13 @@ export function formatSafeErrorMessage(
       ? "Prisma"
       : diagnostic.source === "postgresql"
         ? "PostgreSQL"
-        : "JavaScript";
+        : diagnostic.source === "react"
+          ? "React"
+          : "JavaScript";
   const technicalDetail = diagnostic.code ?? diagnostic.errorType;
+  const frameworkDetail = diagnostic.hydrationMismatch
+    ? `: ${diagnostic.hydrationMismatch} content differed`
+    : "";
   const operationDetail =
     stage === "workspace.resolve"
       ? operation
@@ -415,5 +491,5 @@ export function formatSafeErrorMessage(
         ? ` while running ${operation}`
         : "";
 
-  return `${diagnostic.summary}${databaseObject} (${source} ${technicalDetail})${operationDetail}`;
+  return `${diagnostic.summary}${frameworkDetail}${databaseObject} (${source} ${technicalDetail})${operationDetail}`;
 }
