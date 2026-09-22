@@ -58,6 +58,41 @@ describe("safe error diagnostics", () => {
     expect(JSON.stringify(diagnostic)).not.toContain("SENTINEL");
   });
 
+  it("classifies a production React hydration invariant without retaining its raw message", () => {
+    const error = new Error(
+      "Minified React error #418; visit https://react.dev/errors/418?args[]=text&args[]=SENTINEL_STUDENT_NOTE for the full message or use the non-minified dev environment for full errors and additional helpful warnings."
+    );
+
+    const diagnostic = getSafeErrorDiagnostic(error);
+
+    expect(diagnostic).toEqual({
+      source: "react",
+      errorType: "ReactInvariantError",
+      code: "418",
+      failureKind: "framework.react.hydration-mismatch",
+      summary: "React detected a server/client hydration mismatch",
+      hydrationMismatch: "text",
+    });
+    expect(formatSafeErrorMessage(diagnostic, undefined)).toBe(
+      "React detected a server/client hydration mismatch: text content differed (React 418)"
+    );
+    expect(JSON.stringify(diagnostic)).not.toContain("SENTINEL");
+  });
+
+  it("normalizes a development hydration message while discarding its rendered diff", () => {
+    const diagnostic = getSafeErrorDiagnostic(
+      "Hydration failed because the server rendered HTML didn't match the client.\n+ SENTINEL_STUDENT_NAME\n- SENTINEL_EVIDENCE_NOTE"
+    );
+
+    expect(diagnostic).toMatchObject({
+      source: "react",
+      errorType: "ReactHydrationError",
+      failureKind: "framework.react.hydration-mismatch",
+      hydrationMismatch: "html",
+    });
+    expect(JSON.stringify(diagnostic)).not.toContain("SENTINEL");
+  });
+
   it("falls back to the existing opaque message for non-error values", () => {
     expect(
       getSafeErrorDiagnostic({ note: "SENTINEL_STUDENT_NOTE" })

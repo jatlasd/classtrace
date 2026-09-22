@@ -68,11 +68,11 @@ describe("Sentry privacy boundary", () => {
     expect(sanitized).toMatchObject({
       message: "Unexpected application error",
       user: { ip_address: null },
-      transaction: "GET /app/students/[studentId]/page",
+      transaction: "GET /app/students/[studentId]",
       transaction_info: { source: "route" },
       tags: {
         "classtrace.http_method": "GET",
-        "classtrace.route_template": "/app/students/[studentId]/page",
+        "classtrace.route_template": "/app/students/[studentId]",
       },
       exception: {
         values: [
@@ -135,6 +135,279 @@ describe("Sentry privacy boundary", () => {
     });
     expect(JSON.stringify(sanitized)).not.toContain("SENTINEL");
     expect(sanitizeSentryEvent({ contexts: {} }).contexts).toBeUndefined();
+  });
+
+  it("keeps normalized React hydration diagnostics and safe runtime context", () => {
+    const release = "a".repeat(40);
+    const error = new Error(
+      "Minified React error #418; visit https://react.dev/errors/418?args[]=text&args[]=SENTINEL_RENDERED_TEXT for the full message or use the non-minified dev environment for full errors and additional helpful warnings."
+    );
+    const attachments = [
+      {
+        filename: "SENTINEL_SCREENSHOT.png",
+        data: "SENTINEL_DOM_SCREENSHOT",
+      },
+    ];
+    const event: Event = {
+      message: error.message,
+      environment: "production",
+      release,
+      transaction:
+        "https://classtrace.example/app/students/SENTINEL_STUDENT_ID?note=SENTINEL_NOTE#SENTINEL_HASH",
+      transaction_info: { source: "url" },
+      request: {
+        url: "https://classtrace.example/app/students/SENTINEL_STUDENT_ID?note=SENTINEL_NOTE",
+      },
+      contexts: {
+        trace: { trace_id: "a".repeat(32), span_id: "b".repeat(16) },
+        browser: {
+          name: "Chrome",
+          version: "126.0.6478.57",
+          userAgent: "SENTINEL_USER_AGENT",
+        },
+        os: {
+          name: "macOS",
+          version: "14.5.1",
+          build: "SENTINEL_OS_BUILD",
+        },
+        device: {
+          device_type: "desktop",
+          model: "SENTINEL_DEVICE_MODEL",
+        },
+      },
+      extra: {
+        componentStack: "at EvidenceFeed (student=SENTINEL_STUDENT_NAME)",
+      },
+      debug_meta: {
+        images: [
+          {
+            type: "sourcemap",
+            code_file:
+              "https://classtrace.example/_next/static/chunks/app.js?student=SENTINEL_STUDENT_ID",
+            debug_id: "12345678-1234-1234-1234-123456789abc",
+          },
+        ],
+      },
+      exception: {
+        values: [
+          {
+            type: "Error",
+            value: error.message,
+            mechanism: {
+              type: "auto.browser.global_handlers.onerror",
+              handled: false,
+              data: { target: "SENTINEL_DOM_TEXT" },
+            },
+            stacktrace: {
+              frames: [
+                {
+                  filename:
+                    "https://classtrace.example/_next/static/chunks/app.js?student=SENTINEL_STUDENT_ID",
+                  function: "throwOnHydrationMismatch",
+                  abs_path:
+                    "https://classtrace.example/app/students/SENTINEL_STUDENT_ID",
+                  vars: { note: "SENTINEL_EVIDENCE_NOTE" },
+                },
+              ],
+            },
+          },
+        ],
+      },
+    };
+
+    const sanitized = sanitizeSentryEvent(event, {
+      originalException: error,
+      attachments,
+    });
+
+    expect(sanitized).toMatchObject({
+      message:
+        "React detected a server/client hydration mismatch: text content differed (React 418)",
+      environment: "production",
+      release,
+      transaction: "/app/students/[studentId]",
+      transaction_info: { source: "route" },
+      tags: {
+        "classtrace.route_template": "/app/students/[studentId]",
+        "classtrace.error_mechanism":
+          "auto.browser.global_handlers.onerror",
+        "classtrace.error_source": "react",
+        "classtrace.error_type": "ReactInvariantError",
+        "classtrace.error_code": "418",
+        "classtrace.failure_kind": "framework.react.hydration-mismatch",
+        "classtrace.hydration_mismatch": "text",
+      },
+      contexts: {
+        trace: { trace_id: "a".repeat(32), span_id: "b".repeat(16) },
+        browser: { name: "Chrome", version: "126" },
+        os: { name: "macOS", version: "14" },
+        device: { device_type: "desktop" },
+      },
+      exception: {
+        values: [
+          {
+            type: "Error",
+            value:
+              "React detected a server/client hydration mismatch: text content differed (React 418)",
+            mechanism: {
+              type: "auto.browser.global_handlers.onerror",
+              handled: false,
+            },
+            stacktrace: {
+              frames: [
+                {
+                  filename: "/_next/static/chunks/app.js",
+                  function: "throwOnHydrationMismatch",
+                },
+              ],
+            },
+          },
+        ],
+      },
+      debug_meta: {
+        images: [
+          {
+            type: "sourcemap",
+            code_file: "/_next/static/chunks/app.js",
+            debug_id: "12345678-1234-1234-1234-123456789abc",
+          },
+        ],
+      },
+    });
+    expect(JSON.stringify(sanitized)).not.toContain("SENTINEL");
+    expect(attachments).toEqual([]);
+  });
+
+  it("recovers a known static route from a URL-sourced global browser error", () => {
+    const event: Event = {
+      transaction:
+        "https://classtrace.example/app/feed?student=SENTINEL_STUDENT_ID#SENTINEL_HASH",
+      transaction_info: { source: "url" },
+      exception: {
+        values: [
+          {
+            type: "Error",
+            value: "SENTINEL_STUDENT_NOTE",
+            mechanism: {
+              type: "auto.browser.global_handlers.onerror",
+              handled: false,
+            },
+          },
+        ],
+      },
+    };
+
+    const sanitized = sanitizeSentryEvent(event);
+
+    expect(sanitized.transaction).toBe("/app/feed");
+    expect(sanitized.transaction_info).toEqual({ source: "route" });
+    expect(sanitized.tags).toMatchObject({
+      "classtrace.route_template": "/app/feed",
+      "classtrace.error_mechanism": "auto.browser.global_handlers.onerror",
+    });
+    expect(JSON.stringify(sanitized)).not.toContain("SENTINEL");
+  });
+
+  it("keeps only parsed React component symbols from a Sentry component stack", () => {
+    const event: Event = {
+      extra: {
+        componentStack:
+          "at EvidenceFeed (student=SENTINEL_STUDENT_NAME, note=SENTINEL_NOTE)",
+      },
+      exception: {
+        values: [
+          {
+            type: "React ErrorBoundary Error",
+            value: "SENTINEL_STUDENT_NOTE",
+            mechanism: {
+              type: "chained",
+              handled: true,
+              source: "SENTINEL_PROP",
+              exception_id: 1,
+              parent_id: 0,
+              data: { props: "SENTINEL_COMPONENT_PROPS" },
+            },
+            stacktrace: {
+              frames: [
+                {
+                  filename: "components/dashboard/evidence-feed.tsx",
+                  function: "EvidenceFeed",
+                },
+                {
+                  filename:
+                    "https://classtrace.example/app/students/SENTINEL_STUDENT_ID",
+                  function: "SavedEvidenceRow student=SENTINEL_STUDENT_NAME",
+                },
+              ],
+            },
+          },
+        ],
+      },
+    };
+
+    const sanitized = sanitizeSentryEvent(event);
+
+    expect(sanitized.exception?.values?.[0]).toMatchObject({
+      type: "ReactComponentStack",
+      value: "Unexpected application error",
+      mechanism: {
+        type: "chained",
+        handled: true,
+        exception_id: 1,
+        parent_id: 0,
+      },
+      stacktrace: {
+        frames: [
+          {
+            filename: "components/dashboard/evidence-feed.tsx",
+            function: "EvidenceFeed",
+          },
+          { filename: undefined, function: undefined },
+        ],
+      },
+    });
+    expect(JSON.stringify(sanitized)).not.toContain("SENTINEL");
+  });
+
+  it("drops arbitrary routes, runtime labels, client metadata, and trace-like values", () => {
+    const event: Event = {
+      environment: "SENTINEL_ENVIRONMENT",
+      release: "SENTINEL_RELEASE",
+      transaction: "/app/arbitrary/SENTINEL_STUDENT_ID?note=SENTINEL_NOTE",
+      request: {
+        url: "/app/arbitrary/SENTINEL_STUDENT_ID?note=SENTINEL_NOTE",
+      },
+      contexts: {
+        trace: {
+          trace_id: "SENTINEL_TRACE_ID",
+          span_id: "SENTINEL_SPAN_ID",
+        },
+        browser: { name: "SENTINEL_BROWSER", version: "1.2.3" },
+        os: { name: "SENTINEL_OS", version: "1.2.3" },
+        device: { device_type: "SENTINEL_DEVICE" },
+      },
+      exception: {
+        values: [
+          {
+            type: "SENTINEL_STUDENT_NAME",
+            value: "SENTINEL_STUDENT_NOTE",
+            mechanism: {
+              type: "SENTINEL_MECHANISM",
+              data: { formValue: "SENTINEL_FORM_VALUE" },
+            },
+          },
+        ],
+      },
+    };
+
+    const sanitized = sanitizeSentryEvent(event);
+
+    expect(sanitized.environment).toBeUndefined();
+    expect(sanitized.release).toBeUndefined();
+    expect(sanitized.transaction).toBeUndefined();
+    expect(sanitized.contexts).toBeUndefined();
+    expect(sanitized.exception?.values?.[0]?.mechanism).toBeUndefined();
+    expect(JSON.stringify(sanitized)).not.toContain("SENTINEL");
   });
 
   it("turns an allowlisted operation into an actionable safe issue title", () => {
