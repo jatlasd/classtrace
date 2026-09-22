@@ -83,13 +83,17 @@ and do not remove an existing user as a substitute for revoking future sign-up.
 ### Sanctioned operator exception
 
 The private owner-only operator console is the sole sanctioned exception to
-the normal current-workspace resolution rule. Its server-only domain functions
-may locate one target account by an exact email after independently authorizing
-the current Clerk user against the configured operator allowlist. The exception
-is limited to safe account metadata, aggregate class/student/evidence counts,
+the normal current-workspace resolution rule. After independently authorizing
+the current Clerk user against the configured operator allowlist, its
+server-only domain functions may list a bounded page of Clerk users, filter by
+name or email, and select one target account. The exception is limited to safe
+account metadata, aggregate class/student/evidence counts, guarded loading of
+the canonical fictional demo dataset into one existing acknowledged workspace,
 whole-account deletion, and destructive-action auditing. It does not expose
-evidence content, allow impersonation, or create a reusable cross-workspace
-access layer.
+evidence or roster content, allow impersonation, or create a reusable
+cross-workspace access layer. Demo loading uses deterministic per-Clerk-user
+IDs and rechecks the target workspace and current beta acceptance inside the
+same serializable replacement transaction.
 
 Operator audit rows deliberately have no relation to a teacher profile or
 workspace, so they survive deletion without retaining student names, roster
@@ -228,9 +232,9 @@ operator mailbox or add a second unauthenticated message endpoint.
    student information. For sign-in trouble, use the invitation reply path so
    the operator can confirm the intended email.
 2. Correlate the message using its release, route, error reference when
-   present, and authenticated Clerk/workspace identifiers. Use `/operator`
-   with an exact email only when account metadata is needed; do not inspect
-   evidence content or production database rows.
+   present, and authenticated Clerk/workspace identifiers. Use the `/operator`
+   directory only when account metadata is needed; do not inspect evidence
+   content or production database rows.
 3. Reply through the operator mailbox, record no support content in
    ClassTrace, and request a fresh safe report if the original message lacks
    enough detail.
@@ -314,7 +318,7 @@ These limits protect resource usage and database hygiene; they are not substitut
 - Route-level `loading.tsx`, `error.tsx`, and `not-found.tsx` provide safe recovery states. A root `global-error.tsx` covers failures outside the authenticated app boundary and failures in the root layout.
 - Unexpected boundary failures display an opaque `CT-S-` server-digest reference or `CT-C-` client reference, offer Next.js retry, and link to the existing Help and Feedback form without attaching raw error details.
 - Next.js request instrumentation logs server references with only the route template and framework failure classification. A narrow registration action logs the same displayed client reference when the server remains reachable; neither log path includes error messages, stacks, concrete URLs, request data, or teacher/student content.
-- Sentry receives scrubbed exception type/stack frames, safe opaque error references, parameterized route templates, runtime/release metadata, sampled timing, and static operation labels for unexpected action/domain failures that the application catches and maps to safe UI results. Recognized Prisma, PostgreSQL, and JavaScript failures also receive a plain-language title plus allowlisted source, type, code, operation-stage, failure-kind, and ClassTrace schema-object tags. A safe title may say `Database setup is missing a required table: BetaAgreementAcceptance (Prisma P2021) while resolving the current workspace for evidence.save`; it never contains IDs or teacher-entered content. SDK collection and final send hooks remove user identity, IP-derived data, cookies, headers, bodies, query parameters, concrete request URLs, breadcrumbs, local variables, database values, arbitrary context, unrecognized provider metadata, and user-controlled error messages. Session Replay and Sentry log shipping are disabled.
+- Sentry receives scrubbed exception types and stack frames, safe opaque error references, known parameterized ClassTrace route templates, allowlisted capture mechanisms, runtime/release metadata, sampled timing, and static operation labels for unexpected action/domain failures that the application catches and maps to safe UI results. Recognized Prisma, PostgreSQL, JavaScript, and React production-invariant failures receive a fixed plain-language title plus allowlisted source, type, code, operation-stage, failure-kind, and ClassTrace schema-object tags. React hydration invariant `418` also retains only its `text` or `html` mismatch subtype. Parsed React component-stack frames may retain identifier-shaped component symbols and safe source locations, but never the raw component-stack string. Browser and OS names plus major versions and the desktop/mobile/tablet device class are normalized from fixed allowlists. A safe title may say `Database setup is missing a required table: BetaAgreementAcceptance (Prisma P2021) while resolving the current workspace for evidence.save`; it never contains IDs or teacher-entered content. SDK collection and final send hooks remove user identity, IP-derived data, cookies, headers, bodies, query parameters, hashes, concrete request URLs, breadcrumbs, local variables, database values, arbitrary context, unrecognized provider metadata, user-controlled error messages, component props/rendered text, attachments/screenshots, and device models. Session Replay and Sentry log shipping are disabled.
 - Destructive actions require explicit confirmation and do not disappear from the UI until the server succeeds.
 - Unexpected action/domain errors are sent to Sentry with an allowlisted operation label and bounded safe diagnostic classification. Local logs may contain the same source, type, code, failure kind, and allowlisted ClassTrace schema object; raw exceptions and raw notes are never logged.
 
@@ -345,7 +349,10 @@ dataset. It uses only `.env.local` `DATABASE_URL`, requires a Clerk `sk_test_`
 key and an explicit command confirmation, verifies the live Neon identity inside
 the reset transaction, permits only `classtrace_dev`, and refuses the canonical
 production project, branch, and database. The separate production demo reset
-keeps its dedicated URL, account, and exact production identity contract.
+keeps its dedicated URL, account, and exact production identity contract. The
+in-app `/operator` demo action verifies that same exact production identity at
+the start of its transaction, before resolving or modifying the selected target;
+non-production demo loading remains a command-line-only workflow.
 
 Production data is never copied or branched into non-production. Verify a
 database target by project, branch, and database name without printing the
