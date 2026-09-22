@@ -6,9 +6,13 @@ import { requireOperator } from "@/lib/operator/operator-auth";
 import {
   deleteOperatorClerkUser,
   deleteOperatorWorkspaceData,
+  listOperatorAccounts,
+  seedOperatorDemoWorkspace,
   searchOperatorAccount,
   type DeleteClerkUserResult,
   type DeleteWorkspaceDataResult,
+  type ListOperatorAccountsResult,
+  type SeedDemoWorkspaceResult,
   type SearchOperatorAccountResult,
 } from "@/lib/operator/operator-accounts";
 import { routes } from "@/lib/routes";
@@ -25,6 +29,46 @@ export async function searchOperatorAccountAction(input: {
   } catch (error) {
     captureOperationalError("operator.account-search", error);
     return { success: false, error: "Account search is not available." };
+  }
+}
+
+export async function listOperatorAccountsAction(input: {
+  query?: string;
+  offset?: number;
+}): Promise<ListOperatorAccountsResult> {
+  try {
+    const operator = await requireOperator();
+    return listOperatorAccounts({
+      operatorClerkUserId: operator.clerkUserId,
+      query: input.query,
+      offset: input.offset,
+    });
+  } catch (error) {
+    captureOperationalError("operator.account-directory", error);
+    return { success: false, error: "The account directory is not available." };
+  }
+}
+
+export async function seedOperatorDemoWorkspaceAction(input: {
+  targetClerkUserId: string;
+  confirmationEmail: string;
+}): Promise<SeedDemoWorkspaceResult> {
+  try {
+    const operator = await requireOperator();
+    const result = await seedOperatorDemoWorkspace({
+      operatorClerkUserId: operator.clerkUserId,
+      targetClerkUserId: input.targetClerkUserId,
+      confirmationEmail: input.confirmationEmail,
+    });
+
+    if (result.success) revalidatePath(routes.operator);
+    return result;
+  } catch (error) {
+    captureOperationalError("operator.demo-seed", error);
+    return {
+      success: false,
+      error: "The selected workspace could not be replaced with demo data.",
+    };
   }
 }
 

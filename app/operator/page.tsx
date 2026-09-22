@@ -4,14 +4,20 @@ import { ArrowLeft, LockKeyhole } from "lucide-react";
 import { OperatorConsole } from "@/components/operator/operator-console";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { requireOperator } from "@/lib/operator/operator-auth";
+import { listOperatorAccounts } from "@/lib/operator/operator-accounts";
 import { routes } from "@/lib/routes";
 
 export default async function OperatorPage() {
+  let operator;
   try {
-    await requireOperator();
+    operator = await requireOperator();
   } catch {
     notFound();
   }
+
+  const initialDirectory = await listOperatorAccounts({
+    operatorClerkUserId: operator.clerkUserId,
+  });
 
   return (
     <div className="flex min-h-dvh flex-col bg-well text-fg">
@@ -43,12 +49,12 @@ export default async function OperatorPage() {
             Account administration
           </h1>
           <p className="mt-3 max-w-[70ch] text-sm leading-relaxed text-fg-2">
-            Find one account by its complete email, review safe metadata, and run separately confirmed deletion actions. Student and evidence content is never shown here.
+            Browse bounded account metadata, select one user, and run guarded account actions. Student and evidence content is never shown here.
           </p>
         </header>
 
         <div className="border border-line bg-plate p-5 sm:p-7">
-          <OperatorConsole />
+          <OperatorConsole initialDirectory={initialDirectory} />
         </div>
       </main>
       <SiteFooter />
