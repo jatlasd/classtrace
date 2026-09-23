@@ -251,6 +251,7 @@ Files: `components/dashboard/evidence-feed.tsx`,
 ## Shared evidence presentation
 
 Files: `components/evidence/evidence-record-content.tsx`,
+`components/evidence/evidence-classification.tsx`,
 `components/evidence/validated-stamp.tsx`,
 `components/evidence/photo-thumbnail.tsx`
 
@@ -258,8 +259,11 @@ Files: `components/evidence/evidence-record-content.tsx`,
   target: 15px compact, 16px default, or 17px journal with 1.5–1.55 leading.
 - Structured summary appears only where it adds information. Legacy-only copy is
   labeled honestly.
-- Evidence type is a small bordered pill. Class, topic, performance, behavior,
-  and tags use compact Bricolage technical text; tags are not colored chips.
+- Evidence type is a small neutral bordered pill with an icon and visible label.
+  The seven saved classifications use stable concept icons; unknown historical
+  strings keep their original text with a neutral tag icon. Class, topic,
+  performance, behavior, and tags use compact Bricolage technical text; tags
+  are not colored chips.
 - Follow-up is 13px supporting copy with an amber left rule and live label.
 - The Validated stamp is an ink circle/check plus the word “Validated.”
 - Default photos are 96/112px rounded thumbnails with cover cropping; feed work
@@ -338,6 +342,12 @@ Files: `components/students/student-timeline-page.tsx`,
 - The timeline opens with Students/class breadcrumb context, a large student
   name, record count and date span, then report/export/capture actions and the
   shared student switcher.
+- A ruled “Find in this timeline” region follows the header. Search stays
+  visible; Type, student-specific tag multi-select, and From/To inputs sit in a
+  Filters disclosure and apply explicitly. Only applied state enters the URL.
+- The Evidence heading shows the matching count and compact Newer/Older paging;
+  full paging repeats below the trace. Explicit retrieval navigation moves
+  focus to that heading and announces its result count and page.
 - Timeline, empty-state, and report Capture actions preserve the active student
   in the Capture URL. The feed validates that value within the current
   workspace, selects the mention in the composer, and focuses the composer; an
@@ -345,6 +355,9 @@ Files: `components/students/student-timeline-page.tsx`,
 - Evidence is grouped by sticky month labels and uses the open trace with Ink
   nodes. Each entry shows date, the explicit Validated stamp, approved content,
   compact details, optional photo, and follow-up.
+- A student with no history retains the capture-oriented empty state without
+  retrieval controls. A filtered trace with no matches instead offers a clear
+  action. Header summary, report, and export always describe full history.
 - The report uses a strong ruled header, date-filter controls, oldest-to-newest
   divided evidence rows, and an explicit Validated stamp.
 - Print removes shell/footer controls, flattens colors, hides trace decoration,

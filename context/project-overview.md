@@ -45,7 +45,9 @@ The strongest early users are special education teachers, case managers, interve
 - Captured drafts collect in a temporary review queue. Ordinary meaningful drafts show the student, date, exact Evidence note, optional photo state, and a compact deterministic filing result for quick teacher approval. Detailed editing opens only when the teacher requests it or the draft is genuinely unsaveable or semantically unresolved. Evidence dates are limited to the teacher-local calendar window from workspace creation through today.
 - Saving creates a permanent evidence record containing a reviewed note, one validated photo, or both; raw capture text and original photo data are not part of that record.
 - Every successful save produces transient confirmation that the observation was saved to the student's trace, with a direct link to open that trace. The first workspace save may use stronger copy without creating a separate onboarding state.
-- Saved records appear in a paged global feed and student timeline.
+- Saved records appear in a paged global feed and a paged student timeline. The
+  timeline supports deterministic text, classification, tag, and teacher-local
+  date retrieval without narrowing its all-time summary, report, or export.
 - Explore Evidence runs an explicit, unsaved, workspace-scoped question across
   active saved evidence and returns either paged evidence records or paged
   student groups with inspectable supporting records.

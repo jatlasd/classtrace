@@ -15,12 +15,15 @@ import {
   displayToInterpretationFields,
   joinFollowUpNotes,
   joinOptionalList,
-  NOTE_TYPE_OPTIONS,
   parseFollowUpNotes,
   parseTags,
   validateSingleStudentForInterpretation,
   type InterpretationFields,
 } from "@/lib/evidence/capture-validation";
+import {
+  getSavedEvidenceClassificationByLabel,
+  SAVED_EVIDENCE_CLASSIFICATION_LABELS,
+} from "@/lib/evidence/evidence-classifications";
 import type { DraftDisplay } from "@/lib/note-processing/draft-to-display";
 import type { CaptureRosterStudent } from "@/lib/students/resolve-capture-students";
 import { CheckCircle2 } from "lucide-react";
@@ -704,10 +707,10 @@ function InterpretationReviewPanelContent({
             className={fieldInputClass}
           >
             <option value="">Optional for photo-only evidence</option>
-            {!NOTE_TYPE_OPTIONS.includes(form.evidenceType) && (
+            {!getSavedEvidenceClassificationByLabel(form.evidenceType) && (
               <option value={form.evidenceType}>{form.evidenceType}</option>
             )}
-            {NOTE_TYPE_OPTIONS.map((option) => (
+            {SAVED_EVIDENCE_CLASSIFICATION_LABELS.map((option) => (
               <option key={option} value={option}>
                 {option}
               </option>

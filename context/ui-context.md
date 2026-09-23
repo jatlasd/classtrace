@@ -91,8 +91,10 @@ small lower-right node is amber. There is no `CT` tile.
 - Students uses linked student Plates in a responsive grid for the overview,
   divided Plate rows for class management, and inline disclosures for adding or
   managing roster records.
-- A student timeline is a month-grouped saved trace with the student's identity
-  as the dominant heading. Reports use print-safe ruled rows.
+- A student timeline keeps the student's identity and all-time summary primary,
+  then offers low-emphasis URL-backed search and optional type, tag, and date
+  filters above the month-grouped saved trace. Reports use print-safe ruled
+  rows and are not narrowed by timeline filters.
 
 These patterns are contextual. Do not impose a blanket “all cards” or “all
 ledgers” rule: active/provisional work belongs in Plates, secondary controls in

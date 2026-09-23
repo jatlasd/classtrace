@@ -1,23 +1,36 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import type { ReactElement } from "react";
 import { StudentTimelinePage } from "@/components/students/student-timeline-page";
 import { Button } from "@/components/ui/button";
 import { getCurrentAppWorkspace } from "@/lib/auth/get-current-workspace";
 import { getStudentTimelineRecordsForWorkspace } from "@/lib/evidence/student-timeline-records";
+import {
+  parseStudentTimelineSearchParams,
+  serializeStudentTimelineSearchParams,
+  type StudentTimelineRawSearchParams,
+} from "@/lib/evidence/student-timeline-query";
 import { routes } from "@/lib/routes";
 
 type StudentProfilePageProps = {
   params: Promise<{ studentId: string }>;
+  searchParams?: Promise<StudentTimelineRawSearchParams>;
 };
 
 export default async function StudentProfilePage({
   params,
+  searchParams,
 }: StudentProfilePageProps): Promise<ReactElement> {
-  const { studentId } = await params;
-  const workspace = await getCurrentAppWorkspace();
+  const [{ studentId }, resolvedSearchParams, workspace] = await Promise.all([
+    params,
+    searchParams ?? Promise.resolve({}),
+    getCurrentAppWorkspace(),
+  ]);
+  const parsed = parseStudentTimelineSearchParams(resolvedSearchParams);
   const timeline = await getStudentTimelineRecordsForWorkspace(
     workspace.workspaceId,
-    studentId
+    studentId,
+    parsed.input
   );
 
   if (!timeline) {
@@ -41,10 +54,21 @@ export default async function StudentProfilePage({
     );
   }
 
+  if (timeline.results.page !== parsed.input.page) {
+    const params = serializeStudentTimelineSearchParams({
+      ...parsed.input,
+      page: timeline.results.page,
+    });
+    redirect(
+      `${routes.student(studentId)}${params.size ? `?${params}` : ""}`
+    );
+  }
+
   return (
     <StudentTimelinePage
-      student={timeline.student}
-      evidenceRecords={timeline.evidenceRecords}
+      timeline={timeline}
+      appliedFilters={parsed.input}
+      dateError={parsed.dateError}
     />
   );
 }

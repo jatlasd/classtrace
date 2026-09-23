@@ -302,7 +302,11 @@ bulk paste and class settings use ruled disclosure rows below it.
 
 A student page is a focused 880px trace. The student's name is the dominant
 heading, followed by record count/date span and direct report/export/capture
-actions. Saved evidence is grouped by month and connected with the trace motif.
+actions. A low-emphasis retrieval band provides direct text search and a
+collapsed filter disclosure for type, student-specific tags, and teacher-local
+dates. Applied state lives in the URL, while unsubmitted filter edits stay
+local. Results remain grouped by month and connected with the trace motif, with
+compact pagination beside and below the trace when needed.
 The printable report uses ruled rows and removes app chrome and interactive
 trace decoration.
 
@@ -332,8 +336,10 @@ that invent capabilities, or decorative classroom imagery.
 - Every field has a persistent accessible label. Placeholder copy is only a
   hint. Invalid fields pair Danger styling with adjacent error text.
 - Evidence notes use primary ink and comfortable leading. Evidence type is the
-  one bordered detail pill; tags and other structured details are compact text,
-  not colorful chips. Follow-up uses an amber semantic left rule.
+  one neutral bordered detail pill, pairing a stable classification icon with
+  its label; unknown historical strings use a neutral tag icon and retain their
+  text. Tags and other structured details are compact text, not colorful chips.
+  Follow-up uses an amber semantic left rule.
 - Photos are rounded Well-backed thumbnails or bounded uncropped work samples.
   Expansion opens an ink backdrop, traps focus at the close action, supports
   Escape/backdrop close, and returns focus to the thumbnail.

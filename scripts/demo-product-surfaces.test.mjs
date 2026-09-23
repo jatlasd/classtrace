@@ -4,7 +4,6 @@ vi.mock("server-only", () => ({}));
 vi.mock("@/lib/db/prisma", () => ({ prisma: {} }));
 
 import { resolveCaptureStudents } from "../lib/students/resolve-capture-students.ts";
-import { evidenceRecordMatchesSearch } from "../lib/evidence/evidence-feed-filtering.ts";
 import { getEvidenceFeedPageForWorkspace } from "../lib/evidence/evidence-feed-records.ts";
 import { getStudentTimelineRecordsForWorkspace } from "../lib/evidence/student-timeline-records.ts";
 import {
@@ -35,6 +34,44 @@ const records = DEMO_DATASET.evidence.map((record) => ({
   photo: DEMO_DATASET.photos.find((photo) => photo.evidenceId === record.id) ?? null,
 }));
 
+function matchesContains(value, filter) {
+  return value?.toLowerCase().includes(filter.contains.toLowerCase()) ?? false;
+}
+
+function matchesWhere(record, where) {
+  if (where.rosterStudentId && record.rosterStudentId !== where.rosterStudentId) return false;
+  if (where.evidenceType && record.evidenceType !== where.evidenceType) return false;
+  if (where.evidenceDate?.gte && record.evidenceDate < where.evidenceDate.gte) return false;
+  if (where.evidenceDate?.lt && record.evidenceDate >= where.evidenceDate.lt) return false;
+  if (where.tags?.has && !record.tags.includes(where.tags.has)) return false;
+  if (where.tags?.hasSome && !where.tags.hasSome.some((tag) => record.tags.includes(tag))) return false;
+
+  if (where.rosterStudent?.mentionHandle &&
+      !matchesContains(record.rosterStudent.mentionHandle, where.rosterStudent.mentionHandle)) return false;
+  if (where.rosterStudent?.OR && !where.rosterStudent.OR.some((clause) =>
+    Object.entries(clause).every(([field, filter]) => matchesContains(record.rosterStudent[field], filter))
+  )) return false;
+  if (where.classGroup?.name && !matchesContains(record.classGroup.name, where.classGroup.name)) return false;
+  if (where.OR && !where.OR.some((clause) => {
+    if (clause.tags?.has) return record.tags.includes(clause.tags.has);
+    if (clause.rosterStudent?.OR) {
+      return clause.rosterStudent.OR.some((studentClause) =>
+        Object.entries(studentClause).every(([field, filter]) =>
+          matchesContains(record.rosterStudent[field], filter)
+        )
+      );
+    }
+    if (clause.classGroup?.name) return matchesContains(record.classGroup.name, clause.classGroup.name);
+    return Object.entries(clause).every(([field, filter]) => matchesContains(record[field], filter));
+  })) return false;
+
+  return true;
+}
+
+function matchingRecords(where) {
+  return records.filter((record) => matchesWhere(record, where));
+}
+
 // Exercise the real read models with the values inserted by the reset, without a live database.
 const database = {
   rosterStudent: {
@@ -60,6 +97,34 @@ const database = {
       return matching.slice(skip, take === undefined ? undefined : skip + take);
     },
   },
+  async aggregateEvidence(where) {
+    const matching = matchingRecords(where);
+    const dates = matching.map((record) => record.evidenceDate);
+    return {
+      _count: { _all: matching.length },
+      _min: { evidenceDate: dates.length ? new Date(Math.min(...dates)) : null },
+      _max: { evidenceDate: dates.length ? new Date(Math.max(...dates)) : null },
+    };
+  },
+  async countEvidence(where) {
+    return matchingRecords(where).length;
+  },
+  async listEvidence(where, skip, take) {
+    return matchingRecords(where)
+      .toSorted((left, right) =>
+        right.evidenceDate - left.evidenceDate ||
+        right.createdAt - left.createdAt ||
+        right.id.localeCompare(left.id)
+      )
+      .slice(skip, skip + take);
+  },
+  async listStudentTags(_workspaceId, studentId, limit) {
+    return [...new Set(
+      records
+        .filter((record) => record.rosterStudentId === studentId)
+        .flatMap((record) => record.tags)
+    )].toSorted().slice(0, limit);
+  },
 };
 
 describe("canonical demo data in product read models", () => {
@@ -77,34 +142,62 @@ describe("canonical demo data in product read models", () => {
     }
   });
 
-  it("fills two feed pages with interleaved classes and useful search results", async () => {
-    const first = await getEvidenceFeedPageForWorkspace(workspaceId, 1, database);
-    const second = await getEvidenceFeedPageForWorkspace(workspaceId, 2, database);
-    expect(first.records).toHaveLength(50);
-    expect(first.hasOlder).toBe(true);
-    expect(second.records).toHaveLength(31);
-    expect(second.hasNewer).toBe(true);
-    expect(second.hasOlder).toBe(false);
-    const combined = [...first.records, ...second.records];
+  it("fills the paged feed with interleaved classes and useful search results", async () => {
+    const pages = await Promise.all(
+      [1, 2, 3, 4, 5].map((page) =>
+        getEvidenceFeedPageForWorkspace(workspaceId, { page, query: "" }, database)
+      )
+    );
+    expect(pages.map((page) => page.records.length)).toEqual([20, 20, 20, 20, 1]);
+    expect(pages[0].hasNewer).toBe(false);
+    expect(pages[0].hasOlder).toBe(true);
+    expect(pages[4].hasNewer).toBe(true);
+    expect(pages[4].hasOlder).toBe(false);
+    const combined = pages.flatMap((page) => page.records);
     expect(new Set(combined.map((record) => record.id)).size).toBe(81);
     expect(combined.filter((record) => record.hasPhoto)).toHaveLength(12);
 
-    for (const page of [first, second]) {
+    for (const page of pages.slice(0, 4)) {
       expect(new Set(page.records.map((record) => record.classGroupName)).size).toBe(3);
       expect(new Set(page.records.map((record) => record.studentMentionHandle)).size).toBeGreaterThan(4);
-      for (const query of ["@jeremy", "@rowan", "#organization", "#support", "place-value", "regrouping"]) {
-        expect(page.records.some((record) => evidenceRecordMatchesSearch(record, query))).toBe(true);
-      }
     }
-    expect(combined.filter((record) => evidenceRecordMatchesSearch(record, "@owen"))).toHaveLength(1);
-    expect(combined.filter((record) => evidenceRecordMatchesSearch(record, "8th Grade Study Skills"))).toHaveLength(13);
-    const support = combined.filter((record) => evidenceRecordMatchesSearch(record, "#support"));
-    expect(new Set(support.map((record) => record.classGroupName)).size).toBe(3);
+
+    for (const query of ["@jeremy", "@rowan", "#organization", "#support", "place-value", "regrouping"]) {
+      const result = await getEvidenceFeedPageForWorkspace(
+        workspaceId,
+        { page: 1, query },
+        database
+      );
+      expect(result.totalMatches).toBeGreaterThan(0);
+    }
+    const owen = await getEvidenceFeedPageForWorkspace(
+      workspaceId,
+      { page: 1, query: "@owen" },
+      database
+    );
+    expect(owen.totalMatches).toBe(1);
+    const studySkills = await getEvidenceFeedPageForWorkspace(
+      workspaceId,
+      { page: 1, query: "8th Grade Study Skills" },
+      database
+    );
+    expect(studySkills.totalMatches).toBe(13);
+    const support = await getEvidenceFeedPageForWorkspace(
+      workspaceId,
+      { page: 1, query: "#support" },
+      database
+    );
+    expect(new Set(support.records.map((record) => record.classGroupName)).size).toBe(3);
   });
 
   it.each(students)("preserves $displayName's own notes in timeline, report, and export", async (student) => {
     const expected = DEMO_DATASET.evidence.filter((record) => record.studentId === student.id);
-    const timeline = await getStudentTimelineRecordsForWorkspace(workspaceId, student.id, database);
+    const timeline = await getStudentTimelineRecordsForWorkspace(
+      workspaceId,
+      student.id,
+      { page: 1, query: "", tags: [] },
+      database
+    );
     const report = await getStudentReportRecordsForWorkspace(
       workspaceId,
       student.id,
@@ -118,7 +211,7 @@ describe("canonical demo data in product read models", () => {
     }, database);
 
     expect(timeline.student.displayName).toBe(student.displayName);
-    expect(timeline.evidenceRecords.map((record) => record.id)).toEqual(
+    expect(timeline.results.records.map((record) => record.id)).toEqual(
       expected.map((record) => record.id).reverse()
     );
     expect(report.evidenceRecords.map((record) => record.id)).toEqual(
