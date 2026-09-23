@@ -76,7 +76,8 @@ describe("student profile route", () => {
           tag: ["#Reading", "support"],
           from: "2026-03-08",
           to: "2026-03-09",
-          offset: "300",
+          fromOffset: "300",
+          toOffset: "240",
           page: "2",
         }),
       })
@@ -92,7 +93,8 @@ describe("student profile route", () => {
         tags: ["reading", "support"],
         from: "2026-03-08",
         to: "2026-03-09",
-        offsetMinutes: 300,
+        fromOffsetMinutes: 300,
+        toOffsetMinutes: 240,
       }
     );
     expect(screen.getByTestId("student-timeline").getAttribute("data-query"))
@@ -128,7 +130,10 @@ describe("student profile route", () => {
     render(
       await StudentProfilePage({
         params: Promise.resolve({ studentId: "student_mary" }),
-        searchParams: Promise.resolve({ from: "2026-02-30", offset: "300" }),
+        searchParams: Promise.resolve({
+          from: "2026-02-30",
+          fromOffset: "300",
+        }),
       })
     );
 

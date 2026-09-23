@@ -13,7 +13,8 @@ describe("student timeline URL state", () => {
       tag: ["#Reading", " reading ", "Independent"],
       from: "2026-03-08",
       to: "2026-03-09",
-      offset: "240",
+      fromOffset: "300",
+      toOffset: "240",
       page: "3",
     });
 
@@ -25,11 +26,12 @@ describe("student timeline URL state", () => {
         tags: ["reading", "independent"],
         from: "2026-03-08",
         to: "2026-03-09",
-        offsetMinutes: 240,
+        fromOffsetMinutes: 300,
+        toOffsetMinutes: 240,
       },
     });
     expect(serializeStudentTimelineSearchParams(parsed.input).toString()).toBe(
-      "q=reading+strategy&type=Academic+check-in&tag=reading&tag=independent&from=2026-03-08&to=2026-03-09&offset=240&page=3"
+      "q=reading+strategy&type=Academic+check-in&tag=reading&tag=independent&from=2026-03-08&fromOffset=300&to=2026-03-09&toOffset=240&page=3"
     );
   });
 
@@ -53,7 +55,8 @@ describe("student timeline URL state", () => {
       parseStudentTimelineSearchParams({
         from: "2026-02-30",
         to: "2026-03-09",
-        offset: "300",
+        fromOffset: "300",
+        toOffset: "240",
       })
     ).toEqual({
       input: {
@@ -61,7 +64,7 @@ describe("student timeline URL state", () => {
         query: "",
         tags: [],
         to: "2026-03-09",
-        offsetMinutes: 300,
+        toOffsetMinutes: 240,
       },
       dateError:
         "One or more date filters were ignored because the URL contained an invalid date.",
@@ -81,7 +84,8 @@ describe("student timeline URL state", () => {
       parseStudentTimelineSearchParams({
         from: "2026-03-10",
         to: "2026-03-09",
-        offset: "240",
+        fromOffset: "240",
+        toOffset: "240",
       })
     ).toEqual({
       input: { page: 1, query: "", tags: [] },
@@ -90,13 +94,28 @@ describe("student timeline URL state", () => {
     });
   });
 
-  it("omits empty values, page one, and an offset without dates", () => {
+  it("ignores legacy single-offset ranges instead of applying unsafe boundaries", () => {
+    const legacyParams = {
+      from: "2026-03-08",
+      to: "2026-03-09",
+      offset: "300",
+    };
+
+    expect(parseStudentTimelineSearchParams(legacyParams)).toEqual({
+      input: { page: 1, query: "", tags: [] },
+      dateError:
+        "Date filters were ignored because timezone information was missing or invalid.",
+    });
+  });
+
+  it("omits empty values, page one, and boundary offsets without dates", () => {
     expect(
       serializeStudentTimelineSearchParams({
         page: 1,
         query: "",
         tags: [],
-        offsetMinutes: 240,
+        fromOffsetMinutes: 300,
+        toOffsetMinutes: 240,
       }).toString()
     ).toBe("");
   });

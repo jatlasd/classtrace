@@ -253,16 +253,19 @@ export function buildStudentTimelineWhere(
 
   if (filters.evidenceType) where.evidenceType = filters.evidenceType;
   if (filters.tags.length > 0) where.tags = { hasSome: filters.tags };
-  if ((filters.from || filters.to) && filters.offsetMinutes !== undefined) {
+  if (
+    (filters.from && filters.fromOffsetMinutes !== undefined) ||
+    (filters.to && filters.toOffsetMinutes !== undefined)
+  ) {
     where.evidenceDate = {
-      ...(filters.from
-        ? { gte: dateBoundary(filters.from, filters.offsetMinutes) }
+      ...(filters.from && filters.fromOffsetMinutes !== undefined
+        ? { gte: dateBoundary(filters.from, filters.fromOffsetMinutes) }
         : {}),
-      ...(filters.to
+      ...(filters.to && filters.toOffsetMinutes !== undefined
         ? {
             lt: dateBoundary(
               shiftDateKey(filters.to, 1),
-              filters.offsetMinutes
+              filters.toOffsetMinutes
             ),
           }
         : {}),

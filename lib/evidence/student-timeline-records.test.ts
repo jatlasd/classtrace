@@ -153,14 +153,33 @@ describe("buildStudentTimelineWhere", () => {
         tags: ["reading", "fluency"],
         from: "2026-03-08",
         to: "2026-03-09",
-        offsetMinutes: 300,
+        fromOffsetMinutes: 300,
+        toOffsetMinutes: 240,
       })
     ).toMatchObject({
       evidenceType: "Progress monitoring",
       tags: { hasSome: ["reading", "fluency"] },
       evidenceDate: {
         gte: new Date("2026-03-08T05:00:00.000Z"),
-        lt: new Date("2026-03-10T05:00:00.000Z"),
+        lt: new Date("2026-03-10T04:00:00.000Z"),
+      },
+    });
+  });
+
+  it("uses the offset at each boundary across the fall-back transition", () => {
+    expect(
+      buildStudentTimelineWhere("workspace_1", "student_mary", {
+        query: "",
+        tags: [],
+        from: "2026-10-31",
+        to: "2026-11-01",
+        fromOffsetMinutes: 240,
+        toOffsetMinutes: 300,
+      })
+    ).toMatchObject({
+      evidenceDate: {
+        gte: new Date("2026-10-31T04:00:00.000Z"),
+        lt: new Date("2026-11-02T05:00:00.000Z"),
       },
     });
   });

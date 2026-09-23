@@ -124,11 +124,16 @@ The installed icon set may determine the exact components, but the label-to-conc
 | `type` | One classification | One of the seven supported labels; otherwise ignored. |
 | `tag` | Selected tags | Repeated, normalized, deduplicated, maximum 10; any selected tag may match. |
 | `from` | Earliest evidence date | Inclusive `YYYY-MM-DD`. |
+| `fromOffset` | Earliest-date timezone offset | Bounded browser offset at the inclusive local midnight; present only with `from`. |
 | `to` | Latest evidence date | Inclusive `YYYY-MM-DD`. |
-| `offset` | Browser timezone offset | Bounded integer minutes; present only with a date boundary. |
+| `toOffset` | Latest-date timezone offset | Bounded browser offset at the exclusive local midnight after `to`; present only with `to`. |
 | `page` | Result page | Positive bounded integer; omitted for page 1. |
 
-Use Explore's browser-offset convention for date boundaries. If a date or required offset is invalid, or `from` follows `to`, ignore the invalid date portion and show a safe inline explanation. Do not reinterpret calendar dates as UTC. The first version uses explicit From/To inputs; relative-date shortcuts are out of scope.
+Use Explore's per-boundary browser-offset convention so ranges remain correct
+across daylight-saving transitions. If a date or its required boundary offset
+is invalid, or `from` follows `to`, ignore the invalid date portion and show a
+safe inline explanation. Do not reinterpret calendar dates as UTC. The first
+version uses explicit From/To inputs; relative-date shortcuts are out of scope.
 
 ### Domain result
 

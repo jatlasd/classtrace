@@ -118,10 +118,15 @@ function timelineHref(studentId: string, input: StudentTimelineInput): string {
   return `${routes.student(studentId)}${params.size ? `?${params}` : ""}#${EVIDENCE_HEADING_ID}`;
 }
 
-function dateOffset(from: string, to: string): number | undefined {
-  const key = from || to;
-  if (!key || !isValidStudentTimelineDate(key)) return undefined;
-  return new Date(`${key}T00:00:00`).getTimezoneOffset();
+export function dateBoundaryOffset(
+  value: string,
+  endExclusive: boolean
+): number | undefined {
+  if (!value || !isValidStudentTimelineDate(value)) return undefined;
+  const [year, month, day] = value.split("-").map(Number);
+  const boundary = new Date(year, month - 1, day);
+  if (endExclusive) boundary.setDate(boundary.getDate() + 1);
+  return boundary.getTimezoneOffset();
 }
 
 function draftDateError(from: string, to: string): string | null {
@@ -361,7 +366,8 @@ function StudentTimelineRetrieval({
       tags: draftTags,
       from: draftFrom || undefined,
       to: draftTo || undefined,
-      offsetMinutes: dateOffset(draftFrom, draftTo),
+      fromOffsetMinutes: dateBoundaryOffset(draftFrom, false),
+      toOffsetMinutes: dateBoundaryOffset(draftTo, true),
     });
   }
 

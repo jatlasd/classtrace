@@ -15,7 +15,8 @@ export type StudentTimelineFilters = {
   tags: string[];
   from?: string;
   to?: string;
-  offsetMinutes?: number;
+  fromOffsetMinutes?: number;
+  toOffsetMinutes?: number;
 };
 
 export type StudentTimelineInput = StudentTimelineFilters & {
@@ -28,7 +29,8 @@ export type StudentTimelineRawSearchParams = {
   tag?: string | string[];
   from?: string | string[];
   to?: string | string[];
-  offset?: string | string[];
+  fromOffset?: string | string[];
+  toOffset?: string | string[];
   page?: string | string[];
 };
 
@@ -111,9 +113,13 @@ export function normalizeStudentTimelineInput(
   const to = input.to && isValidStudentTimelineDate(input.to)
     ? input.to
     : undefined;
-  const offsetMinutes = normalizeOffset(input.offsetMinutes);
+  const fromOffsetMinutes = normalizeOffset(input.fromOffsetMinutes);
+  const toOffsetMinutes = normalizeOffset(input.toOffsetMinutes);
   const validRange = !from || !to || from <= to;
-  const datesUsable = Boolean((from || to) && offsetMinutes !== undefined && validRange);
+  const fromUsable = Boolean(
+    from && fromOffsetMinutes !== undefined && validRange
+  );
+  const toUsable = Boolean(to && toOffsetMinutes !== undefined && validRange);
 
   return {
     page: normalizePage(input.page),
@@ -122,9 +128,8 @@ export function normalizeStudentTimelineInput(
     ...(savedClassification
       ? { evidenceType: savedClassification.label }
       : {}),
-    ...(datesUsable && from ? { from } : {}),
-    ...(datesUsable && to ? { to } : {}),
-    ...(datesUsable ? { offsetMinutes } : {}),
+    ...(fromUsable && from ? { from, fromOffsetMinutes } : {}),
+    ...(toUsable && to ? { to, toOffsetMinutes } : {}),
   };
 }
 
@@ -137,16 +142,24 @@ export function parseStudentTimelineSearchParams(
   const toIsValid = !rawTo || isValidStudentTimelineDate(rawTo);
   const from = rawFrom && fromIsValid ? rawFrom : undefined;
   const to = rawTo && toIsValid ? rawTo : undefined;
-  const rawOffset = firstValue(searchParams.offset).trim();
-  const offsetMinutes = rawOffset ? normalizeOffset(rawOffset) : undefined;
-  const hasValidDate = Boolean(from || to);
+  const rawFromOffset = firstValue(searchParams.fromOffset).trim();
+  const rawToOffset = firstValue(searchParams.toOffset).trim();
+  const fromOffsetMinutes = rawFromOffset
+    ? normalizeOffset(rawFromOffset)
+    : undefined;
+  const toOffsetMinutes = rawToOffset
+    ? normalizeOffset(rawToOffset)
+    : undefined;
   const reversedRange = Boolean(from && to && from > to);
   let dateError: string | undefined;
 
   if (!fromIsValid || !toIsValid) {
     dateError = "One or more date filters were ignored because the URL contained an invalid date.";
   }
-  if (hasValidDate && offsetMinutes === undefined) {
+  if (
+    (from && fromOffsetMinutes === undefined) ||
+    (to && toOffsetMinutes === undefined)
+  ) {
     dateError = "Date filters were ignored because timezone information was missing or invalid.";
   }
   if (reversedRange) {
@@ -160,7 +173,8 @@ export function parseStudentTimelineSearchParams(
     tags: normalizeTags(allValues(searchParams.tag)),
     from,
     to,
-    offsetMinutes,
+    fromOffsetMinutes,
+    toOffsetMinutes,
   });
 
   return dateError ? { input, dateError } : { input };
@@ -174,10 +188,13 @@ export function serializeStudentTimelineSearchParams(
   if (normalized.query) params.set("q", normalized.query);
   if (normalized.evidenceType) params.set("type", normalized.evidenceType);
   for (const tag of normalized.tags) params.append("tag", tag);
-  if (normalized.from) params.set("from", normalized.from);
-  if (normalized.to) params.set("to", normalized.to);
-  if (normalized.from || normalized.to) {
-    params.set("offset", String(normalized.offsetMinutes));
+  if (normalized.from) {
+    params.set("from", normalized.from);
+    params.set("fromOffset", String(normalized.fromOffsetMinutes));
+  }
+  if (normalized.to) {
+    params.set("to", normalized.to);
+    params.set("toOffset", String(normalized.toOffsetMinutes));
   }
   if (normalized.page > 1) params.set("page", String(normalized.page));
   return params;

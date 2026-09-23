@@ -3,7 +3,10 @@
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { StudentQuickJumpProvider } from "@/components/students/student-quick-jump";
-import { StudentTimelinePage } from "@/components/students/student-timeline-page";
+import {
+  dateBoundaryOffset,
+  StudentTimelinePage,
+} from "@/components/students/student-timeline-page";
 import type { StudentTimelineResult } from "@/lib/evidence/student-timeline-records";
 import type { StudentTimelineInput } from "@/lib/evidence/student-timeline-query";
 
@@ -105,6 +108,21 @@ describe("StudentTimelinePage", () => {
     Element.prototype.scrollIntoView = vi.fn();
   });
 
+  it("calculates each local boundary across spring-forward and fall-back", () => {
+    const originalTimezone = process.env.TZ;
+    process.env.TZ = "America/New_York";
+
+    try {
+      expect(dateBoundaryOffset("2026-03-08", false)).toBe(300);
+      expect(dateBoundaryOffset("2026-03-08", true)).toBe(240);
+      expect(dateBoundaryOffset("2026-11-01", false)).toBe(240);
+      expect(dateBoundaryOffset("2026-11-01", true)).toBe(300);
+    } finally {
+      if (originalTimezone === undefined) delete process.env.TZ;
+      else process.env.TZ = originalTimezone;
+    }
+  });
+
   it("keeps all-time identity, report, export, capture, and student switching primary", () => {
     renderPage(
       buildTimeline({ totalMatches: 2 }, 32),
@@ -175,7 +193,7 @@ describe("StudentTimelinePage", () => {
 
     expect(mocks.push).toHaveBeenCalledWith(
       expect.stringMatching(
-        /^\/app\/students\/student_mary\?type=Progress\+monitoring&tag=reading&from=2026-03-08&to=2026-03-09&offset=-?\d+#student-evidence-heading$/
+        /^\/app\/students\/student_mary\?type=Progress\+monitoring&tag=reading&from=2026-03-08&fromOffset=-?\d+&to=2026-03-09&toOffset=-?\d+#student-evidence-heading$/
       )
     );
   });
