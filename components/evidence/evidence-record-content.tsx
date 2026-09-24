@@ -1,5 +1,6 @@
 import { formatTagLabel } from "@/lib/format-tag";
 import type { ReactNode } from "react";
+import { EvidenceClassification } from "@/components/evidence/evidence-classification";
 import { EvidencePhoto } from "@/components/evidence/evidence-photo";
 
 export type EvidenceRecordContentData = {
@@ -34,16 +35,14 @@ function Detail({
   variant = "default",
 }: {
   children: ReactNode;
-  variant?: "default" | "tag" | "type";
+  variant?: "default" | "tag";
 }) {
   return (
     <span
       className={`inline-flex max-w-full items-center break-words font-mono text-[0.75rem] [overflow-wrap:anywhere] ${
         variant === "tag"
           ? "text-fg-2"
-          : variant === "type"
-            ? "rounded-full border border-line px-2 py-px text-fg-2"
-            : "text-fg-3"
+          : "text-fg-3"
       }`}
     >
       {children}
@@ -99,7 +98,7 @@ export function EvidenceRecordContent({
       {hasStructuredDetails ? (
         <div className={`${compact ? "mt-2 gap-x-2.5 gap-y-1.5" : "mt-3 gap-x-3 gap-y-1.5"} flex flex-wrap items-center`}>
           {record.evidenceType ? (
-            <Detail variant="type">{record.evidenceType}</Detail>
+            <EvidenceClassification label={record.evidenceType} />
           ) : null}
           {includeClassGroup && record.classGroupName ? (
             <Detail>{record.classGroupName}</Detail>

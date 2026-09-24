@@ -1,4 +1,6 @@
 export const SESSION_DRAFT_STORAGE_KEY = "classtrace:session-drafts:v1";
+export const SESSION_DRAFTS_CHANGED_EVENT =
+  "classtrace:session-drafts-changed";
 
 const SESSION_DRAFT_VERSION = 2;
 const MAX_SESSION_DRAFTS = 500;
@@ -28,6 +30,25 @@ export type SessionDraftLoadResult = {
   drafts: SessionDraftRecord[];
   expiresAt: number;
 };
+
+function notifySessionDraftsChanged(): void {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  window.dispatchEvent(new Event(SESSION_DRAFTS_CHANGED_EVENT));
+}
+
+export function subscribeToSessionDraftChanges(
+  listener: () => void
+): () => void {
+  if (typeof window === "undefined") {
+    return () => undefined;
+  }
+
+  window.addEventListener(SESSION_DRAFTS_CHANGED_EVENT, listener);
+  return () => window.removeEventListener(SESSION_DRAFTS_CHANGED_EVENT, listener);
+}
 
 function isObject(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -112,6 +133,7 @@ export function clearSessionDrafts(storage: SessionDraftStorage | null): void {
 
   try {
     storage.removeItem(SESSION_DRAFT_STORAGE_KEY);
+    notifySessionDraftsChanged();
   } catch {
     // Browser storage is best-effort. The current React state remains usable.
   }
@@ -123,6 +145,7 @@ function writePayload(
 ): boolean {
   try {
     storage.setItem(SESSION_DRAFT_STORAGE_KEY, JSON.stringify(payload));
+    notifySessionDraftsChanged();
     return true;
   } catch {
     return false;

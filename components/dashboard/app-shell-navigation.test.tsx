@@ -14,6 +14,7 @@ const mocks = vi.hoisted(() => ({
   clearTemporaryEvidenceDrafts: vi.fn(),
   pathname: "/app/feed",
   signOut: vi.fn(),
+  push: vi.fn(),
   subscribeToTemporaryDraftCleanup: vi.fn(() => vi.fn()),
 }));
 
@@ -23,6 +24,7 @@ vi.mock("@clerk/nextjs", () => ({
 
 vi.mock("next/navigation", () => ({
   usePathname: () => mocks.pathname,
+  useRouter: () => ({ push: mocks.push }),
 }));
 
 vi.mock("@/lib/evidence/temporary-draft-cleanup", () => ({
@@ -31,6 +33,29 @@ vi.mock("@/lib/evidence/temporary-draft-cleanup", () => ({
 }));
 
 import { AppShellNavigation } from "./app-shell-navigation";
+import { StudentQuickJumpProvider } from "@/components/students/student-quick-jump";
+import {
+  clearSessionDrafts,
+  saveSessionDrafts,
+} from "@/lib/evidence/session-draft-storage";
+
+const quickJumpStudents = [
+  {
+    id: "student_mary",
+    displayName: "Mary",
+    mentionHandle: "mary",
+    classGroupName: "Reading",
+    schoolLocalId: "R-104",
+  },
+];
+
+function renderNavigation() {
+  return render(
+    <StudentQuickJumpProvider students={quickJumpStudents}>
+      <AppShellNavigation workspaceId="workspace_1" />
+    </StudentQuickJumpProvider>
+  );
+}
 
 afterEach(() => {
   cleanup();
@@ -43,10 +68,11 @@ describe("AppShellNavigation", () => {
     mocks.pathname = "/app/feed";
     mocks.clearTemporaryEvidenceDrafts.mockResolvedValue(undefined);
     mocks.signOut.mockResolvedValue(undefined);
+    window.sessionStorage.clear();
   });
 
   it("renders only real primary destinations with the current route active", () => {
-    render(<AppShellNavigation />);
+    renderNavigation();
 
     expect(
       screen.getAllByRole("link", { name: "Capture" })[0].getAttribute(
@@ -65,29 +91,81 @@ describe("AppShellNavigation", () => {
     expect(screen.queryByRole("link", { name: "Reports" })).toBeNull();
   });
 
+  it("keeps the desktop quick-jump compact while retaining its accessible label", () => {
+    renderNavigation();
+
+    const quickJump = screen.getByRole("combobox", {
+      name: "Student quick-jump",
+    });
+    const label = document.querySelector(`label[for="${quickJump.id}"]`);
+
+    expect(label?.className).toBe("sr-only");
+  });
+
+  it("shows and updates a content-free pending draft count in navigation", async () => {
+    const capturedAt = Date.now();
+    saveSessionDrafts(window.sessionStorage, "workspace_1", [
+      {
+        id: "draft_1",
+        rawNote: "@Mary practiced reading.",
+        capturedAt,
+        hasPhoto: false,
+      },
+      {
+        id: "draft_2",
+        rawNote: "@Mary explained her strategy.",
+        capturedAt,
+        hasPhoto: false,
+      },
+    ]);
+
+    renderNavigation();
+
+    expect(
+      await screen.findByRole("link", {
+        name: "Capture, 2 drafts to review",
+      })
+    ).toBeTruthy();
+    fireEvent.click(
+      screen.getByRole("button", { name: "Open navigation menu" })
+    );
+    expect(
+      screen.getAllByRole("link", {
+        name: "Capture, 2 drafts to review",
+      })
+    ).toHaveLength(2);
+
+    clearSessionDrafts(window.sessionStorage);
+
+    await waitFor(() =>
+      expect(screen.getAllByRole("link", { name: "Capture" })).toHaveLength(2)
+    );
+    expect(screen.queryByText("@Mary practiced reading.")).toBeNull();
+  });
+
   it("pairs authenticated routes with truthful compact context labels", () => {
     mocks.pathname = "/app/explore";
-    const exploreRender = render(<AppShellNavigation />);
+    const exploreRender = renderNavigation();
     expect(screen.getByText("Saved evidence")).toBeTruthy();
     exploreRender.unmount();
 
     mocks.pathname = "/app/roster";
-    const rosterRender = render(<AppShellNavigation />);
+    const rosterRender = renderNavigation();
     expect(screen.getByText("All classes")).toBeTruthy();
     rosterRender.unmount();
 
     mocks.pathname = "/app/settings";
-    const settingsRender = render(<AppShellNavigation />);
+    const settingsRender = renderNavigation();
     expect(screen.getByText("Account")).toBeTruthy();
     settingsRender.unmount();
 
     mocks.pathname = "/app/students/student_mary/report";
-    render(<AppShellNavigation />);
+    renderNavigation();
     expect(screen.getByText("Printable evidence")).toBeTruthy();
   });
 
   it("contains focus in the mobile drawer and restores focus on Escape", async () => {
-    render(<AppShellNavigation />);
+    renderNavigation();
 
     const trigger = screen.getByRole("button", {
       name: "Open navigation menu",
@@ -95,6 +173,14 @@ describe("AppShellNavigation", () => {
     fireEvent.click(trigger);
 
     const dialog = screen.getByRole("dialog", { name: "Navigation" });
+    expect(
+      within(dialog).getByRole("navigation", { name: "Primary" })
+    ).toBeTruthy();
+    expect(
+      within(dialog).getByRole("link", { name: "Capture" }).getAttribute(
+        "aria-current"
+      )
+    ).toBe("page");
     const closeButton = within(dialog).getByRole("button", {
       name: "Close navigation menu",
     });
@@ -120,7 +206,7 @@ describe("AppShellNavigation", () => {
   });
 
   it("closes the drawer from the backdrop and exposes trust links", () => {
-    render(<AppShellNavigation />);
+    renderNavigation();
 
     fireEvent.click(
       screen.getByRole("button", { name: "Open navigation menu" })
@@ -140,13 +226,13 @@ describe("AppShellNavigation", () => {
   });
 
   it("awaits temporary cleanup before signing out from desktop and mobile", async () => {
-    const firstRender = render(<AppShellNavigation />);
+    const firstRender = renderNavigation();
 
     fireEvent.click(screen.getByRole("button", { name: "Sign out" }));
     await waitFor(() => expect(mocks.signOut).toHaveBeenCalledTimes(1));
     firstRender.unmount();
 
-    render(<AppShellNavigation />);
+    renderNavigation();
     fireEvent.click(
       screen.getByRole("button", { name: "Open navigation menu" })
     );

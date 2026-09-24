@@ -52,12 +52,13 @@ small lower-right node is amber. There is no `CT` tile.
   fixed route-header rail. Sign-in, beta acknowledgement, and operator routes
   use their own focused layouts.
 - At `lg`, Capture, Explore, Students, and Settings are centered as text-led top
-  navigation; the active destination receives an amber dot.
-- Below `lg`, the same four destinations form a fixed bottom tab bar. The mobile
-  top header keeps the brand, current route label where needed, and a menu.
-- The mobile menu is a bottom sheet for trust/support links and Sign out, not a
-  duplicate primary nav. It traps focus, closes with Escape/backdrop, restores
-  trigger focus, and prevents background scrolling.
+  navigation; the active destination receives an amber dot, and a compact
+  active-student quick-jump sits beside Sign out.
+- Below `lg`, the mobile top header keeps the brand, current route label where
+  needed, and a menu. The menu owns the same four primary destinations, the
+  student quick-jump, trust/support links, and Sign out.
+- The mobile menu traps focus, closes with Escape/backdrop, restores trigger
+  focus, prevents background scrolling, and accounts for device safe areas.
 - Capture remains the first destination and the visual center of the product.
   Student timelines and reports activate Students without joining global nav.
 - Do not add fake search, notification, analytics, review, reporting, or admin
@@ -90,8 +91,10 @@ small lower-right node is amber. There is no `CT` tile.
 - Students uses linked student Plates in a responsive grid for the overview,
   divided Plate rows for class management, and inline disclosures for adding or
   managing roster records.
-- A student timeline is a month-grouped saved trace with the student's identity
-  as the dominant heading. Reports use print-safe ruled rows.
+- A student timeline keeps the student's identity and all-time summary primary,
+  then offers low-emphasis URL-backed search and optional type, tag, and date
+  filters above the month-grouped saved trace. Reports use print-safe ruled
+  rows and are not narrowed by timeline filters.
 
 These patterns are contextual. Do not impose a blanket “all cards” or “all
 ledgers” rule: active/provisional work belongs in Plates, secondary controls in
@@ -105,7 +108,7 @@ linked Plates, and dense management data in divided rows.
 - Dynamic error summaries use a live region and receive focus when the teacher
   must act on them.
 - Pending buttons use a real ellipsis (`…`) and name the pending action.
-- Feed search/filter state lives in the URL. Explore query state remains
+- Applied Feed search and page state lives in the URL. Explore query state remains
   transient client state; field edits apply only through Show results or Update
   results. View changes and pagination use the last applied query.
 - Destructive actions state permanence, require confirmation, and restore a
@@ -123,8 +126,8 @@ linked Plates, and dense management data in divided rows.
   selection, archive, or destructive state.
 - Long teacher-entered text, student names, handles, tags, and identifiers wrap
   without horizontal overflow.
-- Mobile layouts stack and controls wrap. Content reserves room for the fixed
-  bottom tabs. Roster actions never depend on hover.
+- Mobile layouts stack and controls wrap without permanent bottom-navigation
+  padding. Roster actions never depend on hover.
 - Printable reports remove app chrome and avoid splitting an evidence entry.
 - All animation and transition behavior respects `prefers-reduced-motion`.
 

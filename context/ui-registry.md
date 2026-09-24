@@ -71,25 +71,30 @@ their destination name. Do not recreate the retired lettered `CT` tile.
 
 Files: `app/app/layout.tsx`,
 `components/dashboard/app-shell-navigation.tsx`,
-`components/dashboard/app-tab-bar.tsx`,
+`components/dashboard/app-primary-navigation.tsx`,
 `components/dashboard/app-shell-drawer.tsx`
 
 | Property | Pattern |
 |---|---|
 | Shell | Sticky Base header on every viewport; no desktop sidebar |
 | Header frame | `max-w-[1240px]`; 56px mobile, 72px desktop |
-| Desktop primary nav | Centered text destinations; Bricolage display at 1.35rem |
+| Desktop primary nav | Centered text destinations; Bricolage display at 1.35rem; student quick-jump beside Sign out; Capture shows a session-local pending-draft count when needed |
 | Desktop active state | Foreground destination plus 6px amber dot |
-| Mobile primary nav | Fixed four-column bottom tab bar with icon and label |
-| Mobile Capture | Amber circular icon treatment; first destination |
-| Mobile menu | Top-right trigger opens a rounded-top bottom sheet |
-| Drawer contents | Trust/support links, product boundary copy, Sign out; no primary-nav duplication |
-| Workspace | Bottom padding for mobile tabs; no sidebar offset |
+| Mobile primary nav | Four destinations in the top-right menu; no persistent bottom bar; Capture shows a session-local pending-draft count when needed |
+| Mobile Capture | First direct destination in the primary menu |
+| Mobile menu | Top-right trigger opens a safe-area-aware rounded-top bottom sheet |
+| Drawer contents | Primary navigation, student quick-jump, trust/support links, product boundary copy, Sign out |
+| Workspace | No bottom-nav padding and no sidebar offset |
 
 Primary order is Capture, Explore, Students, Settings. The header keeps the
 small mark visible at desktop and visually hides the wordmark there. Non-Capture
 mobile routes show a quiet route label. The bottom sheet traps focus, supports
 Escape/backdrop close, restores trigger focus, and locks body scrolling.
+
+The shared student quick-jump is a labeled combobox over active students in the
+current workspace. It matches display name, `@mentionHandle`, and local student
+ID; results include class and handle context, support arrow keys/Enter/Escape,
+announce result counts, and navigate directly to the selected timeline.
 
 ## Surfaces, spacing, and radius
 
@@ -163,9 +168,14 @@ File: `components/dashboard/quick-capture-card.tsx`
 - The sentence input uses 23px Bricolage, 34px line height, and a two-line
   minimum. Textarea and mention highlighter share exact metrics.
 - Resolved mentions use dark amber on Live Soft. Tags use supporting ink.
+- Typing `#` suggests normalized tags already used in active workspace evidence,
+  with prefix matches first; teachers may still enter a new tag.
 - With content, the Plate receives `glow-live`: amber border/focus halo and a
   restrained amber-tinted lift.
-- Photo inputs stay visually hidden; Take photo / Choose photo are quiet actions.
+- Photo inputs stay visually hidden; Camera / Library are quiet actions with
+  explicit Take photo with camera / Choose photo from library accessible
+  names. On phones these actions share a compact wrapping row with Capture
+  while retaining practical touch targets.
   A selected photo appears in a Well with local-only copy and replace/remove.
 - Student-resolution guidance is explicit. Capture is enabled only for a valid
   one-student path, one unresolved mention that can be resolved in review, or a
@@ -220,9 +230,9 @@ Files: `components/dashboard/evidence-feed.tsx`,
 
 - Feed is one focused `880px` journal: a quiet Now context, the live composer,
   then All evidence.
-- Search is a full-rounded Well field. All / Needs review / Validated are
-  full-rounded filters; Needs review uses amber and the other selected states
-  use Ink.
+- Search is an explicitly submitted, full-rounded field for all saved evidence.
+  Applied search and page state live in the URL; draft edits remain local until
+  Search is submitted.
 - The counted draft queue sits below the composer. Saved records alone appear
   in the feed's open `.trace` motif with ink nodes.
 - Saved records are grouped by sticky calendar-date headings. Student identity
@@ -234,12 +244,14 @@ Files: `components/dashboard/evidence-feed.tsx`,
   at desktop. Permanent confirmation uses Danger Soft and explicit copy.
 - Work samples are bounded and uncropped beside text from `sm`, below text on
   smaller screens. Photo-only records remain supported.
-- Pagination uses explicit Newer evidence / Older evidence actions and retains
-  URL-backed feed filters/search.
+- Twenty-record pagination uses compact controls by the result heading and full
+  Newer evidence / Older evidence actions below the trace. Both retain the
+  applied search and target the result heading.
 
 ## Shared evidence presentation
 
 Files: `components/evidence/evidence-record-content.tsx`,
+`components/evidence/evidence-classification.tsx`,
 `components/evidence/validated-stamp.tsx`,
 `components/evidence/photo-thumbnail.tsx`
 
@@ -247,8 +259,11 @@ Files: `components/evidence/evidence-record-content.tsx`,
   target: 15px compact, 16px default, or 17px journal with 1.5–1.55 leading.
 - Structured summary appears only where it adds information. Legacy-only copy is
   labeled honestly.
-- Evidence type is a small bordered pill. Class, topic, performance, behavior,
-  and tags use compact Bricolage technical text; tags are not colored chips.
+- Evidence type is a small neutral bordered pill with an icon and visible label.
+  The seven saved classifications use stable concept icons; unknown historical
+  strings keep their original text with a neutral tag icon. Class, topic,
+  performance, behavior, and tags use compact Bricolage technical text; tags
+  are not colored chips.
 - Follow-up is 13px supporting copy with an amber left rule and live label.
 - The Validated stamp is an ink circle/check plus the word “Validated.”
 - Default photos are 96/112px rounded thumbnails with cover cropping; feed work
@@ -325,10 +340,24 @@ Files: `components/students/student-timeline-page.tsx`,
 
 - Both use an `880px` work area.
 - The timeline opens with Students/class breadcrumb context, a large student
-  name, record count and date span, then report/export/capture actions.
+  name, record count and date span, then report/export/capture actions and the
+  shared student switcher.
+- A ruled “Find in this timeline” region follows the header. Search stays
+  visible; Type, student-specific tag multi-select, and From/To inputs sit in a
+  Filters disclosure and apply explicitly. Only applied state enters the URL.
+- The Evidence heading shows the matching count and compact Newer/Older paging;
+  full paging repeats below the trace. Explicit retrieval navigation moves
+  focus to that heading and announces its result count and page.
+- Timeline, empty-state, and report Capture actions preserve the active student
+  in the Capture URL. The feed validates that value within the current
+  workspace, selects the mention in the composer, and focuses the composer; an
+  unavailable value falls back to generic Capture with a safe message.
 - Evidence is grouped by sticky month labels and uses the open trace with Ink
   nodes. Each entry shows date, the explicit Validated stamp, approved content,
   compact details, optional photo, and follow-up.
+- A student with no history retains the capture-oriented empty state without
+  retrieval controls. A filtered trace with no matches instead offers a clear
+  action. Header summary, report, and export always describe full history.
 - The report uses a strong ruled header, date-filter controls, oldest-to-newest
   divided evidence rows, and an explicit Validated stamp.
 - Print removes shell/footer controls, flattens colors, hides trace decoration,

@@ -12,6 +12,7 @@ const mocks = vi.hoisted(() => ({
   listActiveClassGroupsForWorkspace: vi.fn(),
   listActiveRosterStudentsForWorkspace: vi.fn(),
   getEvidenceFeedPageForWorkspace: vi.fn(),
+  listExistingEvidenceTagsForWorkspace: vi.fn(),
 }));
 
 vi.mock("next/navigation", () => ({ redirect: mocks.redirect }));
@@ -31,6 +32,10 @@ vi.mock("@/lib/evidence/evidence-feed-records", () => ({
   getEvidenceFeedPageForWorkspace: mocks.getEvidenceFeedPageForWorkspace,
   MAX_EVIDENCE_FEED_PAGE: 10_000,
 }));
+vi.mock("@/lib/evidence/explore-evidence", () => ({
+  listExistingEvidenceTagsForWorkspace:
+    mocks.listExistingEvidenceTagsForWorkspace,
+}));
 vi.mock("@/components/dashboard/evidence-feed", () => ({
   EvidenceFeed: (props: {
     workspaceId: string;
@@ -38,6 +43,11 @@ vi.mock("@/components/dashboard/evidence-feed", () => ({
     classGroups: unknown[];
     initialEvidenceRecords: unknown[];
     evidencePage: number;
+    totalMatches: number;
+    initialSearchQuery: string;
+    initialCaptureStudent?: { id: string };
+    initialCaptureStudentError?: string;
+    tagSuggestions: string[];
   }) => (
     <div
       data-testid="evidence-feed"
@@ -46,6 +56,11 @@ vi.mock("@/components/dashboard/evidence-feed", () => ({
       data-class-count={props.classGroups.length}
       data-evidence-count={props.initialEvidenceRecords.length}
       data-page={props.evidencePage}
+      data-total-matches={props.totalMatches}
+      data-search-query={props.initialSearchQuery}
+      data-capture-student-id={props.initialCaptureStudent?.id}
+      data-capture-student-error={props.initialCaptureStudentError}
+      data-tag-suggestions={props.tagSuggestions.join(",")}
     />
   ),
 }));
@@ -68,6 +83,7 @@ describe("authenticated app routing", () => {
         displayName: "Mary",
         mentionHandle: "mary",
         classGroupName: "Reading",
+        hasActiveClass: true,
       },
     ]);
     mocks.listActiveClassGroupsForWorkspace.mockResolvedValue([
@@ -75,10 +91,15 @@ describe("authenticated app routing", () => {
     ]);
     mocks.getEvidenceFeedPageForWorkspace.mockResolvedValue({
       records: [{ id: "evidence_1" }],
-      page: 2,
-      hasNewer: true,
+      page: 1,
+      totalMatches: 1,
+      hasNewer: false,
       hasOlder: false,
     });
+    mocks.listExistingEvidenceTagsForWorkspace.mockResolvedValue([
+      "reading",
+      "independent",
+    ]);
   });
 
   it("routes app entry to roster until class-first setup is ready", async () => {
@@ -113,10 +134,17 @@ describe("authenticated app routing", () => {
     mocks.getClassRosterReadinessForWorkspace.mockResolvedValue({
       readyForClassFirstRoster: true,
     });
+    mocks.getEvidenceFeedPageForWorkspace.mockResolvedValue({
+      records: [{ id: "evidence_1" }],
+      page: 2,
+      totalMatches: 21,
+      hasNewer: true,
+      hasOlder: false,
+    });
 
     render(
       await FeedPage({
-        searchParams: Promise.resolve({ page: "2", filter: "validated" }),
+        searchParams: Promise.resolve({ page: "2", q: " reading " }),
       })
     );
 
@@ -126,9 +154,75 @@ describe("authenticated app routing", () => {
     expect(feed.getAttribute("data-class-count")).toBe("1");
     expect(feed.getAttribute("data-evidence-count")).toBe("1");
     expect(feed.getAttribute("data-page")).toBe("2");
+    expect(feed.getAttribute("data-total-matches")).toBe("21");
+    expect(feed.getAttribute("data-search-query")).toBe("reading");
+    expect(feed.getAttribute("data-tag-suggestions")).toBe(
+      "reading,independent"
+    );
     expect(mocks.getEvidenceFeedPageForWorkspace).toHaveBeenCalledWith(
       "workspace_1",
-      2
+      { page: 2, query: "reading" }
+    );
+    expect(mocks.listExistingEvidenceTagsForWorkspace).toHaveBeenCalledWith(
+      "workspace_1"
+    );
+  });
+
+  it("validates a student-scoped capture against the active workspace roster", async () => {
+    mocks.getClassRosterReadinessForWorkspace.mockResolvedValue({
+      readyForClassFirstRoster: true,
+    });
+
+    render(
+      await FeedPage({
+        searchParams: Promise.resolve({ student: "student_1" }),
+      })
+    );
+
+    const feed = screen.getByTestId("evidence-feed");
+    expect(feed.getAttribute("data-capture-student-id")).toBe("student_1");
+    expect(feed.getAttribute("data-capture-student-error")).toBeNull();
+    expect(mocks.listActiveRosterStudentsForWorkspace).toHaveBeenCalledWith(
+      "workspace_1"
+    );
+  });
+
+  it("bounds and trims feed search before database work", async () => {
+    mocks.getClassRosterReadinessForWorkspace.mockResolvedValue({
+      readyForClassFirstRoster: true,
+    });
+    const oversizedQuery = `  ${"r".repeat(220)}  `;
+
+    render(
+      await FeedPage({
+        searchParams: Promise.resolve({ q: oversizedQuery }),
+      })
+    );
+
+    const normalizedQuery = "r".repeat(200);
+    expect(mocks.getEvidenceFeedPageForWorkspace).toHaveBeenCalledWith(
+      "workspace_1",
+      { page: 1, query: normalizedQuery }
+    );
+    expect(screen.getByTestId("evidence-feed").getAttribute("data-search-query"))
+      .toBe(normalizedQuery);
+  });
+
+  it("discards an unavailable student-scoped capture with a safe message", async () => {
+    mocks.getClassRosterReadinessForWorkspace.mockResolvedValue({
+      readyForClassFirstRoster: true,
+    });
+
+    render(
+      await FeedPage({
+        searchParams: Promise.resolve({ student: "student_outside_workspace" }),
+      })
+    );
+
+    const feed = screen.getByTestId("evidence-feed");
+    expect(feed.getAttribute("data-capture-student-id")).toBeNull();
+    expect(feed.getAttribute("data-capture-student-error")).toBe(
+      "That student is not available for capture. Mention an active student instead."
     );
   });
 
@@ -138,8 +232,9 @@ describe("authenticated app routing", () => {
     });
     mocks.getEvidenceFeedPageForWorkspace.mockResolvedValue({
       records: [],
-      page: 4,
-      hasNewer: true,
+      page: 1,
+      totalMatches: 2,
+      hasNewer: false,
       hasOlder: false,
     });
 
@@ -149,8 +244,9 @@ describe("authenticated app routing", () => {
           page: "4",
           filter: "validated",
           q: "reading",
+          student: "student_1",
         }),
       })
-    ).rejects.toThrow("redirect:/app/feed?filter=validated&q=reading");
+    ).rejects.toThrow("redirect:/app/feed?q=reading");
   });
 });

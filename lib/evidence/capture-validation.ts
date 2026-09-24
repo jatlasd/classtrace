@@ -1,9 +1,5 @@
 import { normalizeTag } from "@/lib/format-tag";
-import {
-  draftToDisplay,
-  NOTE_TYPE_LABELS,
-  type DraftDisplay,
-} from "@/lib/note-processing/draft-to-display";
+import { draftToDisplay, type DraftDisplay } from "@/lib/note-processing/draft-to-display";
 import type { NoteDraft } from "@/lib/note-processing/types";
 import {
   mentionDisplayLabel,
@@ -227,5 +223,3 @@ export function resolveCaptureDisplay(
     validationStatus: "validated",
   };
 }
-
-export const NOTE_TYPE_OPTIONS = Object.values(NOTE_TYPE_LABELS);

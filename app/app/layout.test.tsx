@@ -5,6 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   getCurrentAppWorkspace: vi.fn(),
+  listActiveRosterStudentsForWorkspace: vi.fn(),
 }));
 
 vi.mock("@/components/dashboard/app-shell-navigation", () => ({
@@ -16,6 +17,10 @@ vi.mock("@/components/auth/class-trace-clerk-provider", () => ({
 }));
 vi.mock("@/lib/auth/get-current-workspace", () => ({
   getCurrentAppWorkspace: mocks.getCurrentAppWorkspace,
+}));
+vi.mock("@/lib/students/roster-students", () => ({
+  listActiveRosterStudentsForWorkspace:
+    mocks.listActiveRosterStudentsForWorkspace,
 }));
 
 import AppLayout from "@/app/app/layout";
@@ -30,6 +35,7 @@ describe("authenticated app layout", () => {
       teacherProfileId: "teacher_1",
       workspaceId: "workspace_1",
     });
+    mocks.listActiveRosterStudentsForWorkspace.mockResolvedValue([]);
   });
 
   it("keeps the shared footer after a flexing main region", async () => {
@@ -48,7 +54,7 @@ describe("authenticated app layout", () => {
     expect(shell?.classList.contains("min-h-dvh")).toBe(true);
     expect(shell?.classList.contains("flex-col")).toBe(true);
     expect(workspace?.classList.contains("app-shell-workspace")).toBe(true);
-    expect(workspace?.classList.contains("pb-20")).toBe(true);
+    expect(workspace?.classList.contains("pb-20")).toBe(false);
     expect(main.classList.contains("flex-1")).toBe(true);
     expect(main.nextElementSibling).toBe(footer);
     expect(
@@ -56,5 +62,8 @@ describe("authenticated app layout", () => {
     ).toBeTruthy();
     expect(screen.queryByRole("link", { name: "Sign in" })).toBeNull();
     expect(mocks.getCurrentAppWorkspace).toHaveBeenCalledTimes(1);
+    expect(mocks.listActiveRosterStudentsForWorkspace).toHaveBeenCalledWith(
+      "workspace_1"
+    );
   });
 });

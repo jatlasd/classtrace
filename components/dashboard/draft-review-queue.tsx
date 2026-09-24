@@ -250,7 +250,7 @@ export function DraftReviewQueue({
           tabIndex={-1}
           aria-label="Dismiss drafts to review"
           onClick={closeQueue}
-          className="fixed inset-0 z-40 bg-fg/35 sm:bg-transparent"
+          className="fixed inset-0 z-[70] bg-fg/35 sm:bg-transparent"
         />
         <section
           ref={dialogRef}
@@ -259,7 +259,7 @@ export function DraftReviewQueue({
           role="dialog"
           aria-modal="true"
           aria-labelledby={titleId}
-          className="fixed inset-x-0 bottom-0 z-50 flex max-h-[88dvh] flex-col rounded-t-3xl border-t border-line bg-plate pb-[env(safe-area-inset-bottom)] shadow-lift sm:inset-x-auto sm:bottom-auto sm:right-[var(--draft-queue-right)] sm:top-[var(--draft-queue-top)] sm:max-h-[var(--draft-queue-max-height)] sm:w-[min(42rem,calc(100vw-3rem))] sm:rounded-xl sm:border sm:pb-0"
+          className="fixed inset-x-0 bottom-0 z-[80] flex max-h-[88dvh] flex-col rounded-t-3xl border-t border-line bg-plate pb-[env(safe-area-inset-bottom)] shadow-lift sm:inset-x-auto sm:bottom-auto sm:right-[var(--draft-queue-right)] sm:top-[var(--draft-queue-top)] sm:max-h-[var(--draft-queue-max-height)] sm:w-[min(42rem,calc(100vw-3rem))] sm:rounded-xl sm:border sm:pb-0"
         >
             <header className="flex shrink-0 items-center justify-between gap-4 border-b border-line px-4 py-3 sm:px-5">
               <div>

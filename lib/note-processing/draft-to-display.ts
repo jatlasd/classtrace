@@ -4,6 +4,7 @@ import {
 } from "@/lib/students/student-mention-display";
 import { resolveStudentMentionsFromRoster } from "@/lib/students/roster-display-bridge";
 import type { CaptureRosterStudent } from "@/lib/students/resolve-capture-students";
+import { getSavedEvidenceClassificationByParserKey } from "@/lib/evidence/evidence-classifications";
 import { isFieldApplicable } from "./field-applicability";
 import { buildEvidenceNotePrefill } from "./build-evidence-note-prefill";
 import type { MatchResult, NoteDraft } from "./types";
@@ -21,17 +22,6 @@ export type DraftDisplay = {
   summaryLine: string;
 };
 
-export const NOTE_TYPE_LABELS: Record<string, string> = {
-  academic_check_in: "Academic check-in",
-  behavior_observation: "Behavior observation",
-  communication_log: "Communication log",
-  accommodation_log: "Accommodation log",
-  assessment_observation: "Assessment observation",
-  progress_monitoring: "Progress monitoring",
-  general_observation: "General observation",
-  unclear: "Unclear",
-};
-
 function formatValue(value: string): string {
   if (value === "unclear" || value === "not_applicable") return "";
   return value.replace(/_/g, " ");
@@ -46,8 +36,10 @@ function isVisibleMatch(match: MatchResult): boolean {
 }
 
 function evidenceTypeLabel(draft: NoteDraft): string {
+  if (draft.noteType.value === "unclear") return "Unclear";
+
   return (
-    NOTE_TYPE_LABELS[draft.noteType.value] ??
+    getSavedEvidenceClassificationByParserKey(draft.noteType.value)?.label ??
     formatValue(draft.noteType.value)
   );
 }

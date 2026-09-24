@@ -145,6 +145,9 @@ Before Capture, text exists only in component state. After Capture, an unvalidat
 The storage helpers reject malformed, mismatched, oversized, or expired data and cap draft count/size. Photo bytes are normalized and metadata-stripped locally, encrypted with a session-scoped key, and stored only in IndexedDB until validation. A draft is removed after successful validation or explicit deletion. Raw notes and unvalidated photos must not use `localStorage`, PostgreSQL, server draft storage, logs, exports, timelines, reports, analytics, or telemetry.
 
 Sign-out waits for current-tab draft cleanup and broadcasts a content-free signal so every other open teacher-product tab clears its own session manifest and photo key before the account session ends.
+The authenticated shell may read and display only the current tab's pending
+draft count. Same-tab updates use a content-free browser event; draft text and
+photo data remain inside the approved temporary stores.
 
 ### Permanent evidence boundary
 
@@ -280,8 +283,12 @@ These limits protect resource usage and database hygiene; they are not substitut
 
 ## Feed and reporting
 
-- The global evidence feed reads at most 50 records plus one lookahead row and exposes explicit newer/older page navigation.
-- Feed search and filter state is represented in the URL; it filters the currently loaded page and survives refresh/back navigation.
+- The global evidence feed applies its bounded free-text query inside the
+  authenticated workspace predicate, counts the same predicate, and reads at
+  most 20 records per page.
+- Applied Feed search and page state is represented in the URL and survives
+  refresh/back navigation. Search and pagination exclude archived evidence and
+  evidence for archived students before count, skip, and take.
 - Explore Evidence uses a versioned direct filter with only result view,
   student IDs, normalized tag any/all/exclude values, one local-calendar date
   rule, class IDs, and a photo-presence rule. Unsaved filter edits remain client

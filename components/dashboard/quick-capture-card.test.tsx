@@ -64,6 +64,12 @@ describe("QuickCaptureCard mentions editor", () => {
         .disabled
     ).toBe(true);
     expect(screen.getByText("Restoring drafts before capture opens…")).toBeTruthy();
+    expect(
+      screen.getByRole("button", { name: "Take photo with camera" })
+    ).toBeTruthy();
+    expect(
+      screen.getByRole("button", { name: "Choose photo from library" })
+    ).toBeTruthy();
   });
 
   it("keeps the input and highlight layers on identical text metrics", () => {
@@ -94,6 +100,41 @@ describe("QuickCaptureCard mentions editor", () => {
     expect(input.style.lineHeight).toBe("34px");
   });
 
+  it("starts with a validated student mention selected and focuses the composer", async () => {
+    const { container } = render(
+      <QuickCaptureCard
+        rosterStudents={roster}
+        initialStudent={roster[0]}
+        onDraft={vi.fn()}
+      />
+    );
+
+    const input = screen.getByLabelText("What happened?") as HTMLTextAreaElement;
+    await waitFor(() => expect(document.activeElement).toBe(input));
+    expect(input.value).toBe("@mary ");
+    expect(screen.getByText("Ready to capture for Mary.")).toBeTruthy();
+    expect(container.querySelector(".quick-capture-mentions strong")).toBeTruthy();
+  });
+
+  it("shows a safe message when a requested student was not available", () => {
+    render(
+      <QuickCaptureCard
+        rosterStudents={roster}
+        initialStudentError="That student is not available for capture. Mention an active student instead."
+        onDraft={vi.fn()}
+      />
+    );
+
+    expect(
+      screen.getByText(
+        "That student is not available for capture. Mention an active student instead."
+      ).className
+    ).toContain("text-danger");
+    expect((screen.getByLabelText("What happened?") as HTMLTextAreaElement).value).toBe(
+      ""
+    );
+  });
+
   it("selects a mention without changing its text width", async () => {
     const { container } = render(
       <QuickCaptureCard rosterStudents={roster} onDraft={vi.fn()} />
@@ -113,6 +154,30 @@ describe("QuickCaptureCard mentions editor", () => {
     expect(mention).toBeTruthy();
     expect((mention as HTMLElement).style.fontWeight).toBe("inherit");
     expect((mention as HTMLElement).style.backgroundColor).toContain("var(--live-soft)");
+  });
+
+  it("suggests existing workspace tags with prefix matches first", async () => {
+    render(
+      <QuickCaptureCard
+        rosterStudents={roster}
+        tagSuggestions={["independent", "reflection", "reading"]}
+        onDraft={vi.fn()}
+      />
+    );
+    const input = screen.getByLabelText("What happened?") as HTMLTextAreaElement;
+
+    fireEvent.change(input, { target: { value: "@Mary practiced #re" } });
+    input.setSelectionRange(input.value.length, input.value.length);
+    fireEvent.select(input);
+
+    const options = await screen.findAllByRole("option");
+    expect(options.map((option) => option.textContent)).toEqual([
+      "reading",
+      "reflection",
+    ]);
+
+    fireEvent.click(options[0]);
+    expect(input.value).toContain("#reading ");
   });
 
   it("captures one unresolved handle for later review", async () => {
@@ -157,7 +222,7 @@ describe("QuickCaptureCard mentions editor", () => {
     vi.stubGlobal("fetch", networkRequest);
     render(<QuickCaptureCard rosterStudents={roster} onDraft={onDraft} />);
 
-    fireEvent.change(screen.getByLabelText(photoInputLabel), {
+    fireEvent.change(screen.getByLabelText(photoInputLabel, { selector: "input" }), {
       target: {
         files: [new File([new Uint8Array([9])], "work-sample.png", { type: "image/png" })],
       },

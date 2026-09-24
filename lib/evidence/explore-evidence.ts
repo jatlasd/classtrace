@@ -681,7 +681,7 @@ export async function getExploreEvidenceOptionsForWorkspace(
   const [students, classes, tags] = await Promise.all([
     database.listActiveStudents(workspaceId),
     database.listReferencedClasses(workspaceId, activeEvidenceWhere),
-    database.listActiveTags(workspaceId, INPUT_LIMITS.exploreTagOptions),
+    listExistingEvidenceTagsForWorkspace(workspaceId, database),
   ]);
 
   return {
@@ -702,8 +702,20 @@ export async function getExploreEvidenceOptionsForWorkspace(
         ...(classGroup.archivedAt ? { description: "Archived class" } : {}),
       })
     ),
-    tags: [...new Set(tags.map((tag) => normalizeTag(tag).trim().toLowerCase()))]
-      .filter(Boolean)
-      .map((tag) => ({ id: tag, label: `#${tag}` })),
+    tags: tags.map((tag) => ({ id: tag, label: `#${tag}` })),
   };
+}
+
+export async function listExistingEvidenceTagsForWorkspace(
+  workspaceId: string,
+  database: Pick<ExploreEvidenceDatabase, "listActiveTags"> =
+    exploreEvidenceDatabase
+): Promise<string[]> {
+  const tags = await database.listActiveTags(
+    workspaceId,
+    INPUT_LIMITS.exploreTagOptions
+  );
+
+  return [...new Set(tags.map((tag) => normalizeTag(tag).trim().toLowerCase()))]
+    .filter(Boolean);
 }

@@ -12,6 +12,7 @@ import {
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
+  push: vi.fn(),
   refresh: vi.fn(),
   saveValidatedEvidence: vi.fn(),
 }));
@@ -23,8 +24,9 @@ const photoMocks = vi.hoisted(() => ({
 }));
 
 vi.mock("next/navigation", () => ({
-  useRouter: () => ({ refresh: mocks.refresh }),
+  useRouter: () => ({ push: mocks.push, refresh: mocks.refresh }),
 }));
+vi.mock("next/link", () => ({ default: "a" }));
 
 vi.mock("@/actions/evidence", () => ({
   deleteEvidence: vi.fn(),
@@ -100,21 +102,40 @@ afterEach(() => {
 });
 
 describe("EvidenceFeed capture review", () => {
-  function renderFeed(initialFilter = "", records = [] as typeof savedRecord[]) {
-    render(
+  type FeedRetrievalState = {
+    page?: number;
+    totalMatches?: number;
+    hasNewer?: boolean;
+    hasOlder?: boolean;
+    query?: string;
+  };
+
+  function feedElement(
+    records = [] as typeof savedRecord[],
+    retrieval: FeedRetrievalState = {}
+  ) {
+    return (
       <EvidenceFeed
         workspaceId="workspace_test"
         workspaceCreatedAt="2026-06-01T12:00:00.000Z"
         rosterStudents={roster}
         classGroups={[{ id: "class_reading", name: "Reading" }]}
         initialEvidenceRecords={records}
-        evidencePage={1}
-        hasNewerEvidence={false}
-        hasOlderEvidence={false}
-        initialFilter={initialFilter}
-        initialSearchQuery=""
+        evidencePage={retrieval.page ?? 1}
+        totalMatches={retrieval.totalMatches ?? records.length}
+        hasNewerEvidence={retrieval.hasNewer ?? false}
+        hasOlderEvidence={retrieval.hasOlder ?? false}
+        initialSearchQuery={retrieval.query ?? ""}
+        tagSuggestions={["reading", "independent"]}
       />
     );
+  }
+
+  function renderFeed(
+    records = [] as typeof savedRecord[],
+    retrieval: FeedRetrievalState = {}
+  ) {
+    return render(feedElement(records, retrieval));
   }
 
   async function finishDraftHydration() {
@@ -572,7 +593,13 @@ describe("EvidenceFeed capture review", () => {
 
   it("does not steal focus from the navigation dialog during passive expiry", async () => {
     renderFeed();
-    render(<AppShellDrawer isSigningOut={false} onSignOut={vi.fn()} />);
+    render(
+      <AppShellDrawer
+        pathname="/app/feed"
+        isSigningOut={false}
+        onSignOut={vi.fn()}
+      />
+    );
     await finishDraftHydration();
     await capture("@Mary used a reading strategy independently #reading");
 
@@ -596,8 +623,8 @@ describe("EvidenceFeed capture review", () => {
     expect(document.activeElement).not.toBe(screen.getByLabelText("What happened?"));
   });
 
-  it("reports a save in a toast while keeping it separate from feed filtering", async () => {
-    renderFeed("needs_review", [savedRecord]);
+  it("reports a save in a toast while keeping it separate from saved results", async () => {
+    renderFeed([savedRecord]);
     await finishDraftHydration();
     await capture("@Mary used a reading strategy independently #reading");
     const dialog = await openQueueFromToast();
@@ -619,7 +646,7 @@ describe("EvidenceFeed capture review", () => {
 
     expect(await screen.findByText("Saved to Mary's trace.")).toBeTruthy();
     expect(screen.queryByRole("button", { name: /Drafts to review/ })).toBeNull();
-    expect(screen.queryByLabelText(/Saved evidence for Mary/)).toBeNull();
+    expect(screen.getByLabelText(/Saved evidence for Mary/)).toBeTruthy();
     expect(
       screen.getByRole("link", { name: "Open trace" }).getAttribute("href")
     ).toBe("/app/students/student_mary");
@@ -650,5 +677,120 @@ describe("EvidenceFeed capture review", () => {
 
     expect(screen.queryByRole("dialog", { name: "Drafts to review" })).toBeNull();
     expect(document.activeElement).toBe(trigger);
+  });
+
+  it("submits normalized search state without changing results while typing", () => {
+    renderFeed([savedRecord]);
+    const search = screen.getByRole("searchbox", {
+      name: "Search all saved evidence",
+    });
+
+    fireEvent.change(search, { target: { value: "  fractions  " } });
+    expect(mocks.push).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole("button", { name: "Search" }));
+
+    expect(mocks.push).toHaveBeenCalledWith(
+      "/app/feed?q=fractions#evidence-inbox-heading"
+    );
+  });
+
+  it("distinguishes an empty feed from a search with no matches", () => {
+    const view = renderFeed();
+    expect(screen.getByText(/0 saved observations/)).toBeTruthy();
+    expect(
+      screen.getByRole("heading", { name: "No saved evidence yet" })
+    ).toBeTruthy();
+
+    view.rerender(
+      feedElement([], { totalMatches: 0, query: "fractions" })
+    );
+    expect(screen.getByText(/0 matching observations/)).toBeTruthy();
+    expect(
+      screen.getByRole("heading", { name: "No saved evidence matches" })
+    ).toBeTruthy();
+    expect(
+      screen.getByRole("link", { name: "Clear search" }).getAttribute("href")
+    ).toBe("/app/feed#evidence-inbox-heading");
+  });
+
+  it("renders two descriptive pagers with canonical query-preserving links", () => {
+    renderFeed([savedRecord], {
+      page: 2,
+      totalMatches: 60,
+      hasNewer: true,
+      hasOlder: true,
+      query: "reading",
+    });
+
+    expect(
+      screen.getByRole("navigation", {
+        name: "Evidence pages by results heading",
+      })
+    ).toBeTruthy();
+    expect(
+      screen.getByRole("navigation", { name: "Evidence pages after results" })
+    ).toBeTruthy();
+    for (const link of screen.getAllByRole("link", {
+      name: "Newer evidence, page 1",
+    })) {
+      expect(link.getAttribute("href")).toBe(
+        "/app/feed?q=reading#evidence-inbox-heading"
+      );
+    }
+    for (const link of screen.getAllByRole("link", {
+      name: "Older evidence, page 3",
+    })) {
+      expect(link.getAttribute("href")).toBe(
+        "/app/feed?page=3&q=reading#evidence-inbox-heading"
+      );
+    }
+  });
+
+  it("focuses and announces the result heading after explicit pagination", async () => {
+    const view = renderFeed([savedRecord], {
+      page: 2,
+      totalMatches: 60,
+      hasNewer: true,
+      hasOlder: true,
+      query: "reading",
+    });
+    const olderLink = screen.getAllByRole("link", {
+      name: "Older evidence, page 3",
+    })[0];
+    olderLink.addEventListener("click", (event) => event.preventDefault(), {
+      once: true,
+    });
+    fireEvent.click(olderLink);
+
+    view.rerender(
+      feedElement([savedRecord], {
+        page: 3,
+        totalMatches: 60,
+        hasNewer: true,
+        hasOlder: false,
+        query: "reading",
+      })
+    );
+
+    const heading = screen.getByRole("heading", { name: "All evidence" });
+    await waitFor(() => expect(document.activeElement).toBe(heading));
+    expect(screen.getByRole("status").textContent).toContain(
+      "60 matching observations. Page 3."
+    );
+  });
+
+  it("restores the applied search field when route props change", async () => {
+    const view = renderFeed([savedRecord], {
+      totalMatches: 1,
+      query: "reading",
+    });
+    expect(
+      (screen.getByRole("searchbox") as HTMLInputElement).value
+    ).toBe("reading");
+
+    view.rerender(feedElement([savedRecord], { totalMatches: 1, query: "" }));
+    await waitFor(() =>
+      expect((screen.getByRole("searchbox") as HTMLInputElement).value).toBe("")
+    );
   });
 });

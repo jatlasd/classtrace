@@ -113,6 +113,26 @@ describe("InterpretationReviewPanel", () => {
     expect(screen.queryByLabelText("Evidence note")).toBeNull();
   });
 
+  it("offers only durable saved classifications in the evidence type picker", () => {
+    render(<PanelHarness />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Edit note or details" }));
+    const evidenceType = screen.getByLabelText(
+      "Evidence type"
+    ) as HTMLSelectElement;
+
+    expect([...evidenceType.options].map((option) => option.value)).toEqual([
+      "",
+      "Academic check-in",
+      "Behavior observation",
+      "Communication log",
+      "Accommodation log",
+      "Assessment observation",
+      "Progress monitoring",
+      "General observation",
+    ]);
+  });
+
   it("reports the current reviewed note and filing projection", async () => {
     const onReviewProjectionChange = vi.fn();
     render(<PanelHarness onReviewProjectionChange={onReviewProjectionChange} />);

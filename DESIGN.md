@@ -113,7 +113,7 @@ Key characteristics:
 - Warm ivory page ground, aubergine ink hierarchy, and focused amber state.
 - Rounded plates for active or contained work and wells for inset controls.
 - A line-and-node trace for chronological saved evidence.
-- A sticky top shell, desktop text navigation, and mobile bottom navigation.
+- A sticky top shell, desktop text navigation, and compact mobile menu navigation.
 - Explicit teacher review between a provisional capture and a saved record.
 
 ## Color and state
@@ -177,17 +177,16 @@ on every viewport. The shell is not sidebar-based. Sign-in, beta
 acknowledgement, and operator routes use their own focused layouts.
 
 - At `lg`, the brand mark sits at the left, the four text-led destinations are
-  centered across the header, and Sign out sits at the right. Active navigation
-  uses foreground text plus a small amber dot.
-- Below `lg`, primary navigation is a fixed four-item bottom tab bar with icons
-  and labels. Capture uses the amber circular affordance; other active items use
-  ink and a white plate treatment.
-- The top-right mobile menu opens a rounded bottom sheet for trust/support links
-  and Sign out. It is not the primary navigation.
+  centered across the header, with the student quick-jump and Sign out at the
+  right. Active navigation uses foreground text plus a small amber dot.
+- Below `lg`, the top-right menu opens a rounded bottom sheet containing the
+  four primary destinations, the student quick-jump, trust/support links, and
+  Sign out. Capture remains the first, directly reachable destination.
 - Primary order is Capture, Explore, Students, Settings. Student timelines and
   reports keep Students active without becoming global destinations.
-- The shell header is 56px on mobile and 72px at desktop. Mobile workspace
-  content reserves space for the bottom tab bar.
+- The shell header is 56px on mobile and 72px at desktop. The menu and other
+  modal surfaces account for safe areas without reserving permanent workspace
+  space.
 
 Content widths are intentionally focused:
 
@@ -264,7 +263,7 @@ form: the exact Evidence note leads, with student, date, optional photo state,
 and a concise filing result visible before approval. “Approve and save” is the
 ink-solid commit action. Detailed fields remain behind progressive editing;
 unsaveable or semantically unresolved drafts expose correction directly.
-Successful save confirmation is a transient toast, separate from feed filters,
+Successful save confirmation is a transient toast, separate from feed retrieval,
 with a direct path to the student's trace.
 
 ### Saved evidence trace
@@ -303,7 +302,11 @@ bulk paste and class settings use ruled disclosure rows below it.
 
 A student page is a focused 880px trace. The student's name is the dominant
 heading, followed by record count/date span and direct report/export/capture
-actions. Saved evidence is grouped by month and connected with the trace motif.
+actions. A low-emphasis retrieval band provides direct text search and a
+collapsed filter disclosure for type, student-specific tags, and teacher-local
+dates. Applied state lives in the URL, while unsubmitted filter edits stay
+local. Results remain grouped by month and connected with the trace motif, with
+compact pagination beside and below the trace when needed.
 The printable report uses ruled rows and removes app chrome and interactive
 trace decoration.
 
@@ -333,8 +336,10 @@ that invent capabilities, or decorative classroom imagery.
 - Every field has a persistent accessible label. Placeholder copy is only a
   hint. Invalid fields pair Danger styling with adjacent error text.
 - Evidence notes use primary ink and comfortable leading. Evidence type is the
-  one bordered detail pill; tags and other structured details are compact text,
-  not colorful chips. Follow-up uses an amber semantic left rule.
+  one neutral bordered detail pill, pairing a stable classification icon with
+  its label; unknown historical strings use a neutral tag icon and retain their
+  text. Tags and other structured details are compact text, not colorful chips.
+  Follow-up uses an amber semantic left rule.
 - Photos are rounded Well-backed thumbnails or bounded uncropped work samples.
   Expansion opens an ink backdrop, traps focus at the close action, supports
   Escape/backdrop close, and returns focus to the thumbnail.

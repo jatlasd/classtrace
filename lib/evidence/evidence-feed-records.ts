@@ -1,48 +1,10 @@
 import "server-only";
 
 import { prisma } from "@/lib/db/prisma";
+import { normalizeTag } from "@/lib/format-tag";
+import type { Prisma } from "@/lib/generated/prisma/client";
 
-type EvidenceFeedFindManyArgs = {
-  skip: number;
-  take: number;
-  where: {
-    workspaceId: string;
-    archivedAt: null;
-    rosterStudent: {
-      archivedAt: null;
-    };
-  };
-  orderBy: [{ evidenceDate: "desc" }, { createdAt: "desc" }];
-  select: {
-    id: true;
-    rosterStudentId: true;
-    evidenceDate: true;
-    evidenceNote: true;
-    summary: true;
-    evidenceType: true;
-    topic: true;
-    performance: true;
-    behavior: true;
-    tags: true;
-    followUpNeeded: true;
-    followUpNotes: true;
-    validatedAt: true;
-    createdAt: true;
-    rosterStudent: {
-      select: {
-        id: true;
-        displayName: true;
-        mentionHandle: true;
-      };
-    };
-    classGroup: {
-      select: {
-        name: true;
-      };
-    };
-    photo: { select: { id: true; width: true; height: true } };
-  };
-};
+type EvidenceFeedWhere = Prisma.EvidenceRecordWhereInput;
 
 type EvidenceFeedRecordFromDatabase = {
   id: string;
@@ -64,18 +26,17 @@ type EvidenceFeedRecordFromDatabase = {
     displayName: string;
     mentionHandle: string;
   };
-  classGroup: {
-    name: string;
-  } | null;
+  classGroup: { name: string } | null;
   photo?: { id: string; width: number; height: number } | null;
 };
 
 export type EvidenceFeedDatabase = {
-  evidenceRecord: {
-    findMany(
-      args: EvidenceFeedFindManyArgs
-    ): Promise<EvidenceFeedRecordFromDatabase[]>;
-  };
+  countEvidence(where: EvidenceFeedWhere): Promise<number>;
+  listEvidence(
+    where: EvidenceFeedWhere,
+    skip: number,
+    take: number
+  ): Promise<EvidenceFeedRecordFromDatabase[]>;
 };
 
 export type EvidenceFeedRecord = {
@@ -101,20 +62,62 @@ export type EvidenceFeedRecord = {
   createdAt: string;
 };
 
+export type EvidenceFeedInput = {
+  page: number;
+  query: string;
+};
+
 export type EvidenceFeedPage = {
   records: EvidenceFeedRecord[];
   page: number;
+  totalMatches: number;
   hasNewer: boolean;
   hasOlder: boolean;
 };
 
-export const EVIDENCE_FEED_PAGE_SIZE = 50;
+export const EVIDENCE_FEED_PAGE_SIZE = 20;
 export const MAX_EVIDENCE_FEED_PAGE = 10_000;
 
-const evidenceFeedDatabase: EvidenceFeedDatabase = {
-  evidenceRecord: {
-    findMany: (args) => prisma.evidenceRecord.findMany(args),
+const evidenceSelect = {
+  id: true,
+  rosterStudentId: true,
+  evidenceDate: true,
+  evidenceNote: true,
+  summary: true,
+  evidenceType: true,
+  topic: true,
+  performance: true,
+  behavior: true,
+  tags: true,
+  followUpNeeded: true,
+  followUpNotes: true,
+  validatedAt: true,
+  createdAt: true,
+  rosterStudent: {
+    select: {
+      id: true,
+      displayName: true,
+      mentionHandle: true,
+    },
   },
+  classGroup: { select: { name: true } },
+  photo: { select: { id: true, width: true, height: true } },
+} as const;
+
+const evidenceFeedDatabase: EvidenceFeedDatabase = {
+  countEvidence: (where) => prisma.evidenceRecord.count({ where }),
+  listEvidence: (where, skip, take) =>
+    prisma.evidenceRecord.findMany({
+      skip,
+      take,
+      where,
+      orderBy: [
+        { evidenceDate: "desc" },
+        { createdAt: "desc" },
+        { id: "desc" },
+      ],
+      select: evidenceSelect,
+    }),
 };
 
 function optionalText(value: string | null): string | undefined {
@@ -150,89 +153,110 @@ function toFeedRecord(record: EvidenceFeedRecordFromDatabase): EvidenceFeedRecor
   const summary = optionalText(record.summary);
   const evidenceType = optionalText(record.evidenceType);
 
-  if (classGroupName) {
-    feedRecord.classGroupName = classGroupName;
-  }
-  if (evidenceNote) {
-    feedRecord.evidenceNote = evidenceNote;
-  }
-  if (summary) {
-    feedRecord.summary = summary;
-  }
-  if (evidenceType) {
-    feedRecord.evidenceType = evidenceType;
-  }
-  if (topic) {
-    feedRecord.topic = topic;
-  }
-  if (performance) {
-    feedRecord.performance = performance;
-  }
-  if (behavior) {
-    feedRecord.behavior = behavior;
-  }
-  if (followUpNotes) {
-    feedRecord.followUpNotes = followUpNotes;
-  }
+  if (classGroupName) feedRecord.classGroupName = classGroupName;
+  if (evidenceNote) feedRecord.evidenceNote = evidenceNote;
+  if (summary) feedRecord.summary = summary;
+  if (evidenceType) feedRecord.evidenceType = evidenceType;
+  if (topic) feedRecord.topic = topic;
+  if (performance) feedRecord.performance = performance;
+  if (behavior) feedRecord.behavior = behavior;
+  if (followUpNotes) feedRecord.followUpNotes = followUpNotes;
 
   return feedRecord;
 }
 
-export async function getEvidenceFeedPageForWorkspace(
+function substring(value: string) {
+  return { contains: value, mode: "insensitive" as const };
+}
+
+export function buildEvidenceFeedWhere(
   workspaceId: string,
-  page = 1,
-  database: EvidenceFeedDatabase = evidenceFeedDatabase
-): Promise<EvidenceFeedPage> {
-  const safePage =
-    Number.isSafeInteger(page) && page > 0 && page <= MAX_EVIDENCE_FEED_PAGE
-      ? page
-      : 1;
-  const records = await database.evidenceRecord.findMany({
-    skip: (safePage - 1) * EVIDENCE_FEED_PAGE_SIZE,
-    take: EVIDENCE_FEED_PAGE_SIZE + 1,
-    where: {
+  query: string
+): EvidenceFeedWhere {
+  const activeEvidence: EvidenceFeedWhere = {
+    workspaceId,
+    archivedAt: null,
+    rosterStudent: {
       workspaceId,
       archivedAt: null,
-      rosterStudent: {
-        archivedAt: null,
-      },
     },
-    orderBy: [{ evidenceDate: "desc" }, { createdAt: "desc" }],
-    select: {
-      id: true,
-      rosterStudentId: true,
-      evidenceDate: true,
-      evidenceNote: true,
-      summary: true,
-      evidenceType: true,
-      topic: true,
-      performance: true,
-      behavior: true,
-      tags: true,
-      followUpNeeded: true,
-      followUpNotes: true,
-      validatedAt: true,
-      createdAt: true,
-      rosterStudent: {
-        select: {
-          id: true,
-          displayName: true,
-          mentionHandle: true,
+  };
+  const trimmedQuery = query.trim();
+
+  if (!trimmedQuery) return activeEvidence;
+
+  if (trimmedQuery.startsWith("@")) {
+    const handle = trimmedQuery.slice(1).trim();
+    return handle
+      ? {
+          ...activeEvidence,
+          rosterStudent: {
+            workspaceId,
+            archivedAt: null,
+            mentionHandle: substring(handle),
+          },
+        }
+      : activeEvidence;
+  }
+
+  if (trimmedQuery.startsWith("#")) {
+    const tag = normalizeTag(trimmedQuery).toLowerCase();
+    return tag ? { ...activeEvidence, tags: { has: tag } } : activeEvidence;
+  }
+
+  const normalizedTag = normalizeTag(trimmedQuery).toLowerCase();
+  return {
+    ...activeEvidence,
+    OR: [
+      { evidenceNote: substring(trimmedQuery) },
+      { summary: substring(trimmedQuery) },
+      {
+        rosterStudent: {
+          workspaceId,
+          archivedAt: null,
+          OR: [
+            { displayName: substring(trimmedQuery) },
+            { mentionHandle: substring(trimmedQuery) },
+          ],
         },
       },
-      classGroup: {
-        select: {
-          name: true,
-        },
-      },
-      photo: { select: { id: true, width: true, height: true } },
-    },
-  });
+      { classGroup: { name: substring(trimmedQuery) } },
+      { evidenceType: substring(trimmedQuery) },
+      { topic: substring(trimmedQuery) },
+      { performance: substring(trimmedQuery) },
+      { behavior: substring(trimmedQuery) },
+      { followUpNotes: substring(trimmedQuery) },
+      { tags: { has: normalizedTag } },
+    ],
+  };
+}
+
+export async function getEvidenceFeedPageForWorkspace(
+  workspaceId: string,
+  input: EvidenceFeedInput,
+  database: EvidenceFeedDatabase = evidenceFeedDatabase
+): Promise<EvidenceFeedPage> {
+  const requestedPage =
+    Number.isSafeInteger(input.page) &&
+    input.page > 0 &&
+    input.page <= MAX_EVIDENCE_FEED_PAGE
+      ? input.page
+      : 1;
+  const where = buildEvidenceFeedWhere(workspaceId, input.query);
+  const totalMatches = await database.countEvidence(where);
+  const lastPage = Math.max(1, Math.ceil(totalMatches / EVIDENCE_FEED_PAGE_SIZE));
+  const page = requestedPage <= lastPage ? requestedPage : 1;
+  const records = await database.listEvidence(
+    where,
+    (page - 1) * EVIDENCE_FEED_PAGE_SIZE,
+    EVIDENCE_FEED_PAGE_SIZE
+  );
 
   return {
-    records: records.slice(0, EVIDENCE_FEED_PAGE_SIZE).map(toFeedRecord),
-    page: safePage,
-    hasNewer: safePage > 1,
-    hasOlder: records.length > EVIDENCE_FEED_PAGE_SIZE,
+    records: records.map(toFeedRecord),
+    page,
+    totalMatches,
+    hasNewer: page > 1,
+    hasOlder: page * EVIDENCE_FEED_PAGE_SIZE < totalMatches,
   };
 }

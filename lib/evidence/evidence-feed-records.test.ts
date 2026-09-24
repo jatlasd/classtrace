@@ -4,24 +4,31 @@ vi.mock("server-only", () => ({}));
 vi.mock("@/lib/db/prisma", () => ({
   prisma: {
     evidenceRecord: {
+      count: vi.fn(),
       findMany: vi.fn(),
     },
   },
 }));
 
 import {
+  buildEvidenceFeedWhere,
   EVIDENCE_FEED_PAGE_SIZE,
   getEvidenceFeedPageForWorkspace,
   MAX_EVIDENCE_FEED_PAGE,
   type EvidenceFeedDatabase,
 } from "@/lib/evidence/evidence-feed-records";
 
+type EvidenceWhere = Parameters<EvidenceFeedDatabase["countEvidence"]>[0];
+type DatabaseRecord = Awaited<
+  ReturnType<EvidenceFeedDatabase["listEvidence"]>
+>[number];
+
 function buildRecord(overrides?: {
   id?: string;
   evidenceDate?: Date;
   createdAt?: Date;
   classGroup?: { name: string } | null;
-}) {
+}): DatabaseRecord {
   return {
     id: overrides?.id ?? "evidence_1",
     rosterStudentId: "student_mary",
@@ -42,143 +49,170 @@ function buildRecord(overrides?: {
       displayName: "Mary",
       mentionHandle: "mary",
     },
-    classGroup: overrides?.classGroup === undefined
-      ? { name: "Reading group" }
-      : overrides.classGroup,
+    classGroup:
+      overrides?.classGroup === undefined
+        ? { name: "Reading group" }
+        : overrides.classGroup,
     photo: null,
   };
 }
 
-function buildDatabase(records = [buildRecord()]) {
-  const calls: unknown[] = [];
-  const database = {
-    evidenceRecord: {
-      findMany: async (args) => {
-        calls.push(args);
-        return records;
-      },
+function buildDatabase(
+  records = [buildRecord()],
+  totalMatches = records.length
+) {
+  const calls = {
+    count: [] as EvidenceWhere[],
+    list: [] as { where: EvidenceWhere; skip: number; take: number }[],
+  };
+  const database: EvidenceFeedDatabase = {
+    countEvidence: async (where) => {
+      calls.count.push(where);
+      return totalMatches;
     },
-  } satisfies EvidenceFeedDatabase;
+    listEvidence: async (where, skip, take) => {
+      calls.list.push({ where, skip, take });
+      return records;
+    },
+  };
 
   return { database, calls };
 }
 
-describe("getEvidenceFeedPageForWorkspace", () => {
-  it("queries active evidence records scoped to one workspace", async () => {
-    const { database, calls } = buildDatabase();
+describe("buildEvidenceFeedWhere", () => {
+  it("scopes every query to active evidence and active students in one workspace", () => {
+    expect(buildEvidenceFeedWhere("workspace_1", "")).toEqual({
+      workspaceId: "workspace_1",
+      archivedAt: null,
+      rosterStudent: {
+        workspaceId: "workspace_1",
+        archivedAt: null,
+      },
+    });
+  });
 
-    const result = await getEvidenceFeedPageForWorkspace(
-      "workspace_1",
-      1,
-      database
-    );
-
-    expect(calls).toEqual([
-      {
-        skip: 0,
-        take: EVIDENCE_FEED_PAGE_SIZE + 1,
-        where: {
-          workspaceId: "workspace_1",
-          archivedAt: null,
+  it("searches every supported scalar field case-insensitively and tags exactly", () => {
+    expect(buildEvidenceFeedWhere("workspace_1", " Reading ")).toEqual({
+      workspaceId: "workspace_1",
+      archivedAt: null,
+      rosterStudent: {
+        workspaceId: "workspace_1",
+        archivedAt: null,
+      },
+      OR: [
+        { evidenceNote: { contains: "Reading", mode: "insensitive" } },
+        { summary: { contains: "Reading", mode: "insensitive" } },
+        {
           rosterStudent: {
+            workspaceId: "workspace_1",
             archivedAt: null,
+            OR: [
+              { displayName: { contains: "Reading", mode: "insensitive" } },
+              { mentionHandle: { contains: "Reading", mode: "insensitive" } },
+            ],
           },
         },
-        orderBy: [{ evidenceDate: "desc" }, { createdAt: "desc" }],
-        select: {
-          id: true,
-          rosterStudentId: true,
-          evidenceDate: true,
-          evidenceNote: true,
-          summary: true,
-          evidenceType: true,
-          topic: true,
-          performance: true,
-          behavior: true,
-          tags: true,
-          followUpNeeded: true,
-          followUpNotes: true,
-          validatedAt: true,
-          createdAt: true,
-          rosterStudent: {
-            select: {
-              id: true,
-              displayName: true,
-              mentionHandle: true,
-            },
-          },
-          classGroup: {
-            select: {
-              name: true,
-            },
-          },
-          photo: { select: { id: true, width: true, height: true } },
-        },
-      },
-    ]);
-    expect(result).toEqual({
-      page: 1,
-      hasNewer: false,
-      hasOlder: false,
-      records: [
-      {
-        id: "evidence_1",
-        rosterStudentId: "student_mary",
-        studentDisplayName: "Mary",
-        studentMentionHandle: "mary",
-        classGroupName: "Reading group",
-        evidenceDate: "2026-06-16T14:00:00.000Z",
-        evidenceNote: "used a reading strategy after one prompt",
-        summary: "Mary - reading - Academic check-in",
-        evidenceType: "Academic check-in",
-        hasPhoto: false,
-        topic: "reading",
-        performance: "worked through the passage",
-        behavior: "used a strategy",
-        tags: ["reading"],
-        followUpNeeded: true,
-        followUpNotes: "Review comprehension tomorrow",
-        validatedAt: "2026-06-16T14:05:00.000Z",
-        createdAt: "2026-06-16T14:06:00.000Z",
-      },
+        { classGroup: { name: { contains: "Reading", mode: "insensitive" } } },
+        { evidenceType: { contains: "Reading", mode: "insensitive" } },
+        { topic: { contains: "Reading", mode: "insensitive" } },
+        { performance: { contains: "Reading", mode: "insensitive" } },
+        { behavior: { contains: "Reading", mode: "insensitive" } },
+        { followUpNotes: { contains: "Reading", mode: "insensitive" } },
+        { tags: { has: "reading" } },
       ],
     });
   });
 
-  it("returns a client-safe model without workspace or raw draft fields", async () => {
-    const { database } = buildDatabase([
-      buildRecord({
-        id: "evidence_without_group",
-        classGroup: null,
-      }),
-    ]);
+  it("limits @ searches to handles and # searches to exact normalized tags", () => {
+    const handleWhere = buildEvidenceFeedWhere("workspace_1", " @MaRy ");
+    expect(handleWhere).toMatchObject({
+      rosterStudent: {
+        workspaceId: "workspace_1",
+        archivedAt: null,
+        mentionHandle: { contains: "MaRy", mode: "insensitive" },
+      },
+    });
+    expect(handleWhere).not.toHaveProperty("OR");
 
-    const { records } = await getEvidenceFeedPageForWorkspace(
+    const tagWhere = buildEvidenceFeedWhere("workspace_1", " #Reading ");
+    expect(tagWhere).toMatchObject({ tags: { has: "reading" } });
+    expect(tagWhere).not.toHaveProperty("OR");
+    expect(JSON.stringify(tagWhere)).not.toContain("contains");
+  });
+});
+
+describe("getEvidenceFeedPageForWorkspace", () => {
+  it("counts and reads the same filtered predicate before pagination", async () => {
+    const { database, calls } = buildDatabase([buildRecord()], 21);
+
+    const result = await getEvidenceFeedPageForWorkspace(
       "workspace_1",
-      1,
+      { page: 1, query: "historical phrase" },
       database
     );
 
-    expect(records[0]).not.toHaveProperty("workspaceId");
-    expect(records[0]).not.toHaveProperty("teacherProfileId");
-    expect(records[0]).not.toHaveProperty("clerkUserId");
-    expect(records[0]).not.toHaveProperty("validatedByUserId");
-    expect(records[0]).not.toHaveProperty("deletedAt");
-    expect(records[0]).not.toHaveProperty("rawNote");
-    expect(records[0]).not.toHaveProperty("draftText");
-    expect(records[0]).not.toHaveProperty("originalCapture");
-    expect(records[0]).not.toHaveProperty("sourceText");
-    expect(records[0]).not.toHaveProperty("classGroupName");
-    expect(JSON.stringify(records[0])).not.toMatch(
-      /rawNote|draftText|originalCapture|sourceText|clerkUserId|workspaceId/i
+    expect(calls.count[0]).toEqual(calls.list[0]?.where);
+    expect(calls.list[0]).toMatchObject({
+      skip: 0,
+      take: EVIDENCE_FEED_PAGE_SIZE,
+      where: { workspaceId: "workspace_1", archivedAt: null },
+    });
+    expect(result).toMatchObject({
+      page: 1,
+      totalMatches: 21,
+      hasNewer: false,
+      hasOlder: true,
+    });
+  });
+
+  it("returns a client-safe record while retaining photos and rendered fields", async () => {
+    const record = {
+      ...buildRecord(),
+      photo: { id: "photo_1", width: 1200, height: 900 },
+    };
+    const { database } = buildDatabase([record]);
+
+    const result = await getEvidenceFeedPageForWorkspace(
+      "workspace_1",
+      { page: 1, query: "" },
+      database
+    );
+
+    expect(result.records[0]).toEqual({
+      id: "evidence_1",
+      rosterStudentId: "student_mary",
+      studentDisplayName: "Mary",
+      studentMentionHandle: "mary",
+      classGroupName: "Reading group",
+      evidenceDate: "2026-06-16T14:00:00.000Z",
+      evidenceNote: "used a reading strategy after one prompt",
+      summary: "Mary - reading - Academic check-in",
+      evidenceType: "Academic check-in",
+      hasPhoto: true,
+      photoWidth: 1200,
+      photoHeight: 900,
+      topic: "reading",
+      performance: "worked through the passage",
+      behavior: "used a strategy",
+      tags: ["reading"],
+      followUpNeeded: true,
+      followUpNotes: "Review comprehension tomorrow",
+      validatedAt: "2026-06-16T14:05:00.000Z",
+      createdAt: "2026-06-16T14:06:00.000Z",
+    });
+    expect(result.records[0]).not.toHaveProperty("workspaceId");
+    expect(JSON.stringify(result.records[0])).not.toMatch(
+      /rawNote|draftText|originalCapture|sourceText/i
     );
   });
 
-  it("omits blank optional structured fields from feed records", async () => {
+  it("omits blank optional fields", async () => {
     const { database } = buildDatabase([
       {
-        ...buildRecord({ id: "evidence_with_blank_fields", classGroup: { name: " " } }),
+        ...buildRecord({ classGroup: { name: " " } }),
         evidenceNote: " ",
+        summary: "",
+        evidenceType: " ",
         topic: " ",
         performance: "",
         behavior: " ",
@@ -188,66 +222,56 @@ describe("getEvidenceFeedPageForWorkspace", () => {
 
     const { records } = await getEvidenceFeedPageForWorkspace(
       "workspace_1",
-      1,
+      { page: 1, query: "" },
       database
     );
 
-    expect(records[0]).not.toHaveProperty("classGroupName");
-    expect(records[0]).not.toHaveProperty("evidenceNote");
-    expect(records[0]).not.toHaveProperty("topic");
-    expect(records[0]).not.toHaveProperty("performance");
-    expect(records[0]).not.toHaveProperty("behavior");
-    expect(records[0]).not.toHaveProperty("followUpNotes");
+    for (const field of [
+      "classGroupName",
+      "evidenceNote",
+      "summary",
+      "evidenceType",
+      "topic",
+      "performance",
+      "behavior",
+      "followUpNotes",
+    ]) {
+      expect(records[0]).not.toHaveProperty(field);
+    }
   });
 
-  it("excludes evidence attached to archived roster students from default feed reads", async () => {
-    const { database, calls } = buildDatabase();
+  it("returns first, middle, and last-page metadata from the total count", async () => {
+    const cases = [
+      { page: 1, hasNewer: false, hasOlder: true },
+      { page: 2, hasNewer: true, hasOlder: true },
+      { page: 3, hasNewer: true, hasOlder: false },
+    ];
 
-    await getEvidenceFeedPageForWorkspace("workspace_1", 1, database);
-
-    expect(calls[0]).toMatchObject({
-      where: {
-        workspaceId: "workspace_1",
-        archivedAt: null,
-        rosterStudent: {
-          archivedAt: null,
-        },
-      },
-    });
+    for (const expected of cases) {
+      const { database, calls } = buildDatabase([], 41);
+      const result = await getEvidenceFeedPageForWorkspace(
+        "workspace_1",
+        { page: expected.page, query: "" },
+        database
+      );
+      expect(calls.list[0]).toMatchObject({
+        skip: (expected.page - 1) * EVIDENCE_FEED_PAGE_SIZE,
+        take: EVIDENCE_FEED_PAGE_SIZE,
+      });
+      expect(result).toMatchObject(expected);
+    }
   });
 
-  it("bounds each read and exposes explicit older/newer navigation", async () => {
-    const records = Array.from(
-      { length: EVIDENCE_FEED_PAGE_SIZE + 1 },
-      (_, index) => buildRecord({ id: `evidence_${index}` })
-    );
-    const { database, calls } = buildDatabase(records);
-
-    const result = await getEvidenceFeedPageForWorkspace(
-      "workspace_1",
-      2,
-      database
-    );
-
-    expect(calls[0]).toMatchObject({
-      skip: EVIDENCE_FEED_PAGE_SIZE,
-      take: EVIDENCE_FEED_PAGE_SIZE + 1,
-    });
-    expect(result.records).toHaveLength(EVIDENCE_FEED_PAGE_SIZE);
-    expect(result.hasNewer).toBe(true);
-    expect(result.hasOlder).toBe(true);
-  });
-
-  it("normalizes excessive page numbers before calculating a database offset", async () => {
-    const { database, calls } = buildDatabase();
-
-    const result = await getEvidenceFeedPageForWorkspace(
-      "workspace_1",
-      MAX_EVIDENCE_FEED_PAGE + 1,
-      database
-    );
-
-    expect(calls[0]).toMatchObject({ skip: 0 });
-    expect(result.page).toBe(1);
+  it("resolves out-of-range and malformed pages to page 1", async () => {
+    for (const page of [3, 0, MAX_EVIDENCE_FEED_PAGE + 1]) {
+      const { database, calls } = buildDatabase([], 21);
+      const result = await getEvidenceFeedPageForWorkspace(
+        "workspace_1",
+        { page, query: "reading" },
+        database
+      );
+      expect(calls.list[0]).toMatchObject({ skip: 0 });
+      expect(result.page).toBe(1);
+    }
   });
 });

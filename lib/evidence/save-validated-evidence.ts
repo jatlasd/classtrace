@@ -5,6 +5,7 @@ import { normalizeTag } from "@/lib/format-tag";
 import { prisma } from "@/lib/db/prisma";
 import { withSerializableTransactionRetry } from "@/lib/db/serializable-transaction";
 import { captureOperationalError } from "@/lib/monitoring/capture-operational-error";
+import { getSavedEvidenceClassificationByLabel } from "@/lib/evidence/evidence-classifications";
 import {
   validateAndNormalizeEvidencePhoto,
   type ValidatedEvidencePhoto,
@@ -346,10 +347,14 @@ export async function saveValidatedEvidenceForWorkspace(
     };
   }
 
-  if (evidenceType && evidenceType.length > INPUT_LIMITS.evidenceType) {
+  const savedClassification = evidenceType
+    ? getSavedEvidenceClassificationByLabel(evidenceType)
+    : undefined;
+
+  if (evidenceType && !savedClassification) {
     return {
       success: false,
-      error: `Evidence type must be ${INPUT_LIMITS.evidenceType} characters or fewer.`,
+      error: "Choose an evidence type from the list before saving evidence.",
     };
   }
 
@@ -483,7 +488,7 @@ export async function saveValidatedEvidenceForWorkspace(
         evidenceDate,
         evidenceNote,
         summary,
-        evidenceType,
+        evidenceType: savedClassification?.label,
         topic,
         performance,
         behavior:
