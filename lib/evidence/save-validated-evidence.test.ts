@@ -17,6 +17,7 @@ import {
   saveValidatedEvidenceForWorkspace as saveValidatedEvidenceForWorkspaceDomain,
   type SaveValidatedEvidenceDatabase,
 } from "@/lib/evidence/save-validated-evidence";
+import { SAVED_EVIDENCE_CLASSIFICATION_LABELS } from "@/lib/evidence/evidence-classifications";
 import { INPUT_LIMITS } from "@/lib/validation/input-limits";
 
 const now = new Date("2026-06-16T14:00:00.000Z");
@@ -214,6 +215,66 @@ describe("saveValidatedEvidenceForWorkspace", () => {
       },
     });
   });
+
+  it.each(["Unclear", "invented type"])(
+    "rejects non-canonical evidence type %s without writing",
+    async (evidenceType) => {
+      const { database, calls } = buildDatabase();
+
+      const result = await saveValidatedEvidenceForWorkspace(
+        {
+          workspaceId: "workspace_1",
+          input: {
+            rosterStudentId: "student_mary",
+            evidenceNote: "Mary labeled the parts of the plant independently.",
+            summary: "Mary labeled the parts of the plant independently.",
+            evidenceType,
+            tags: [],
+          },
+          now,
+        },
+        database
+      );
+
+      expect(result).toEqual({
+        success: false,
+        error: "Choose an evidence type from the list before saving evidence.",
+      });
+      expect(calls.findFirst).toEqual([]);
+      expect(calls.create).toEqual([]);
+    }
+  );
+
+  it.each(SAVED_EVIDENCE_CLASSIFICATION_LABELS)(
+    "accepts canonical evidence type %s",
+    async (evidenceType) => {
+      const { database, calls } = buildDatabase();
+
+      const result = await saveValidatedEvidenceForWorkspace(
+        {
+          workspaceId: "workspace_1",
+          input: {
+            rosterStudentId: "student_mary",
+            evidenceNote: "Mary labeled the parts of the plant independently.",
+            summary: "Mary labeled the parts of the plant independently.",
+            evidenceType,
+            tags: [],
+          },
+          now,
+        },
+        database
+      );
+
+      expect(result).toMatchObject({
+        success: true,
+        evidenceId: "evidence_1",
+      });
+      expect(calls.create).toHaveLength(1);
+      expect(calls.create[0]).toMatchObject({
+        data: { evidenceType },
+      });
+    }
+  );
 
   it("rejects note and photo evidence without reviewed structured details", async () => {
     const { database, calls } = buildDatabase();
