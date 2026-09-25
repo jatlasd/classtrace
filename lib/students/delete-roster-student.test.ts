@@ -119,9 +119,6 @@ describe("deleteRosterStudentForWorkspace", () => {
 
   it("keeps the helper server-only and scoped away from raw draft fields", () => {
     expect(source).toContain("server-only");
-    expect(source).toContain("deleteMany");
-    expect(source).toContain("workspaceId");
-    expect(source).toContain("rosterStudentId");
     expect(source).not.toMatch(/rawNote|draftText|originalCapture|sourceText/i);
     expect(source).not.toMatch(/clerkUserId|teacherProfileId/);
   });

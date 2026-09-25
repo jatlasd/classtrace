@@ -1,3 +1,5 @@
+import { INPUT_LIMITS } from "../lib/validation/input-limits.ts";
+
 const POSTGRES_PROTOCOLS = new Set(["postgres:", "postgresql:"]);
 const DEVELOPMENT_DATABASE_NAME = "classtrace_dev";
 
@@ -7,7 +9,7 @@ function normalizeEmail(value) {
   if (typeof value !== "string") return "";
   const email = value.trim().toLowerCase();
   const atIndex = email.indexOf("@");
-  return email.length <= 320 &&
+  return email.length <= INPUT_LIMITS.accountEmail &&
     atIndex > 0 &&
     atIndex === email.lastIndexOf("@") &&
     atIndex < email.length - 1 &&
@@ -19,7 +21,10 @@ function normalizeEmail(value) {
 function normalizeClerkUserId(value) {
   if (typeof value !== "string") return "";
   const userId = value.trim();
-  return /^user_[A-Za-z0-9_-]{1,120}$/.test(userId) ? userId : "";
+  return userId.length <= INPUT_LIMITS.clerkUserId &&
+    /^user_[A-Za-z0-9_-]+$/.test(userId)
+    ? userId
+    : "";
 }
 
 function readTarget(argv) {

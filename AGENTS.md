@@ -44,7 +44,9 @@ Do not turn ClassTrace into a notebook, gradebook, SIS, IEP writer, parent commu
 - The only approved post-capture draft persistence is a workspace-scoped, versioned `sessionStorage` manifest plus encrypted photo bytes in IndexedDB until successful validation, explicit deletion, or the next device-local midnight. The usable photo key remains session-scoped.
 - Do not send student notes or photos to external AI or telemetry services.
 - Do not claim compliance, legal de-identification, district approval, or production safety.
-- Use only Jeremy, Stacy, Jeff, and Mary for fictional examples. Do not use real student names or `Jayden`.
+- Use only the canonical fictional demo identities Jeremy, Stacy, Jeff, Mary,
+  Nina, Caleb, Owen, Tessa, Jonah, Iris, Rowan, Eli, Lena, and Miles for
+  student examples. Do not use real student names or `Jayden`.
 
 ## Architecture boundaries
 

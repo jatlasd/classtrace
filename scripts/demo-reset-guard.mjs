@@ -1,4 +1,4 @@
-import { DEMO_CLERK_USER_ID } from "./demo-data.mjs";
+import { DEMO_CLERK_USER_ID } from "../lib/demo/demo-data.ts";
 
 const POSTGRES_PROTOCOLS = new Set(["postgres:", "postgresql:"]);
 

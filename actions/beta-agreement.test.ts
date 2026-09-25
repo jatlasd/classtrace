@@ -7,6 +7,7 @@ const mocks = vi.hoisted(() => ({
   getProvisionedCurrentWorkspace: vi.fn(),
   acceptCurrentBetaAgreement: vi.fn(),
   getReleaseIdentifier: vi.fn(),
+  captureOperationalError: vi.fn(),
 }));
 
 vi.mock("next/navigation", () => ({ redirect: mocks.redirect }));
@@ -18,6 +19,9 @@ vi.mock("@/lib/beta-agreement/beta-agreement", () => ({
 }));
 vi.mock("@/lib/release", () => ({
   getReleaseIdentifier: mocks.getReleaseIdentifier,
+}));
+vi.mock("@/lib/monitoring/capture-operational-error", () => ({
+  captureOperationalError: mocks.captureOperationalError,
 }));
 
 import { acceptCurrentBetaAgreementAction } from "@/actions/beta-agreement";
@@ -72,11 +76,9 @@ describe("acceptCurrentBetaAgreementAction", () => {
     expect(mocks.redirect).not.toHaveBeenCalled();
   });
 
-  it("fails closed with safe copy and a fixed log prefix", async () => {
-    const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
-    mocks.getProvisionedCurrentWorkspace.mockRejectedValue(
-      new Error("sensitive authentication failure")
-    );
+  it("fails closed with safe copy and privacy-scrubbed operational reporting", async () => {
+    const error = new Error("sensitive authentication failure");
+    mocks.getProvisionedCurrentWorkspace.mockRejectedValue(error);
 
     await expect(
       acceptCurrentBetaAgreementAction({
@@ -87,9 +89,9 @@ describe("acceptCurrentBetaAgreementAction", () => {
       error: "The beta agreement could not be saved. Try again.",
     });
     expect(mocks.acceptCurrentBetaAgreement).not.toHaveBeenCalled();
-    expect(consoleError).toHaveBeenCalledWith(
-      "[actions/beta-agreement/acceptCurrentBetaAgreementAction] failed"
+    expect(mocks.captureOperationalError).toHaveBeenCalledWith(
+      "beta-agreement.accept",
+      error
     );
-    consoleError.mockRestore();
   });
 });

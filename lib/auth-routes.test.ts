@@ -1,6 +1,15 @@
-import { describe, expect, it } from "vitest";
-import { readFileSync } from "node:fs";
-import { join } from "node:path";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
+const mocks = vi.hoisted(() => ({
+  auth: vi.fn(),
+  redirect: vi.fn((href: string) => {
+    throw new Error(`redirect:${href}`);
+  }),
+}));
+
+vi.mock("@clerk/nextjs/server", () => ({ auth: mocks.auth }));
+vi.mock("next/navigation", () => ({ redirect: mocks.redirect }));
+vi.mock("@clerk/nextjs", () => ({ SignIn: () => null, SignUp: () => null }));
 import {
   clerkAfterSignInUrl,
   clerkAfterSignUpUrl,
@@ -9,10 +18,13 @@ import {
   isProtectedAppPath,
   protectedRoutePatterns,
 } from "@/lib/auth-routes";
-
-const projectRoot = process.cwd();
+import SignInPage from "@/app/sign-in/[[...sign-in]]/page";
+import SignUpPage from "@/app/sign-up/[[...sign-up]]/page";
 
 describe("auth route boundaries", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
   it("protects the app route and all nested app routes", () => {
     expect(isProtectedAppPath("/app")).toBe(true);
     expect(isProtectedAppPath("/app/feed")).toBe(true);
@@ -47,19 +59,14 @@ describe("auth route boundaries", () => {
     expect(isProtectedAppPath("/beta-acknowledgements")).toBe(false);
   });
 
-  it("redirects signed-in users away from auth pages", () => {
-    const signInPage = readFileSync(
-      join(projectRoot, "app", "sign-in", "[[...sign-in]]", "page.tsx"),
-      "utf8"
-    );
-    const signUpPage = readFileSync(
-      join(projectRoot, "app", "sign-up", "[[...sign-up]]", "page.tsx"),
-      "utf8"
-    );
+  it("redirects signed-in users away from auth pages at runtime", async () => {
+    mocks.auth.mockResolvedValue({ userId: "clerk_user_1" });
 
-    for (const source of [signInPage, signUpPage]) {
-      expect(source).toContain("auth()");
-      expect(source).toContain("redirect(routes.app)");
+    for (const renderPage of [SignInPage, SignUpPage]) {
+      await expect(renderPage()).rejects.toThrow("redirect:/app");
     }
+    expect(mocks.auth).toHaveBeenCalledTimes(2);
+    expect(mocks.redirect).toHaveBeenNthCalledWith(1, "/app");
+    expect(mocks.redirect).toHaveBeenNthCalledWith(2, "/app");
   });
 });

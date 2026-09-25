@@ -1,17 +1,97 @@
-import { INPUT_LIMITS } from "../lib/validation/input-limits.ts";
+import { INPUT_LIMITS } from "../validation/input-limits.ts";
+
+export type DemoDatabaseIdentity = {
+  projectId: string;
+  branchId: string;
+  databaseName: string;
+};
+
+export type DemoClassGroup = {
+  id: string;
+  name: string;
+  nameKey: string;
+  createdAt: string;
+};
+
+export type DemoStudent = {
+  id: string;
+  classId: string;
+  displayName: string;
+  mentionHandle: string;
+  schoolLocalId: string | null;
+  createdAt: string;
+};
+
+export type DemoEvidenceRecord = {
+  id: string;
+  studentId: string;
+  classId: string;
+  evidenceDate: string;
+  evidenceNote: string;
+  summary: string;
+  evidenceType: string;
+  topic: string | null;
+  performance: string | null;
+  behavior: readonly string[];
+  tags: readonly string[];
+  followUpNeeded: boolean;
+  followUpNotes: readonly string[];
+  validatedAt: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type DemoPhoto = {
+  id: string;
+  evidenceId: string;
+  assetFilename: string;
+  contentType: "image/webp";
+  width: number;
+  height: number;
+};
+
+export type DemoDataset = {
+  version: string;
+  classes: readonly DemoClassGroup[];
+  students: readonly DemoStudent[];
+  evidence: readonly DemoEvidenceRecord[];
+  photos: readonly DemoPhoto[];
+};
+
+export type DemoDatasetSummary = {
+  version: string;
+  classCount: number;
+  studentCount: number;
+  evidenceCount: number;
+  photoCount: number;
+  earliestEvidenceDate: string;
+  latestEvidenceDate: string;
+};
+
+type AuthoredEvidenceRecord = {
+  at: string;
+  note: string;
+  type: string;
+  topic?: string;
+  performance?: string;
+  behavior?: string[];
+  tags: string[];
+  followUpNotes?: string[];
+};
 
 export const DEMO_CLERK_USER_ID = "user_3F2ep7ny1zVEKuEZ2aLpsp4EHRR";
 export const DEMO_DATASET_VERSION = "2026-27-school-fall-v4";
-export const DEMO_DATABASE_IDENTITY = Object.freeze({
+export const DEMO_DATABASE_IDENTITY: Readonly<DemoDatabaseIdentity> = Object.freeze({
   projectId: "floral-forest-27181712",
   branchId: "br-crimson-shadow-atdtagrm",
   databaseName: "neondb",
 });
 
-const ALLOWED_STUDENT_NAMES = new Set([
+export const CANONICAL_DEMO_STUDENT_NAMES = Object.freeze([
   "Jeremy", "Stacy", "Jeff", "Mary", "Nina", "Caleb", "Owen",
   "Tessa", "Jonah", "Iris", "Rowan", "Eli", "Lena", "Miles",
-]);
+] as const);
+const ALLOWED_STUDENT_NAMES = new Set<string>(CANONICAL_DEMO_STUDENT_NAMES);
 const ALLOWED_EVIDENCE_TYPES = new Set([
   "Academic check-in",
   "General observation",
@@ -25,7 +105,7 @@ const DATASET_START = Date.parse("2026-08-31T00:00:00.000-04:00");
 const DATASET_END = Date.parse("2026-09-15T23:59:59.999-04:00");
 const LABOR_DAY = Date.UTC(2026, 8, 7);
 
-const classes = [
+const classes: DemoClassGroup[] = [
   {
     id: "demo_class_math_support_2026",
     name: "6th Grade Math Support",
@@ -46,7 +126,7 @@ const classes = [
   },
 ];
 
-const students = [
+const students: DemoStudent[] = [
   {
     id: "demo_student_jeremy_2026",
     classId: "demo_class_math_support_2026",
@@ -161,7 +241,7 @@ const students = [
   },
 ];
 
-const authoredEvidence = {
+const authoredEvidence: Record<string, AuthoredEvidenceRecord[]> = {
   jeremy: [
     {
       at: "2026-08-31T09:05:00.000-04:00",
@@ -830,11 +910,14 @@ const authoredEvidence = {
   ],
 };
 
-function addMinutes(isoTimestamp, minutes) {
+function addMinutes(isoTimestamp: string, minutes: number): string {
   return new Date(Date.parse(isoTimestamp) + minutes * 60_000).toISOString();
 }
 
-function buildSummary(studentName, record) {
+function buildSummary(
+  studentName: string,
+  record: AuthoredEvidenceRecord
+): string {
   return [
     studentName,
     record.topic,
@@ -883,7 +966,7 @@ const evidence = Object.entries(authoredEvidence).flatMap(
   }
 );
 
-const photos = [
+const photos: DemoPhoto[] = [
   {
     id: "demo_photo_stacy_decimal_2026",
     evidenceId: "demo_evidence_stacy_01",
@@ -982,7 +1065,15 @@ const photos = [
   },
 ];
 
-function freezeRecords(records) {
+type FreezableRecord = Record<string, unknown> & {
+  behavior?: string[];
+  tags?: string[];
+  followUpNotes?: string[];
+};
+
+function freezeRecords<T extends FreezableRecord>(
+  records: T[]
+): readonly Readonly<T>[] {
   return Object.freeze(
     records.map((record) =>
       Object.freeze({
@@ -997,7 +1088,7 @@ function freezeRecords(records) {
   );
 }
 
-export const DEMO_DATASET = Object.freeze({
+export const DEMO_DATASET: Readonly<DemoDataset> = Object.freeze({
   version: DEMO_DATASET_VERSION,
   classes: freezeRecords(classes),
   students: freezeRecords(students),
@@ -1005,20 +1096,24 @@ export const DEMO_DATASET = Object.freeze({
   photos: freezeRecords(photos),
 });
 
-function assertText(value, label, maxLength) {
+function assertText(value: unknown, label: string, maxLength: number): void {
   if (typeof value !== "string" || !value.trim() || value.length > maxLength) {
     throw new Error(`${label} is missing or outside its allowed length.`);
   }
 }
 
-function assertUnique(records, field, label) {
+function assertUnique<T extends object, K extends keyof T>(
+  records: readonly T[],
+  field: K,
+  label: string
+): void {
   const values = records.map((record) => record[field]);
   if (new Set(values).size !== values.length) {
     throw new Error(`${label} values must be unique.`);
   }
 }
 
-function assertTimestamp(value, label) {
+function assertTimestamp(value: string, label: string): number {
   const timestamp = Date.parse(value);
   if (
     !Number.isFinite(timestamp) ||
@@ -1029,7 +1124,7 @@ function assertTimestamp(value, label) {
   return timestamp;
 }
 
-function assertSchoolDay(timestamp, label) {
+function assertSchoolDay(timestamp: number, label: string): void {
   const localDate = new Date(timestamp - 4 * 60 * 60 * 1000);
   const weekday = localDate.getUTCDay();
   const dayStart = Date.UTC(
@@ -1042,7 +1137,9 @@ function assertSchoolDay(timestamp, label) {
   }
 }
 
-export function validateDemoDataset(dataset = DEMO_DATASET) {
+export function validateDemoDataset(
+  dataset: DemoDataset = DEMO_DATASET
+): DemoDatasetSummary {
   if (dataset.version !== DEMO_DATASET_VERSION) {
     throw new Error("Demo dataset version does not match the canonical version.");
   }
@@ -1099,7 +1196,7 @@ export function validateDemoDataset(dataset = DEMO_DATASET) {
     assertSchoolDay(createdAt, `Class ${index + 1} creation date`);
   }
 
-  const studentById = new Map();
+  const studentById = new Map<string, DemoStudent>();
   for (const [index, student] of dataset.students.entries()) {
     assertText(student.id, `Student ${index + 1} ID`, INPUT_LIMITS.identifier);
     assertText(
@@ -1137,9 +1234,9 @@ export function validateDemoDataset(dataset = DEMO_DATASET) {
   )) {
     throw new Error("Each demo class must have roster students.");
   }
-  const evidenceTypes = new Set();
-  const studentCounts = new Map();
-  const distinctTags = new Set();
+  const evidenceTypes = new Set<string>();
+  const studentCounts = new Map<string, number>();
+  const distinctTags = new Set<string>();
   let followUpCount = 0;
 
   for (const [index, record] of dataset.evidence.entries()) {

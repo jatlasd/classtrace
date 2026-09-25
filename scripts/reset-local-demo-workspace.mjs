@@ -2,97 +2,21 @@ import { pathToFileURL } from "node:url";
 import { createClerkClient } from "@clerk/backend";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { config as loadEnv } from "dotenv";
-import { DEMO_DATABASE_IDENTITY, DEMO_DATASET } from "./demo-data.mjs";
+import { PrismaClient } from "../lib/generated/prisma/client.ts";
+import { DemoResetError } from "../lib/demo/demo-workspace-reset.ts";
+import {
+  LocalDemoResetError,
+  resetLocalDemoWorkspace,
+} from "../lib/demo/local-demo-workspace-reset.ts";
 import {
   buildLocalDemoResetConfig,
   LocalDemoResetConfigError,
 } from "./local-demo-reset-guard.mjs";
-import {
-  DemoResetError,
-  resetDemoWorkspace,
-} from "./reset-demo-workspace.mjs";
-import { scopeDemoDatasetForClerkUser } from "./scope-demo-dataset.mjs";
-
-export class LocalDemoResetError extends Error {}
-
-export const scopeDemoDatasetForDevelopment = scopeDemoDatasetForClerkUser;
-
-function exactEmailForUser(user, email) {
-  return user.emailAddresses?.some(
-    (address) => address.emailAddress?.trim().toLowerCase() === email
-  );
-}
-
-export async function resolveDevelopmentClerkUserId(target, directory) {
-  try {
-    if (target.kind === "clerkUserId") {
-      const user = await directory.getUser(target.value);
-      if (user.id !== target.value) throw new Error("mismatch");
-      return user.id;
-    }
-
-    const users = await directory.findUsersByEmail(target.value);
-    const exactMatches = users.filter((user) =>
-      exactEmailForUser(user, target.value)
-    );
-    if (exactMatches.length !== 1) throw new Error("ambiguous");
-    return exactMatches[0].id;
-  } catch {
-    throw new LocalDemoResetError(
-      "The requested account was not found uniquely in the Clerk development instance."
-    );
-  }
-}
-
-export async function verifyLocalDevelopmentDatabase(client) {
-  const result = await client.query(
-    `SELECT
-       current_setting('neon.project_id', true) AS "projectId",
-       current_setting('neon.branch_id', true) AS "branchId",
-       current_database() AS "databaseName"`
-  );
-  const identity = result.rows[0];
-
-  if (
-    result.rows.length !== 1 ||
-    !identity?.projectId ||
-    !identity?.branchId ||
-    identity.databaseName !== "classtrace_dev" ||
-    identity.projectId === DEMO_DATABASE_IDENTITY.projectId ||
-    identity.branchId === DEMO_DATABASE_IDENTITY.branchId ||
-    identity.databaseName === DEMO_DATABASE_IDENTITY.databaseName
-  ) {
-    throw new LocalDemoResetError(
-      "The connected database is not the configured non-production ClassTrace development database."
-    );
-  }
-
-  return identity;
-}
-
-export async function resetLocalDemoWorkspace({
-  client,
-  target,
-  directory,
-  resetWorkspace = resetDemoWorkspace,
-}) {
-  const expectedDatabaseIdentity = await verifyLocalDevelopmentDatabase(client);
-  const clerkUserId = await resolveDevelopmentClerkUserId(target, directory);
-  const dataset = scopeDemoDatasetForDevelopment(DEMO_DATASET, clerkUserId);
-
-  return resetWorkspace({
-    client,
-    clerkUserId,
-    dataset,
-    expectedDatabaseIdentity,
-  });
-}
 
 async function main() {
   loadEnv({ path: ".env.local", quiet: true });
 
-  let adapter;
-  let databaseClient;
+  let database;
   let summary;
   let failureMessage = "";
 
@@ -113,10 +37,11 @@ async function main() {
       },
     };
 
-    adapter = await new PrismaPg(resetConfig.databaseUrl).connect();
-    databaseClient = await adapter.underlyingDriver().connect();
+    database = new PrismaClient({
+      adapter: new PrismaPg(resetConfig.databaseUrl),
+    });
     summary = await resetLocalDemoWorkspace({
-      client: databaseClient,
+      database,
       target: resetConfig.target,
       directory,
     });
@@ -128,11 +53,11 @@ async function main() {
         ? error.message
         : "The guarded local demo reset could not connect or complete.";
   } finally {
-    databaseClient?.release();
     try {
-      await adapter?.dispose();
+      await database?.$disconnect();
     } catch {
-      failureMessage ||= "The development database connection did not close cleanly.";
+      failureMessage ||=
+        "The development database connection did not close cleanly.";
     }
   }
 

@@ -5,7 +5,7 @@ import {
   DEMO_DATASET,
   DEMO_DATASET_VERSION,
   validateDemoDataset,
-} from "./demo-data.mjs";
+} from "../lib/demo/demo-data.ts";
 
 describe("canonical demo dataset", () => {
   it("contains the complete fixed demo workspace", () => {

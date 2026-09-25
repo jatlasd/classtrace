@@ -1,24 +1,23 @@
 import "server-only";
 
 import { clerkClient } from "@clerk/nextjs/server";
-import { PrismaPg } from "@prisma/adapter-pg";
 import { CURRENT_BETA_AGREEMENT } from "@/lib/beta-agreement/beta-agreement-versions";
-import { Prisma } from "@/lib/generated/prisma/client";
-import { prisma } from "@/lib/db/prisma";
-import { withSerializableTransactionRetry } from "@/lib/db/serializable-transaction";
-import { INPUT_LIMITS } from "@/lib/validation/input-limits";
-import { DEMO_DATASET } from "@/scripts/demo-data.mjs";
+import { DEMO_DATASET } from "@/lib/demo/demo-data";
 import {
   OperatorDemoResetError,
   resetOperatorDemoWorkspace,
-} from "@/scripts/reset-demo-workspace.mjs";
-import { scopeDemoDatasetForClerkUser } from "@/scripts/scope-demo-dataset.mjs";
+} from "@/lib/demo/demo-workspace-reset";
+import { scopeDemoDatasetForClerkUser } from "@/lib/demo/scope-demo-dataset";
+import { Prisma } from "@/lib/generated/prisma/client";
+import { prisma } from "@/lib/db/prisma";
+import { withSerializableTransactionRetry } from "@/lib/db/serializable-transaction";
+import { captureOperationalError } from "@/lib/monitoring/capture-operational-error";
+import { INPUT_LIMITS } from "@/lib/validation/input-limits";
 
 const WORKSPACE_DELETE_ACTION = "WORKSPACE_DATA_DELETE";
 const CLERK_DELETE_ACTION = "CLERK_USER_DELETE";
 export const OPERATOR_DIRECTORY_PAGE_SIZE = 20;
 const MAX_DIRECTORY_OFFSET = 10_000;
-const MAX_DIRECTORY_QUERY_LENGTH = 100;
 
 type DirectoryUser = {
   id: string;
@@ -333,7 +332,7 @@ function normalizeIdentifier(value: unknown): string {
 function normalizeDirectoryQuery(value: unknown): string | null {
   if (typeof value !== "string") return "";
   const query = value.trim();
-  return query.length <= MAX_DIRECTORY_QUERY_LENGTH ? query : null;
+  return query.length <= INPUT_LIMITS.operatorDirectoryQuery ? query : null;
 }
 
 function normalizeDirectoryOffset(value: unknown): number {
@@ -461,7 +460,8 @@ export async function listOperatorAccounts(
         hasNextPage: offset + page.data.length < page.totalCount,
       },
     };
-  } catch {
+  } catch (error) {
+    captureOperationalError("operator.account-directory", error);
     return {
       success: false,
       error: "The account directory is not available. Try again.",
@@ -472,7 +472,8 @@ export async function listOperatorAccounts(
 async function resolveConfirmedTarget(
   targetClerkUserId: unknown,
   confirmationEmail: unknown,
-  directory: OperatorIdentityDirectory
+  directory: OperatorIdentityDirectory,
+  operation: "operator.workspace-delete" | "operator.clerk-user-delete"
 ): Promise<{ userId: string; email: string } | null> {
   const userId = normalizeIdentifier(targetClerkUserId);
   const email = normalizeEmail(confirmationEmail);
@@ -482,7 +483,8 @@ async function resolveConfirmedTarget(
     const user = await directory.getUser(userId);
     if (!getUserEmail(user, email)) return null;
     return { userId: user.id, email };
-  } catch {
+  } catch (error) {
+    captureOperationalError(operation, error);
     return null;
   }
 }
@@ -537,7 +539,8 @@ export async function searchOperatorAccount(
     }
 
     return { success: true, account: operatorAccount };
-  } catch {
+  } catch (error) {
+    captureOperationalError("operator.account-search", error);
     return { success: false, error: "Account search failed. Try again." };
   }
 }
@@ -547,24 +550,14 @@ async function seedDemoWorkspaceWithDatabase(input: {
   targetEmail: string;
   confirmationEmail: string;
 }) {
-  const databaseUrl = process.env.DATABASE_URL;
-  if (!databaseUrl) throw new Error("DATABASE_URL is required.");
-
-  const adapter = await new PrismaPg(databaseUrl).connect();
-  const client = await adapter.underlyingDriver().connect();
-  try {
-    return await resetOperatorDemoWorkspace({
-      client,
-      clerkUserId: input.clerkUserId,
-      currentAgreementVersion: CURRENT_BETA_AGREEMENT.agreementVersion,
-      confirmationEmail: input.confirmationEmail,
-      targetEmail: input.targetEmail,
-      dataset: scopeDemoDatasetForClerkUser(DEMO_DATASET, input.clerkUserId),
-    });
-  } finally {
-    client.release();
-    await adapter.dispose();
-  }
+  return resetOperatorDemoWorkspace({
+    database: prisma,
+    clerkUserId: input.clerkUserId,
+    currentAgreementVersion: CURRENT_BETA_AGREEMENT.agreementVersion,
+    confirmationEmail: input.confirmationEmail,
+    targetEmail: input.targetEmail,
+    dataset: scopeDemoDatasetForClerkUser(DEMO_DATASET, input.clerkUserId),
+  });
 }
 
 export async function seedOperatorDemoWorkspace(
@@ -591,7 +584,8 @@ export async function seedOperatorDemoWorkspace(
   let user: DirectoryUser;
   try {
     user = await dependencies.directory.getUser(targetClerkUserId);
-  } catch {
+  } catch (error) {
+    captureOperationalError("operator.demo-seed", error);
     return {
       success: false,
       error: "The selected Clerk account could not be resolved.",
@@ -623,6 +617,10 @@ export async function seedOperatorDemoWorkspace(
       getDirectoryEmail(user) ?? targetEmail
     );
     if (!account?.classTrace?.workspaceId) {
+      captureOperationalError(
+        "operator.demo-seed",
+        new Error("Demo reset completed without refreshed workspace metadata.")
+      );
       return {
         success: false,
         error: "The demo workspace was loaded, but refreshed counts are unavailable.",
@@ -641,8 +639,12 @@ export async function seedOperatorDemoWorkspace(
     };
   } catch (error) {
     if (error instanceof OperatorDemoResetError) {
+      if (error.code === "RESET_FAILED") {
+        captureOperationalError("operator.demo-seed", error);
+      }
       return { success: false, error: error.message };
     }
+    captureOperationalError("operator.demo-seed", error);
     return {
       success: false,
       error: "The selected workspace could not be replaced with demo data.",
@@ -667,7 +669,8 @@ export async function deleteOperatorWorkspaceData(
   const target = await resolveConfirmedTarget(
     input.targetClerkUserId,
     input.confirmationEmail,
-    dependencies.directory
+    dependencies.directory,
+    "operator.workspace-delete"
   );
 
   if (!target) {
@@ -689,7 +692,8 @@ export async function deleteOperatorWorkspaceData(
     }
 
     return { success: true, deletedCounts };
-  } catch {
+  } catch (error) {
+    captureOperationalError("operator.workspace-delete", error);
     return { success: false, error: "ClassTrace data could not be deleted." };
   }
 }
@@ -711,7 +715,8 @@ export async function deleteOperatorClerkUser(
   const target = await resolveConfirmedTarget(
     input.targetClerkUserId,
     input.confirmationEmail,
-    dependencies.directory
+    dependencies.directory,
+    "operator.clerk-user-delete"
   );
 
   if (!target) {
@@ -737,14 +742,15 @@ export async function deleteOperatorClerkUser(
 
     try {
       await dependencies.directory.deleteUser(target.userId);
-    } catch {
+    } catch (error) {
+      captureOperationalError("operator.clerk-user-delete", error);
       try {
         await dependencies.database.completeClerkDeletionAudit({
           auditId,
           outcome: "FAILED",
         });
-      } catch {
-        // The action result remains explicit without exposing target data in logs.
+      } catch (auditError) {
+        captureOperationalError("operator.clerk-user-delete", auditError);
       }
       return { success: false, error: "The Clerk user could not be deleted." };
     }
@@ -754,7 +760,8 @@ export async function deleteOperatorClerkUser(
         auditId,
         outcome: "SUCCEEDED",
       });
-    } catch {
+    } catch (error) {
+      captureOperationalError("operator.clerk-user-delete", error);
       return {
         success: false,
         clerkUserDeleted: true,
@@ -763,7 +770,8 @@ export async function deleteOperatorClerkUser(
     }
 
     return { success: true };
-  } catch {
+  } catch (error) {
+    captureOperationalError("operator.clerk-user-delete", error);
     return { success: false, error: "The Clerk user could not be deleted." };
   }
 }

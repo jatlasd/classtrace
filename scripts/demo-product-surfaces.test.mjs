@@ -11,7 +11,7 @@ import {
   parseStudentReportDateRange,
 } from "../lib/evidence/student-report-records.ts";
 import { exportStudentEvidenceForWorkspace } from "../lib/evidence/export-student-evidence.ts";
-import { DEMO_DATASET } from "./demo-data.mjs";
+import { DEMO_DATASET } from "../lib/demo/demo-data.ts";
 
 const workspaceId = "workspace_demo_fixture";
 const students = DEMO_DATASET.students.map((student) => ({

@@ -21,8 +21,8 @@
     "db:migrate": "prisma migrate dev",
     "db:migrate:deploy": "prisma migrate deploy",
     "db:studio": "prisma studio",
-    "demo:reset": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/reset-demo-workspace.mjs",
-    "demo:reset:local": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/reset-local-demo-workspace.mjs"
+    "demo:reset": "node --conditions=react-server --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/reset-demo-workspace.mjs",
+    "demo:reset:local": "node --conditions=react-server --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/reset-local-demo-workspace.mjs"
   },
   "dependencies": {
     "@clerk/nextjs": "^7.5.2",

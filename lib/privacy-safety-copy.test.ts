@@ -1,6 +1,10 @@
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import { basename, extname, join, relative } from "node:path";
 import { describe, expect, it } from "vitest";
+import {
+  CANONICAL_DEMO_STUDENT_NAMES,
+  DEMO_DATASET,
+} from "@/lib/demo/demo-data";
 
 const projectRoot = process.cwd();
 const sourceExtensions = new Set([".ts", ".tsx", ".js", ".jsx", ".json"]);
@@ -164,7 +168,7 @@ describe("Unit 23 privacy and safety copy guardrails", () => {
     ]);
   });
 
-  it("uses only approved fictional student names in app-facing examples and tests", () => {
+  it("uses only approved fictional student names in app-facing examples and the demo source", () => {
     const files = collectSourceFiles(sourceRoots).filter(
       (file) => basename(file.path) !== "privacy-safety-copy.test.ts"
     );
@@ -180,6 +184,12 @@ describe("Unit 23 privacy and safety copy guardrails", () => {
     ];
 
     expect(findPatternHits(files, oldOrDisallowedDemoNames)).toEqual([]);
+    expect(
+      files.some((file) => file.relativePath === "lib/demo/demo-data.ts")
+    ).toBe(true);
+    expect(DEMO_DATASET.students.map((student) => student.displayName)).toEqual(
+      CANONICAL_DEMO_STUDENT_NAMES
+    );
   });
 
   it("keeps durable save and export paths free of raw draft fields", () => {

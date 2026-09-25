@@ -9,7 +9,7 @@ The history includes unfinished work, quiet days, routine positives, supports,
 participation, and occasional behavior observations. It does not give every
 student an improvement story.
 
-The dataset is authored in `scripts/demo-data.mjs`. It is loaded only by an
+The dataset is authored in `lib/demo/demo-data.ts`. It is loaded only by an
 explicit operator reset, never generated at runtime or copied into new teacher
 accounts. The redesign changes the reset contents, not the product UI or schema.
 
@@ -57,9 +57,9 @@ timeline ordering even when several records share a date.
 
 These are authored counts, not per-student quotas enforced by the validator.
 Jeremy, Stacy, Jeff, and Mary retain the four most developed histories. The ten
-additional first names are fictional demo roster entries, extending the usual
-four-name examples for this dataset only. No real student identities, surnames,
-school-local IDs, family names, or contact details are used.
+additional first names are part of the same canonical fictional identity set
+used across product examples and guardrails. No real student identities,
+surnames, school-local IDs, family names, or contact details are used.
 
 | Class | Student / mention handle | Evidence records | Photos |
 |---|---|---:|---:|

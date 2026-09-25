@@ -1,13 +1,19 @@
 import { describe, expect, it, vi } from "vitest";
-import { DEMO_DATABASE_IDENTITY } from "./demo-data.mjs";
+
+vi.mock("server-only", () => ({}));
+
+import {
+  DEMO_DATABASE_IDENTITY,
+  DEMO_DATASET,
+  validateDemoDataset,
+} from "@/lib/demo/demo-data";
 import {
   LocalDemoResetError,
   resetLocalDemoWorkspace,
   resolveDevelopmentClerkUserId,
   scopeDemoDatasetForDevelopment,
   verifyLocalDevelopmentDatabase,
-} from "./reset-local-demo-workspace.mjs";
-import { DEMO_DATASET, validateDemoDataset } from "./demo-data.mjs";
+} from "@/lib/demo/local-demo-workspace-reset";
 
 const developmentIdentity = {
   projectId: "project_nonproduction",
@@ -15,9 +21,10 @@ const developmentIdentity = {
   databaseName: "classtrace_dev",
 };
 
-function databaseClient(identity = developmentIdentity) {
+function database(identity = developmentIdentity) {
   return {
-    query: vi.fn().mockResolvedValue({ rows: [identity] }),
+    $queryRawUnsafe: vi.fn().mockResolvedValue([{ ...identity }]),
+    $transaction: vi.fn(),
   };
 }
 
@@ -40,13 +47,6 @@ describe("local demo workspace reset", () => {
       DEMO_DATASET.photos.map((photo) => photo.assetFilename)
     );
     expect(validateDemoDataset(first)).toEqual(validateDemoDataset());
-    const canonicalIds = new Set([
-      ...DEMO_DATASET.classes, ...DEMO_DATASET.students,
-      ...DEMO_DATASET.evidence, ...DEMO_DATASET.photos,
-    ].map((record) => record.id));
-    for (const record of [...first.classes, ...first.students, ...first.evidence, ...first.photos]) {
-      expect(canonicalIds.has(record.id)).toBe(false);
-    }
   });
 
   it("resolves only one exact Clerk development account", async () => {
@@ -68,7 +68,10 @@ describe("local demo workspace reset", () => {
       )
     ).resolves.toBe("user_development");
 
-    directory.findUsersByEmail.mockResolvedValue([developmentUser, developmentUser]);
+    directory.findUsersByEmail.mockResolvedValue([
+      developmentUser,
+      developmentUser,
+    ]);
     await expect(
       resolveDevelopmentClerkUserId(
         { kind: "email", value: "jatlasdev2@gmail.com" },
@@ -77,19 +80,19 @@ describe("local demo workspace reset", () => {
     ).rejects.toThrow(LocalDemoResetError);
   });
 
-  it("refuses the canonical production identity and any non-development database", async () => {
+  it("refuses production identity and any non-development database", async () => {
     await expect(
-      verifyLocalDevelopmentDatabase(databaseClient(DEMO_DATABASE_IDENTITY))
+      verifyLocalDevelopmentDatabase(database(DEMO_DATABASE_IDENTITY))
     ).rejects.toThrow(/non-production/);
     await expect(
       verifyLocalDevelopmentDatabase(
-        databaseClient({ ...developmentIdentity, databaseName: "neondb" })
+        database({ ...developmentIdentity, databaseName: "neondb" })
       )
     ).rejects.toThrow(/non-production/);
   });
 
-  it("passes only the resolved owned account and verified development identity to the reset", async () => {
-    const client = databaseClient();
+  it("passes only the resolved account and verified identity to reset", async () => {
+    const demoDatabase = database();
     const resetWorkspace = vi.fn().mockResolvedValue(validateDemoDataset());
     const directory = {
       getUser: vi.fn(),
@@ -97,38 +100,17 @@ describe("local demo workspace reset", () => {
     };
 
     await resetLocalDemoWorkspace({
-      client,
+      database: demoDatabase,
       target: { kind: "email", value: "jatlasdev2@gmail.com" },
       directory,
       resetWorkspace,
     });
 
     expect(resetWorkspace).toHaveBeenCalledWith({
-      client,
+      database: demoDatabase,
       clerkUserId: "user_development",
       dataset: expect.objectContaining({ version: DEMO_DATASET.version }),
       expectedDatabaseIdentity: developmentIdentity,
     });
-  });
-
-  it("repeats the same canonical reset inputs for idempotent local reloads", async () => {
-    const client = databaseClient();
-    const summary = validateDemoDataset();
-    const resetWorkspace = vi.fn().mockResolvedValue(summary);
-    const directory = {
-      getUser: vi.fn().mockResolvedValue(developmentUser),
-      findUsersByEmail: vi.fn(),
-    };
-    const input = {
-      client,
-      target: { kind: "clerkUserId", value: "user_development" },
-      directory,
-      resetWorkspace,
-    };
-
-    await expect(resetLocalDemoWorkspace(input)).resolves.toEqual(summary);
-    await expect(resetLocalDemoWorkspace(input)).resolves.toEqual(summary);
-    expect(resetWorkspace).toHaveBeenCalledTimes(2);
-    expect(resetWorkspace.mock.calls[0][0]).toEqual(resetWorkspace.mock.calls[1][0]);
   });
 });

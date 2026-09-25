@@ -6,6 +6,7 @@ import {
   type AcceptCurrentBetaAgreementResult,
 } from "@/lib/beta-agreement/beta-agreement";
 import { getProvisionedCurrentWorkspace } from "@/lib/auth/get-current-workspace";
+import { captureOperationalError } from "@/lib/monitoring/capture-operational-error";
 import { getReleaseIdentifier } from "@/lib/release";
 import { routes } from "@/lib/routes";
 
@@ -29,10 +30,8 @@ export async function acceptCurrentBetaAgreementAction(
       acceptedAt: new Date(),
       appRelease: getReleaseIdentifier(),
     });
-  } catch {
-    console.error(
-      "[actions/beta-agreement/acceptCurrentBetaAgreementAction] failed"
-    );
+  } catch (error) {
+    captureOperationalError("beta-agreement.accept", error);
     return {
       success: false,
       error: "The beta agreement could not be saved. Try again.",

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { DEMO_CLERK_USER_ID } from "./demo-data.mjs";
+import { DEMO_CLERK_USER_ID } from "../lib/demo/demo-data.ts";
 import { buildDemoResetConfig } from "./demo-reset-guard.mjs";
 
 const validEnvironment = {
@@ -68,4 +68,3 @@ describe("demo reset guard", () => {
     ).toThrow(/neondb/);
   });
 });
-

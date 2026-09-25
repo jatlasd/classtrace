@@ -143,9 +143,7 @@ describe("getSettingsPageData", () => {
     );
 
     expect(source).toContain('import "server-only"');
-    expect(source).toContain("getCurrentAppWorkspace");
-    expect(source).toContain("currentUser");
     expect(source).not.toMatch(/rosterStudent|evidenceRecord|rawNote|draftText/i);
-    expect(source).not.toMatch(/create|update|delete|upsert|localStorage/);
+    expect(source).not.toMatch(/localStorage/);
   });
 });

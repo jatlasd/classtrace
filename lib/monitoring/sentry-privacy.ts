@@ -13,6 +13,7 @@ import {
 } from "@/lib/monitoring/safe-error-diagnostic";
 
 const SAFE_OPERATIONS = [
+  "beta-agreement.accept",
   "class.archive",
   "class.create",
   "class.rename",

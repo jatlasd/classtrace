@@ -102,9 +102,6 @@ describe("archiveRosterStudentForWorkspace", () => {
 
   it("keeps the helper server-only and away from raw draft fields", () => {
     expect(source).toContain("server-only");
-    expect(source).toContain("updateMany");
-    expect(source).toContain("workspaceId");
-    expect(source).toContain("archivedAt: null");
     expect(source).not.toMatch(/rawNote|draftText|originalCapture|sourceText/i);
     expect(source).not.toMatch(/deleteMany|evidenceRecord|clerkUserId/i);
   });

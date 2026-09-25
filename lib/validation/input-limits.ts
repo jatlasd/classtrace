@@ -1,10 +1,12 @@
 export const INPUT_LIMITS = {
   identifier: 128,
+  clerkUserId: 125,
   errorReference: 96,
   accountEmail: 320,
   feedbackDescription: 5_000,
   feedbackRoute: 2_048,
   feedbackBrowserAndDevice: 1_000,
+  operatorDirectoryQuery: 100,
   displayName: 120,
   mentionHandle: 64,
   className: 120,

@@ -87,8 +87,9 @@ Confirmed constraints:
 - Do not send student notes or photos to external AI or telemetry services.
 - Do not claim compliance, legal de-identification, district approval, or
   production safety.
-- Fictional examples use only Jeremy, Stacy, Jeff, and Mary. Do not use real
-  student names or `Jayden`.
+- Fictional student examples use only the canonical demo identities Jeremy,
+  Stacy, Jeff, Mary, Nina, Caleb, Owen, Tessa, Jonah, Iris, Rowan, Eli, Lena,
+  and Miles. Do not use real student names or `Jayden`.
 
 Preferred vocabulary: Capture, Evidence feed, What happened?, Review before
 saving, Evidence note, Student, Class, Tags, Follow-up, Timeline, Report,

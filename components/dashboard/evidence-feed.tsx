@@ -189,8 +189,6 @@ export function EvidenceFeed({
   const sessionStorageRef = useRef<SessionDraftStorage | null>(null);
   const feedNavigationRequestedRef = useRef(false);
   const [resultsAnnouncement, setResultsAnnouncement] = useState("");
-  const [captureEditError, setCaptureEditError] = useState("");
-  const captureEditErrorRef = useRef<HTMLParagraphElement | null>(null);
   const [composerFocusRequestKey, setComposerFocusRequestKey] = useState(0);
   const [isDraftQueueOpen, setIsDraftQueueOpen] = useState(false);
   const [activeDraftId, setActiveDraftId] = useState<string | null>(null);
@@ -430,12 +428,6 @@ export function EvidenceFeed({
   }, [evidencePage, initialSearchQuery, totalMatches]);
 
   useEffect(() => {
-    if (captureEditError) {
-      captureEditErrorRef.current?.focus();
-    }
-  }, [captureEditError]);
-
-  useEffect(() => {
     if (!toast) return;
 
     const timer = window.setTimeout(() => setToast(null), 5000);
@@ -530,11 +522,9 @@ export function EvidenceFeed({
       resolution.status !== "unresolved_student" &&
       !(photo && resolution.status === "no_student_mentioned")
     ) {
-      handleInvalidCaptureEdit(resolution);
       return;
     }
 
-    setCaptureEditError("");
     const newItem: DraftFeedItem = {
       id: identity.id,
       draft,
@@ -577,12 +567,6 @@ export function EvidenceFeed({
     });
   }
 
-  function handleInvalidCaptureEdit(
-    resolution: BlockedCaptureStudentResolution
-  ): void {
-    setCaptureEditError(studentResolutionErrorMessage(resolution));
-  }
-
   async function handleCreateStudent(
     input: CreateStudentFromReviewInput
   ): Promise<CreateStudentFromReviewResult> {
@@ -609,11 +593,9 @@ export function EvidenceFeed({
 
   async function handleValidate(
     id: string,
-    _fields: InterpretationFields,
     saveInput: SaveValidatedEvidenceActionInput,
     reviewedPhoto?: PhotoDraft
   ): Promise<SaveValidatedEvidenceActionResult> {
-    setCaptureEditError("");
     const formData = new FormData();
     formData.set("evidence", JSON.stringify(saveInput));
     if (reviewedPhoto) {
@@ -680,7 +662,6 @@ export function EvidenceFeed({
       };
     }
 
-    setCaptureEditError("");
     const currentItem = draftItems.find((item) => item.id === id);
     const sourceChanged =
       currentItem !== undefined && trimmed !== currentItem.draft.parsed.rawNote;
@@ -715,7 +696,6 @@ export function EvidenceFeed({
   }
 
   function handleDeleteCapture(id: string) {
-    setCaptureEditError("");
     markDraftRemovalIntent("user");
     clearReviewProjection(id);
     removeSessionDraft(sessionStorageRef.current, workspaceId, id);
@@ -909,8 +889,8 @@ export function EvidenceFeed({
         workspaceCreatedAt={workspaceCreatedAt}
         rosterStudents={activeRosterStudents}
         classGroups={classGroups}
-        onValidate={(fields, saveInput, reviewedPhoto) =>
-          handleValidate(item.id, fields, saveInput, reviewedPhoto)
+        onValidate={(_fields, saveInput, reviewedPhoto) =>
+          handleValidate(item.id, saveInput, reviewedPhoto)
         }
         onSaved={(result, fields, saveInput) =>
           handleSaveCompleted(item.id, result, fields, saveInput)
@@ -1087,17 +1067,6 @@ export function EvidenceFeed({
         <p className="sr-only" role="status" aria-live="polite">
           {resultsAnnouncement}
         </p>
-
-        {captureEditError ? (
-          <p
-            ref={captureEditErrorRef}
-            role="alert"
-            tabIndex={-1}
-            className="mt-4 rounded-md border-l-2 border-danger bg-danger-soft px-4 py-3 text-sm text-danger outline-none focus-visible:ring-2 focus-visible:ring-live-bright focus-visible:ring-offset-2 focus-visible:ring-offset-base"
-          >
-            {captureEditError}
-          </p>
-        ) : null}
 
         <div className="pt-5">
           {renderFeedList()}

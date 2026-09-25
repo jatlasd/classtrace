@@ -1,8 +1,15 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+const mocks = vi.hoisted(() => ({
+  captureOperationalError: vi.fn(),
+}));
+
 vi.mock("server-only", () => ({}));
 vi.mock("@clerk/nextjs/server", () => ({ clerkClient: vi.fn() }));
 vi.mock("@/lib/db/prisma", () => ({ prisma: {} }));
+vi.mock("@/lib/monitoring/capture-operational-error", () => ({
+  captureOperationalError: mocks.captureOperationalError,
+}));
 
 import {
   deleteOperatorClerkUser,
@@ -25,6 +32,10 @@ const targetUser = {
     { id: "email_1", emailAddress: "stacy@example.com" },
   ],
 };
+
+beforeEach(() => {
+  mocks.captureOperationalError.mockClear();
+});
 
 function createDependencies() {
   const directory: OperatorIdentityDirectory = {
@@ -162,6 +173,26 @@ describe("operator account search", () => {
     });
     expect(dependencies.database.getAccountByClerkUserId).not.toHaveBeenCalled();
   });
+
+  it("reports unexpected directory or database failures", async () => {
+    const dependencies = createDependencies();
+    const error = new Error("provider details");
+    vi.mocked(dependencies.directory.findUsersByEmail).mockRejectedValue(error);
+
+    await expect(
+      searchOperatorAccount(
+        { operatorClerkUserId: "owner_1", email: "stacy@example.com" },
+        dependencies
+      )
+    ).resolves.toEqual({
+      success: false,
+      error: "Account search failed. Try again.",
+    });
+    expect(mocks.captureOperationalError).toHaveBeenCalledWith(
+      "operator.account-search",
+      error
+    );
+  });
 });
 
 describe("operator account directory", () => {
@@ -235,6 +266,23 @@ describe("operator account directory", () => {
       },
     });
   });
+
+  it("reports an unavailable account directory", async () => {
+    const dependencies = createDependencies();
+    const error = new Error("directory unavailable");
+    vi.mocked(dependencies.directory.listUsers).mockRejectedValue(error);
+
+    await expect(
+      listOperatorAccounts({ operatorClerkUserId: "owner_1" }, dependencies)
+    ).resolves.toEqual({
+      success: false,
+      error: "The account directory is not available. Try again.",
+    });
+    expect(mocks.captureOperationalError).toHaveBeenCalledWith(
+      "operator.account-directory",
+      error
+    );
+  });
 });
 
 describe("operator demo seeding", () => {
@@ -295,6 +343,7 @@ describe("operator demo seeding", () => {
       error: "Select one Clerk account first.",
     });
     expect(dependencies.resetWorkspace).not.toHaveBeenCalled();
+    expect(mocks.captureOperationalError).not.toHaveBeenCalled();
   });
 
   it("returns a safe error when the selected Clerk account no longer resolves", async () => {
@@ -320,6 +369,10 @@ describe("operator demo seeding", () => {
       error: "The selected Clerk account could not be resolved.",
     });
     expect(dependencies.resetWorkspace).not.toHaveBeenCalled();
+    expect(mocks.captureOperationalError).toHaveBeenCalledWith(
+      "operator.demo-seed",
+      expect.any(Error)
+    );
   });
 });
 
@@ -369,6 +422,31 @@ describe("operator destructive actions", () => {
         evidenceRecords: 48,
       },
     });
+  });
+
+  it("reports an unexpected workspace deletion failure", async () => {
+    const error = new Error("database unavailable");
+    vi.mocked(
+      dependencies.database.deleteWorkspaceDataWithAudit
+    ).mockRejectedValue(error);
+
+    await expect(
+      deleteOperatorWorkspaceData(
+        {
+          operatorClerkUserId: "owner_1",
+          targetClerkUserId: "target_1",
+          confirmationEmail: "stacy@example.com",
+        },
+        dependencies
+      )
+    ).resolves.toEqual({
+      success: false,
+      error: "ClassTrace data could not be deleted.",
+    });
+    expect(mocks.captureOperationalError).toHaveBeenCalledWith(
+      "operator.workspace-delete",
+      error
+    );
   });
 
   it("blocks operator self-deletion", async () => {
@@ -455,6 +533,10 @@ describe("operator destructive actions", () => {
       success: false,
       error: "The Clerk user could not be deleted.",
     });
+    expect(mocks.captureOperationalError).toHaveBeenCalledWith(
+      "operator.clerk-user-delete",
+      expect.any(Error)
+    );
   });
 
   it("reports when Clerk deletion succeeds but the audit cannot be completed", async () => {
@@ -477,5 +559,9 @@ describe("operator destructive actions", () => {
       clerkUserDeleted: true,
       error: "The Clerk user was deleted, but the audit outcome was not updated.",
     });
+    expect(mocks.captureOperationalError).toHaveBeenCalledWith(
+      "operator.clerk-user-delete",
+      expect.any(Error)
+    );
   });
 });
