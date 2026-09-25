@@ -323,7 +323,7 @@ export function StudentQuickJump({
                 setTriggerOpen(true);
               }
             }}
-            className="inline-flex min-h-11 items-center gap-2 rounded-full px-3 text-sm font-semibold text-fg-2 outline-none transition-colors hover:bg-well hover:text-fg focus-visible:ring-2 focus-visible:ring-live-bright focus-visible:ring-offset-2 focus-visible:ring-offset-base"
+            className="inline-flex h-10 items-center gap-1.5 rounded-md border border-line-2 px-3 text-[13px] font-semibold text-fg outline-none transition-colors hover:bg-plate aria-expanded:bg-plate focus-visible:ring-2 focus-visible:ring-live-bright focus-visible:ring-offset-2 focus-visible:ring-offset-base lg:h-8"
           >
             Switch student
             <ChevronDown
@@ -334,7 +334,7 @@ export function StudentQuickJump({
           {triggerOpen ? (
             <div
               id={`${listboxId}-panel`}
-              className="absolute right-0 top-full z-30 mt-2 w-[min(22rem,calc(100vw-2rem))] rounded-xl border border-line bg-plate p-3 shadow-lift"
+              className="absolute left-0 top-full z-30 mt-2 w-[min(22rem,calc(100vw-2rem))] sm:left-auto sm:right-0 rounded-xl border border-line bg-plate p-3 shadow-lift"
             >
               <label htmlFor={inputId} className="label mb-1.5 block text-fg-2">
                 {label}

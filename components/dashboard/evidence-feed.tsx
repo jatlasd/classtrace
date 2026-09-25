@@ -976,8 +976,8 @@ export function EvidenceFeed({
               return (
                 <Fragment key={record.id}>
                   {newDay ? (
-                    <h3 className={`sticky top-14 z-10 -mx-4 bg-base/95 px-4 py-2 backdrop-blur sm:-mx-6 sm:px-6 lg:top-[4.5rem] ${index === 0 ? "" : "mt-4"}`}>
-                      <time dateTime={record.evidenceDate} className="font-display text-[1.1rem] font-semibold text-fg-2">
+                    <h3 className={`sticky top-[calc(3.5rem+1px)] z-10 -mx-4 bg-base/95 px-4 py-2 backdrop-blur sm:-mx-6 sm:px-6 lg:top-[calc(4rem+1px)] ${index === 0 ? "" : "mt-4"}`}>
+                      <time dateTime={record.evidenceDate} className="label text-fg-2">
                         {formatEvidenceDayLabel(
                           record.evidenceDate,
                           evidenceTimeZone,
@@ -1003,7 +1003,7 @@ export function EvidenceFeed({
   }
 
   return (
-    <div className="evidence-journal mx-auto w-full max-w-[880px] px-4 py-5 sm:px-6 sm:py-7 lg:px-8 lg:py-9">
+    <div className="evidence-journal mx-auto w-full max-w-[880px] px-4 py-5 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
       <EvidenceFeedHeader />
 
       <section aria-label="Capture desk" className="min-w-0">
@@ -1038,14 +1038,14 @@ export function EvidenceFeed({
       </section>
 
       <section
-        className="mt-8 min-w-0 sm:mt-12"
+        className="mt-12 min-w-0 sm:mt-16"
         aria-labelledby="evidence-inbox-heading"
       >
-        <div className="space-y-4 border-b border-line pb-4">
-          <div className="flex items-start justify-between gap-3">
-            <div className="min-w-0">
-              <RecentCapturesLabel />
-              <p className="label mt-2 text-fg-3">
+        <div className="flex flex-col gap-4 border-b border-line pb-4 sm:flex-row sm:items-end sm:justify-between">
+          <div className="min-w-0">
+            <RecentCapturesLabel />
+            <div className="mt-1.5 flex items-center gap-3">
+              <p className="label text-fg-3">
                 {feedResultCountLabel(
                   totalMatches,
                   Boolean(initialSearchQuery)
@@ -1053,8 +1053,8 @@ export function EvidenceFeed({
                 <span aria-hidden="true"> · </span>
                 Newest first
               </p>
+              {renderPager("heading")}
             </div>
-            {renderPager("heading")}
           </div>
 
           <EvidenceSearchControl
@@ -1068,7 +1068,7 @@ export function EvidenceFeed({
           {resultsAnnouncement}
         </p>
 
-        <div className="pt-5">
+        <div className="pt-4">
           {renderFeedList()}
           {renderPager("footer")}
         </div>

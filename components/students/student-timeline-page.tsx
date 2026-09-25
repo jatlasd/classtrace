@@ -11,9 +11,9 @@ import {
   type FormEvent,
   type ReactElement,
 } from "react";
-import { Search, SlidersHorizontal } from "lucide-react";
+import { PenLine, Printer, Search, SlidersHorizontal } from "lucide-react";
 import { EvidenceRecordContent } from "@/components/evidence/evidence-record-content";
-import { ValidatedStamp } from "@/components/evidence/validated-stamp";
+import { RelativeDay } from "@/components/evidence/relative-day";
 import { ExploreMultiSelect } from "@/components/explore/explore-multi-select";
 import { StudentEvidenceExportAction } from "@/components/students/student-evidence-export-action";
 import { StudentQuickJump } from "@/components/students/student-quick-jump";
@@ -142,6 +142,10 @@ function draftDateError(from: string, to: string): string | null {
   return null;
 }
 
+function firstName(displayName: string): string {
+  return displayName.trim().split(/\s+/)[0] || displayName;
+}
+
 function StudentProfileHeader({
   student,
   summary,
@@ -153,7 +157,7 @@ function StudentProfileHeader({
   const span = describeSpan(summary);
 
   return (
-    <header className="mb-10">
+    <header className="mb-8">
       <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
         <Link
           href={routes.roster}
@@ -168,42 +172,112 @@ function StudentProfileHeader({
           </>
         ) : null}
       </div>
-      <h1 className="mt-3 break-words font-display text-[clamp(2.5rem,6vw,4.5rem)] font-semibold leading-[0.95] text-fg [overflow-wrap:anywhere]">
-        {student.displayName}
-      </h1>
-      <p className="mt-4 max-w-[52ch] text-[17px] leading-relaxed text-fg-2">
+      <div className="mt-3 flex flex-wrap items-end justify-between gap-x-6 gap-y-4">
+        <h1 className="min-w-0 break-words font-display text-[clamp(2.5rem,6vw,4rem)] font-semibold leading-[0.95] text-fg [overflow-wrap:anywhere]">
+          {student.displayName}
+        </h1>
+        <Button asChild className="rounded-full">
+          <Link href={routes.captureForStudent(student.id)}>
+            <PenLine aria-hidden="true" />
+            Capture for {firstName(student.displayName)}
+          </Link>
+        </Button>
+      </div>
+      <p className="mt-4 text-[15px] leading-relaxed text-fg-2">
         {evidenceCount === 0 ? (
           <>Nothing saved yet for @{student.mentionHandle}.</>
         ) : (
           <>
             <span className="font-semibold text-fg">{evidenceCount}</span>{" "}
-            {evidenceCount === 1 ? "piece" : "pieces"} of validated evidence
-            {span ? <>, <span className="text-fg">{span}</span></> : null}.
+            saved {evidenceCount === 1 ? "observation" : "observations"}
+            {span ? <>, {span}</> : null}
+            {summary.lastEvidenceDate ? (
+              <>
+                <span aria-hidden="true"> · </span>
+                last noted{" "}
+                <RelativeDay value={summary.lastEvidenceDate} className="text-fg" />
+              </>
+            ) : null}
             {student.schoolLocalId ? (
-              <span className="text-fg-3"> Local ID {student.schoolLocalId}.</span>
+              <span className="text-fg-3">
+                <span aria-hidden="true"> · </span>
+                Local ID {student.schoolLocalId}
+              </span>
             ) : null}
           </>
         )}
       </p>
-      <div className="mt-6 flex flex-wrap items-center gap-2">
-        <Button asChild variant="solid">
-          <Link href={routes.studentReport(student.id)}>Print report</Link>
+      <div className="mt-5 flex flex-wrap items-center gap-2">
+        <Button asChild variant="outline" size="sm">
+          <Link href={routes.studentReport(student.id)}>
+            <Printer aria-hidden="true" />
+            Print report
+          </Link>
         </Button>
         <StudentEvidenceExportAction
           studentId={student.id}
           studentName={student.displayName}
           evidenceCount={evidenceCount}
         />
-        <Button asChild variant="ghost">
-          <Link href={routes.captureForStudent(student.id)}>Capture something</Link>
-        </Button>
-        <StudentQuickJump
-          currentStudentId={student.id}
-          label="Switch to another student"
-          mode="trigger"
-        />
+        <div className="relative">
+          <StudentQuickJump
+            currentStudentId={student.id}
+            label="Switch to another student"
+            mode="trigger"
+          />
+        </div>
       </div>
     </header>
+  );
+}
+
+function StudentEvidenceSummary({
+  studentId,
+  summary,
+}: {
+  studentId: string;
+  summary: StudentTimelineResult["summary"];
+}) {
+  if (summary.followUpCount === 0 && summary.topTags.length === 0) {
+    return null;
+  }
+
+  return (
+    <dl className="mb-8 grid gap-x-8 gap-y-4 border-y border-line py-4 sm:grid-cols-[auto_1fr]">
+      {summary.followUpCount > 0 ? (
+        <div>
+          <dt className="label text-fg-3">Follow-ups noted</dt>
+          <dd className="mt-1 flex items-center gap-2 text-[15px] text-fg">
+            <span aria-hidden="true" className="h-4 w-0.5 rounded-full bg-live-bright" />
+            <span>
+              <span className="font-semibold tabular-nums">{summary.followUpCount}</span>{" "}
+              {summary.followUpCount === 1 ? "observation" : "observations"}
+            </span>
+          </dd>
+        </div>
+      ) : null}
+      {summary.topTags.length > 0 ? (
+        <div className="min-w-0">
+          <dt className="label text-fg-3">Most noted</dt>
+          <dd className="mt-1">
+            <ul className="flex flex-wrap gap-1.5">
+              {summary.topTags.map(({ tag, count }) => (
+                <li key={tag}>
+                  <Link
+                    href={timelineHref(studentId, { page: 1, query: "", tags: [tag] })}
+                    aria-label={`Show ${count} ${count === 1 ? "observation" : "observations"} tagged ${tag}`}
+                    className="inline-flex h-8 items-center gap-1.5 rounded-full border border-line bg-plate px-3 font-mono text-[13px] text-fg-2 outline-none transition-colors hover:border-line-2 hover:text-fg focus-visible:ring-2 focus-visible:ring-live-bright focus-visible:ring-offset-2 focus-visible:ring-offset-base"
+                  >
+                    #{tag}
+                    <span className="tabular-nums text-fg-3">{count}</span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </dd>
+        </div>
+      ) : null}
+    </dl>
   );
 }
 
@@ -213,15 +287,12 @@ function StudentTimelineEvidenceItem({
   return (
     <li className="trace-node py-4 pl-7">
       <article className="min-w-0">
-        <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-          <time
-            dateTime={record.evidenceDate}
-            className="text-[13px] font-semibold text-fg-2"
-          >
-            {formatTimelineDate(record.evidenceDate)}
-          </time>
-          <ValidatedStamp className="text-fg-3" />
-        </div>
+        <time
+          dateTime={record.evidenceDate}
+          className="text-[13px] font-semibold text-fg-2"
+        >
+          {formatTimelineDate(record.evidenceDate)}
+        </time>
         <EvidenceRecordContent
           record={record}
           showStructuredSummary={false}
@@ -239,16 +310,18 @@ function StudentTimelineEmptyState({
   student: StudentTimelineStudentRecord;
 }) {
   return (
-    <div className="plate px-6 py-12 text-center text-[15px] leading-relaxed text-fg-2">
+    <div className="rounded-xl border border-dashed border-line-2 px-6 py-12 text-center text-[15px] leading-relaxed text-fg-2">
       <p className="font-display text-2xl font-semibold text-fg">
-        No validated evidence yet.
+        No saved evidence yet.
       </p>
       <p className="mx-auto mt-2 max-w-[44ch]">
-        Write one sentence about {student.displayName}, review it, and the trace
-        starts here.
+        Write one sentence about {student.displayName}, approve it, and their
+        trace starts here.
       </p>
-      <Button asChild className="mt-5">
-        <Link href={routes.captureForStudent(student.id)}>Capture something</Link>
+      <Button asChild variant="outline" className="mt-5 rounded-full">
+        <Link href={routes.captureForStudent(student.id)}>
+          Write the first observation
+        </Link>
       </Button>
     </div>
   );
@@ -422,22 +495,69 @@ function StudentTimelineRetrieval({
 
   return (
     <>
-      <section
-        aria-labelledby="timeline-find-heading"
-        className="mb-8 border-y border-line py-5"
-      >
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div>
-            <h2
-              id="timeline-find-heading"
-              className="font-display text-xl font-semibold text-fg"
-            >
-              Find in this timeline
-            </h2>
-            <p className="mt-1 text-[13px] leading-relaxed text-fg-3">
-              Search the evidence note and saved details for this student.
-            </p>
-          </div>
+      <section aria-labelledby="timeline-find-heading" className="mb-6">
+        <h2 id="timeline-find-heading" className="sr-only">
+          Find in this timeline
+        </h2>
+        <div className="flex flex-wrap items-center gap-2">
+          <form onSubmit={handleSearch} role="search" className="min-w-0 flex-1 basis-56">
+            <label htmlFor={searchId} className="sr-only">
+              Search this timeline
+            </label>
+            <div className="flex min-w-0 gap-2">
+              <div className="relative min-w-0 flex-1">
+                <input
+                  id={searchId}
+                  type="search"
+                  autoComplete="off"
+                  maxLength={INPUT_LIMITS.evidenceSearch}
+                  value={draftQuery}
+                  onChange={(event) => setDraftQuery(event.target.value)}
+                  placeholder={`Search ${timeline.student.displayName}'s evidence`}
+                  className="field w-full rounded-full pl-9! text-sm"
+                />
+                <Search
+                  aria-hidden="true"
+                  className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-fg-3"
+                />
+              </div>
+              <Button
+                type="submit"
+                variant="solid"
+                size="sm"
+                className="h-11! rounded-full lg:h-10!"
+                disabled={isPending}
+              >
+                {isPending ? "Searching…" : "Search"}
+              </Button>
+            </div>
+          </form>
+          <button
+            type="button"
+            aria-expanded={filtersOpen}
+            aria-controls="student-timeline-filters"
+            onClick={() => setFiltersOpen((open) => !open)}
+            aria-label={
+              appliedFilters.evidenceType ||
+              appliedFilters.tags.length > 0 ||
+              appliedFilters.from ||
+              appliedFilters.to
+                ? "Filters, applied"
+                : "Filters"
+            }
+            className="flex h-11 items-center gap-2 rounded-full border border-line-2 px-3.5 text-sm font-semibold text-fg-2 outline-none transition-colors hover:bg-plate hover:text-fg aria-expanded:bg-plate aria-expanded:text-fg focus-visible:ring-2 focus-visible:ring-live-bright focus-visible:ring-offset-2 lg:h-10"
+          >
+            <SlidersHorizontal aria-hidden="true" className="size-4" />
+            <span aria-hidden="true" className="max-sm:hidden">Filters</span>
+            {appliedFilters.evidenceType ||
+            appliedFilters.tags.length > 0 ||
+            appliedFilters.from ||
+            appliedFilters.to ? (
+              <span className="rounded-full bg-live-soft px-2 py-0.5 text-xs text-live">
+                Applied
+              </span>
+            ) : null}
+          </button>
           {filtered ? (
             <Button
               type="button"
@@ -450,58 +570,6 @@ function StudentTimelineRetrieval({
             </Button>
           ) : null}
         </div>
-
-        <form onSubmit={handleSearch} className="mt-4">
-          <label htmlFor={searchId} className="label text-fg-2">
-            Search this timeline
-          </label>
-          <div className="mt-1.5 flex min-w-0 flex-col gap-2 sm:flex-row">
-            <div className="relative min-w-0 flex-1">
-              <input
-                id={searchId}
-                type="search"
-                autoComplete="off"
-                maxLength={INPUT_LIMITS.evidenceSearch}
-                value={draftQuery}
-                onChange={(event) => setDraftQuery(event.target.value)}
-                placeholder="Note, type, topic, behavior, or tag"
-                className="field w-full rounded-full pl-9! text-sm"
-              />
-              <Search
-                aria-hidden="true"
-                className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-fg-3"
-              />
-            </div>
-            <Button
-              type="submit"
-              variant="solid"
-              size="sm"
-              className="rounded-full"
-              disabled={isPending}
-            >
-              {isPending ? "Searching…" : "Search"}
-            </Button>
-          </div>
-        </form>
-
-        <button
-          type="button"
-          aria-expanded={filtersOpen}
-          aria-controls="student-timeline-filters"
-          onClick={() => setFiltersOpen((open) => !open)}
-          className="mt-3 flex min-h-11 items-center gap-2 rounded-full px-1 text-sm font-semibold text-fg-2 outline-none hover:text-fg focus-visible:ring-2 focus-visible:ring-live-bright focus-visible:ring-offset-2 lg:min-h-9"
-        >
-          <SlidersHorizontal aria-hidden="true" className="size-4" />
-          Filters
-          {appliedFilters.evidenceType ||
-          appliedFilters.tags.length > 0 ||
-          appliedFilters.from ||
-          appliedFilters.to ? (
-            <span className="rounded-full bg-well px-2 py-0.5 text-xs text-fg">
-              Applied
-            </span>
-          ) : null}
-        </button>
 
         {filtersOpen ? (
           <form
@@ -609,7 +677,7 @@ function StudentTimelineRetrieval({
             <h2
               id={EVIDENCE_HEADING_ID}
               tabIndex={-1}
-              className="font-display text-2xl font-semibold text-fg outline-none focus-visible:ring-2 focus-visible:ring-live-bright focus-visible:ring-offset-2 focus-visible:ring-offset-base"
+              className="font-display text-xl font-semibold text-fg outline-none focus-visible:ring-2 focus-visible:ring-live-bright focus-visible:ring-offset-2 focus-visible:ring-offset-base"
             >
               Evidence
             </h2>
@@ -635,7 +703,7 @@ function StudentTimelineRetrieval({
             <ol>
               {groups.map((group) => (
                 <li key={group.key} className="pt-6">
-                  <h3 className="label sticky top-16 z-10 -mx-1 w-fit rounded-full bg-base/95 px-1 py-1 text-fg-2 backdrop-blur">
+                  <h3 className="label sticky top-[calc(3.5rem+1px)] z-10 lg:top-[calc(4rem+1px)] -mx-1 w-fit rounded-full bg-base/95 px-1 py-1 text-fg-2 backdrop-blur">
                     {group.label}
                   </h3>
                   <ol className="trace mt-1">
@@ -666,6 +734,10 @@ export function StudentTimelinePage({
     <div className="mx-auto w-full max-w-[880px] px-4 py-8 sm:px-6 lg:px-8 lg:py-12">
       <StudentProfileHeader
         student={timeline.student}
+        summary={timeline.summary}
+      />
+      <StudentEvidenceSummary
+        studentId={timeline.student.id}
         summary={timeline.summary}
       />
       {timeline.summary.totalEvidenceCount === 0 ? (

@@ -81,6 +81,17 @@ export type StudentTimelineDatabase = {
     studentId: string,
     limit: number
   ): Promise<string[]>;
+  countFollowUps(where: StudentTimelineWhere): Promise<number>;
+  listTopStudentTags(
+    workspaceId: string,
+    studentId: string,
+    limit: number
+  ): Promise<StudentTimelineTagCount[]>;
+};
+
+export type StudentTimelineTagCount = {
+  tag: string;
+  count: number;
 };
 
 export type StudentTimelineStudentRecord = {
@@ -116,6 +127,8 @@ export type StudentTimelineResult = {
     totalEvidenceCount: number;
     firstEvidenceDate?: string;
     lastEvidenceDate?: string;
+    followUpCount: number;
+    topTags: StudentTimelineTagCount[];
   };
   results: {
     records: StudentTimelineEvidenceRecord[];
@@ -189,7 +202,32 @@ const studentTimelineDatabase: StudentTimelineDatabase = {
 
     return rows.map((row) => row.value);
   },
+  countFollowUps: (where) =>
+    prisma.evidenceRecord.count({ where: { ...where, followUpNeeded: true } }),
+  listTopStudentTags: async (workspaceId, studentId, limit) => {
+    const rows = await prisma.$queryRaw<{ value: string; count: bigint }[]>(Prisma.sql`
+      SELECT lower(regexp_replace(btrim(tag.value), '^#', '')) AS value,
+             count(DISTINCT evidence.id) AS count
+      FROM "EvidenceRecord" evidence
+      JOIN "RosterStudent" student
+        ON student."workspaceId" = evidence."workspaceId"
+       AND student.id = evidence."rosterStudentId"
+      CROSS JOIN LATERAL unnest(evidence.tags) AS tag(value)
+      WHERE evidence."workspaceId" = ${workspaceId}
+        AND evidence."rosterStudentId" = ${studentId}
+        AND evidence."archivedAt" IS NULL
+        AND student."archivedAt" IS NULL
+        AND btrim(tag.value) <> ''
+      GROUP BY 1
+      ORDER BY count DESC, value ASC
+      LIMIT ${limit}
+    `);
+
+    return rows.map((row) => ({ tag: row.value, count: Number(row.count) }));
+  },
 };
+
+export const STUDENT_TIMELINE_TOP_TAG_LIMIT = 4;
 
 function optionalText(value: string | null): string | undefined {
   const trimmed = value?.trim();
@@ -376,15 +414,22 @@ export async function getStudentTimelineRecordsForWorkspace(
     student.id,
     normalizedInput
   );
-  const [summary, totalMatches, tagRows] = await Promise.all([
-    database.aggregateEvidence(allEvidenceWhere),
-    database.countEvidence(filteredWhere),
-    database.listStudentTags(
-      workspaceId,
-      student.id,
-      INPUT_LIMITS.exploreTagOptions
-    ),
-  ]);
+  const [summary, totalMatches, tagRows, followUpCount, topTags] =
+    await Promise.all([
+      database.aggregateEvidence(allEvidenceWhere),
+      database.countEvidence(filteredWhere),
+      database.listStudentTags(
+        workspaceId,
+        student.id,
+        INPUT_LIMITS.exploreTagOptions
+      ),
+      database.countFollowUps(allEvidenceWhere),
+      database.listTopStudentTags(
+        workspaceId,
+        student.id,
+        STUDENT_TIMELINE_TOP_TAG_LIMIT
+      ),
+    ]);
   const lastPage = Math.max(
     1,
     Math.ceil(totalMatches / STUDENT_TIMELINE_PAGE_SIZE)
@@ -406,6 +451,8 @@ export async function getStudentTimelineRecordsForWorkspace(
       ...(summary._max.evidenceDate
         ? { lastEvidenceDate: summary._max.evidenceDate.toISOString() }
         : {}),
+      followUpCount,
+      topTags,
     },
     results: {
       records: records.map(toTimelineEvidence),

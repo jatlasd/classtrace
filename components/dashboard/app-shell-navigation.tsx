@@ -22,7 +22,7 @@ import {
 import { routes } from "@/lib/routes";
 
 function routeContextFor(pathname: string): string | null {
-  if (pathname === routes.feed) return "All evidence";
+  if (pathname === routes.feed) return "Saved evidence";
   if (pathname === routes.explore) return "Saved evidence";
   if (pathname === routes.roster) return "All classes";
   if (pathname === routes.settings) return "Account";
@@ -104,27 +104,26 @@ export function AppShellNavigation({ workspaceId }: AppShellNavigationProps) {
 
   return (
     <div className={`app-shell-navigation ${isFeed ? "app-shell-feed-navigation" : ""}`}>
-      <header className="sticky top-0 z-50 bg-base/95 pt-[env(safe-area-inset-top)]">
-        <div className="mx-auto flex min-h-14 max-w-[1240px] items-center justify-between gap-4 px-4 sm:px-6 lg:grid lg:min-h-[4.5rem] lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] lg:px-8">
-          <div className="flex min-w-0 items-center gap-3 lg:justify-self-start">
+      <header className="sticky top-0 z-50 border-b border-line bg-base/95 pt-[env(safe-area-inset-top)]">
+        <div className="mx-auto flex min-h-14 max-w-[1240px] items-center justify-between gap-4 px-4 sm:px-6 lg:min-h-16 lg:px-8">
+          <div className="flex min-w-0 items-center gap-3 lg:gap-8">
             <Link
               href={routes.feed}
               aria-label="ClassTrace capture"
               className="shrink-0 rounded-full outline-none focus-visible:ring-2 focus-visible:ring-live-bright focus-visible:ring-offset-4 focus-visible:ring-offset-base"
             >
-              <BrandLockup size="sm" className="lg:[&_[data-slot=brand-wordmark]]:sr-only" />
+              <BrandLockup size="sm" />
             </Link>
             {!isFeed ? (
               <span className="label truncate text-fg-3 lg:hidden">
                 {getAppRouteLabel(pathname)}
               </span>
             ) : null}
+            <AppPrimaryNavigation pathname={pathname} draftCount={draftCount} />
           </div>
 
-          <AppPrimaryNavigation pathname={pathname} draftCount={draftCount} />
-
-          <div className="flex shrink-0 items-center gap-2 lg:justify-self-end">
-            <div className="hidden w-40 lg:block xl:w-60">
+          <div className="flex shrink-0 items-center gap-2">
+            <div className="hidden w-52 lg:block xl:w-64">
               <StudentQuickJump label="Student quick-jump" showLabel={false} />
             </div>
             <button

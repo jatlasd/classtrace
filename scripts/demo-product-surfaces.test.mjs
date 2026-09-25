@@ -125,6 +125,25 @@ const database = {
         .flatMap((record) => record.tags)
     )].toSorted().slice(0, limit);
   },
+  async countFollowUps(where) {
+    return records.filter(
+      (record) =>
+        record.rosterStudentId === where.rosterStudentId && record.followUpNeeded
+    ).length;
+  },
+  async listTopStudentTags(_workspaceId, studentId, limit) {
+    const counts = new Map();
+    for (const record of records) {
+      if (record.rosterStudentId !== studentId) continue;
+      for (const tag of new Set(record.tags)) {
+        counts.set(tag, (counts.get(tag) ?? 0) + 1);
+      }
+    }
+    return [...counts]
+      .map(([tag, count]) => ({ tag, count }))
+      .toSorted((left, right) => right.count - left.count || left.tag.localeCompare(right.tag))
+      .slice(0, limit);
+  },
 };
 
 describe("canonical demo data in product read models", () => {

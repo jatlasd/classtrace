@@ -87,10 +87,11 @@ export function StudentEvidenceExportAction({
   }
 
   return (
-    <div className="space-y-2">
+    <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
       <Button
         type="button"
         variant="outline"
+        size="sm"
         onClick={handleExport}
         disabled={!hasEvidence || status.state === "pending"}
         aria-label={`Export ${studentName} evidence as CSV`}
@@ -99,9 +100,13 @@ export function StudentEvidenceExportAction({
         {status.state === "pending" ? "Preparing CSV" : "Export CSV"}
       </Button>
       <p
-        className={`min-h-4 text-xs leading-relaxed ${
-          status.state === "error" ? "text-danger" : "text-fg-3"
-        }`}
+        className={
+          message
+            ? `text-xs leading-relaxed ${
+                status.state === "error" ? "text-danger" : "text-fg-3"
+              }`
+            : "sr-only"
+        }
         role={status.state === "error" ? "alert" : "status"}
         aria-live="polite"
       >

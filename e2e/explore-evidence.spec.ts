@@ -36,7 +36,7 @@ test("opens on evidence and applies optional filters on desktop", async ({ page 
   await page.goto("/app/explore", { waitUntil: "domcontentloaded" });
 
   await expect(page.getByRole("heading", { name: "Explore" })).toBeVisible();
-  await expect(page.getByText("Ask questions of the evidence you reviewed and saved.")).toBeVisible();
+  await expect(page.getByText("Find what you saved without remembering where you put it.")).toBeVisible();
   await expect(page.getByRole("button", { name: /^Filter by student/ })).toBeVisible();
   await expect(page.getByRole("button", { name: "Evidence", exact: true })).toHaveAttribute("aria-pressed", "true");
   await expect(page.getByRole("region", { name: "Filter evidence" })).toBeHidden();
@@ -49,7 +49,7 @@ test("opens on evidence and applies optional filters on desktop", async ({ page 
   ).toBeGreaterThanOrEqual(4.5);
   expect(
     await renderedContrast(
-      page.getByText("Ask questions of the evidence you reviewed and saved."),
+      page.getByText("Find what you saved without remembering where you put it."),
       page.locator("body")
     )
   ).toBeGreaterThanOrEqual(4.5);
@@ -102,7 +102,7 @@ test("keeps Explore Evidence in one overflow-free mobile column", async ({ page 
   }
   expect(
     await renderedContrast(
-      page.getByText("Ask questions of the evidence you reviewed and saved."),
+      page.getByText("Find what you saved without remembering where you put it."),
       page.locator("body")
     )
   ).toBeGreaterThanOrEqual(4.5);

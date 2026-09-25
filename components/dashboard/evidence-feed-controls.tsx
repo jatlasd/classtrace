@@ -25,12 +25,13 @@ export function EvidenceSearchControl({
       action={routes.feed}
       method="get"
       onSubmit={handleSubmit}
+      role="search"
       className="min-w-0 sm:w-[22rem]"
     >
-      <label htmlFor={searchId} className="label text-fg-2">
+      <label htmlFor={searchId} className="sr-only">
         Search all saved evidence
       </label>
-      <div className="mt-1.5 flex min-w-0 gap-2">
+      <div className="flex min-w-0 gap-2">
         <div className="relative min-w-0 flex-1">
           <input
             id={searchId}

@@ -48,7 +48,7 @@ export function isAppNavigationItemActive(
 }
 
 export function getAppRouteLabel(pathname: string): string {
-  if (pathname === routes.feed) return "Feed";
+  if (pathname === routes.feed) return "Capture";
   if (pathname === routes.explore) return "Explore";
   if (pathname === routes.roster) return "Students";
   if (pathname === routes.settings) return "Settings";

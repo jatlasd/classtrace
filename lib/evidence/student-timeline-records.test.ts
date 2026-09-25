@@ -16,6 +16,7 @@ vi.mock("@/lib/db/prisma", () => ({
 import {
   buildStudentTimelineWhere,
   getStudentTimelineRecordsForWorkspace,
+  STUDENT_TIMELINE_TOP_TAG_LIMIT,
   type StudentTimelineDatabase,
 } from "@/lib/evidence/student-timeline-records";
 import { STUDENT_TIMELINE_PAGE_SIZE } from "@/lib/evidence/student-timeline-query";
@@ -74,6 +75,8 @@ function buildDatabase({
     count: [] as unknown[],
     list: [] as { where: unknown; skip: number; take: number }[],
     tags: [] as unknown[],
+    followUps: [] as unknown[],
+    topTags: [] as unknown[],
   };
   const database: StudentTimelineDatabase = {
     rosterStudent: {
@@ -101,6 +104,17 @@ function buildDatabase({
     listStudentTags: async (workspaceId, studentId, limit) => {
       calls.tags.push({ workspaceId, studentId, limit });
       return tags;
+    },
+    countFollowUps: async (where) => {
+      calls.followUps.push(where);
+      return 3;
+    },
+    listTopStudentTags: async (workspaceId, studentId, limit) => {
+      calls.topTags.push({ workspaceId, studentId, limit });
+      return [
+        { tag: "reading", count: 9 },
+        { tag: "prompt", count: 2 },
+      ];
     },
   };
 
@@ -221,10 +235,18 @@ describe("getStudentTimelineRecordsForWorkspace", () => {
         limit: INPUT_LIMITS.exploreTagOptions,
       },
     ]);
+    expect(calls.topTags).toEqual([
+      {
+        workspaceId: "workspace_1",
+        studentId: "student_mary",
+        limit: STUDENT_TIMELINE_TOP_TAG_LIMIT,
+      },
+    ]);
     for (const where of [
       calls.aggregate[0],
       calls.count[0],
       calls.list[0]?.where,
+      calls.followUps[0],
     ]) {
       expect(where).toMatchObject({
         workspaceId: "workspace_1",
@@ -253,6 +275,8 @@ describe("getStudentTimelineRecordsForWorkspace", () => {
     expect(calls.count).toEqual([]);
     expect(calls.list).toEqual([]);
     expect(calls.tags).toEqual([]);
+    expect(calls.followUps).toEqual([]);
+    expect(calls.topTags).toEqual([]);
   });
 
   it("rejects oversized route ids before querying", async () => {
@@ -287,7 +311,14 @@ describe("getStudentTimelineRecordsForWorkspace", () => {
       totalEvidenceCount: 32,
       firstEvidenceDate: "2026-01-05T15:00:00.000Z",
       lastEvidenceDate: "2026-06-17T14:00:00.000Z",
+      followUpCount: 3,
+      topTags: [
+        { tag: "reading", count: 9 },
+        { tag: "prompt", count: 2 },
+      ],
     });
+    expect(calls.followUps[0]).not.toHaveProperty("OR");
+    expect(calls.followUps[0]).not.toHaveProperty("tags");
     expect(result?.results.totalMatches).toBe(4);
     expect(result?.options.tags).toEqual(["independent", "prompt", "reading"]);
   });

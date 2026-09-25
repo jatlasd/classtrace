@@ -553,7 +553,7 @@ export function ExploreEvidencePage({
       <header>
         <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
           <h1 className="label text-fg">Explore</h1>
-          <p className="label text-fg-3">Ask questions of the evidence you reviewed and saved.</p>
+          <p className="label text-fg-3">Find what you saved without remembering where you put it.</p>
         </div>
         <p
           role="group"

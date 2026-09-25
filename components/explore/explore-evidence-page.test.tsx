@@ -138,7 +138,7 @@ describe("ExploreEvidencePage", () => {
 
   it("starts with evidence and keeps filtering optional", () => {
     renderPage(evidenceResults, false);
-    expect(screen.getByText("Ask questions of the evidence you reviewed and saved.")).toBeTruthy();
+    expect(screen.getByText("Find what you saved without remembering where you put it.")).toBeTruthy();
     expect(screen.getByRole("button", { name: /^Filter by student/ })).toBeTruthy();
     expect(screen.getByRole("button", { name: /^Filter by tags/ })).toBeTruthy();
     expect(screen.getByRole("button", { name: /^Filter by date/ })).toBeTruthy();

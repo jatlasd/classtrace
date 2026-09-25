@@ -108,7 +108,7 @@ Do not add these by implication through navigation, data models, placeholder con
 
 ## Vocabulary
 
-Prefer: Capture, Evidence feed, What happened?, Drafts to review, Evidence note, Student, Class, Tags, Follow-up, Timeline, Report, Approve and save.
+Prefer: Capture, Saved evidence, What happened?, Drafts to review, Evidence note, Student, Class, Tags, Follow-up, Timeline, Report, Approve and save.
 
 Avoid inflated terms such as intelligence, insights, automation, compliance, case-management platform, data lake, or AI-powered documentation.
 

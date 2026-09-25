@@ -71,6 +71,8 @@ function buildTimeline(
             lastEvidenceDate: "2026-06-16T14:00:00.000Z",
           }
         : {}),
+      followUpCount: totalEvidenceCount ? 2 : 0,
+      topTags: totalEvidenceCount ? [{ tag: "fluency", count: 5 }] : [],
     },
     results: {
       records: totalEvidenceCount ? [record] : [],
@@ -133,8 +135,14 @@ describe("StudentTimelinePage", () => {
     expect(screen.getByRole("button", { name: "Export 32 records" })).toBeTruthy();
     expect(screen.getByRole("link", { name: "Print report" }).getAttribute("href"))
       .toBe("/app/students/student_mary/report");
-    expect(screen.getByRole("link", { name: "Capture something" }).getAttribute("href"))
+    expect(screen.getByRole("link", { name: "Capture for Mary" }).getAttribute("href"))
       .toBe("/app/feed?student=student_mary");
+    expect(screen.getByText("Follow-ups noted")).toBeTruthy();
+    expect(
+      screen
+        .getByRole("link", { name: "Show 5 observations tagged fluency" })
+        .getAttribute("href")
+    ).toBe("/app/students/student_mary?tag=fluency#student-evidence-heading");
 
     fireEvent.click(screen.getByRole("button", { name: "Switch student" }));
     fireEvent.change(
@@ -216,7 +224,11 @@ describe("StudentTimelinePage", () => {
 
   it("distinguishes no history from no matches and clears retrieval state", () => {
     const { rerender } = renderPage(buildTimeline({}, 0));
-    expect(screen.getByText("No validated evidence yet.")).toBeTruthy();
+    expect(screen.getByText("No saved evidence yet.")).toBeTruthy();
+    expect(
+      screen.getByRole("link", { name: "Write the first observation" }).getAttribute("href")
+    ).toBe("/app/feed?student=student_mary");
+    expect(screen.queryByText("Follow-ups noted")).toBeNull();
     expect(screen.queryByText("Find in this timeline")).toBeNull();
 
     rerender(

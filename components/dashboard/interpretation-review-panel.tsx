@@ -26,7 +26,8 @@ import {
 } from "@/lib/evidence/evidence-classifications";
 import type { DraftDisplay } from "@/lib/note-processing/draft-to-display";
 import type { CaptureRosterStudent } from "@/lib/students/resolve-capture-students";
-import { CheckCircle2 } from "lucide-react";
+import { CheckCircle2, CornerDownRight } from "lucide-react";
+import { EvidenceClassification } from "@/components/evidence/evidence-classification";
 
 type InterpretationReviewPanelProps = {
   display: DraftDisplay;
@@ -500,78 +501,88 @@ function InterpretationReviewPanelContent({
   return (
     <div
       aria-busy={isBusy || photoChangePending}
-      className={embedded ? "pt-3" : "mt-2 border-t border-line pt-5"}
+      className={embedded ? "pt-1" : "mt-2 border-t border-line pt-5"}
     >
-      <div className="mb-4">
-        <h3 className={`label ${approvalBlocker ? "text-danger" : "text-live"}`}>
-          {approvalBlocker
-            ? "Needs correction"
-            : showDetails
-              ? "Edit note or details"
-              : "Prepared for approval"}
-        </h3>
-        {approvalBlocker || showDetails ? (
+      {approvalBlocker || showDetails ? (
+        <div className="mb-4">
+          <h4 className={`label ${approvalBlocker ? "text-danger" : "text-live"}`}>
+            {approvalBlocker ? "Needs correction" : "Edit note or details"}
+          </h4>
           <p className="mt-1.5 text-sm leading-relaxed text-fg-2">
             {approvalBlocker
               ? approvalBlockerMessage(approvalBlocker)
               : "Adjust what ClassTrace prepared. Only the record you approve becomes permanent."}
           </p>
-        ) : null}
-      </div>
+        </div>
+      ) : (
+        <h4 className="sr-only">Prepared for approval</h4>
+      )}
 
       {!showDetails && preparedFields ? (
-        <section aria-label="Prepared evidence record" className="space-y-4">
-          <div className="flex flex-wrap items-baseline justify-between gap-x-5 gap-y-2">
-            <div>
-              <p className="label text-fg-3">Student</p>
-              <p className="font-display text-[1.2rem] font-semibold leading-snug text-fg">
-                {studentValidation.status === "valid_one_student"
-                  ? studentValidation.studentName
-                  : ""}
-              </p>
-            </div>
-            <div className="sm:text-right">
-              <p className="label text-fg-3">Evidence date</p>
-              <time
-                dateTime={form.evidenceDate}
-                className="font-mono text-sm tabular-nums text-fg-2"
-              >
+        <section aria-label="Prepared evidence record">
+          {evidenceNote ? (
+            <p className="max-w-3xl whitespace-pre-wrap break-words text-[17px] leading-relaxed text-fg [overflow-wrap:anywhere]">
+              {evidenceNote}
+            </p>
+          ) : (
+            <p className="text-sm italic text-fg-2">
+              No Evidence note — photo only.
+            </p>
+          )}
+
+          <div className="mt-3 flex flex-wrap items-center gap-x-2.5 gap-y-1.5 rounded-lg bg-well px-3 py-2">
+            <span className="label flex shrink-0 items-center gap-1.5 text-fg-2">
+              <CornerDownRight aria-hidden="true" className="size-3.5 text-live" />
+              Filed as
+            </span>
+            {!embedded && studentValidation.status === "valid_one_student" ? (
+              <span className="font-display text-[0.9375rem] font-semibold text-fg">
+                {studentValidation.studentName}
+              </span>
+            ) : null}
+            {photoOnly ? (
+              <span className="font-mono text-[0.8125rem] text-fg-2">
+                Photo evidence
+              </span>
+            ) : (
+              <>
+                {preparedFields.evidenceType ? (
+                  <EvidenceClassification label={preparedFields.evidenceType} />
+                ) : null}
+                {[
+                  preparedFields.topic,
+                  preparedFields.performance,
+                  ...(preparedFields.behavior ?? []),
+                  ...preparedFields.tags.map(formatTagLabel),
+                ]
+                  .filter(Boolean)
+                  .map((detail) => (
+                    <span
+                      key={detail}
+                      className="break-words font-mono text-[0.8125rem] text-fg-2 [overflow-wrap:anywhere]"
+                    >
+                      {detail}
+                    </span>
+                  ))}
+              </>
+            )}
+            <span className="ml-auto font-mono text-[0.8125rem] tabular-nums text-fg-3">
+              <span className="sr-only">Evidence date: </span>
+              <time dateTime={form.evidenceDate}>
                 {formatPreparedDate(form.evidenceDate)}
               </time>
-            </div>
+            </span>
           </div>
-
-          <div className="border-y border-line py-3">
-            <p className="label text-fg-3">Evidence note</p>
-            {evidenceNote ? (
-              <p className="mt-1.5 max-w-3xl whitespace-pre-wrap text-[17px] leading-relaxed text-fg">
-                {evidenceNote}
-              </p>
-            ) : (
-              <p className="mt-2 text-sm italic text-fg-2">
-                No Evidence note — photo only.
-              </p>
-            )}
-          </div>
-
-          {!photoOnly ? (
-            <p className="text-sm leading-relaxed text-fg-2">
-              <span className="label mr-2 text-fg-3">Filed as</span>
-              <span className="font-mono">
-                {formatFiling(preparedFields)}
-              </span>
-            </p>
-          ) : null}
 
           {preparedFields.followUpNotes.length > 0 ? (
-            <p className="border-l-2 border-live-bright pl-3 text-sm leading-relaxed text-fg-2">
+            <p className="mt-3 border-l-2 border-live-bright pl-3 text-sm leading-relaxed text-fg-2">
               <span className="label mr-2 text-live">Follow up</span>
               {preparedFields.followUpNotes.join(" · ")}
             </p>
           ) : null}
 
           {hasPhoto ? (
-            <p className="text-sm text-fg-2">
+            <p className="mt-3 text-sm text-fg-2">
               <span className="label mr-2 text-live">Photo included</span>
               The photo shown above will be saved with this record.
             </p>
@@ -780,7 +791,7 @@ function InterpretationReviewPanelContent({
         </div>
       </div> : null}
 
-      <div aria-live="polite" className="mt-3 min-h-5">
+      <div aria-live="polite" className="mt-3 empty:mt-0">
         {validationError ? (
           <p
             ref={validationErrorRef}
@@ -798,18 +809,14 @@ function InterpretationReviewPanelContent({
           <p className="text-sm text-danger">
             {approvalBlockerMessage(approvalBlocker)}
           </p>
-        ) : (
-          <p className="text-xs leading-relaxed text-fg-3">
-            Saving makes this draft a permanent record in the student&apos;s trace.
-          </p>
-        )}
+        ) : null}
       </div>
 
-      <div className="mt-4 flex flex-col gap-2 border-t border-line pt-4 sm:flex-row sm:flex-wrap sm:items-center">
+      <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
         {!approvalBlocker ? (
           <Button
             variant="solid"
-            className="w-full sm:w-auto"
+            className="w-full rounded-full sm:w-auto"
             disabled={isBusy || photoChangePending || Boolean(savedEvidenceId)}
             onClick={handleConfirm}
           >
@@ -822,8 +829,7 @@ function InterpretationReviewPanelContent({
         ) : null}
         {!showDetails ? (
           <Button
-            size="sm"
-            variant="outline"
+            variant="ghost"
             disabled={isBusy}
             aria-expanded={false}
             aria-controls={`${fieldIdPrefix}-details`}
@@ -833,7 +839,6 @@ function InterpretationReviewPanelContent({
           </Button>
         ) : !approvalBlocker ? (
           <Button
-            size="sm"
             variant="ghost"
             disabled={isBusy}
             aria-expanded={true}

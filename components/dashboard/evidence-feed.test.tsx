@@ -772,7 +772,7 @@ describe("EvidenceFeed capture review", () => {
       })
     );
 
-    const heading = screen.getByRole("heading", { name: "All evidence" });
+    const heading = screen.getByRole("heading", { name: "Saved evidence" });
     await waitFor(() => expect(document.activeElement).toBe(heading));
     expect(screen.getByRole("status").textContent).toContain(
       "60 matching observations. Page 3."

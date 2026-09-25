@@ -77,9 +77,10 @@ Files: `app/app/layout.tsx`,
 | Property | Pattern |
 |---|---|
 | Shell | Sticky Base header on every viewport; no desktop sidebar |
-| Header frame | `max-w-[1240px]`; 56px mobile, 72px desktop |
-| Desktop primary nav | Centered text destinations; Bricolage display at 1.35rem; student quick-jump beside Sign out; Capture shows a session-local pending-draft count when needed |
-| Desktop active state | Foreground destination plus 6px amber dot |
+| Header frame | `max-w-[1240px]`; 56px mobile, 64px desktop |
+| Header frame rule | 1px Line bottom border; opaque Base/95 ground; no `backdrop-filter` because the mobile sheet is a fixed descendant |
+| Desktop primary nav | Brand lockup then 15px semibold pill destinations; student quick-jump beside Sign out; Capture shows a session-local amber pending-draft count when needed |
+| Desktop active state | Foreground text on a Well pill with `aria-current` |
 | Mobile primary nav | Four destinations in the top-right menu; no persistent bottom bar; Capture shows a session-local pending-draft count when needed |
 | Mobile Capture | First direct destination in the primary menu |
 | Mobile menu | Top-right trigger opens a safe-area-aware rounded-top bottom sheet |
@@ -87,7 +88,7 @@ Files: `app/app/layout.tsx`,
 | Workspace | No bottom-nav padding and no sidebar offset |
 
 Primary order is Capture, Explore, Students, Settings. The header keeps the
-small mark visible at desktop and visually hides the wordmark there. Non-Capture
+full brand lockup visible at every width. Non-Capture
 mobile routes show a quiet route label. The bottom sheet traps focus, supports
 Escape/backdrop close, restores trigger focus, and locks body scrolling.
 
@@ -195,28 +196,32 @@ Files: `components/dashboard/draft-review-queue.tsx`,
 
 - Captured drafts live behind a counted Drafts to review pill below the composer
   and remain separate from saved-feed filtering. Capture confirmation is a
-  transient toast with a direct Review action.
+  transient toast with a direct Review action. Drafts never render inline, so
+  a long post-class queue does not lengthen the Capture page.
 - The queue is an anchored dialog at desktop and a bottom sheet on mobile. Rows
   stay compact and show student, age, note, concise filing result, optional
   photo state, and any correction requirement. The queue scrolls when several
   drafts accumulate, and only one row expands at a time.
-- An ordinary expanded draft is a compact prepared-record view, not a read-only
-  long form. The exact Evidence note is visually central; student and date,
-  concise structured filing, optional follow-up, and photo state remain
-  inspectable before approval. Optional absent values disappear.
-- “Approve and save” is the dominant action. Detailed fields remain behind
-  “Edit note or details.” Parser confidence or `needsTeacherValidation` alone
-  does not force editing; explicit approval is validation for an otherwise
-  meaningful prepared record.
-- Student resolution and follow-up use Live Soft or an amber semantic left rule.
+- Inside an expanded row, Edit original capture and Delete draft are quiet `xs`
+  ghost actions at the right, icon-only below `sm`.
+- An ordinary expanded draft is a prepared record: the exact Evidence note at 17px, then
+  a Well “Filed as” line with the shared evidence-type pill, compact details
+  and tags, and the evidence date. Follow-up and photo state follow when
+  present. Optional absent values disappear.
+- “Approve and save” is the dominant full-rounded ink action; “Edit note or
+  details” is a ghost action that expands the detailed fields in place.
+  Parser confidence or `needsTeacherValidation` alone does not force editing.
 - Unsaveable or semantically unresolved drafts expose the necessary correction
-  controls and do not offer a misleading approval action. Editing the original
-  capture remains separate. Delete uses explicit confirmation.
+  controls and do not offer a misleading approval action. Student resolution
+  and follow-up use Live Soft or an amber semantic left rule. Delete uses
+  explicit confirmation.
 - A missing restored photo remains an actionable Danger state until reattached
   or explicitly omitted where a note remains.
+- After a teacher approves or deletes the expanded draft, focus moves to the
+  next surviving collapsed row; when the queue empties, Capture regains focus.
+  Passive midnight expiry never steals focus from elsewhere.
 - Successful saves use a transient toast, separate from feed results and
-  filters, stating that evidence was saved to the student's trace and linking
-  to that trace. If the queue becomes empty, Capture regains focus.
+  filters, linking to the student's trace.
 
 Never make parser suggestions look saved. Only the reviewed Evidence note,
 reviewed structured values, and validated photo cross into permanent evidence.
@@ -228,15 +233,15 @@ Files: `components/dashboard/evidence-feed.tsx`,
 `components/dashboard/evidence-feed-controls.tsx`,
 `components/dashboard/saved-evidence-row.tsx`
 
-- Feed is one focused `880px` journal: a quiet Now context, the live composer,
-  then All evidence.
-- Search is an explicitly submitted, full-rounded field for all saved evidence.
+- Capture is one focused `880px` journal: the live composer, the counted
+  Drafts to review pill when drafts exist, then Saved evidence.
+- Search is an explicitly submitted, full-rounded field beside the Saved
+  evidence heading at `sm`, with a visually hidden label.
   Applied search and page state live in the URL; draft edits remain local until
   Search is submitted.
-- The counted draft queue sits below the composer. Saved records alone appear
-  in the feed's open `.trace` motif with ink nodes.
-- Saved records are grouped by sticky calendar-date headings. Student identity
-  leads, followed by class, approved note, compact details/tags, optional photo,
+- Saved records alone appear in the feed's open `.trace` motif with ink nodes.
+- Saved records are grouped by sticky calendar-date label headings. Student
+  identity (1.15rem display) leads, followed by class, approved note, compact details/tags, optional photo,
   and a quiet Delete action.
 - Saved feed rows do not repeat a Validated badge. Their location below the
   saved-date heading and accessible article label establish permanence.
@@ -312,9 +317,13 @@ Files: `app/app/roster/page.tsx`,
 `components/roster/manual-student-entry-form.tsx`
 
 - `1100px` page with a large Students or class name and direct supporting copy.
+  Class and archived views carry a Students breadcrumb instead of a back link.
 - The overview groups students beneath class headings. Student entry points are
   small linked Plates in a responsive `sm:grid-cols-2 lg:grid-cols-3` grid, with
-  name, handle, and arrow. This grid is an intentional identity pattern.
+  name, handle, saved-observation count, relative last-noted day, and arrow.
+  A last note 14 or more days old renders in semibold dark amber (`RelativeDay`
+  computes relative days client-side after hydration). Counts come from one
+  workspace-scoped `groupBy` over active evidence for active students.
 - Each class heading carries its student count and Manage class link. New class
   and archived classes remain quiet inline actions after the sections.
 - Empty first-class setup uses one Plate. Capture readiness uses an amber action
@@ -340,10 +349,15 @@ Files: `components/students/student-timeline-page.tsx`,
 
 - Both use an `880px` work area.
 - The timeline opens with Students/class breadcrumb context, a large student
-  name, record count and date span, then report/export/capture actions and the
-  shared student switcher.
-- A ruled “Find in this timeline” region follows the header. Search stays
-  visible; Type, student-specific tag multi-select, and From/To inputs sit in a
+  name with an amber full-rounded “Capture for …” action, then count, date span,
+  and relative last-noted day, then outline `sm` Print report / Export CSV /
+  Switch student actions.
+- A ruled summary row appears when the student has follow-ups or tags: the
+  follow-up count with an amber rule, and up to four most-used tags as pill
+  links (with counts) to the timeline filtered by that tag.
+- One search row follows (visually hidden “Find in this timeline” heading and
+  label): full-rounded search, Search, and a Filters pill (icon-only below
+  `sm`). Type, student-specific tag multi-select, and From/To inputs sit in the
   Filters disclosure and apply explicitly. Only applied state enters the URL.
 - The Evidence heading shows the matching count and compact Newer/Older paging;
   full paging repeats below the trace. Explicit retrieval navigation moves
@@ -353,8 +367,8 @@ Files: `components/students/student-timeline-page.tsx`,
   workspace, selects the mention in the composer, and focuses the composer; an
   unavailable value falls back to generic Capture with a safe message.
 - Evidence is grouped by sticky month labels and uses the open trace with Ink
-  nodes. Each entry shows date, the explicit Validated stamp, approved content,
-  compact details, optional photo, and follow-up.
+  nodes. Each entry shows date, approved content, compact details, optional
+  photo, and follow-up; the saved trace itself establishes permanence.
 - A student with no history retains the capture-oriented empty state without
   retrieval controls. A filtered trace with no matches instead offers a clear
   action. Header summary, report, and export always describe full history.

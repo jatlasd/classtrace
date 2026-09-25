@@ -460,7 +460,7 @@ export function QuickCaptureCard({
               ? "Restoring drafts before capture opens…"
               : guidance?.text ??
                 visibleInitialStudentError ??
-                "Draft first. Review before saving."}
+                "Capture makes a draft. Nothing is saved until you approve it."}
           </p>
         </div>
 

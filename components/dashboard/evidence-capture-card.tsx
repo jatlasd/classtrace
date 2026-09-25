@@ -26,7 +26,7 @@ import {
   normalizeEvidencePhoto,
   type PhotoDraft,
 } from "@/lib/evidence/photo-draft-storage";
-import { ImagePlus, Trash2, X } from "lucide-react";
+import { ImagePlus, PenLine, Trash2, X } from "lucide-react";
 
 export type CaptureEditResult =
   | { success: true }
@@ -260,8 +260,8 @@ export function EvidenceCaptureCard({
       }
     >
       <div
-        className={`flex flex-col gap-2 px-4 pt-3.5 sm:flex-row sm:items-center ${
-          embedded ? "sm:justify-end sm:px-4" : "sm:justify-between sm:px-5"
+        className={`flex items-start gap-x-3 gap-y-2 px-4 sm:px-6 ${
+          embedded ? "justify-end pt-3" : "justify-between pt-4"
         }`}
       >
         {!embedded ? (
@@ -274,16 +274,17 @@ export function EvidenceCaptureCard({
         ) : null}
 
         {showActions && !isEditing ? (
-          <div className="flex flex-wrap items-center gap-1">
+          <div className="-mr-2 -mt-1 flex shrink-0 flex-wrap items-center">
             {onEdit && draft.parsed.rawNote.trim() ? (
               <Button
                 type="button"
                 variant="ghost"
-                size="sm"
+                size="xs"
                 disabled={isReviewSavePending || isProcessingPhoto}
                 onClick={handleStartEdit}
               >
-                Edit original capture
+                <PenLine aria-hidden="true" />
+                <span className="max-sm:sr-only">Edit original capture</span>
               </Button>
             ) : null}
             {onDelete ? (
@@ -291,20 +292,20 @@ export function EvidenceCaptureCard({
                 ref={deleteButtonRef}
                 type="button"
                 variant="ghost"
-                size="sm"
+                size="xs"
                 className="hover:text-danger"
                 disabled={isReviewSavePending || isProcessingPhoto}
                 onClick={handleRequestDraftDelete}
               >
-                <Trash2 aria-hidden="true" className="size-3.5" />
-                Delete draft
+                <Trash2 aria-hidden="true" />
+                <span className="max-sm:sr-only">Delete draft</span>
               </Button>
             ) : null}
           </div>
         ) : null}
       </div>
 
-      <div className={`px-4 pb-4 pt-3 ${embedded ? "" : "sm:px-5"}`}>
+      <div className="px-4 pb-4 pt-2 sm:px-6 sm:pb-5">
         {isConfirmingDelete ? (
           <ConfirmationPanel
             ariaLabel="Confirm draft deletion"

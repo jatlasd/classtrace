@@ -86,9 +86,10 @@ describe("InterpretationReviewPanel", () => {
     expect(
       screen.getByText("used a reading strategy independently #reading")
     ).toBeTruthy();
-    expect(
-      screen.getByText(/General observation.*reading.*independent.*#reading/)
-    ).toBeTruthy();
+    const filing = screen.getByText("Filed as").parentElement as HTMLElement;
+    expect(filing.textContent).toMatch(
+      /General observation.*reading.*independent.*#reading/
+    );
     expect(screen.queryByLabelText("Evidence note")).toBeNull();
     expect(screen.getByRole("button", { name: "Approve and save" })).toBeTruthy();
   });

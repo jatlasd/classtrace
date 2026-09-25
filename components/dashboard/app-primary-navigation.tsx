@@ -14,8 +14,8 @@ export function AppPrimaryNavigation({
   pathname,
 }: AppPrimaryNavigationProps) {
   return (
-    <nav aria-label="Primary" className="hidden lg:block lg:justify-self-center">
-      <ul className="flex items-baseline gap-6 xl:gap-7">
+    <nav aria-label="Primary" className="hidden lg:block">
+      <ul className="flex items-center gap-1">
         {APP_NAVIGATION_ITEMS.map((item) => {
           const active = isAppNavigationItemActive(pathname, item.match);
 
@@ -29,24 +29,20 @@ export function AppPrimaryNavigation({
                     : undefined
                 }
                 aria-current={active ? "page" : undefined}
-                className={`flex items-center whitespace-nowrap rounded-sm py-1 font-display text-[1.35rem] font-semibold outline-none transition-colors focus-visible:ring-2 focus-visible:ring-live-bright focus-visible:ring-offset-4 focus-visible:ring-offset-base ${
-                  active ? "text-fg" : "text-fg-3 hover:text-fg"
+                className={`flex h-9 items-center whitespace-nowrap rounded-full px-3.5 text-[15px] font-semibold outline-none transition-colors focus-visible:ring-2 focus-visible:ring-live-bright focus-visible:ring-offset-2 focus-visible:ring-offset-base ${
+                  active
+                    ? "bg-well text-fg"
+                    : "text-fg-2 hover:bg-well/60 hover:text-fg"
                 }`}
               >
                 {item.label}
                 {item.match === "capture" && draftCount > 0 ? (
                   <span
                     aria-hidden="true"
-                    className="ml-1.5 inline-flex min-w-5 items-center justify-center rounded-full bg-live-soft px-1.5 py-0.5 font-mono text-[11px] font-semibold leading-none text-live"
+                    className="ml-2 inline-flex min-w-5 items-center justify-center rounded-full bg-live-bright px-1.5 py-0.5 text-[11px] font-semibold leading-none tabular-nums text-live-fg"
                   >
                     {draftCount > 99 ? "99+" : draftCount}
                   </span>
-                ) : null}
-                {active ? (
-                  <span
-                    aria-hidden="true"
-                    className="ml-1.5 size-1.5 rounded-full bg-live-bright"
-                  />
                 ) : null}
               </Link>
             </li>

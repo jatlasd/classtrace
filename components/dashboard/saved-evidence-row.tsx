@@ -54,13 +54,13 @@ export function SavedEvidenceRow({
   return (
     <article
       aria-label={`Saved evidence for ${record.studentDisplayName} on ${evidenceDate}`}
-      className="trace-node group/row pl-7 py-4"
+      className="trace-node group/row py-3.5 pl-7"
     >
       <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
         <div className="flex min-w-0 flex-wrap items-baseline gap-x-3 gap-y-0.5">
           <Link
             href={routes.student(record.rosterStudentId)}
-            className="break-words font-display text-[1.35rem] font-semibold leading-tight text-fg underline-offset-4 outline-none [overflow-wrap:anywhere] hover:underline focus-visible:ring-2 focus-visible:ring-live-bright focus-visible:ring-offset-2 focus-visible:ring-offset-base"
+            className="break-words font-display text-[1.15rem] font-semibold leading-tight text-fg underline-offset-4 outline-none [overflow-wrap:anywhere] hover:underline focus-visible:ring-2 focus-visible:ring-live-bright focus-visible:ring-offset-2 focus-visible:ring-offset-base"
           >
             {record.studentDisplayName}
           </Link>

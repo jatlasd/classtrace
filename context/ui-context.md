@@ -51,9 +51,9 @@ small lower-right node is amber. There is no `CT` tile.
   every viewport and one `main#main-content`. There is no desktop sidebar or
   fixed route-header rail. Sign-in, beta acknowledgement, and operator routes
   use their own focused layouts.
-- At `lg`, Capture, Explore, Students, and Settings are centered as text-led top
-  navigation; the active destination receives an amber dot, and a compact
-  active-student quick-jump sits beside Sign out.
+- At `lg`, Capture, Explore, Students, and Settings follow the brand as
+  text-led top navigation; the active destination sits on a Well pill, and a
+  compact active-student quick-jump sits beside Sign out.
 - Below `lg`, the mobile top header keeps the brand, current route label where
   needed, and a menu. The menu owns the same four primary destinations, the
   student quick-jump, trust/support links, and Sign out.
@@ -71,11 +71,12 @@ small lower-right node is amber. There is no `CT` tile.
   actions and one amber Capture action below.
 - Capturing creates a device-local provisional draft and confirms that outcome
   with a transient toast. Drafts collect behind a counted Drafts to review
-  trigger instead of entering the saved feed. The queue is a compact list; one
-  selected draft may expand at a time, in an anchored dialog at desktop and a
-  bottom sheet on mobile.
+  trigger instead of entering the saved feed, so a long post-class queue never
+  pushes the page down. The queue is a compact list; one selected draft may
+  expand at a time, in an anchored dialog at desktop and a bottom sheet on
+  mobile.
 - An ordinary valid draft opens to a compact prepared record with its exact
-  Evidence note as the center, a concise filing result, and dominant explicit
+  Evidence note as the center, a “Filed as” line, and dominant explicit
   approval. Detailed editing is progressive. Genuinely unsaveable or
   semantically unresolved drafts open the necessary correction controls.
 - Teacher validation is the transition from amber/provisional to ink/saved.

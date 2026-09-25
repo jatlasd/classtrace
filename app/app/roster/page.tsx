@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { ArrowLeft, ArrowRight, ChevronRight, Plus } from "lucide-react";
+import { ArrowRight, ChevronRight, PenLine, Plus } from "lucide-react";
+import { RelativeDay } from "@/components/evidence/relative-day";
 import { ArchivedRosterStudentActions } from "@/components/roster/archived-roster-student-actions";
 import { ArchivedClassGroupActions } from "@/components/roster/archived-class-group-actions";
 import { ClassRosterManager } from "@/components/roster/class-roster-manager";
@@ -25,6 +26,10 @@ import {
 import { listExistingRosterImportStudentsForWorkspace } from "@/lib/import/roster-import";
 import { type ExistingRosterImportStudent } from "@/lib/import/parse-roster-import";
 import { routes } from "@/lib/routes";
+import {
+  listStudentEvidenceActivityForWorkspace,
+  type StudentEvidenceActivity,
+} from "@/lib/students/student-evidence-activity";
 import {
   listActiveRosterStudentsForWorkspace,
   type RosterStudentDisplay,
@@ -108,13 +113,17 @@ function ArchivedStudentRow({
   );
 }
 
+const STALE_OBSERVATION_DAYS = 14;
+
 function StudentsOverview({
   activeClasses,
   activeStudents,
+  evidenceActivity,
   hasArchivedClasses,
 }: {
   activeClasses: ClassGroupDisplay[];
   activeStudents: RosterStudentDisplay[];
+  evidenceActivity: Map<string, StudentEvidenceActivity>;
   hasArchivedClasses: boolean;
 }) {
   if (activeClasses.length === 0) {
@@ -177,27 +186,55 @@ function StudentsOverview({
               </p>
             ) : (
               <ul className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-                {students.map((student) => (
-                  <li key={student.id}>
-                    <Link
-                      href={routes.student(student.id)}
-                      className="group flex min-h-16 items-center justify-between gap-3 rounded-xl border border-line bg-plate px-4 py-3 outline-none transition-colors hover:border-line-2 hover:bg-well focus-visible:ring-2 focus-visible:ring-live-bright focus-visible:ring-offset-2 focus-visible:ring-offset-base"
-                    >
-                      <span className="min-w-0">
-                        <span className="block break-words font-display text-[1.2rem] font-semibold leading-tight text-fg [overflow-wrap:anywhere]">
-                          {student.displayName}
+                {students.map((student) => {
+                  const activity = evidenceActivity.get(student.id);
+                  const count = activity?.evidenceCount ?? 0;
+
+                  return (
+                    <li key={student.id}>
+                      <Link
+                        href={routes.student(student.id)}
+                        className="group flex min-h-[4.5rem] items-center justify-between gap-3 rounded-xl border border-line bg-plate px-4 py-3 outline-none transition-colors hover:border-line-2 hover:bg-well/50 focus-visible:ring-2 focus-visible:ring-live-bright focus-visible:ring-offset-2 focus-visible:ring-offset-base"
+                      >
+                        <span className="min-w-0">
+                          <span className="flex min-w-0 items-baseline gap-2">
+                            <span className="break-words font-display text-[1.15rem] font-semibold leading-tight text-fg [overflow-wrap:anywhere]">
+                              {student.displayName}
+                            </span>
+                            <span className="truncate text-xs text-fg-3">
+                              @{student.mentionHandle}
+                            </span>
+                          </span>
+                          <span className="mt-1 block text-[13px] text-fg-2">
+                            {count === 0 ? (
+                              <span className="text-fg-3">No observations yet</span>
+                            ) : (
+                              <>
+                                <span className="tabular-nums">{count}</span>{" "}
+                                {count === 1 ? "observation" : "observations"}
+                                {activity?.lastEvidenceDate ? (
+                                  <>
+                                    <span aria-hidden="true"> · </span>
+                                    <span className="sr-only">last noted </span>
+                                    <RelativeDay
+                                      value={activity.lastEvidenceDate}
+                                      staleAfterDays={STALE_OBSERVATION_DAYS}
+                                      staleClassName="font-semibold text-live"
+                                    />
+                                  </>
+                                ) : null}
+                              </>
+                            )}
+                          </span>
                         </span>
-                        <span className="mt-0.5 block truncate text-[13px] text-fg-3">
-                          @{student.mentionHandle}
-                        </span>
-                      </span>
-                      <ArrowRight
-                        className="size-4 shrink-0 text-fg-3 transition-colors group-hover:text-fg"
-                        aria-hidden="true"
-                      />
-                    </Link>
-                  </li>
-                ))}
+                        <ArrowRight
+                          className="size-4 shrink-0 text-fg-3 transition-colors group-hover:text-fg"
+                          aria-hidden="true"
+                        />
+                      </Link>
+                    </li>
+                  );
+                })}
               </ul>
             )}
           </section>
@@ -236,12 +273,6 @@ function ArchivedClassesView({
 }) {
   return (
     <section className="space-y-4">
-      <Button asChild variant="ghost" size="sm" className="-ml-2">
-        <Link href={routes.roster}>
-          <ArrowLeft className="size-3.5" />
-          Back to students
-        </Link>
-      </Button>
       <SectionLabel
         title="Archived classes"
         description="Archived classes are hidden from active roster setup. Students cannot be added here."
@@ -304,20 +335,12 @@ function OpenClassView({
 
   return (
     <section className="space-y-5">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <Button asChild variant="ghost" size="sm" className="-ml-2">
-          <Link href={routes.roster}>
-            <ArrowLeft className="size-3.5" />
-            Back to students
-          </Link>
-        </Button>
-        {!canContinueToFeed && students.length > 0 ? (
-          <p className="max-w-sm text-sm leading-relaxed text-fg-2">
-            Finish assigning every active student to an active class before
-            opening the evidence feed.
-          </p>
-        ) : null}
-      </div>
+      {!canContinueToFeed && students.length > 0 ? (
+        <p className="max-w-prose rounded-md border-l-2 border-live-bright bg-live-soft px-3 py-2 text-sm leading-relaxed text-fg-2">
+          Finish assigning every active student to an active class before
+          opening Capture.
+        </p>
+      ) : null}
 
       <ClassRosterManager
         key={rosterRevision}
@@ -336,18 +359,23 @@ export default async function RosterPage({ searchParams }: RosterPageProps) {
   const resolvedSearchParams = searchParams ? await searchParams : {};
   const selectedClassId = getSingleParam(resolvedSearchParams.classId);
   const view = getSingleParam(resolvedSearchParams.view);
+  const overviewRequested = !selectedClassId && view !== "archived";
   const [
     activeClasses,
     archivedClasses,
     activeStudents,
     archivedStudents,
     classReadiness,
+    evidenceActivity,
   ] = await Promise.all([
     listActiveClassGroupsForWorkspace(workspace.workspaceId),
     listArchivedClassGroupsForWorkspace(workspace.workspaceId),
     listActiveRosterStudentsForWorkspace(workspace.workspaceId),
     listArchivedRosterStudentsForWorkspace(workspace.workspaceId),
     getClassRosterReadinessForWorkspace(workspace.workspaceId),
+    overviewRequested
+      ? listStudentEvidenceActivityForWorkspace(workspace.workspaceId)
+      : Promise.resolve(new Map<string, StudentEvidenceActivity>()),
   ]);
   const activeClassOptions = activeClasses.map((classGroup) => ({
     id: classGroup.id,
@@ -386,10 +414,21 @@ export default async function RosterPage({ searchParams }: RosterPageProps) {
     <div className="mx-auto w-full max-w-[1100px] px-4 py-8 sm:px-6 lg:px-8 lg:py-12">
       <header className="mb-8 flex flex-wrap items-end justify-between gap-x-8 gap-y-4">
         <div className="min-w-0">
-          <p className="label text-fg-3">
-            {selectedClass ? "Class" : view === "archived" ? "Students" : "Later · one trace per student"}
-          </p>
-          <h1 className="mt-2 break-words font-display text-[clamp(2.25rem,5vw,3.5rem)] font-semibold leading-[0.95] text-fg [overflow-wrap:anywhere]">
+          {selectedClass || view === "archived" ? (
+            <p className="label mb-3 flex items-baseline gap-3">
+              <Link
+                href={routes.roster}
+                className="rounded-full text-fg-2 underline decoration-line-2 underline-offset-4 outline-none transition-colors hover:text-fg hover:decoration-fg focus-visible:ring-2 focus-visible:ring-live-bright focus-visible:ring-offset-2 focus-visible:ring-offset-base"
+              >
+                Students
+              </Link>
+              <span aria-hidden="true" className="text-fg-3">/</span>
+              <span className="text-fg-3">
+                {selectedClass ? "Class" : "Archived"}
+              </span>
+            </p>
+          ) : null}
+          <h1 className=" break-words font-display text-[clamp(2.25rem,5vw,3.5rem)] font-semibold leading-[0.95] text-fg [overflow-wrap:anywhere]">
             {selectedClass
               ? selectedClass.name
               : view === "archived"
@@ -398,8 +437,8 @@ export default async function RosterPage({ searchParams }: RosterPageProps) {
           </h1>
           {isOverview ? (
             <p className="mt-3 max-w-[48ch] text-[15px] leading-relaxed text-fg-2">
-              Open a student to read everything you have saved about them, in
-              order. Your roster is private to your workspace.
+              Open a student to see everything you have saved about them.
+              Students you haven&apos;t noted in two weeks stand out.
             </p>
           ) : selectedClass ? (
             <p className="mt-3 max-w-[48ch] text-[15px] leading-relaxed text-fg-2">
@@ -414,8 +453,8 @@ export default async function RosterPage({ searchParams }: RosterPageProps) {
                 href={routes.feed}
                 className="inline-flex min-h-11 items-center gap-2 rounded-full bg-live-bright px-4 text-sm font-semibold text-live-fg outline-none transition-colors hover:bg-[#ffc24d] focus-visible:ring-2 focus-visible:ring-live-bright focus-visible:ring-offset-2 focus-visible:ring-offset-base"
               >
-                Capture something now
-                <ArrowRight className="size-4" aria-hidden="true" />
+                <PenLine className="size-4" aria-hidden="true" />
+                Capture
               </Link>
             ) : (
               <p className="max-w-56 rounded-lg border border-live-bright/60 bg-live-soft px-3 py-2 text-sm leading-relaxed text-fg">
@@ -453,6 +492,7 @@ export default async function RosterPage({ searchParams }: RosterPageProps) {
           <StudentsOverview
             activeClasses={activeClasses}
             activeStudents={activeStudents}
+            evidenceActivity={evidenceActivity}
             hasArchivedClasses={archivedClasses.length > 0}
           />
           {unassignedStudents.length > 0 ? (

@@ -38,18 +38,18 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
   const initialErrorReference = normalizeErrorReference(query.errorReference);
 
   return (
-    <div className="mx-auto w-full max-w-[1100px] px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
-      <header className="mb-6 border-b border-line pb-5">
-        <h1 className="font-display text-4xl font-semibold leading-none tracking-[-0.01em] text-fg sm:text-5xl">
+    <div className="mx-auto w-full max-w-[1100px] px-4 py-8 sm:px-6 lg:px-8 lg:py-12">
+      <header className="mb-8">
+        <h1 className="font-display text-[clamp(2.25rem,5vw,3.5rem)] font-semibold leading-[0.95] text-fg">
           Settings
         </h1>
-        <p className="mt-3 max-w-2xl font-display text-lg  leading-snug text-fg-2">
-          Review the account signed in to ClassTrace and the personal teacher
-          workspace connected to it.
+        <p className="mt-3 max-w-[52ch] text-[15px] leading-relaxed text-fg-2">
+          Your account, your private workspace, and a direct line to the people
+          building ClassTrace.
         </p>
       </header>
 
-      <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_20rem]">
+      <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
         <section
           aria-labelledby="help-feedback-heading"
           className="plate"

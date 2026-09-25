@@ -32,7 +32,7 @@ describe("app navigation state", () => {
   });
 
   it("provides compact contextual route labels", () => {
-    expect(getAppRouteLabel("/app/feed")).toBe("Feed");
+    expect(getAppRouteLabel("/app/feed")).toBe("Capture");
     expect(getAppRouteLabel("/app/explore")).toBe("Explore");
     expect(getAppRouteLabel("/app/roster")).toBe("Students");
     expect(getAppRouteLabel("/app/students/student_1")).toBe(

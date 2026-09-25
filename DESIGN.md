@@ -176,15 +176,17 @@ Authenticated teacher-workspace routes under `/app` share a sticky top header
 on every viewport. The shell is not sidebar-based. Sign-in, beta
 acknowledgement, and operator routes use their own focused layouts.
 
-- At `lg`, the brand mark sits at the left, the four text-led destinations are
-  centered across the header, with the student quick-jump and Sign out at the
-  right. Active navigation uses foreground text plus a small amber dot.
+- At `lg`, the brand lockup sits at the left followed directly by the four
+  text-led destinations (15px semibold pills); the student quick-jump and Sign
+  out sit at the right. The active destination uses foreground text on a Well
+  pill. A hairline Line rule separates the header from the page.
 - Below `lg`, the top-right menu opens a rounded bottom sheet containing the
   four primary destinations, the student quick-jump, trust/support links, and
   Sign out. Capture remains the first, directly reachable destination.
 - Primary order is Capture, Explore, Students, Settings. Student timelines and
   reports keep Students active without becoming global destinations.
-- The shell header is 56px on mobile and 72px at desktop. The menu and other
+- The shell header is 56px on mobile and 64px at desktop, plus its 1px rule.
+  It must not use `backdrop-filter`: the mobile sheet is a fixed descendant. The menu and other
   modal surfaces account for safe areas without reserving permanent workspace
   space.
 
@@ -256,11 +258,11 @@ collected behind a counted Drafts to review pill below the composer. Capture is
 confirmed with a transient toast rather than a large prepared-state panel. The
 queue opens as an anchored dialog at desktop and bottom sheet on mobile, keeps
 rows compact, scrolls as drafts accumulate, and expands only one draft at a
-time.
+time, so ten or more drafts after a class never lengthen the page.
 
-An ordinary expanded draft reads as a prepared record, not a read-only long
-form: the exact Evidence note leads, with student, date, optional photo state,
-and a concise filing result visible before approval. “Approve and save” is the
+An expanded draft reads as a prepared record, not a form: the exact Evidence
+note leads, and a Well “Filed as” line shows
+the evidence-type pill, structured details, tags, and date. “Approve and save” is the
 ink-solid commit action. Detailed fields remain behind progressive editing;
 unsaveable or semantically unresolved drafts expose correction directly.
 Successful save confirmation is a transient toast, separate from feed retrieval,
@@ -272,8 +274,9 @@ Saved evidence leaves the Plate vocabulary and joins an open chronological
 trace. A fine vertical line and ink nodes connect entries. Student identity and
 the approved Evidence note lead; dates, class, structured details, tags,
 follow-up, photo, and deletion support the record. Date or month headings group
-the trace. Saved feed rows do not need a repeated Validated badge; timeline and
-report contexts use the explicit ink Validated stamp.
+the trace. Feed and timeline rows do not repeat a Validated badge because their
+place in the saved trace establishes permanence; the printable report keeps the
+explicit ink Validated stamp.
 
 ### Explore
 
@@ -292,8 +295,10 @@ a spreadsheet grid.
 ### Students and student trace
 
 Students opens with a large page statement and class sections. The overview
-uses a responsive two-/three-column grid of linked student Plates; this is an
-intentional identity-and-entry pattern, not an analytics card grid. New class
+uses a responsive two-/three-column grid of linked student Plates showing name,
+handle, saved-observation count, and when the student was last noted; a last
+note two or more weeks old is emphasized in dark amber as a gentle “not yet”
+cue. This is an identity-and-entry pattern, not an analytics card grid. New class
 and archive actions remain quiet and inline.
 
 Inside a class, roster management becomes one Plate with divided student rows.
@@ -301,12 +306,14 @@ Manage expands a dashed Well beneath the row. Add student ends the same Plate;
 bulk paste and class settings use ruled disclosure rows below it.
 
 A student page is a focused 880px trace. The student's name is the dominant
-heading, followed by record count/date span and direct report/export/capture
-actions. A low-emphasis retrieval band provides direct text search and a
-collapsed filter disclosure for type, student-specific tags, and teacher-local
-dates. Applied state lives in the URL, while unsubmitted filter edits stay
-local. Results remain grouped by month and connected with the trace motif, with
-compact pagination beside and below the trace when needed.
+heading with an amber “Capture for …” action beside it, followed by count, date
+span, and relative last-noted day, then outline Print report / Export CSV /
+Switch student actions. A ruled summary row may show the follow-up count and the
+most-used tags; each tag links to the timeline filtered by that tag. A single
+search row with a Filters disclosure follows (type, student-specific tags, and
+teacher-local dates). Applied state lives in the URL, while unsubmitted filter
+edits stay local. Results remain grouped by month and connected with the trace
+motif, with compact pagination beside and below the trace when needed.
 The printable report uses ruled rows and removes app chrome and interactive
 trace decoration.
 
