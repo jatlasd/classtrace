@@ -1,73 +1,60 @@
 import Link from "next/link";
-import { ArrowUp } from "lucide-react";
+import { ArrowDown } from "lucide-react";
+import { BrowserScreen, PhoneScreen, screenshots } from "@/components/landing/landing-screens";
 import { routes } from "@/lib/routes";
 
 export function LandingOpening() {
   return (
-    <section className="grain relative overflow-hidden">
-      <div className="mx-auto max-w-[1240px] px-4 pb-12 pt-10 md:px-6 lg:px-8 lg:pb-20 lg:pt-16">
-        <div>
-          <p className="label flex items-center gap-2 text-live">
-            <span aria-hidden="true" className="size-1.5 rounded-full bg-live-bright" />
-            Now · 10 seconds, mid-lesson
+    <section className="night-field relative text-night-fg">
+      <div aria-hidden="true" className="absolute inset-x-0 bottom-0 h-20 bg-base sm:h-32 lg:h-44" />
+      <div className="relative mx-auto max-w-[1280px] px-4 pt-12 md:px-6 lg:px-8 lg:pt-16">
+        <p className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3.5 py-1.5 text-[13px] font-semibold text-night-fg-2">
+          <span aria-hidden="true" className="size-1.5 rounded-full bg-live-bright" />
+          Invitation-only beta · for individual teachers
+        </p>
+        <h1 className="mt-6 max-w-[14ch] font-display-wide text-[clamp(2.5rem,6.5vw,6rem)] font-semibold leading-[0.9] text-night-fg">
+          Write one sentence about{" "}
+          <span className="text-live-bright">one student.</span>
+        </h1>
+
+        <div className="mt-8 flex flex-col gap-6 lg:mt-8 lg:flex-row lg:items-end lg:justify-between">
+          <p className="max-w-lg text-[17px] leading-[1.6] text-night-fg-2">
+            Jot what you noticed mid-lesson. ClassTrace turns it into a draft
+            for that student — nothing is saved until you review it. When the
+            meeting comes, the evidence is already there, in order.
           </p>
-          <h1 className="mt-6 max-w-[16ch] font-display-wide text-[clamp(2.75rem,9vw,7.5rem)] font-semibold leading-[0.9] text-fg">
-            Write one sentence about one student.
-          </h1>
+          <div className="flex flex-wrap items-center gap-3">
+            <Link
+              href={routes.signUp}
+              prefetch={false}
+              className="inline-flex h-12 items-center rounded-full bg-live-bright px-6 text-[15px] font-semibold text-live-fg transition-colors hover:bg-[#ffc24d] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-live-bright focus-visible:ring-offset-2 focus-visible:ring-offset-night"
+            >
+              Invited sign-up
+            </Link>
+            <Link
+              href="#how"
+              className="inline-flex h-12 items-center gap-2 rounded-full border border-white/20 px-5 text-[15px] font-medium text-night-fg transition-colors hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-live-bright focus-visible:ring-offset-2 focus-visible:ring-offset-night"
+            >
+              How it works <ArrowDown aria-hidden="true" className="size-4" />
+            </Link>
+          </div>
         </div>
 
-        <div className="mt-12 grid gap-8 lg:mt-16 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] lg:items-end lg:gap-16">
-          <div
-            aria-hidden="true"
-            className="plate glow-live px-5 pb-4 pt-5 sm:px-7 sm:pt-6"
-          >
-            <div className="flex items-center justify-between">
-              <span className="label flex items-center gap-2 text-live">
-                <span className="size-1.5 rounded-full bg-live-bright" />
-                What happened?
-              </span>
-              <span className="label text-fg-3">@student · #tag</span>
-            </div>
-            <p className="mt-4 font-display text-[clamp(1.35rem,2.6vw,1.9rem)] font-medium leading-[1.3] text-fg">
-              <span className="font-mono text-[0.9em] text-live">@jeremy</span>{" "}
-              self-corrected his fraction model without a prompt{" "}
-              <span className="font-mono text-[0.9em] text-fg-2">#independent</span>
-              <span className="caret-blink ml-0.5 inline-block h-[1em] w-[2px] translate-y-[0.15em] bg-live-bright" />
-            </p>
-            <div className="mt-6 flex items-center justify-between gap-4 border-t border-line pt-4">
-              <span className="text-[13px] text-fg-2">Ready to capture for Jeremy.</span>
-              <span className="inline-flex h-11 items-center gap-2 rounded-full bg-live-bright px-5 text-sm font-semibold text-live-fg">
-                Capture <ArrowUp className="size-4" strokeWidth={2.5} />
-              </span>
-            </div>
-          </div>
-
-          <div className="max-w-md">
-            <p className="text-[17px] leading-[1.6] text-fg-2">
-              That is the whole capture. It becomes a draft — nothing is saved
-              until you review it. Later, when the meeting comes, you ask your
-              evidence a question instead of reconstructing the semester from
-              memory.
-            </p>
-            <div className="mt-7 flex flex-wrap items-center gap-3">
-              <Link
-                href={routes.signUp}
-                prefetch={false}
-                className="inline-flex h-12 items-center rounded-full bg-fg px-6 text-[15px] font-semibold text-base transition-colors hover:bg-[#3d3157] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-live-bright focus-visible:ring-offset-2 focus-visible:ring-offset-base"
-              >
-                Invited sign-up
-              </Link>
-              <Link
-                href="#later"
-                className="inline-flex h-12 items-center rounded-full px-4 text-[15px] font-medium text-fg-2 underline decoration-line-2 underline-offset-4 transition-colors hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-live-bright focus-visible:ring-offset-2 focus-visible:ring-offset-base"
-              >
-                How it works
-              </Link>
-            </div>
-            <p className="label mt-6 text-fg-3">
-              Invitation-only beta · individual teachers · no generative AI
-            </p>
-          </div>
+        <div className="relative mt-12 pb-10 lg:mt-14 lg:pb-12">
+          <BrowserScreen
+            src={screenshots.studentTrace}
+            title="Jeremy"
+            alt="A student page in ClassTrace: Jeremy's 17 saved observations, follow-ups, most-used tags, and a date-ordered trace with a photo of his work."
+            sizes="(min-width: 1024px) 960px, 88vw"
+            preload
+            className="relative z-10 mr-[12%] lg:mx-auto lg:max-w-[960px]"
+          />
+          <PhoneScreen
+            src={screenshots.mobileCapture}
+            alt="Capturing on a phone: a one-sentence note about Stacy tagged #math, ready to capture."
+            sizes="(min-width: 1024px) 220px, 40vw"
+            className="absolute bottom-0 right-0 z-20 w-[40%] max-w-[240px] sm:w-[28%] lg:right-6 lg:w-[220px]"
+          />
         </div>
       </div>
     </section>

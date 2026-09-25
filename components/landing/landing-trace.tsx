@@ -1,58 +1,122 @@
-const moments = [
+import { BrowserScreen, screenshots, type Screenshot } from "@/components/landing/landing-screens";
+
+type Moment = {
+  when: string;
+  title: string;
+  headline: string;
+  body: string;
+  points: readonly string[];
+  live: boolean;
+  screen: { src: Screenshot; title: string; alt: string };
+};
+
+const moments: readonly Moment[] = [
   {
     when: "During class",
     title: "Capture",
-    body: "One sentence, one @student, optional #tags or one photo. It lands as a draft that lives only in this browser and clears at midnight.",
+    headline: "Ten seconds, mid-lesson.",
+    body: "Type @ and a name, say what happened, add a #tag if you like. Snap one photo of the work. It lands as a draft that lives only in this browser.",
+    points: ["@student and #tag suggestions as you type", "Camera or library for one photo", "Drafts clear at midnight if you never get to them"],
     live: true,
+    screen: {
+      src: screenshots.captureComposer,
+      title: "Capture",
+      alt: "The ClassTrace composer with a capture for Mary tagged fractions and independent, ready to capture.",
+    },
   },
   {
     when: "When you have a minute",
     title: "Review",
-    body: "ClassTrace suggests the student, type, topic, and tags from plain rules — no AI. You correct anything and approve. Only then does it become permanent.",
+    headline: "Nothing saves until you say so.",
+    body: "ClassTrace suggests the student, type, topic, and tags from plain, predictable rules. You fix anything that’s off, then approve. Only then does it become permanent.",
+    points: ["Edit the note or the details before saving", "Delete a draft you don’t want", "Rules you can predict — no model guessing"],
     live: true,
+    screen: {
+      src: screenshots.reviewDraft,
+      title: "Drafts to review",
+      alt: "A draft for Mary in the review panel, showing what it will be filed as and an Approve and save button.",
+    },
   },
   {
     when: "Any time after",
     title: "Trace",
-    body: "Each student has one date-ordered trace of validated evidence. Print a date-filtered report, export CSV, or ask Explore a question across every student.",
+    headline: "Walk into the meeting ready.",
+    body: "Each student has one date-ordered trace of validated evidence. Print a date-filtered report, save it as a PDF, or export CSV.",
+    points: ["Oldest-to-newest report, stamped Validated", "Filter to exactly the dates you need", "CSV export for your own records"],
     live: false,
+    screen: {
+      src: screenshots.evidenceReport,
+      title: "Evidence report",
+      alt: "Jeremy's evidence report: 17 records, a date-range filter, and validated entries listed oldest to newest.",
+    },
   },
-] as const;
+];
 
 export function LandingTrace() {
   return (
-    <section aria-labelledby="trace-heading" className="border-t border-line">
-      <div className="mx-auto max-w-[1240px] px-4 py-20 md:px-6 lg:px-8 lg:py-28">
-        <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+    <section id="how" aria-labelledby="trace-heading" className="scroll-mt-16 bg-base">
+      <div className="mx-auto max-w-[1280px] px-4 py-16 md:px-6 lg:px-8 lg:py-24">
+        <div className="grid gap-6 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)] lg:items-end lg:gap-16">
           <h2
             id="trace-heading"
-            className="max-w-[14ch] font-display-wide text-[clamp(2.25rem,5.5vw,4.5rem)] font-semibold leading-[0.95] text-fg"
+            className="font-display-wide text-[clamp(2.25rem,4.5vw,4rem)] font-semibold leading-[0.95] text-fg"
           >
-            Yellow means not yet. Ink means saved.
+            Yellow means <span className="text-live">not yet.</span> Ink means saved.
           </h2>
-          <p className="max-w-sm text-[15px] leading-relaxed text-fg-2">
+          <p className="max-w-md text-[16px] leading-relaxed text-fg-2">
             There is exactly one path from a hallway thought to a record you
-            would show a parent, and the color tells you where each piece of
+            would show a parent. The color tells you where each piece of
             evidence is on it.
           </p>
         </div>
 
-        <ol className="mt-14 grid gap-10 md:grid-cols-3 md:gap-6">
+        <ol className="mt-12 space-y-16 lg:mt-16 lg:space-y-20">
           {moments.map((moment, index) => (
-            <li key={moment.title} className="relative">
-              <div className="flex items-center gap-3">
-                <span
-                  aria-hidden="true"
-                  className={`size-3 rounded-full ${moment.live ? "bg-live-bright" : "bg-fg"}`}
-                />
-                <span aria-hidden="true" className="h-px flex-1 bg-line-2" />
-                <span className="font-mono text-xs text-fg-3">0{index + 1}</span>
+            <li
+              key={moment.title}
+              className="grid items-center gap-8 lg:grid-cols-2 lg:gap-14"
+            >
+              <div className={index % 2 === 1 ? "lg:order-2" : undefined}>
+                <div className="flex items-center gap-3">
+                  <span
+                    aria-hidden="true"
+                    className={`grid size-8 place-items-center rounded-full font-display text-sm font-semibold ${
+                      moment.live ? "bg-live-bright text-live-fg" : "bg-fg text-base"
+                    }`}
+                  >
+                    {index + 1}
+                  </span>
+                  <p className={`label ${moment.live ? "text-live" : "text-fg"}`}>{moment.when}</p>
+                </div>
+                <h3 className="mt-4 font-display-wide text-[clamp(1.6rem,2.6vw,2.25rem)] font-semibold leading-[1.05] text-fg">
+                  <span className="sr-only">{moment.title}: </span>
+                  {moment.headline}
+                </h3>
+                <p className="mt-3 max-w-[46ch] text-[15px] leading-[1.6] text-fg-2">{moment.body}</p>
+                <ul className="mt-5 space-y-2 border-t border-line pt-5">
+                  {moment.points.map((point) => (
+                    <li key={point} className="flex gap-3 text-sm text-fg">
+                      <span
+                        aria-hidden="true"
+                        className={`mt-2 size-1.5 shrink-0 rounded-full ${moment.live ? "bg-live-bright" : "bg-fg"}`}
+                      />
+                      {point}
+                    </li>
+                  ))}
+                </ul>
               </div>
-              <p className={`label mt-5 ${moment.live ? "text-live" : "text-fg"}`}>{moment.when}</p>
-              <h3 className="mt-2 font-display text-[2rem] font-semibold leading-none text-fg">
-                {moment.title}
-              </h3>
-              <p className="mt-4 max-w-[36ch] text-[15px] leading-[1.6] text-fg-2">{moment.body}</p>
+              <div
+                className={`relative rounded-xl p-3 sm:p-5 lg:p-6 ${
+                  moment.live ? "bg-live-soft" : "bg-well"
+                } ${index % 2 === 1 ? "lg:order-1" : ""}`}
+              >
+                <BrowserScreen
+                  src={moment.screen.src}
+                  title={moment.screen.title}
+                  alt={moment.screen.alt}
+                  sizes="(min-width: 1280px) 560px, (min-width: 1024px) 45vw, 92vw"
+                />
+              </div>
             </li>
           ))}
         </ol>

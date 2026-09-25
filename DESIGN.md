@@ -319,16 +319,19 @@ trace decoration.
 
 ### Landing page
 
-The landing page uses the same warm system at a more expressive scale. Its
-sequence is: sentence capture, sentence-based Explore question, the
-Capture/Review/Trace progression, product boundaries, and invitation.
+The landing page is the one bolder public surface. It alternates Night
+(`--color-night`, a near-black Ink) bands with Base and Live Soft, and closes on
+a full Live Bright band. Its sequence is: hero, four product facts,
+Capture/Review/Trace, Explore, phone use, product boundaries, and invitation.
 
-Wide Bricolage headlines, generous vertical space, rules, the live composer
-Plate, open evidence trace, and boundary definition list create the composition.
-The `grain` utility is a subtle pair of pale radial color fields made from Live
-Soft and Well; it is the only established atmospheric treatment. The landing
-page does not use dark indigo bands, the retired mint accent, product screenshots
-that invent capabilities, or decorative classroom imagery.
+The page is sold with real app screenshots captured from the local demo
+workspace (`public/landing/*.webp`), shown in `BrowserScreen` and `PhoneScreen`
+frames from `components/landing/landing-screens.tsx`. `.night-field` adds a
+faint grid and amber/violet glow to Night bands. Keep the type and spacing
+tight: section headlines stop at about 4rem, sections use 64–96px vertical
+rhythm, and corners stay at 8–12px apart from phone frames. Screenshots must
+show real behavior with canonical demo names; never mock a capability. Do not
+add decorative classroom imagery or the retired mint accent.
 
 ## Shared controls and evidence content
 

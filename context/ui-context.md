@@ -147,8 +147,8 @@ case-management platform, automation, or generated-document language.
   controls for features that do not exist.
 - No gradient text, glass panels, downloaded textures, noise filters, arbitrary
   blobs, scrapbook styling, handwritten type, doodles, tape, or sticky notes.
-  The landing page's existing pale radial `grain` field is an intentional part
-  of the redesign, not a general invitation to add gradients.
+  The landing page's `.night-field` glow and the auth pages' pale `grain` field
+  are intentional exceptions, not a general invitation to add gradients.
 - No rainbow tags, competing accent palette, giant soft shadows, or stacks of
   nested floating cards.
 - No repeated eyebrow labels unless they express a real moment or state.
@@ -157,6 +157,6 @@ case-management platform, automation, or generated-document language.
   when a shared pattern exists.
 - Do not use amber as generic decoration or style saved evidence like a draft.
 
-The landing page may use larger typography, more generous spacing, and the
-established subtle radial field, but it shares the same warm palette, type,
-trace motif, plates, and live-to-saved story as the application.
+The landing page may use Night bands, larger headlines, and real app
+screenshots, but it shares the same Ink/amber palette, type, and live-to-saved
+story as the application.

@@ -28,7 +28,8 @@ Source: `app/globals.css`
 | Label | `.label` | 13px/18px semibold sentence-case context |
 | Question slot | `.slot` | Dashed unset phrase; amber-backed solid set phrase |
 | Evidence trace | `.trace`, `.trace-node` | Vertical rule and ink node; `data-live` supports amber |
-| Atmospheric field | `.grain` | Landing-only pale radial Live Soft / Well treatment |
+| Atmospheric field | `.grain` | Pale radial Live Soft / Well treatment on auth and acknowledgement pages |
+| Night field | `.night-field` | Landing-only Night band with faint grid and amber/violet glow |
 
 The compatibility Tailwind roles (`background`, `card`, `primary`, and so on)
 map back to these tokens. New UI should prefer the redesign's semantic names
@@ -382,23 +383,25 @@ Files: `components/students/student-timeline-page.tsx`,
 Files: `app/page.tsx`, `components/landing/*`,
 `components/layout/site-footer.tsx`
 
-- Warm Base page with sticky translucent Base header and the default brand
-  lockup. Sign in is quiet; invited sign-up is a full-rounded Ink action.
-- `1240px` composition with 80px section rhythm, increasing to 112px at `lg`.
-- Opening uses the established pale radial `.grain`, an amber Now label, a very
-  large Wide Display statement, a live composer Plate, and direct beta copy.
-- The next section renders Explore as a large sentence with set slots and a
-  small open saved-evidence trace.
-- Capture / Review / Trace appears as a three-step line: amber for the first two
-  provisional moments, Ink for the saved trace.
-- Product boundaries use a two-column section with a divided definition list on
-  Plate; the closing invitation returns to open Base.
-- Footer is a quiet Line rule with beta identity and trust/access links; it does
-  not repeat the brand mark.
+- Sticky Night header with the inverse lockup, in-page anchors, a quiet Sign in,
+  and a Live Bright invited sign-up.
+- `1280px` composition; sections use 64px rhythm, 96px at `lg`.
+- Hero: `.night-field` band, beta pill, Wide Display statement with "one
+  student." in Live Bright, CTAs, then a `BrowserScreen` student page with a
+  `PhoneScreen` capture overlapping it and straddling into Base.
+- Four large-number product facts in a ruled grid (two-up on mobile).
+- Capture / Review / Trace: alternating two-column rows, each with a real
+  screenshot on a Live Soft (provisional) or Well (saved) panel.
+- Explore: Night band, headline and a ruled Who/What/When/How list beside a
+  screenshot of a filled-in Explore question.
+- Phone use: Live Soft band with two slightly rotated phone screenshots.
+- Boundaries: headline row, then a 3-column grid of Plate tiles.
+- Invitation: full Live Bright band with a Night primary action.
+- Footer is a quiet Line rule with beta identity and trust/access links.
 
-The landing page may be more expressive in scale, whitespace, and the existing
-radial field. Do not reintroduce dark indigo bands, mint accents, the retired CT
-tile, classroom decoration, fake product claims, or orchestrated motion.
+Screenshots live in `public/landing/` and are captured from the local demo
+workspace. Replace them when the app UI changes; never mock a capability, use
+real student names, or add classroom decoration or orchestrated motion.
 
 ## Settings and feedback
 
