@@ -403,6 +403,28 @@ Screenshots live in `public/landing/` and are captured from the local demo
 workspace. Replace them when the app UI changes; never mock a capability, use
 real student names, or add classroom decoration or orchestrated motion.
 
+## Overview page
+
+Files: `app/demo/page.tsx`, `components/demo/overview-player.tsx`
+
+- Public `/demo` page linked from the landing hero. Reuses the landing header,
+  skip link, and footer; `main` is one `.night-field` band.
+- Centered header: Wide Display "Meet ClassTrace." and a one-sentence summary.
+  Keep it centered so it never reads as a shifted copy of the left-aligned
+  landing hero. The video frame is sized to keep the whole poster and play
+  button above the fold (`min(100%, 70rem, (100svh − 20rem) × 16/9)`).
+- The poster is the video's own title card (`public/demo/overview-title.jpg`,
+  also the Open Graph image) behind a Live Bright "Watch the overview" button.
+  Nothing loads from YouTube until a play control is pressed; the frame then
+  swaps in a `youtube-nocookie.com` iframe, scrolls it into view, and moves
+  focus to it. Never autoplay on page load.
+- Chapters: six real frames from the video (`public/demo/chapters/`) in a
+  two/three/six-column grid. Each starts the video at a sentence boundary.
+  Descriptions paraphrase the narration; do not add claims the video does not
+  make.
+- A native `details` transcript matches the narration word for word.
+- No call to action beyond the shared header and footer access links.
+
 ## Settings and feedback
 
 Files: `app/app/settings/page.tsx`,

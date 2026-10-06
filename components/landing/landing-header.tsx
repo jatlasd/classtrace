@@ -13,9 +13,9 @@ export function LandingHeader() {
           <BrandLockup size="sm" tone="inverse" />
         </Link>
         <nav aria-label="Landing" className="hidden items-center gap-7 text-sm font-medium text-night-fg-2 md:flex">
-          <a href="#how" className="transition-colors hover:text-night-fg">How it works</a>
-          <a href="#later" className="transition-colors hover:text-night-fg">Explore</a>
-          <a href="#boundaries" className="transition-colors hover:text-night-fg">Boundaries</a>
+          <a href={`${routes.root}#how`} className="transition-colors hover:text-night-fg">How it works</a>
+          <a href={`${routes.root}#later`} className="transition-colors hover:text-night-fg">Explore</a>
+          <a href={`${routes.root}#boundaries`} className="transition-colors hover:text-night-fg">Boundaries</a>
         </nav>
         <div className="flex items-center gap-1 sm:gap-2">
           <Link
