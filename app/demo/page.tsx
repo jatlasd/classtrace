@@ -39,7 +39,7 @@ export default function DemoPage() {
       <LandingHeader />
       <main id="main-content" tabIndex={-1} className="night-field flex-1 text-night-fg outline-none">
         <div className="mx-auto max-w-[1280px] px-4 pb-16 pt-10 md:px-6 lg:px-8 lg:pb-24 lg:pt-12">
-          <div className="mx-auto w-[min(100%,70rem,calc((100svh_-_20rem)*16/9))]">
+          <div className="mx-auto w-[min(100%,70rem,max(24rem,calc((100svh_-_20rem)*16/9)))]">
             <header className="text-center">
               <h1 className="text-balance font-display-wide text-[clamp(2.5rem,5.5vw,4.75rem)] font-semibold leading-[0.95] text-night-fg">
                 Meet ClassTrace.

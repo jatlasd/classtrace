@@ -412,7 +412,9 @@ Files: `app/demo/page.tsx`, `components/demo/overview-player.tsx`
 - Centered header: Wide Display "Meet ClassTrace." and a one-sentence summary.
   Keep it centered so it never reads as a shifted copy of the left-aligned
   landing hero. The video frame is sized to keep the whole poster and play
-  button above the fold (`min(100%, 70rem, (100svh − 20rem) × 16/9)`).
+  button above the fold
+  (`min(100%, 70rem, max(24rem, (100svh − 20rem) × 16/9))`); very short
+  viewports keep a 24rem minimum and scroll instead.
 - The poster is the video's own title card (`public/demo/overview-title.jpg`,
   also the Open Graph image) behind a Live Bright "Watch the overview" button.
   Nothing loads from YouTube until a play control is pressed; the frame then

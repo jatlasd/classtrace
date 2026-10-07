@@ -84,6 +84,11 @@ test("renders the public overview page with the whole video above the fold", asy
     });
   }
 
+  await page.setViewportSize({ width: 844, height: 300 });
+  await page.goto("/demo");
+  const shortPlay = page.getByRole("button", { name: /watch the overview/i });
+  expect((await shortPlay.boundingBox())?.width).toBeGreaterThanOrEqual(384);
+
   await page.getByRole("button", { name: /play from 0:40/i }).click();
   await expect(page.locator("iframe")).toHaveAttribute("src", /[?&]start=40(?:&|$)/);
   await expect(page.locator("iframe")).toBeInViewport();

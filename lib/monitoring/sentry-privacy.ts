@@ -57,6 +57,7 @@ const SAFE_STATIC_ROUTE_TEMPLATES = new Set([
   "/app/settings",
   "/beta-acknowledgements",
   "/data-deletion",
+  "/demo",
   "/operator",
   "/privacy",
   "/students",
