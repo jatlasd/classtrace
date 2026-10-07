@@ -309,10 +309,12 @@ describe("Sentry privacy boundary", () => {
   });
 
   it("keeps the public overview route", () => {
-    const sanitized = sanitizeSentryEvent({
+    const event: Event = {
       transaction: "https://classtrace.example/demo?ref=SENTINEL_REF",
       transaction_info: { source: "url" },
-    });
+    };
+
+    const sanitized = sanitizeSentryEvent(event);
 
     expect(sanitized.transaction).toBe("/demo");
     expect(sanitized.tags).toMatchObject({
