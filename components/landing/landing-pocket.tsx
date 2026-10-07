@@ -5,10 +5,9 @@ export function LandingPocket() {
     <section aria-labelledby="pocket-heading" className="overflow-hidden bg-live-soft">
       <div className="mx-auto grid max-w-[1280px] items-center gap-10 px-4 py-16 md:px-6 lg:grid-cols-2 lg:gap-14 lg:px-8 lg:py-20">
         <div>
-          <p className="label text-live">In the hallway, at the door, on duty</p>
           <h2
             id="pocket-heading"
-            className="mt-4 max-w-[14ch] font-display-wide text-[clamp(2.25rem,4.5vw,4rem)] font-semibold leading-[0.95] text-fg"
+            className="max-w-[14ch] font-display-wide text-[clamp(2.25rem,4.5vw,4rem)] font-semibold leading-[0.95] text-fg"
           >
             Built for the moment, not the desk.
           </h2>

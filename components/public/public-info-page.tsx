@@ -42,13 +42,13 @@ export function PublicInfoPage({
           <nav aria-label="Public" className="flex items-center gap-4">
             <Link
               href={routes.support}
-              className="rounded-sm py-2 font-mono text-xs uppercase tracking-[0.1em] text-fg-2 transition-colors hover:text-fg"
+              className="inline-flex min-h-11 items-center rounded-sm text-sm font-medium text-fg-2 transition-colors hover:text-fg"
             >
               Support
             </Link>
             <Link
               href={routes.signIn}
-              className="rounded-sm py-2 font-mono text-xs font-semibold uppercase tracking-[0.1em] text-fg transition-colors hover:text-fg-2"
+              className="inline-flex min-h-11 items-center rounded-sm text-sm font-semibold text-fg transition-colors hover:text-fg-2"
             >
               Sign in
             </Link>
@@ -59,24 +59,15 @@ export function PublicInfoPage({
       <main id="main-content" tabIndex={-1} className="flex-1 outline-none">
         <div className="mx-auto grid max-w-6xl gap-10 px-4 py-10 md:px-6 md:py-14 lg:grid-cols-[210px_minmax(0,720px)] lg:gap-16 lg:px-8 lg:py-16">
           <aside className="lg:pt-2">
-            <p className="label text-fg-3">
-              ClassTrace beta
-            </p>
-            <nav aria-label="On this page" className="mt-4">
+            <nav aria-label="On this page">
               <ol className="border-l border-line">
-                {sections.map((section, index) => (
+                {sections.map((section) => (
                   <li key={section.id}>
                     <a
                       href={"#" + section.id}
-                      className="group flex gap-3 border-l-2 border-transparent py-2 pl-4 text-sm text-fg-2 transition-colors hover:border-live-bright hover:text-fg"
+                      className="flex border-l-2 border-transparent py-2 pl-4 text-sm text-fg-2 transition-colors hover:border-live-bright hover:text-fg"
                     >
-                      <span
-                        aria-hidden="true"
-                        className="font-mono text-xs text-fg-3"
-                      >
-                        {String(index + 1).padStart(2, "0")}
-                      </span>
-                      <span>{section.label}</span>
+                      {section.label}
                     </a>
                   </li>
                 ))}
@@ -93,7 +84,7 @@ export function PublicInfoPage({
                 {description}
               </p>
               {lastUpdated ? (
-                <p className="mt-5 font-mono text-xs text-fg-2">
+                <p className="mt-5 text-sm text-fg-2">
                   Last updated {lastUpdated}
                 </p>
               ) : null}

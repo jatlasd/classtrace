@@ -11,6 +11,9 @@ describe("public trust and support pages", () => {
     const markup = renderToStaticMarkup(<PrivacyPage />);
 
     expect(markup).toContain("Privacy, in plain language");
+    expect(markup.indexOf("The short version")).toBeLessThan(
+      markup.indexOf("does not claim FERPA compliance"),
+    );
     expect(markup).toContain("session storage");
     expect(markup).toContain("does not claim FERPA compliance");
     expect(markup).toContain("backup-retention process is still being finalized");

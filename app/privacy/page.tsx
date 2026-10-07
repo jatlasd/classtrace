@@ -8,12 +8,13 @@ import {
 import { routes } from "@/lib/routes";
 
 export const metadata: Metadata = {
-  title: "Privacy — ClassTrace",
+  title: "Privacy | ClassTrace",
   description:
     "How the ClassTrace beta handles teacher accounts, roster information, drafts, saved evidence, and support requests.",
 };
 
 const sections = [
+  { id: "short-version", label: "The short version" },
   { id: "what-we-handle", label: "What we handle" },
   { id: "drafts-and-evidence", label: "Drafts and saved evidence" },
   { id: "service-providers", label: "Service providers" },
@@ -27,8 +28,38 @@ export default function PrivacyPage() {
       title="Privacy, in plain language"
       description="ClassTrace is a small teacher-first beta. This page describes what the product handles today, what it deliberately does not collect, and where its privacy limits still are."
       sections={sections}
-      lastUpdated="October 6, 2026"
+      lastUpdated="October 7, 2026"
     >
+      <PublicInfoSection id="short-version" title="The short version">
+        <ul>
+          <li>
+            Nothing becomes a permanent record until you review and approve it.
+          </li>
+          <li>
+            Until then, a draft stays in this browser and clears at the next
+            midnight. Only what you approve is saved: the Evidence note, its
+            details, and at most one photo.
+          </li>
+          <li>
+            Your workspace belongs to your account. No school, district, or
+            other teacher can see it.
+          </li>
+          <li>
+            No advertising, analytics, session replay, or generative AI.
+            ClassTrace does not sell teacher or student information.
+          </li>
+          <li>
+            A few providers help run the beta: Clerk for sign-in, hosting and
+            database providers, Sentry for scrubbed error reports, and Resend
+            for support messages.
+          </li>
+          <li>
+            You can delete records yourself or ask for your whole account to be
+            deleted.
+          </li>
+        </ul>
+      </PublicInfoSection>
+
       <PublicNote>
         ClassTrace does not claim FERPA compliance, district approval, legal
         de-identification, or production safety. Your school or district may
@@ -140,8 +171,8 @@ export default function PrivacyPage() {
           evidence photos,
           followed separately by the Clerk sign-in account. A narrow operator
           audit can remain after deletion. It records account identifiers,
-          aggregate item counts, action outcome, and timestamps—not student
-          names, evidence content, or raw notes. Copies may also remain in
+          aggregate item counts, action outcome, and timestamps. It does not
+          record student names, evidence content, or raw notes. Copies may also remain in
           provider backups until those backups expire; the beta backup-retention
           process is still being finalized.
         </p>

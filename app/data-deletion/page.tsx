@@ -8,7 +8,7 @@ import {
 import { routes } from "@/lib/routes";
 
 export const metadata: Metadata = {
-  title: "Account deletion — ClassTrace",
+  title: "Account deletion | ClassTrace",
   description:
     "How to request deletion of a ClassTrace teacher account and its workspace data.",
 };
@@ -53,17 +53,17 @@ export default function DataDeletionPage() {
       </PublicInfoSection>
 
       <PublicInfoSection id="how-to-request" title="How to send the request">
-        <ol className="space-y-3 pl-5 [counter-reset:steps]">
-          <li className="[counter-increment:steps] before:mr-3 before:font-mono before:text-xs before:text-fg before:content-[counter(steps,decimal-leading-zero)]">
+        <ol className="list-decimal space-y-3 pl-5 marker:font-semibold marker:text-fg">
+          <li>
             Sign in to the ClassTrace account you want deleted.
           </li>
-          <li className="[counter-increment:steps] before:mr-3 before:font-mono before:text-xs before:text-fg before:content-[counter(steps,decimal-leading-zero)]">
+          <li>
             Open Account, then find Help and feedback.
           </li>
-          <li className="[counter-increment:steps] before:mr-3 before:font-mono before:text-xs before:text-fg before:content-[counter(steps,decimal-leading-zero)]">
+          <li>
             Choose <strong>Account or data request</strong>.
           </li>
-          <li className="[counter-increment:steps] before:mr-3 before:font-mono before:text-xs before:text-fg before:content-[counter(steps,decimal-leading-zero)]">
+          <li>
             Write <strong>Delete my ClassTrace account</strong>, provide a reply
             email, and do not include student information.
           </li>

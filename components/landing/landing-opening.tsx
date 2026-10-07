@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowDown, Play } from "lucide-react";
+import { Play } from "lucide-react";
 import { BrowserScreen, PhoneScreen, screenshots } from "@/components/landing/landing-screens";
 import { routes } from "@/lib/routes";
 
@@ -8,11 +8,7 @@ export function LandingOpening() {
     <section className="night-field relative text-night-fg">
       <div aria-hidden="true" className="absolute inset-x-0 bottom-0 h-20 bg-base sm:h-32 lg:h-44" />
       <div className="relative mx-auto max-w-[1280px] px-4 pt-12 md:px-6 lg:px-8 lg:pt-16">
-        <p className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3.5 py-1.5 text-[13px] font-semibold text-night-fg-2">
-          <span aria-hidden="true" className="size-1.5 rounded-full bg-live-bright" />
-          Invitation-only beta · for individual teachers
-        </p>
-        <h1 className="mt-6 max-w-[14ch] font-display-wide text-[clamp(2.5rem,6.5vw,6rem)] font-semibold leading-[0.9] text-night-fg">
+        <h1 className="max-w-[14ch] font-display-wide text-[clamp(2.5rem,6.5vw,6rem)] font-semibold leading-[0.9] text-night-fg">
           Write one sentence about{" "}
           <span className="text-live-bright">one student.</span>
         </h1>
@@ -20,28 +16,22 @@ export function LandingOpening() {
         <div className="mt-8 flex flex-col gap-6 lg:mt-8 lg:flex-row lg:items-end lg:justify-between">
           <p className="max-w-lg text-[17px] leading-[1.6] text-night-fg-2">
             Jot what you noticed mid-lesson. ClassTrace turns it into a draft
-            for that student — nothing is saved until you review it. When the
+            for that student. Nothing is saved until you review it. When the
             meeting comes, the evidence is already there, in order.
           </p>
           <div className="flex flex-wrap items-center gap-3">
             <Link
-              href={routes.signUp}
-              prefetch={false}
-              className="inline-flex h-12 items-center rounded-full bg-live-bright px-6 text-[15px] font-semibold text-live-fg transition-colors hover:bg-[#ffc24d] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-live-bright focus-visible:ring-offset-2 focus-visible:ring-offset-night"
-            >
-              Invited sign-up
-            </Link>
-            <Link
               href={routes.demo}
-              className="inline-flex h-12 items-center gap-2 rounded-full border border-white/20 px-5 text-[15px] font-medium text-night-fg transition-colors hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-live-bright focus-visible:ring-offset-2 focus-visible:ring-offset-night"
+              className="inline-flex h-12 items-center gap-2 rounded-full bg-live-bright px-6 text-[15px] font-semibold text-live-fg transition-colors hover:bg-[#ffc24d] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-live-bright focus-visible:ring-offset-2 focus-visible:ring-offset-night"
             >
               <Play aria-hidden="true" className="size-4 fill-current" /> Watch the 80-second overview
             </Link>
             <Link
-              href="#how"
-              className="inline-flex h-12 items-center gap-2 rounded-full border border-white/20 px-5 text-[15px] font-medium text-night-fg transition-colors hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-live-bright focus-visible:ring-offset-2 focus-visible:ring-offset-night"
+              href={routes.signUp}
+              prefetch={false}
+              className="inline-flex h-12 items-center rounded-full border border-white/20 px-5 text-[15px] font-medium text-night-fg transition-colors hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-live-bright focus-visible:ring-offset-2 focus-visible:ring-offset-night"
             >
-              How it works <ArrowDown aria-hidden="true" className="size-4" />
+              Invited sign-up
             </Link>
           </div>
         </div>

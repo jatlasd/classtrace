@@ -10,7 +10,7 @@ import { LandingTrace } from "@/components/landing/landing-trace";
 import { SiteFooter } from "@/components/layout/site-footer";
 
 export const metadata: Metadata = {
-  title: "ClassTrace — Write one sentence about one student",
+  title: "ClassTrace | Write one sentence about one student",
   description:
     "Invitation-only beta. Capture a student observation in one sentence, review it before it saves, and ask your evidence questions later.",
 };

@@ -8,10 +8,20 @@ const grotesk = Bricolage_Grotesque({
   axes: ["opsz", "wdth"],
 });
 
+const description =
+  "Write one sentence about one student. Review it when you have a minute. Ask your evidence questions later.";
+
 export const metadata: Metadata = {
   title: "ClassTrace",
-  description:
-    "Write one sentence about one student. Review it when you have a minute. Ask your evidence questions later.",
+  description,
+  openGraph: {
+    type: "website",
+    siteName: "ClassTrace",
+    title: "ClassTrace",
+    description,
+    images: [{ url: "/demo/overview-title.jpg", width: 1920, height: 1080 }],
+  },
+  twitter: { card: "summary_large_image" },
 };
 
 export default function RootLayout({

@@ -8,7 +8,7 @@ import {
 import { routes } from "@/lib/routes";
 
 export const metadata: Metadata = {
-  title: "Beta terms — ClassTrace",
+  title: "Beta terms | ClassTrace",
   description:
     "Plain-language terms for participating in the ClassTrace controlled beta.",
 };
@@ -80,7 +80,7 @@ export default function TermsPage() {
         title="Teacher review remains required"
       >
         <p>
-          ClassTrace uses deterministic rules—not generative AI—to organize a
+          ClassTrace uses deterministic rules, not generative AI, to organize a
           captured note into a draft. A draft can be incomplete or wrong. You
           are responsible for checking the student match, date, Evidence note,
           optional photo, and structured fields before saving. ClassTrace does

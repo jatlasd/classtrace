@@ -73,7 +73,8 @@ interest through Clerk, but it cannot create a ClassTrace account until the
 operator approves the waitlist entry or sends an invitation. A valid
 invitation continues through the public `/sign-up` route and Clerk's hosted
 flow; ClassTrace does not add an application-owned allowlist or organization
-model.
+model. A bare `/sign-up` visit without Clerk's `__clerk_ticket` does not render
+Clerk; it explains invitation-only access and links to the overview and sign-in.
 
 Before changing Clerk access mode, inventory the existing users and compare
 the configured `CLASSTRACE_OPERATOR_CLERK_USER_IDS` values to real Clerk user

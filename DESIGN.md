@@ -321,8 +321,8 @@ trace decoration.
 
 The landing page is the one bolder public surface. It alternates Night
 (`--color-night`, a near-black Ink) bands with Base and Live Soft, and closes on
-a full Live Bright band. Its sequence is: hero, four product facts,
-Capture/Review/Trace, Explore, phone use, product boundaries, and invitation.
+a full Live Bright band. Its sequence is: hero, four built-in rules,
+Capture/Review/Report, Explore, phone use, product boundaries, and invitation.
 
 The page is sold with real app screenshots captured from the local demo
 workspace (`public/landing/*.webp`), shown in `BrowserScreen` and `PhoneScreen`
@@ -378,8 +378,11 @@ add decorative classroom imagery or the retired mint accent.
   blobs, scrapbook styling, tape, sticky notes, doodles, or handwritten type.
 - No rainbow tags, competing accent palette, giant soft shadows, or stacks of
   nested floating cards.
-- No repeated eyebrow copy as generic scaffolding. Context labels must locate a
-  real moment or state, such as “Now” or “Later”.
+- No eyebrows: no small label, pill, or kicker above a heading. Put the context
+  in the heading or the body text. Status badges that mark real state (such as
+  Pending approval) are not eyebrows.
+- No em dashes in product copy or page titles. Use a period or comma; titles
+  use `Page | ClassTrace`.
 - No broad `transition-all`; animate only properties that communicate state.
 - No one-off button, field, evidence, brand, or confirmation language when the
   shared implementation already covers the need.

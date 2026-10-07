@@ -526,7 +526,7 @@ function InterpretationReviewPanelContent({
             </p>
           ) : (
             <p className="text-sm italic text-fg-2">
-              No Evidence note — photo only.
+              Photo only. No Evidence note.
             </p>
           )}
 
@@ -703,7 +703,7 @@ function InterpretationReviewPanelContent({
               {studentValidation.status === "valid_one_student"
                 ? studentValidation.studentName
                 : studentValidation.status === "no_student"
-                  ? "—"
+                  ? "No student"
                   : studentValidation.studentNames.join(", ")}
             </p>
           </div>

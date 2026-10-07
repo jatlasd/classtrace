@@ -62,9 +62,13 @@ describe("auth route boundaries", () => {
   it("redirects signed-in users away from auth pages at runtime", async () => {
     mocks.auth.mockResolvedValue({ userId: "clerk_user_1" });
 
-    for (const renderPage of [SignInPage, SignUpPage]) {
-      await expect(renderPage()).rejects.toThrow("redirect:/app");
-    }
+    await expect(SignInPage()).rejects.toThrow("redirect:/app");
+    await expect(
+      SignUpPage({
+        params: Promise.resolve({}),
+        searchParams: Promise.resolve({}),
+      }),
+    ).rejects.toThrow("redirect:/app");
     expect(mocks.auth).toHaveBeenCalledTimes(2);
     expect(mocks.redirect).toHaveBeenNthCalledWith(1, "/app");
     expect(mocks.redirect).toHaveBeenNthCalledWith(2, "/app");

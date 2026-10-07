@@ -8,7 +8,7 @@ import { hasAcceptedCurrentBetaAgreement } from "@/lib/beta-agreement/beta-agree
 import { routes } from "@/lib/routes";
 
 export const metadata: Metadata = {
-  title: "Before you enter — ClassTrace",
+  title: "Before you enter | ClassTrace",
   description:
     "Required acknowledgements for entering the ClassTrace limited beta.",
 };

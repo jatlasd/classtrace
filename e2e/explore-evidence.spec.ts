@@ -35,8 +35,8 @@ test("opens on evidence and applies optional filters on desktop", async ({ page 
   test.setTimeout(60_000);
   await page.goto("/app/explore", { waitUntil: "domcontentloaded" });
 
-  await expect(page.getByRole("heading", { name: "Explore" })).toBeVisible();
-  await expect(page.getByText("Find what you saved without remembering where you put it.")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Explore" })).toBeAttached();
+  await expect(page.getByRole("group", { name: "Your question" })).toBeVisible();
   await expect(page.getByRole("button", { name: /^Filter by student/ })).toBeVisible();
   await expect(page.getByRole("button", { name: "Evidence", exact: true })).toHaveAttribute("aria-pressed", "true");
   await expect(page.getByRole("region", { name: "Filter evidence" })).toBeHidden();
@@ -49,7 +49,7 @@ test("opens on evidence and applies optional filters on desktop", async ({ page 
   ).toBeGreaterThanOrEqual(4.5);
   expect(
     await renderedContrast(
-      page.getByText("Find what you saved without remembering where you put it."),
+      page.getByRole("group", { name: "Your question" }),
       page.locator("body")
     )
   ).toBeGreaterThanOrEqual(4.5);
@@ -87,7 +87,7 @@ test("keeps Explore Evidence in one overflow-free mobile column", async ({ page 
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/app/explore", { waitUntil: "domcontentloaded" });
 
-  await expect(page.getByRole("heading", { name: "Explore" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Explore" })).toBeAttached();
   await expect(page.getByRole("button", { name: "Filters", exact: true })).toBeVisible();
   await expect(page.getByRole("region", { name: "Filter evidence" })).toBeHidden();
   const firstEvidence = page.getByRole("article").first();
@@ -102,7 +102,7 @@ test("keeps Explore Evidence in one overflow-free mobile column", async ({ page 
   }
   expect(
     await renderedContrast(
-      page.getByText("Find what you saved without remembering where you put it."),
+      page.getByRole("group", { name: "Your question" }),
       page.locator("body")
     )
   ).toBeGreaterThanOrEqual(4.5);

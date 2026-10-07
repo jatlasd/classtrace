@@ -1,18 +1,26 @@
 import { BrowserScreen, screenshots, type Screenshot } from "@/components/landing/landing-screens";
 
 type Moment = {
-  when: string;
   title: string;
   headline: string;
   body: string;
   points: readonly string[];
   live: boolean;
+  example?: typeof parseExample;
   screen: { src: Screenshot; title: string; alt: string };
 };
 
+export const parseExample = {
+  note: "@Mary added fractions with unlike denominators independently",
+  matches: [
+    ["@Mary", "Student", "Mary"],
+    ["fractions", "Topic / skill", "math"],
+    ["independently", "Performance", "independent"],
+  ],
+} as const;
+
 const moments: readonly Moment[] = [
   {
-    when: "During class",
     title: "Capture",
     headline: "Ten seconds, mid-lesson.",
     body: "Type @ and a name, say what happened, add a #tag if you like. Snap one photo of the work. It lands as a draft that lives only in this browser.",
@@ -25,12 +33,12 @@ const moments: readonly Moment[] = [
     },
   },
   {
-    when: "When you have a minute",
     title: "Review",
     headline: "Nothing saves until you say so.",
-    body: "ClassTrace suggests the student, type, topic, and tags from plain, predictable rules. You fix anything that’s off, then approve. Only then does it become permanent.",
-    points: ["Edit the note or the details before saving", "Delete a draft you don’t want", "Rules you can predict — no model guessing"],
+    body: "When you have a minute, open the draft. ClassTrace has suggested the student, type, topic, and tags from plain, predictable rules. Fix anything that’s off, then approve. Only then does it become permanent.",
+    points: ["Edit the note or the details before saving", "Delete a draft you don’t want", "The same words always get the same suggestions"],
     live: true,
+    example: parseExample,
     screen: {
       src: screenshots.reviewDraft,
       title: "Drafts to review",
@@ -38,8 +46,7 @@ const moments: readonly Moment[] = [
     },
   },
   {
-    when: "Any time after",
-    title: "Trace",
+    title: "Report",
     headline: "Walk into the meeting ready.",
     body: "Each student has one date-ordered trace of validated evidence. Print a date-filtered report, save it as a PDF, or export CSV.",
     points: ["Oldest-to-newest report, stamped Validated", "Filter to exactly the dates you need", "CSV export for your own records"],
@@ -77,22 +84,39 @@ export function LandingTrace() {
               className="grid items-center gap-8 lg:grid-cols-2 lg:gap-14"
             >
               <div className={index % 2 === 1 ? "lg:order-2" : undefined}>
-                <div className="flex items-center gap-3">
+                <h3 className="flex items-start gap-3 font-display-wide text-[clamp(1.6rem,2.6vw,2.25rem)] font-semibold leading-[1.05] text-fg">
                   <span
                     aria-hidden="true"
-                    className={`grid size-8 place-items-center rounded-full font-display text-sm font-semibold ${
+                    className={`grid size-[1.05em] shrink-0 place-items-center rounded-full ${
                       moment.live ? "bg-live-bright text-live-fg" : "bg-fg text-base"
                     }`}
                   >
-                    {index + 1}
+                    <span className="font-display text-sm font-semibold">{index + 1}</span>
                   </span>
-                  <p className={`label ${moment.live ? "text-live" : "text-fg"}`}>{moment.when}</p>
-                </div>
-                <h3 className="mt-4 font-display-wide text-[clamp(1.6rem,2.6vw,2.25rem)] font-semibold leading-[1.05] text-fg">
-                  <span className="sr-only">{moment.title}: </span>
-                  {moment.headline}
+                  <span>
+                    <span className="sr-only">{moment.title}: </span>
+                    {moment.headline}
+                  </span>
                 </h3>
                 <p className="mt-3 max-w-[46ch] text-[15px] leading-[1.6] text-fg-2">{moment.body}</p>
+                {moment.example ? (
+                  <figure className="mt-5 max-w-[46ch] rounded-lg border border-line bg-plate p-4">
+                    <figcaption className="text-sm text-fg">
+                      <span className="sr-only">Example: the note </span>“{moment.example.note}”
+                    </figcaption>
+                    <dl className="mt-3 space-y-1.5 border-t border-line pt-3 text-sm">
+                      {moment.example.matches.map(([phrase, field, value]) => (
+                        <div key={phrase} className="flex flex-wrap gap-x-2">
+                          <dt className="font-semibold text-live">{phrase}</dt>
+                          <dd className="text-fg-2">
+                            <span aria-hidden="true">→ </span>
+                            {field}: <span className="font-semibold text-fg">{value}</span>
+                          </dd>
+                        </div>
+                      ))}
+                    </dl>
+                  </figure>
+                ) : null}
                 <ul className="mt-5 space-y-2 border-t border-line pt-5">
                   {moment.points.map((point) => (
                     <li key={point} className="flex gap-3 text-sm text-fg">
