@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowDown } from "lucide-react";
+import { ArrowDown, Play } from "lucide-react";
 import { BrowserScreen, PhoneScreen, screenshots } from "@/components/landing/landing-screens";
 import { routes } from "@/lib/routes";
 
@@ -30,6 +30,12 @@ export function LandingOpening() {
               className="inline-flex h-12 items-center rounded-full bg-live-bright px-6 text-[15px] font-semibold text-live-fg transition-colors hover:bg-[#ffc24d] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-live-bright focus-visible:ring-offset-2 focus-visible:ring-offset-night"
             >
               Invited sign-up
+            </Link>
+            <Link
+              href={routes.demo}
+              className="inline-flex h-12 items-center gap-2 rounded-full border border-white/20 px-5 text-[15px] font-medium text-night-fg transition-colors hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-live-bright focus-visible:ring-offset-2 focus-visible:ring-offset-night"
+            >
+              <Play aria-hidden="true" className="size-4 fill-current" /> Watch the 80-second overview
             </Link>
             <Link
               href="#how"

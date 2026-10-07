@@ -4,6 +4,7 @@ export const routes = {
   terms: "/terms",
   support: "/support",
   dataDeletion: "/data-deletion",
+  demo: "/demo",
   betaAcknowledgements: "/beta-acknowledgements",
   app: "/app",
   feed: "/app/feed",

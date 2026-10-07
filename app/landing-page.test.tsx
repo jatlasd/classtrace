@@ -33,6 +33,15 @@ describe("public landing page", () => {
     expect(page.textContent).toMatch(/one date-ordered trace of validated evidence/i);
   });
 
+  it("links to the public overview video", () => {
+    const page = document.createElement("div");
+    page.innerHTML = markup;
+
+    expect(
+      page.querySelector(`main a[href="${routes.demo}"]`)?.textContent?.trim(),
+    ).toBe("Watch the 80-second overview");
+  });
+
   it("keeps every access action aligned with the invitation-only beta", () => {
     const page = document.createElement("div");
     page.innerHTML = markup;

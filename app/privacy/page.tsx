@@ -27,7 +27,7 @@ export default function PrivacyPage() {
       title="Privacy, in plain language"
       description="ClassTrace is a small teacher-first beta. This page describes what the product handles today, what it deliberately does not collect, and where its privacy limits still are."
       sections={sections}
-      lastUpdated="September 5, 2026"
+      lastUpdated="October 6, 2026"
     >
       <PublicNote>
         ClassTrace does not claim FERPA compliance, district approval, legal
@@ -105,6 +105,12 @@ export default function PrivacyPage() {
           sending these events. Session replay and Sentry log shipping are
           disabled. Sentry may retain the resulting limited diagnostic data
           under its own settings.
+        </p>
+        <p>
+          The public overview page shows a ClassTrace video hosted on YouTube.
+          Nothing loads from YouTube until you press play; the player then
+          loads from YouTube&rsquo;s privacy-enhanced domain under Google&rsquo;s
+          own terms. The video uses fictional students only.
         </p>
         <p>
           When you submit Help and Feedback, ClassTrace sends your selected

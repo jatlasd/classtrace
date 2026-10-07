@@ -118,7 +118,8 @@ the name; do not substitute the retired lettered `CT` tile.
 ## Evidence on Hand
 
 Real product surfaces, copy, and in-app demonstrations exist: the public
-landing page, privacy/terms/support/data-deletion pages, and the teacher
+landing page, the public `/demo` overview video (fictional students only),
+privacy/terms/support/data-deletion pages, and the teacher
 product (capture, review, feed, roster, timeline, report, settings). The
 landing product preview is a UI demonstration of those flows, not a customer
 case study.

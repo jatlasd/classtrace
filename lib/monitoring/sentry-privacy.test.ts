@@ -308,6 +308,21 @@ describe("Sentry privacy boundary", () => {
     expect(JSON.stringify(sanitized)).not.toContain("SENTINEL");
   });
 
+  it("keeps the public overview route", () => {
+    const event: Event = {
+      transaction: "https://classtrace.example/demo?ref=SENTINEL_REF",
+      transaction_info: { source: "url" },
+    };
+
+    const sanitized = sanitizeSentryEvent(event);
+
+    expect(sanitized.transaction).toBe("/demo");
+    expect(sanitized.tags).toMatchObject({
+      "classtrace.route_template": "/demo",
+    });
+    expect(JSON.stringify(sanitized)).not.toContain("SENTINEL");
+  });
+
   it("keeps only parsed React component symbols from a Sentry component stack", () => {
     const event: Event = {
       extra: {
