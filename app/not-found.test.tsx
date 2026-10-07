@@ -2,7 +2,7 @@
 
 import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
-import PublicNotFound from "@/app/not-found";
+import PublicNotFound, { metadata } from "@/app/not-found";
 
 afterEach(cleanup);
 
@@ -12,12 +12,13 @@ describe("public not-found page", () => {
 
     expect(
       screen.getByRole("heading", {
-        name: "This ClassTrace page is not available",
+        name: "Page not found",
       })
     ).toBeTruthy();
     expect(screen.getByRole("link", { name: "ClassTrace home" })).toBeTruthy();
     expect(
       screen.getByRole("navigation", { name: "Footer" })
     ).toBeTruthy();
+    expect(metadata.title).toBe("Page not found | ClassTrace");
   });
 });

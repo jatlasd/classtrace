@@ -1,20 +1,28 @@
-const facts = [
-  ["1", "student on every saved record. Zero- and multi-student captures can’t be saved."],
-  ["0", "records saved without your approval. A capture is only a draft until you review it."],
-  ["1", "photo at most. Evidence is one validated photo, an Evidence note, or both."],
-  ["12am", "is when unreviewed drafts clear from this device. They never sit in a database."],
+import { Check } from "lucide-react";
+
+const rules = [
+  ["You approve every record.", "A capture stays a draft until you review it."],
+  ["No generative AI.", "Predictable rules suggest. Your notes never go to a model."],
+  ["One student per record.", "Zero- and multi-student captures can’t be saved."],
+  ["Drafts clear at midnight.", "Until you approve them, drafts stay on this device."],
 ] as const;
 
 export function LandingFacts() {
   return (
-    <section aria-label="ClassTrace in numbers" className="bg-base pt-8 lg:pt-10">
-      <dl className="mx-auto grid max-w-[1280px] grid-cols-2 gap-px overflow-hidden border-y border-line bg-line lg:grid-cols-4">
-        {facts.map(([value, detail], index) => (
-          <div key={index} className="flex flex-col gap-2 bg-base px-4 py-6 md:px-6 lg:px-8">
-            <dt className="font-display-wide text-[clamp(2.5rem,4vw,3.5rem)] font-semibold leading-none text-fg">
-              {value}
-            </dt>
-            <dd className="max-w-[32ch] text-sm leading-relaxed text-fg-2">{detail}</dd>
+    <section aria-label="Built-in rules" className="bg-base pt-8 lg:pt-10">
+      <dl className="mx-auto grid max-w-[1280px] grid-cols-1 gap-px overflow-hidden border-y border-line bg-line sm:grid-cols-2 lg:grid-cols-4">
+        {rules.map(([rule, detail]) => (
+          <div key={rule} className="flex gap-3 bg-base px-4 py-5 md:px-6 lg:px-8">
+            <span
+              aria-hidden="true"
+              className="mt-0.5 grid size-6 shrink-0 place-items-center rounded-full bg-fg text-base"
+            >
+              <Check className="size-3.5" strokeWidth={3} />
+            </span>
+            <div>
+              <dt className="font-display text-[1.125rem] font-semibold leading-tight text-fg">{rule}</dt>
+              <dd className="mt-1 max-w-[34ch] text-sm leading-relaxed text-fg-2">{detail}</dd>
+            </div>
           </div>
         ))}
       </dl>

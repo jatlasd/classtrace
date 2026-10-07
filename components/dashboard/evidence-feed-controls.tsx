@@ -82,8 +82,7 @@ export function FeedEmptyState({
 export function RosterRequiredState() {
   return (
     <section className="plate p-6 sm:p-8">
-      <p className="label text-live">Roster needed</p>
-      <h2 className="mt-3 font-display text-[2rem] font-semibold leading-none text-fg">
+      <h2 className="font-display text-[2rem] font-semibold leading-none text-fg">
         Add one student before capturing evidence
       </h2>
       <p className="mt-3 max-w-prose text-sm leading-relaxed text-fg-2">

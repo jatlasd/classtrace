@@ -15,7 +15,7 @@ import { ClassTraceClerkProvider } from "@/components/auth/class-trace-clerk-pro
 import { routes } from "@/lib/routes";
 
 export const metadata: Metadata = {
-  title: "Sign in — ClassTrace",
+  title: "Sign in | ClassTrace",
   description: "Sign in to your private ClassTrace teacher workspace.",
 };
 
@@ -42,7 +42,8 @@ export default async function SignInPage(): Promise<ReactElement> {
                 Sign in to your workspace
               </h1>
               <p className="mt-3 text-sm leading-relaxed text-fg-2">
-                Your roster and validated evidence stay private to you.
+                Use the email address your invitation was sent to. Your roster
+                and validated evidence stay private to you.
               </p>
             </header>
             <div className="flex justify-center">

@@ -285,8 +285,9 @@ Reuse this component set in every authenticated read surface.
 Files: `components/explore/explore-evidence-page.tsx`,
 `components/explore/explore-multi-select.tsx`
 
-- `1100px` page with a compact Explore context and a prominent sentence:
-  “Show me evidence for … tagged … from …”.
+- `1100px` page led by the prominent sentence
+  “Show me evidence for … tagged … from …”; the page `h1` is screen-reader
+  only and the navigation marks Explore as current.
 - Every phrase is a `.slot` button. Unset slots use a dashed underline; set
   slots use a solid amber underline plus Live Soft fill. Activating a slot opens
   the filter editor and focuses its field.
@@ -373,7 +374,8 @@ Files: `components/students/student-timeline-page.tsx`,
 - A student with no history retains the capture-oriented empty state without
   retrieval controls. A filtered trace with no matches instead offers a clear
   action. Header summary, report, and export always describe full history.
-- The report uses a strong ruled header, date-filter controls, oldest-to-newest
+- The report uses a strong ruled header (student name, then an "Evidence report"
+  line with handle and class), date-filter controls, oldest-to-newest
   divided evidence rows, and an explicit Validated stamp.
 - Print removes shell/footer controls, flattens colors, hides trace decoration,
   expands images appropriately, and prevents entry splitting.
@@ -383,15 +385,24 @@ Files: `components/students/student-timeline-page.tsx`,
 Files: `app/page.tsx`, `components/landing/*`,
 `components/layout/site-footer.tsx`
 
-- Sticky Night header with the inverse lockup, in-page anchors, a quiet Sign in,
-  and a Live Bright invited sign-up.
+- Night header with the inverse lockup, in-page anchors, a quiet Sign in, and a
+  Live Bright invited sign-up. Sticky from `md`; below `md` the anchors wrap to
+  a second ruled row instead of hiding.
 - `1280px` composition; sections use 64px rhythm, 96px at `lg`.
-- Hero: `.night-field` band, beta pill, Wide Display statement with "one
-  student." in Live Bright, CTAs, then a `BrowserScreen` student page with a
+- Hero: `.night-field` band, Wide Display statement with "one
+  student." in Live Bright, the overview video as the Live Bright primary
+  action and invited sign-up as the outline action, then a `BrowserScreen`
+  student page with a
   `PhoneScreen` capture overlapping it and straddling into Base.
-- Four large-number product facts in a ruled grid (two-up on mobile).
-- Capture / Review / Trace: alternating two-column rows, each with a real
-  screenshot on a Live Soft (provisional) or Well (saved) panel.
+- Built-in rules: four checked rules in a ruled grid (one-up, two-up at `sm`,
+  four-up at `lg`) with no visible header. They are guarantees, not metrics; do
+  not restyle them as large numerals.
+- Capture / Review / Report: alternating two-column rows, each with a real
+  screenshot on a Live Soft (provisional) or Well (saved) panel. The step
+  number sits inside the heading, colored Live Bright (draft) or Ink (saved). Review shows
+  one parse example whose mappings are tested against the real parser.
+  Screenshots use `placeholder="blur"` with inline `blurDataURL`s; regenerate
+  them when a screenshot changes.
 - Explore: Night band, headline and a ruled Who/What/When/How list beside a
   screenshot of a filled-in Explore question.
 - Phone use: Live Soft band with two slightly rotated phone screenshots.

@@ -551,14 +551,11 @@ export function ExploreEvidencePage({
   return (
     <div className="mx-auto w-full max-w-[1100px] px-4 py-8 sm:px-6 lg:px-8 lg:py-12">
       <header>
-        <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-          <h1 className="label text-fg">Explore</h1>
-          <p className="label text-fg-3">Find what you saved without remembering where you put it.</p>
-        </div>
+        <h1 className="sr-only">Explore</h1>
         <p
           role="group"
           aria-label="Your question"
-          className="mt-5 max-w-[22ch] font-display text-[clamp(1.85rem,4.6vw,3.25rem)] font-semibold leading-[1.15] text-fg"
+          className="max-w-[22ch] font-display text-[clamp(1.85rem,4.6vw,3.25rem)] font-semibold leading-[1.15] text-fg"
         >
           Show me evidence for{" "}
           <Slot target="student" set={draftQuery.studentIds.length > 0} onOpen={openFilters}>{studentSlot}</Slot>

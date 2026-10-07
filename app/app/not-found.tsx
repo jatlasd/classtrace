@@ -6,11 +6,8 @@ export default function AppNotFound() {
   return (
     <div className="mx-auto w-full max-w-[760px] px-4 py-10 sm:px-6 lg:px-8">
       <section className="plate p-6 sm:p-8">
-        <p className="label text-fg-3">
+        <h1 className="font-display text-3xl font-semibold leading-none tracking-[-0.01em] text-fg">
           Page not found
-        </p>
-        <h1 className="mt-2 font-display text-3xl font-semibold leading-none tracking-[-0.01em] text-fg">
-          This ClassTrace page is not available
         </h1>
         <p className="mt-2 text-sm leading-relaxed text-fg-2">
           Return to the evidence feed or choose a student from your roster.

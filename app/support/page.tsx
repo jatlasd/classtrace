@@ -8,7 +8,7 @@ import {
 import { routes } from "@/lib/routes";
 
 export const metadata: Metadata = {
-  title: "Support — ClassTrace",
+  title: "Support | ClassTrace",
   description:
     "Where ClassTrace beta teachers can get help when they can or cannot sign in.",
 };

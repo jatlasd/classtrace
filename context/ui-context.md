@@ -151,7 +151,8 @@ case-management platform, automation, or generated-document language.
   are intentional exceptions, not a general invitation to add gradients.
 - No rainbow tags, competing accent palette, giant soft shadows, or stacks of
   nested floating cards.
-- No repeated eyebrow labels unless they express a real moment or state.
+- No eyebrow labels above headings, and no em dashes in product copy or page
+  titles. Real state badges are fine.
 - No broad `transition-all`; animate only the property that communicates state.
 - No new one-off button, field, brand, evidence, or confirmation vocabulary
   when a shared pattern exists.

@@ -85,7 +85,6 @@ export function OverviewPlayer() {
             src={overviewEmbedUrl(playback.start)}
             title="ClassTrace overview video"
             allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
-            allowFullScreen
             referrerPolicy="strict-origin-when-cross-origin"
             className="absolute inset-0 size-full"
           />

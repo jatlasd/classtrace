@@ -13,7 +13,9 @@ test("renders the public landing page without desktop or mobile overflow", async
     })
   ).toBeVisible();
   await expect(
-    page.locator("main").getByRole("link", { name: "How it works" })
+    page
+      .getByRole("navigation", { name: "Landing" })
+      .getByRole("link", { name: "How it works" })
   ).toBeVisible();
   await expect(page.locator("main#main-content")).toBeVisible();
   expect(
@@ -36,6 +38,11 @@ test("renders the public landing page without desktop or mobile overflow", async
       level: 1,
       name: "Write one sentence about one student.",
     })
+  ).toBeVisible();
+  await expect(
+    page
+      .getByRole("navigation", { name: "Landing" })
+      .getByRole("link", { name: "How it works" })
   ).toBeVisible();
   expect(
     await page.evaluate(

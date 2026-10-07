@@ -93,11 +93,11 @@ function ReportHeader({
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div className="min-w-0">
-          <p className="label text-fg-3">Evidence report</p>
-          <h1 className="mt-1 break-words font-display text-4xl font-semibold leading-none text-fg [overflow-wrap:anywhere] sm:text-5xl">
+          <h1 className="break-words font-display text-4xl font-semibold leading-none text-fg [overflow-wrap:anywhere] sm:text-5xl">
             {student.displayName}
           </h1>
           <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-[13px] text-fg-2">
+            <span className="font-semibold text-fg">Evidence report</span>
             <span>@{student.mentionHandle}</span>
             {metadata.map((item) => (
               <span key={item}>{item}</span>

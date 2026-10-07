@@ -32,6 +32,16 @@ import { routes } from "@/lib/routes";
 
 afterEach(cleanup);
 
+function signUpProps(
+  step: string[] | undefined,
+  query: Record<string, string>,
+) {
+  return {
+    params: Promise.resolve({ "sign-up": step }),
+    searchParams: Promise.resolve(query),
+  };
+}
+
 describe("invitation-only access", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -60,22 +70,53 @@ describe("invitation-only access", () => {
   });
 
   it("keeps the Clerk sign-up route rendered for valid invitation links", async () => {
-    render(await SignUpPage());
+    render(
+      await SignUpPage(
+        signUpProps([], { __clerk_ticket: "ticket", __clerk_status: "sign_up" }),
+      ),
+    );
 
     expect(
       screen.getByRole("heading", {
         name: "Complete your ClassTrace sign-up",
       }),
     ).toBeTruthy();
-    expect(screen.getByText("Invitation-only beta")).toBeTruthy();
 
     const clerkSignUp = screen.getByTestId("clerk-sign-up");
     expect(clerkSignUp.getAttribute("data-path")).toBe(routes.signUp);
     expect(clerkSignUp.getAttribute("data-sign-in-url")).toBe(routes.signIn);
-    expect(signUpMetadata.title).toBe("Invitation sign-up — ClassTrace");
+    expect(signUpMetadata.title).toBe("Invitation sign-up | ClassTrace");
     expect(signUpMetadata.description).toContain("invitation-only");
     expect(
       screen.getByRole("navigation", { name: "Footer" })
     ).toBeTruthy();
+  });
+
+  it("keeps later Clerk sign-up steps rendered without the ticket", async () => {
+    render(await SignUpPage(signUpProps(["verify-email-address"], {})));
+
+    expect(screen.getByTestId("clerk-sign-up")).toBeTruthy();
+  });
+
+  it("explains invitation-only access instead of Clerk's disabled sign-up", async () => {
+    render(await SignUpPage(signUpProps(undefined, {})));
+
+    expect(
+      screen.getByRole("heading", {
+        name: "ClassTrace is invitation-only right now",
+      }),
+    ).toBeTruthy();
+    expect(screen.queryByTestId("clerk-sign-up")).toBeNull();
+    expect(
+      screen
+        .getByRole("link", { name: "Watch the 80-second overview" })
+        .getAttribute("href"),
+    ).toBe(routes.demo);
+    expect(
+      screen.getByRole("link", { name: "Sign in" }).getAttribute("href"),
+    ).toBe(routes.signIn);
+    expect(
+      screen.getByRole("link", { name: "ClassTrace" }).getAttribute("href"),
+    ).toBe(routes.root);
   });
 });

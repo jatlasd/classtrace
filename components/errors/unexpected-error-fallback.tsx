@@ -71,7 +71,7 @@ export function UnexpectedErrorFallback({
         aria-labelledby="unexpected-error-heading"
         className="plate p-5 sm:p-7"
       >
-        <div className="flex items-start gap-3">
+        <div className="flex items-center gap-3">
           <span className="flex size-10 shrink-0 items-center justify-center rounded-sm border border-danger/40 bg-danger-soft text-danger">
             <TriangleAlert
               className="size-4"
@@ -80,12 +80,9 @@ export function UnexpectedErrorFallback({
             />
           </span>
           <div className="min-w-0">
-            <p className="label text-fg-3">
-              ClassTrace could not finish this request
-            </p>
             <h1
               id="unexpected-error-heading"
-              className="mt-2 font-display text-3xl font-semibold leading-none tracking-[-0.01em] text-fg"
+              className="font-display text-3xl font-semibold leading-none tracking-[-0.01em] text-fg"
             >
               Something went wrong
             </h1>

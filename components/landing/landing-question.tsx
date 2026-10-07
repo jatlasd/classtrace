@@ -12,19 +12,15 @@ export function LandingQuestion() {
     <section id="later" aria-labelledby="later-heading" className="night-field scroll-mt-16 text-night-fg">
       <div className="mx-auto grid max-w-[1280px] items-center gap-10 px-4 py-16 md:px-6 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] lg:gap-14 lg:px-8 lg:py-24">
         <div>
-          <p className="label flex items-center gap-2 text-night-fg-2">
-            <span aria-hidden="true" className="size-1.5 rounded-full bg-live-bright" />
-            Later · the meeting is Thursday
-          </p>
           <h2
             id="later-heading"
-            className="mt-4 max-w-[14ch] font-display-wide text-[clamp(2.25rem,4.5vw,4rem)] font-semibold leading-[0.95] text-night-fg"
+            className="max-w-[14ch] font-display-wide text-[clamp(2.25rem,4.5vw,4rem)] font-semibold leading-[0.95] text-night-fg"
           >
             Ask your saved evidence a question
           </h2>
           <p className="mt-5 max-w-md text-[16px] leading-relaxed text-night-fg-2">
             Explore reads like a sentence you finish. It answers with the exact
-            records that match — never a score, never a summary written for you.
+            records that match, not a score or a summary written for you.
           </p>
           <dl className="mt-7 divide-y divide-white/10 border-y border-white/10">
             {abilities.map(([term, detail]) => (
