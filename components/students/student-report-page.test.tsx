@@ -129,6 +129,50 @@ describe("StudentReportPage", () => {
     );
   });
 
+  it("syncs filter controls and resets entry selection when applied filters change", () => {
+    const records = [
+      {
+        id: "evidence_1",
+        evidenceDate: "2026-06-16T14:00:00.000Z",
+        evidenceNote: "Read the passage with one prompt.",
+        tags: ["reading"],
+        followUpNeeded: false,
+        validatedAt: "2026-06-16T14:05:00.000Z",
+        createdAt: "2026-06-16T14:06:00.000Z",
+      },
+    ];
+    const { rerender } = render(
+      <StudentReportPage
+        student={student}
+        filters={{ query: "", tags: [], topic: "reading" }}
+        options={options}
+        totalEvidenceCount={3}
+        evidenceRecords={records}
+      />
+    );
+    fireEvent.click(screen.getByRole("checkbox", { name: /^Include entry from/ }));
+    expect(screen.getByText("0 of 1 entries included")).toBeTruthy();
+
+    rerender(
+      <StudentReportPage
+        student={student}
+        filters={{ query: "", tags: ["math"], evidenceType: "Academic check-in" }}
+        options={options}
+        totalEvidenceCount={3}
+        evidenceRecords={records}
+      />
+    );
+
+    expect((screen.getByLabelText("Type") as HTMLSelectElement).value).toBe(
+      "Academic check-in"
+    );
+    expect(
+      (screen.getByRole("combobox", { name: "Topic" }) as HTMLSelectElement).value
+    ).toBe("");
+    expect(screen.getByRole("button", { name: "Remove #math" })).toBeTruthy();
+    expect(screen.getByText("1 of 1 entries included")).toBeTruthy();
+  });
+
   it("renders a useful empty state instead of an empty report", () => {
     render(
       <StudentReportPage
