@@ -1,9 +1,10 @@
-export const EXPLORE_QUERY_VERSION = 1 as const;
+export const EXPLORE_QUERY_VERSION = 2 as const;
 
 export const EXPLORE_EVIDENCE_PAGE_SIZE = 25;
 export const EXPLORE_STUDENT_PAGE_SIZE = 20;
 export const EXPLORE_SUPPORTING_PAGE_SIZE = 10;
 export const MAX_EXPLORE_PAGE = 10_000;
+export const EXPLORE_REPORT_MAX_RECORDS = 300;
 
 export type ExploreResultView = "evidence" | "students";
 export type ExplorePhotoRule = "either" | "with" | "without";
@@ -25,6 +26,8 @@ export type ExploreEvidenceQuery = {
     includeAll: string[];
     exclude: string[];
   };
+  evidenceTypes: string[];
+  topics: string[];
   date: ExploreDateCondition;
   classIds: string[];
   photo: ExplorePhotoRule;
@@ -39,6 +42,11 @@ export type ExploreDateExecutionContext = {
 export type ExploreQueryRequest = {
   query: ExploreEvidenceQuery;
   page: number;
+  dateContext: ExploreDateExecutionContext;
+};
+
+export type ExploreReportRequest = {
+  query: ExploreEvidenceQuery;
   dateContext: ExploreDateExecutionContext;
 };
 
@@ -111,6 +119,14 @@ export type ExploreQueryActionResult =
   | { success: true; results: ExploreQueryResults }
   | { success: false; error: string };
 
+export type ExploreReportActionResult =
+  | {
+      success: true;
+      records: ExploreEvidenceRecord[];
+      totalCount: number;
+    }
+  | { success: false; error: string };
+
 export type ExploreSupportingEvidenceActionResult =
   | {
       success: true;
@@ -139,10 +155,16 @@ export type ExploreTagOption = {
   label: string;
 };
 
+export type ExploreTopicOption = {
+  id: string;
+  label: string;
+};
+
 export type ExploreEvidenceOptions = {
   students: ExploreStudentOption[];
   classes: ExploreClassOption[];
   tags: ExploreTagOption[];
+  topics: ExploreTopicOption[];
 };
 
 export const DEFAULT_EXPLORE_QUERY: ExploreEvidenceQuery = {
@@ -154,6 +176,8 @@ export const DEFAULT_EXPLORE_QUERY: ExploreEvidenceQuery = {
     includeAll: [],
     exclude: [],
   },
+  evidenceTypes: [],
+  topics: [],
   date: { rule: "all" },
   classIds: [],
   photo: "either",

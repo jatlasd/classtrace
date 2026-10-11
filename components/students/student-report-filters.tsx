@@ -72,7 +72,7 @@ export function StudentReportFilters({
     <form
       aria-label="Filter this report"
       onSubmit={handleSubmit}
-      className="student-report-screen-only well mb-8 p-4"
+      className="evidence-report-screen-only well mb-8 p-4"
     >
       <div className="mb-4">
         <label htmlFor={searchId} className="label mb-1.5 block text-fg-2">

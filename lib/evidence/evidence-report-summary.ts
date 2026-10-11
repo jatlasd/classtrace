@@ -1,35 +1,56 @@
 import { evidenceCalendarDayKey } from "@/lib/evidence/evidence-calendar-date";
 import { SAVED_EVIDENCE_CLASSIFICATION_LABELS } from "@/lib/evidence/evidence-classifications";
-import type { StudentReportEvidenceRecord } from "@/lib/evidence/student-report-records";
 import { formatTagLabel, normalizeTag } from "@/lib/format-tag";
 
-export type StudentReportGroupMode = "date" | "type" | "topic";
+export type ReportEvidenceRecord = {
+  id: string;
+  evidenceDate: string;
+  evidenceNote?: string;
+  summary?: string;
+  evidenceType?: string;
+  hasPhoto?: boolean;
+  photoWidth?: number;
+  photoHeight?: number;
+  topic?: string;
+  performance?: string;
+  behavior?: string;
+  tags: string[];
+  followUpNeeded: boolean;
+  followUpNotes?: string;
+  classGroupName?: string;
+  rosterStudentId?: string;
+  studentDisplayName?: string;
+};
 
-export type StudentReportCount = {
+export type EvidenceReportGroupMode = "date" | "type" | "topic" | "student";
+
+export type EvidenceReportCount = {
   label: string;
   count: number;
 };
 
-export type StudentReportSummary = {
+export type EvidenceReportSummary = {
   entryCount: number;
+  studentCount: number;
   photoCount: number;
   followUpCount: number;
   firstEvidenceDate?: string;
   lastEvidenceDate?: string;
-  evidenceTypes: StudentReportCount[];
-  performance: StudentReportCount[];
-  behavior: StudentReportCount[];
-  tags: StudentReportCount[];
+  evidenceTypes: EvidenceReportCount[];
+  performance: EvidenceReportCount[];
+  behavior: EvidenceReportCount[];
+  tags: EvidenceReportCount[];
 };
 
-export type StudentReportGroup = {
+export type EvidenceReportGroup = {
   key: string;
   label: string;
-  records: StudentReportEvidenceRecord[];
+  records: ReportEvidenceRecord[];
 };
 
 const NO_EVIDENCE_TYPE_KEY = "no-evidence-type";
 const NO_TOPIC_KEY = "no-topic";
+const NO_STUDENT_KEY = "no-student";
 const SAVED_TYPE_ORDER = new Map<string, number>(
   SAVED_EVIDENCE_CLASSIFICATION_LABELS.map((label, index) => [label, index])
 );
@@ -47,8 +68,8 @@ function compareEvidenceTypes(left: string, right: string): number {
 
 function countLabels(
   labels: Iterable<string>,
-  compare: (left: StudentReportCount, right: StudentReportCount) => number
-): StudentReportCount[] {
+  compare: (left: EvidenceReportCount, right: EvidenceReportCount) => number
+): EvidenceReportCount[] {
   const counts = new Map<string, number>();
 
   for (const label of labels) {
@@ -61,8 +82,8 @@ function countLabels(
 }
 
 function byCountThenLabel(
-  left: StudentReportCount,
-  right: StudentReportCount
+  left: EvidenceReportCount,
+  right: EvidenceReportCount
 ): number {
   return right.count - left.count || compareLabels(left.label, right.label);
 }
@@ -75,15 +96,20 @@ function splitBehavior(value: string | undefined): string[] {
     .filter(Boolean);
 }
 
-export function hasReportFollowUp(record: StudentReportEvidenceRecord): boolean {
+export function hasReportFollowUp(record: ReportEvidenceRecord): boolean {
   return record.followUpNeeded || Boolean(record.followUpNotes);
 }
 
 export function summarizeReportEvidence(
-  records: StudentReportEvidenceRecord[]
-): StudentReportSummary {
-  const summary: StudentReportSummary = {
+  records: ReportEvidenceRecord[]
+): EvidenceReportSummary {
+  const summary: EvidenceReportSummary = {
     entryCount: records.length,
+    studentCount: new Set(
+      records.flatMap((record) =>
+        record.rosterStudentId ? [record.rosterStudentId] : []
+      )
+    ).size,
     photoCount: records.filter((record) => record.hasPhoto).length,
     followUpCount: records.filter(hasReportFollowUp).length,
     evidenceTypes: countLabels(
@@ -134,10 +160,10 @@ function formatMonthLabel(value: string, timeZone: string): string {
 }
 
 function groupByKey(
-  records: StudentReportEvidenceRecord[],
-  keyFor: (record: StudentReportEvidenceRecord) => { key: string; label: string }
-): StudentReportGroup[] {
-  const groups = new Map<string, StudentReportGroup>();
+  records: ReportEvidenceRecord[],
+  keyFor: (record: ReportEvidenceRecord) => { key: string; label: string }
+): EvidenceReportGroup[] {
+  const groups = new Map<string, EvidenceReportGroup>();
 
   for (const record of records) {
     const { key, label } = keyFor(record);
@@ -155,10 +181,10 @@ function groupByKey(
 
 // Records arrive oldest to newest; every record lands in exactly one group.
 export function groupReportEvidence(
-  records: StudentReportEvidenceRecord[],
-  mode: StudentReportGroupMode,
+  records: ReportEvidenceRecord[],
+  mode: EvidenceReportGroupMode,
   timeZone: string
-): StudentReportGroup[] {
+): EvidenceReportGroup[] {
   if (mode === "date") {
     return groupByKey(records, (record) => {
       const dayKey = evidenceCalendarDayKey(record.evidenceDate, timeZone);
@@ -170,6 +196,21 @@ export function groupReportEvidence(
           }
         : { key: "undated", label: "Undated" };
     });
+  }
+
+  if (mode === "student") {
+    return groupByKey(records, (record) =>
+      record.rosterStudentId
+        ? {
+            key: record.rosterStudentId,
+            label: record.studentDisplayName ?? "Unnamed student",
+          }
+        : { key: NO_STUDENT_KEY, label: "Unnamed student" }
+    ).sort(
+      (left, right) =>
+        compareLabels(left.label, right.label) ||
+        left.key.localeCompare(right.key)
+    );
   }
 
   if (mode === "type") {

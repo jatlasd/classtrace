@@ -2,9 +2,9 @@ import Link from "next/link";
 import type { ReactElement } from "react";
 import { Button } from "@/components/ui/button";
 import {
-  StudentReportBody,
-  StudentReportPreparedDate,
-} from "@/components/students/student-report-body";
+  EvidenceReportBody,
+  EvidenceReportPreparedDate,
+} from "@/components/reports/evidence-report-body";
 import { StudentReportFilters } from "@/components/students/student-report-filters";
 import { StudentReportPrintAction } from "@/components/students/student-report-print-action";
 import type { StudentEvidenceFilterOptions } from "@/lib/evidence/student-timeline-records";
@@ -12,7 +12,7 @@ import {
   hasStudentTimelineFilters,
   type StudentTimelineFilters,
 } from "@/lib/evidence/student-timeline-query";
-import { formatReportDateSpan } from "@/lib/evidence/student-report-summary";
+import { formatReportDateSpan } from "@/lib/evidence/evidence-report-summary";
 import { routes } from "@/lib/routes";
 import type {
   StudentReportEvidenceRecord,
@@ -79,7 +79,7 @@ function ReportHeader({
 
   return (
     <header className="mb-6 border-b-2 border-fg pb-6">
-      <div className="student-report-screen-only mb-3 flex flex-wrap items-center justify-between gap-3">
+      <div className="evidence-report-screen-only mb-3 flex flex-wrap items-center justify-between gap-3">
         <Button asChild variant="ghost" size="sm" className="-ml-2">
           <Link href={routes.student(student.id)}>Back to {student.displayName}</Link>
         </Button>
@@ -123,7 +123,7 @@ function ReportHeader({
           <p className="mt-1 font-display text-2xl font-semibold leading-tight text-fg">
             {getRangeLabel(filters)}
           </p>
-          <StudentReportPreparedDate className="label mt-1 text-fg-3" />
+          <EvidenceReportPreparedDate className="label mt-1 text-fg-3" />
         </div>
       </div>
     </header>
@@ -133,10 +133,10 @@ function ReportHeader({
 function ReportEmptyEvidence({ filtered }: { filtered: boolean }) {
   return (
     <section
-      className="student-report-print-root"
+      className="evidence-report-print-root"
       aria-labelledby="report-evidence-heading"
     >
-      <div className="student-report-print-context mb-1 flex flex-wrap items-baseline justify-between gap-3 border-b border-line pb-3">
+      <div className="evidence-report-print-context mb-1 flex flex-wrap items-baseline justify-between gap-3 border-b border-line pb-3">
         <h2
           id="report-evidence-heading"
           className="font-display text-2xl font-semibold text-fg"
@@ -180,7 +180,7 @@ export function StudentReportPage({
   dateError,
 }: StudentReportPageProps): ReactElement {
   return (
-    <div className="student-report-page mx-auto w-full max-w-[880px] px-4 py-8 sm:px-6 lg:px-8 lg:py-12">
+    <div className="evidence-report-page mx-auto w-full max-w-[880px] px-4 py-8 sm:px-6 lg:px-8 lg:py-12">
       <ReportHeader
         student={student}
         filters={filters}
@@ -196,7 +196,7 @@ export function StudentReportPage({
       {evidenceRecords.length === 0 ? (
         <ReportEmptyEvidence filtered={hasStudentTimelineFilters(filters)} />
       ) : (
-        <StudentReportBody records={evidenceRecords} />
+        <EvidenceReportBody records={evidenceRecords} />
       )}
     </div>
   );

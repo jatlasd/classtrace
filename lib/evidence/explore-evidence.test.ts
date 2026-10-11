@@ -13,6 +13,7 @@ vi.mock("@/lib/db/prisma", () => ({
 import {
   DEFAULT_EXPLORE_QUERY,
   EXPLORE_EVIDENCE_PAGE_SIZE,
+  EXPLORE_REPORT_MAX_RECORDS,
   EXPLORE_STUDENT_PAGE_SIZE,
   EXPLORE_SUPPORTING_PAGE_SIZE,
   type ExploreEvidenceQuery,
@@ -21,10 +22,12 @@ import {
   buildExploreEvidenceWhere,
   getExploreEvidenceOptionsForWorkspace,
   queryExploreEvidenceForWorkspace,
+  queryExploreReportForWorkspace,
   queryExploreSupportingEvidenceForWorkspace,
   resolveExploreDateRange,
   type ExploreEvidenceDatabase,
 } from "@/lib/evidence/explore-evidence";
+import { INPUT_LIMITS } from "@/lib/validation/input-limits";
 
 const dateContext = {
   currentOffsetMinutes: 240,
@@ -67,6 +70,8 @@ function buildDatabase(overrides: Partial<ExploreEvidenceDatabase> = {}) {
     activeStudents: [] as unknown[],
     classes: [] as unknown[],
     tags: [] as unknown[],
+    topics: [] as unknown[],
+    report: [] as unknown[],
   };
   const database: ExploreEvidenceDatabase = {
     countEvidence: async (where) => {
@@ -104,6 +109,14 @@ function buildDatabase(overrides: Partial<ExploreEvidenceDatabase> = {}) {
     listActiveTags: async (workspaceId, limit) => {
       calls.tags.push({ workspaceId, limit });
       return [];
+    },
+    listActiveTopics: async (workspaceId, limit) => {
+      calls.topics.push({ workspaceId, limit });
+      return [];
+    },
+    listReportEvidence: async (where, take) => {
+      calls.report.push({ where, take });
+      return [buildRecord()];
     },
     ...overrides,
   };
@@ -190,6 +203,110 @@ describe("Explore Evidence query domain", () => {
         dateContext
       )
     ).toMatchObject({ photo: { is: null } });
+  });
+
+  it("matches saved evidence types exactly and topics case-insensitively without substring search", async () => {
+    const { database, calls } = buildDatabase();
+    await queryExploreEvidenceForWorkspace(
+      {
+        workspaceId: "workspace_1",
+        input: request({
+          ...DEFAULT_EXPLORE_QUERY,
+          evidenceTypes: ["Behavior observation", "Academic check-in"],
+          topics: [" Decimal addition ", "decimal addition", "Reading fluency"],
+        }),
+      },
+      database
+    );
+
+    expect(calls.countEvidence[0]).toEqual({
+      workspaceId: "workspace_1",
+      archivedAt: null,
+      rosterStudent: { workspaceId: "workspace_1", archivedAt: null },
+      evidenceType: { in: ["Behavior observation", "Academic check-in"] },
+      OR: [
+        { topic: { equals: "Decimal addition", mode: "insensitive" } },
+        { topic: { equals: "Reading fluency", mode: "insensitive" } },
+      ],
+    });
+    expect(JSON.stringify(calls.countEvidence[0])).not.toContain("contains");
+  });
+
+  it("rejects unknown evidence types, oversized topics, and the previous query version", async () => {
+    const { database, calls } = buildDatabase();
+    const invalidInputs = [
+      request({ ...DEFAULT_EXPLORE_QUERY, evidenceTypes: ["Unclear"] }),
+      request({ ...DEFAULT_EXPLORE_QUERY, evidenceTypes: ["behavior observation"] }),
+      request({ ...DEFAULT_EXPLORE_QUERY, topics: ["t".repeat(1_001)] }),
+      request({
+        ...DEFAULT_EXPLORE_QUERY,
+        topics: Array.from({ length: 51 }, (_, index) => `topic ${index}`),
+      }),
+      { ...request(), query: { ...DEFAULT_EXPLORE_QUERY, version: 1 } },
+      {
+        ...request(),
+        query: {
+          version: DEFAULT_EXPLORE_QUERY.version,
+          resultView: "evidence",
+          studentIds: [],
+          tags: DEFAULT_EXPLORE_QUERY.tags,
+          date: { rule: "all" },
+          classIds: [],
+          photo: "either",
+        },
+      },
+    ];
+
+    for (const input of invalidInputs) {
+      await expect(
+        queryExploreEvidenceForWorkspace({ workspaceId: "workspace_1", input }, database)
+      ).resolves.toEqual({ success: false, error: "Review the question and try again." });
+    }
+    expect(calls.countEvidence).toHaveLength(0);
+  });
+
+  it("builds a capped, oldest-first report from the same workspace predicate with the full count", async () => {
+    const { database, calls } = buildDatabase({
+      countEvidence: async () => 412,
+    });
+    const query: ExploreEvidenceQuery = {
+      ...DEFAULT_EXPLORE_QUERY,
+      classIds: ["class_reading"],
+      tags: { includeAny: ["reading"], includeAll: [], exclude: [] },
+    };
+
+    const response = await queryExploreReportForWorkspace(
+      { workspaceId: "workspace_1", input: { query, dateContext } },
+      database
+    );
+
+    expect(calls.report).toEqual([
+      {
+        where: buildExploreEvidenceWhere("workspace_1", query, dateContext),
+        take: EXPLORE_REPORT_MAX_RECORDS,
+      },
+    ]);
+    expect(response).toMatchObject({
+      success: true,
+      totalCount: 412,
+      records: [{ id: "evidence_1", rosterStudentId: "student_mary" }],
+    });
+    expect(JSON.stringify(response)).not.toContain("workspace_1");
+  });
+
+  it("rejects malformed report requests before database work", async () => {
+    const { database, calls } = buildDatabase();
+    for (const input of [
+      null,
+      { query: DEFAULT_EXPLORE_QUERY, dateContext, page: 2 },
+      { query: { ...DEFAULT_EXPLORE_QUERY, studentIds: "student_mary" }, dateContext },
+    ]) {
+      await expect(
+        queryExploreReportForWorkspace({ workspaceId: "workspace_1", input }, database)
+      ).resolves.toEqual({ success: false, error: "Review the question and try again." });
+    }
+    expect(calls.report).toHaveLength(0);
+    expect(calls.countEvidence).toHaveLength(0);
   });
 
   it("normalizes tag values without turning exact matching into substring search", async () => {
@@ -442,6 +559,10 @@ describe("Explore Evidence query domain", () => {
         calls.tags.push({ workspaceId, limit });
         return ["Reading", "#Independent", " reading "];
       },
+      listActiveTopics: async (workspaceId, limit) => {
+        calls.topics.push({ workspaceId, limit });
+        return ["reading fluency", "Decimal addition", "Reading Fluency", " "];
+      },
     });
 
     const options = await getExploreEvidenceOptionsForWorkspace(
@@ -467,6 +588,13 @@ describe("Explore Evidence query domain", () => {
     expect(options.tags).toEqual([
       { id: "reading", label: "#reading" },
       { id: "independent", label: "#independent" },
+    ]);
+    expect(options.topics).toEqual([
+      { id: "Decimal addition", label: "Decimal addition" },
+      { id: "reading fluency", label: "reading fluency" },
+    ]);
+    expect(calls.topics).toEqual([
+      { workspaceId: "workspace_1", limit: INPUT_LIMITS.exploreTopicOptions },
     ]);
     expect(calls.activeStudents).toEqual(["workspace_1"]);
     expect(calls.tags).toEqual([{ workspaceId: "workspace_1", limit: 200 }]);

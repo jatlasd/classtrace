@@ -283,7 +283,8 @@ Reuse this component set in every authenticated read surface.
 ## Explore
 
 Files: `components/explore/explore-evidence-page.tsx`,
-`components/explore/explore-multi-select.tsx`
+`components/explore/explore-multi-select.tsx`,
+`components/explore/explore-report-view.tsx`
 
 - `1100px` page led by the prominent sentence
   “Show me evidence for … tagged … from …”; the page `h1` is screen-reader
@@ -295,8 +296,10 @@ Files: `components/explore/explore-evidence-page.tsx`,
   full-rounded Well toggle with the selected view in Ink.
 - The optional filter editor is one Plate split into Who / What / When columns
   at `md`, stacked with rules below that breakpoint.
-- Student, class-at-capture, and tag selectors are searchable multi-selects.
-  Date and photo use `.field`. Secondary tag groups and exclusion appear only
+- Student, class-at-capture, tag, evidence type, and topic selectors are
+  searchable multi-selects; type and topic sit in the What column and add
+  "as …" / "about …" slots to the sentence only when set. Date and photo use
+  `.field`. Secondary tag groups and exclusion appear only
   when requested.
 - The Plate footer uses a light Well, Clear filters, Close, and explicit Show
   results / Update results. Draft edits never query implicitly.
@@ -307,6 +310,14 @@ Files: `components/explore/explore-evidence-page.tsx`,
   reveal supporting evidence inside a rounded Well.
 - Explore state is transient. View changes and pagination use the applied query,
   and applying filters collapses the editor and focuses results.
+- An outline `sm` Print report action sits beside the result counts. It is
+  disabled with unapplied edits or no matches. It loads the applied question
+  into an in-page report view (no URL change): "Evidence report" heading, the
+  question in words, matching count, Prepared date, a printed notice when the
+  300-entry cap truncates, then the shared report body (summary, Organize by
+  with Student as the default for multi-student reports, include controls,
+  print rules). Back to results restores the same results and refocuses Print
+  report.
 
 Do not replace the sentence with standing dashboard controls, metric cards,
 charts, summaries, or database-filter jargon.
@@ -348,7 +359,7 @@ each dense management row an independently floating card.
 
 Files: `components/students/student-timeline-page.tsx`,
 `components/students/student-report-page.tsx`,
-`components/students/student-report-body.tsx`,
+`components/reports/evidence-report-body.tsx`,
 `components/students/student-report-filters.tsx`,
 `components/students/student-evidence-filter-fields.tsx`
 

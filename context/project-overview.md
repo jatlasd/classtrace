@@ -50,8 +50,10 @@ The strongest early users are special education teachers, case managers, interve
   teacher-local date retrieval without narrowing its all-time summary or export;
   a filtered timeline can print exactly its applied filters as a report.
 - Explore Evidence runs an explicit, unsaved, workspace-scoped question across
-  active saved evidence and returns either paged evidence records or paged
-  student groups with inspectable supporting records.
+  active saved evidence (students, class at capture, tags, evidence type, topic,
+  date, photo) and returns either paged evidence records or paged student groups
+  with inspectable supporting records. The applied question can be printed as a
+  report of up to 300 entries, grouped by student by default.
 - A student report can be filtered by text, evidence type, topic, tags, and
   teacher-local dates, organized by month, evidence type, or topic, narrowed to
   teacher-selected entries, and printed with a deterministic count summary and

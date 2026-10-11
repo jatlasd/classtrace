@@ -5,11 +5,13 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   runExploreEvidenceQuery: vi.fn(),
+  runExploreReportQuery: vi.fn(),
   runExploreSupportingEvidenceQuery: vi.fn(),
 }));
 
 vi.mock("@/actions/explore-evidence", () => ({
   runExploreEvidenceQuery: mocks.runExploreEvidenceQuery,
+  runExploreReportQuery: mocks.runExploreReportQuery,
   runExploreSupportingEvidenceQuery: mocks.runExploreSupportingEvidenceQuery,
 }));
 vi.mock("@/components/evidence/evidence-photo", () => ({
@@ -95,6 +97,10 @@ const options = {
     { id: "independent", label: "#independent" },
     { id: "fractions", label: "#fractions" },
   ],
+  topics: [
+    { id: "Decimal addition", label: "Decimal addition" },
+    { id: "reading", label: "reading" },
+  ],
 };
 
 function renderPage(initialResults: ExploreQueryResults = evidenceResults, open = true) {
@@ -134,6 +140,102 @@ describe("ExploreEvidencePage", () => {
       hasNewer: false,
       hasOlder: false,
     });
+  });
+
+  it("adds evidence type and topic to the question and the applied query", async () => {
+    renderPage();
+    selectChoice("Evidence type", "Behavior");
+    selectChoice("Topic", "Decimal");
+
+    expect(
+      screen.getByRole("button", { name: /^Filter by evidence type:\s*Behavior observation$/ })
+    ).toBeTruthy();
+    expect(
+      screen.getByRole("button", { name: /^Filter by topic:\s*Decimal addition$/ })
+    ).toBeTruthy();
+    expect(
+      screen.getByRole("group", { name: "Your question" }).textContent
+    ).toMatch(/ as .*Behavior observation about .*Decimal addition tagged /);
+    expect(mocks.runExploreEvidenceQuery).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByRole("button", { name: "Update results" }));
+    await waitFor(() => expect(mocks.runExploreEvidenceQuery).toHaveBeenCalledTimes(1));
+    expect(mocks.runExploreEvidenceQuery.mock.calls[0][0].query).toMatchObject({
+      evidenceTypes: ["Behavior observation"],
+      topics: ["Decimal addition"],
+    });
+    const applied = await screen.findByRole("list", { name: "Applied filters" });
+    expect(applied.textContent).toContain("Type: Behavior observation");
+    expect(applied.textContent).toContain("Topic: Decimal addition");
+  });
+
+  it("prints only the applied question and returns to the same results", async () => {
+    const jeremyRecord = {
+      ...record,
+      id: "evidence_2",
+      rosterStudentId: "student_jeremy",
+      studentDisplayName: "Jeremy",
+      studentMentionHandle: "jeremy",
+      evidenceNote: "lined up place values after a prompt",
+    };
+    mocks.runExploreReportQuery.mockResolvedValue({
+      success: true,
+      records: [jeremyRecord, record],
+      totalCount: 340,
+    });
+    render(
+      <ExploreEvidencePage
+        initialQuery={{
+          ...DEFAULT_EXPLORE_QUERY,
+          classIds: ["class_reading"],
+          tags: { includeAny: [], includeAll: ["reading", "independent"], exclude: [] },
+        }}
+        initialResults={evidenceResults}
+        options={options}
+      />
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: /^Filters/ }));
+    selectChoice("Student", "Mary");
+    expect(
+      (screen.getByRole("button", { name: "Print report" }) as HTMLButtonElement).disabled
+    ).toBe(true);
+    fireEvent.click(screen.getByRole("button", { name: "Remove Mary" }));
+    fireEvent.click(screen.getByRole("button", { name: "Close" }));
+
+    fireEvent.click(screen.getByRole("button", { name: "Print report" }));
+    await screen.findByRole("heading", { level: 1, name: "Evidence report" });
+    expect(mocks.runExploreReportQuery.mock.calls[0][0].query).toMatchObject({
+      classIds: ["class_reading"],
+      studentIds: [],
+    });
+    expect(
+      screen.getByText(
+        "Evidence for any student in Reading Support tagged #reading and #independent from all time."
+      )
+    ).toBeTruthy();
+    expect(screen.getByText(/Showing the first 2 of 340 matching entries/)).toBeTruthy();
+    expect(
+      screen.getAllByRole("heading", { level: 3 }).map((heading) => heading.textContent)
+    ).toEqual(expect.arrayContaining(["Jeremy", "Mary"]));
+    expect((screen.getByRole("radio", { name: "Student" }) as HTMLInputElement).checked).toBe(true);
+
+    fireEvent.click(screen.getByRole("button", { name: "Back to results" }));
+    expect(screen.getByRole("heading", { name: "Matching evidence" })).toBeTruthy();
+    expect(mocks.runExploreEvidenceQuery).not.toHaveBeenCalled();
+  });
+
+  it("shows a safe error when the report cannot be prepared", async () => {
+    mocks.runExploreReportQuery.mockResolvedValue({
+      success: false,
+      error: "We could not prepare this report. Try again.",
+    });
+    renderPage(evidenceResults, false);
+    fireEvent.click(screen.getByRole("button", { name: "Print report" }));
+    expect((await screen.findByRole("alert")).textContent).toBe(
+      "We could not prepare this report. Try again."
+    );
+    expect(screen.queryByRole("heading", { name: "Evidence report" })).toBeNull();
   });
 
   it("starts with evidence and keeps filtering optional", () => {

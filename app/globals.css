@@ -316,7 +316,7 @@
 }
 
 
-.student-report-print-only {
+.evidence-report-print-only {
   display: none;
 }
 
@@ -336,38 +336,38 @@
     color-scheme: light;
   }
 
-  body:has(.student-report-page) {
+  body:has(.evidence-report-page) {
     background: white;
     color: black;
   }
 
-  body:has(.student-report-page) .app-shell-navigation,
+  body:has(.evidence-report-page) .app-shell-navigation,
   .site-footer,
-  .student-report-screen-only,
-  .student-report-excluded {
+  .evidence-report-screen-only,
+  .evidence-report-excluded {
     display: none !important;
   }
 
-  .student-report-print-only {
+  .evidence-report-print-only {
     display: block !important;
   }
 
-  body:has(.student-report-page) a[href="#main-content"] {
+  body:has(.evidence-report-page) a[href="#main-content"] {
     display: none !important;
   }
 
-  .student-report-section-heading,
-  .student-report-group-heading {
+  .evidence-report-section-heading,
+  .evidence-report-group-heading {
     break-after: avoid;
     page-break-after: avoid;
   }
 
-  .student-report-entry img,
-  .student-report-entry button:has(img) {
+  .evidence-report-entry img,
+  .evidence-report-entry button:has(img) {
     max-height: 3.5in !important;
   }
 
-  .student-report-keep-together {
+  .evidence-report-keep-together {
     break-inside: avoid;
     page-break-inside: avoid;
   }
@@ -376,24 +376,24 @@
     padding: 0 !important;
   }
 
-  .student-report-page {
+  .evidence-report-page {
     max-width: none !important;
     padding: 0 !important;
   }
 
-  .student-report-page header {
+  .evidence-report-page header {
     break-after: avoid;
   }
 
-  .student-report-print-root {
+  .evidence-report-print-root {
     display: block !important;
   }
 
-  .student-report-print-context {
+  .evidence-report-print-context {
     margin-bottom: 1rem;
   }
 
-  .student-report-entry {
+  .evidence-report-entry {
     break-inside: avoid;
     box-shadow: none !important;
     page-break-inside: avoid;

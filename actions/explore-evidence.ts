@@ -4,11 +4,14 @@ import { getCurrentWorkspace } from "@/lib/auth/get-current-workspace";
 import type {
   ExploreQueryActionResult,
   ExploreQueryRequest,
+  ExploreReportActionResult,
+  ExploreReportRequest,
   ExploreSupportingEvidenceActionResult,
   ExploreSupportingEvidenceRequest,
 } from "@/lib/evidence/explore-evidence-contract";
 import {
   queryExploreEvidenceForWorkspace,
+  queryExploreReportForWorkspace,
   queryExploreSupportingEvidenceForWorkspace,
 } from "@/lib/evidence/explore-evidence";
 import { captureOperationalError } from "@/lib/monitoring/capture-operational-error";
@@ -45,6 +48,24 @@ export async function runExploreSupportingEvidenceQuery(
     return {
       success: false,
       error: "We could not load this supporting evidence. Try again.",
+    };
+  }
+}
+
+export async function runExploreReportQuery(
+  input: ExploreReportRequest
+): Promise<ExploreReportActionResult> {
+  try {
+    const workspace = await getCurrentWorkspace();
+    return await queryExploreReportForWorkspace({
+      workspaceId: workspace.workspaceId,
+      input,
+    });
+  } catch (error) {
+    captureOperationalError("evidence.explore.report", error);
+    return {
+      success: false,
+      error: "We could not prepare this report. Try again.",
     };
   }
 }

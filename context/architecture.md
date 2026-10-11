@@ -290,9 +290,10 @@ These limits protect resource usage and database hygiene; they are not substitut
 - Applied Feed search and page state is represented in the URL and survives
   refresh/back navigation. Search and pagination exclude archived evidence and
   evidence for archived students before count, skip, and take.
-- Explore Evidence uses a versioned direct filter with only result view,
-  student IDs, normalized tag any/all/exclude values, one local-calendar date
-  rule, class IDs, and a photo-presence rule. Unsaved filter edits remain client
+- Explore Evidence uses a versioned (v2) direct filter with only result view,
+  student IDs, normalized tag any/all/exclude values, saved evidence-type
+  labels, case-insensitive exact topics, one local-calendar date rule, class
+  IDs, and a photo-presence rule. Unsaved filter edits remain client
   state, are not encoded in the URL, and reach the server only through an
   explicit **Show results** or **Update results** action. View changes and
   pagination query the last applied filters without committing unfinished edits.
@@ -300,6 +301,9 @@ These limits protect resource usage and database hygiene; they are not substitut
   and expanded supporting evidence from the same authenticated
   workspace-scoped predicate. Evidence pages contain 25 rows, student pages 20
   groups, and supporting-evidence pages 10 rows, each with one lookahead row.
+  The printable Explore report reuses that predicate, returns at most 300
+  records oldest first with the complete count, and is requested only by the
+  explicit Print report action; its question never enters the URL.
 - Explore excludes archived evidence and evidence for archived students. Its
   class filter means the class relation stored at validation; referenced
   archived classes remain selectable while active evidence uses them, and a

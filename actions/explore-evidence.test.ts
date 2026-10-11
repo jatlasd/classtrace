@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const mocks = vi.hoisted(() => ({
   getCurrentWorkspace: vi.fn(),
   queryExploreEvidenceForWorkspace: vi.fn(),
+  queryExploreReportForWorkspace: vi.fn(),
   queryExploreSupportingEvidenceForWorkspace: vi.fn(),
   captureOperationalError: vi.fn(),
 }));
@@ -12,6 +13,7 @@ vi.mock("@/lib/auth/get-current-workspace", () => ({
 }));
 vi.mock("@/lib/evidence/explore-evidence", () => ({
   queryExploreEvidenceForWorkspace: mocks.queryExploreEvidenceForWorkspace,
+  queryExploreReportForWorkspace: mocks.queryExploreReportForWorkspace,
   queryExploreSupportingEvidenceForWorkspace:
     mocks.queryExploreSupportingEvidenceForWorkspace,
 }));
@@ -21,6 +23,7 @@ vi.mock("@/lib/monitoring/capture-operational-error", () => ({
 
 import {
   runExploreEvidenceQuery,
+  runExploreReportQuery,
   runExploreSupportingEvidenceQuery,
 } from "@/actions/explore-evidence";
 import { DEFAULT_EXPLORE_QUERY } from "@/lib/evidence/explore-evidence-contract";
@@ -97,6 +100,34 @@ describe("Explore Evidence Server Actions", () => {
     expect(mocks.captureOperationalError).not.toHaveBeenCalledWith(
       expect.anything(),
       expect.objectContaining({ input })
+    );
+  });
+
+  it("derives workspace ownership for a printable report", async () => {
+    const reportInput = { query: input.query, dateContext: input.dateContext };
+    const result = { success: true, records: [], totalCount: 0 };
+    mocks.queryExploreReportForWorkspace.mockResolvedValue(result);
+
+    await expect(runExploreReportQuery(reportInput)).resolves.toEqual(result);
+    expect(mocks.queryExploreReportForWorkspace).toHaveBeenCalledWith({
+      workspaceId: "workspace_1",
+      input: reportInput,
+    });
+  });
+
+  it("maps report failures to safe copy without logging the question", async () => {
+    const failure = new Error("database unavailable");
+    mocks.getCurrentWorkspace.mockRejectedValue(failure);
+    const reportInput = { query: input.query, dateContext: input.dateContext };
+
+    await expect(runExploreReportQuery(reportInput)).resolves.toEqual({
+      success: false,
+      error: "We could not prepare this report. Try again.",
+    });
+    expect(mocks.captureOperationalError).toHaveBeenCalledTimes(1);
+    expect(mocks.captureOperationalError).toHaveBeenCalledWith(
+      "evidence.explore.report",
+      failure
     );
   });
 });

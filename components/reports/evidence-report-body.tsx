@@ -6,31 +6,35 @@ import { EvidenceRecordContent } from "@/components/evidence/evidence-record-con
 import { ValidatedStamp } from "@/components/evidence/validated-stamp";
 import { Button } from "@/components/ui/button";
 import { formatEvidenceCalendarDate } from "@/lib/evidence/evidence-calendar-date";
-import type { StudentReportEvidenceRecord } from "@/lib/evidence/student-report-records";
 import {
   formatReportDateSpan,
   groupReportEvidence,
   hasReportFollowUp,
   summarizeReportEvidence,
-  type StudentReportCount,
-  type StudentReportGroupMode,
-} from "@/lib/evidence/student-report-summary";
+  type EvidenceReportCount,
+  type EvidenceReportGroupMode,
+  type ReportEvidenceRecord,
+} from "@/lib/evidence/evidence-report-summary";
 import { cn } from "@/lib/utils";
 
-type StudentReportBodyProps = {
-  records: StudentReportEvidenceRecord[];
+type EvidenceReportBodyProps = {
+  records: ReportEvidenceRecord[];
+  multiStudent?: boolean;
 };
 
-const GROUP_MODE_OPTIONS: { value: StudentReportGroupMode; label: string }[] = [
+const STUDENT_GROUP_OPTION = { value: "student", label: "Student" } as const;
+
+const GROUP_MODE_OPTIONS: { value: EvidenceReportGroupMode; label: string }[] = [
   { value: "date", label: "Date" },
   { value: "type", label: "Evidence type" },
   { value: "topic", label: "Topic" },
 ];
 
-const GROUP_MODE_DESCRIPTIONS: Record<StudentReportGroupMode, string> = {
+const GROUP_MODE_DESCRIPTIONS: Record<EvidenceReportGroupMode, string> = {
   date: "By month, oldest to newest",
   type: "By evidence type, oldest to newest",
   topic: "By topic, oldest to newest",
+  student: "By student, oldest to newest",
 };
 
 const subscribe = () => () => {};
@@ -51,7 +55,7 @@ function useToday(): string | null {
   );
 }
 
-export function StudentReportPreparedDate({
+export function EvidenceReportPreparedDate({
   className,
 }: {
   className?: string;
@@ -94,10 +98,10 @@ function SummaryCountList({
   counts,
 }: {
   title: string;
-  counts: StudentReportCount[];
+  counts: EvidenceReportCount[];
 }) {
   return (
-    <div className="student-report-keep-together min-w-0">
+    <div className="evidence-report-keep-together min-w-0">
       <h3 className="label pb-1 text-fg-2">{title}</h3>
       <ul>
         {counts.map(({ label, count }) => (
@@ -121,10 +125,12 @@ function ReportSummary({
   records,
   totalCount,
   timeZone,
+  multiStudent,
 }: {
-  records: StudentReportEvidenceRecord[];
+  records: ReportEvidenceRecord[];
   totalCount: number;
   timeZone: string;
+  multiStudent: boolean;
 }) {
   const summary = summarizeReportEvidence(records);
   const followUps = records.filter(hasReportFollowUp);
@@ -143,10 +149,10 @@ function ReportSummary({
 
   return (
     <section
-      className="student-report-summary mb-10"
+      className="evidence-report-summary mb-10"
       aria-labelledby="report-summary-heading"
     >
-      <div className="student-report-section-heading flex flex-wrap items-baseline justify-between gap-3 border-b border-line pb-3">
+      <div className="evidence-report-section-heading flex flex-wrap items-baseline justify-between gap-3 border-b border-line pb-3">
         <h2
           id="report-summary-heading"
           className="font-display text-2xl font-semibold text-fg"
@@ -160,7 +166,17 @@ function ReportSummary({
         </p>
       </div>
 
-      <dl className="student-report-keep-together grid grid-cols-2 border-b border-line sm:grid-cols-[1fr_1.75fr_1fr_1fr]">
+      <dl
+        className={cn(
+          "evidence-report-keep-together grid grid-cols-2 border-b border-line",
+          multiStudent
+            ? "sm:grid-cols-[1fr_1fr_1.75fr_1fr_1fr]"
+            : "sm:grid-cols-[1fr_1.75fr_1fr_1fr]"
+        )}
+      >
+        {multiStudent ? (
+          <SummaryFact term="Students" value={String(summary.studentCount)} />
+        ) : null}
         <SummaryFact term="Entries" value={String(summary.entryCount)} />
         <SummaryFact term="Date span" value={dateSpan} />
         <SummaryFact term="With photo" value={String(summary.photoCount)} />
@@ -184,12 +200,17 @@ function ReportSummary({
             {followUps.map((record) => (
               <li
                 key={record.id}
-                className="student-report-keep-together grid gap-1 border-b border-line py-2.5 text-[13px] last:border-b-0 sm:grid-cols-[10rem_minmax(0,1fr)] sm:gap-6"
+                className="evidence-report-keep-together grid gap-1 border-b border-line py-2.5 text-[13px] last:border-b-0 sm:grid-cols-[10rem_minmax(0,1fr)] sm:gap-6"
               >
                 <time dateTime={record.evidenceDate} className="font-semibold text-fg-2">
                   {formatEvidenceCalendarDate(record.evidenceDate, timeZone)}
                 </time>
                 <span className="min-w-0 break-words text-fg [overflow-wrap:anywhere]">
+                  {multiStudent && record.studentDisplayName ? (
+                    <span className="font-semibold">
+                      {record.studentDisplayName}:{" "}
+                    </span>
+                  ) : null}
                   {record.followUpNotes ?? "Follow-up flagged without a note."}
                 </span>
               </li>
@@ -204,11 +225,13 @@ function ReportSummary({
 function ReportEvidenceItem({
   record,
   included,
+  showStudent,
   timeZone,
   onIncludedChange,
 }: {
-  record: StudentReportEvidenceRecord;
+  record: ReportEvidenceRecord;
   included: boolean;
+  showStudent: boolean;
   timeZone: string;
   onIncludedChange: (included: boolean) => void;
 }) {
@@ -218,10 +241,10 @@ function ReportEvidenceItem({
     <li
       className={cn(
         "border-b border-line last:border-b-0",
-        !included && "student-report-excluded"
+        !included && "evidence-report-excluded"
       )}
     >
-      <article className="student-report-entry grid gap-3 py-5 sm:grid-cols-[10rem_minmax(0,1fr)_auto] sm:gap-6">
+      <article className="evidence-report-entry grid gap-3 py-5 sm:grid-cols-[10rem_minmax(0,1fr)_auto] sm:gap-6">
         <div className="flex items-center justify-between gap-3 sm:block">
           <time
             dateTime={record.evidenceDate}
@@ -229,7 +252,7 @@ function ReportEvidenceItem({
           >
             {date}
           </time>
-          <label className="student-report-screen-only inline-flex min-h-11 items-center gap-2 text-[13px] text-fg-2 sm:mt-1 lg:min-h-8">
+          <label className="evidence-report-screen-only inline-flex min-h-11 items-center gap-2 text-[13px] text-fg-2 sm:mt-1 lg:min-h-8">
             <input
               type="checkbox"
               checked={included}
@@ -237,10 +260,19 @@ function ReportEvidenceItem({
               className="size-4 accent-[var(--fg)]"
             />
             Include{" "}
-            <span className="sr-only">entry from {date}</span>
+            <span className="sr-only">
+              {showStudent && record.studentDisplayName
+                ? `${record.studentDisplayName} entry from ${date}`
+                : `entry from ${date}`}
+            </span>
           </label>
         </div>
         <div className={cn("min-w-0", !included && "opacity-45")}>
+          {showStudent && record.studentDisplayName ? (
+            <p className="text-[13px] font-semibold text-fg">
+              {record.studentDisplayName}
+            </p>
+          ) : null}
           <EvidenceRecordContent
             record={record}
             includeClassGroup
@@ -255,12 +287,18 @@ function ReportEvidenceItem({
   );
 }
 
-export function StudentReportBody({
+export function EvidenceReportBody({
   records,
-}: StudentReportBodyProps): ReactElement {
+  multiStudent = false,
+}: EvidenceReportBodyProps): ReactElement {
   const groupModeName = useId();
   const timeZone = useBrowserTimeZone();
-  const [groupMode, setGroupMode] = useState<StudentReportGroupMode>("date");
+  const [groupMode, setGroupMode] = useState<EvidenceReportGroupMode>(
+    multiStudent ? "student" : "date"
+  );
+  const groupModeOptions = multiStudent
+    ? [STUDENT_GROUP_OPTION, ...GROUP_MODE_OPTIONS]
+    : GROUP_MODE_OPTIONS;
   const [excludedIds, setExcludedIds] = useState<Set<string>>(() => new Set());
   const includedRecords = useMemo(
     () => records.filter((record) => !excludedIds.has(record.id)),
@@ -286,11 +324,11 @@ export function StudentReportBody({
 
   return (
     <>
-      <div className="student-report-screen-only mb-8 flex flex-col gap-4 border-y border-line py-4 sm:flex-row sm:items-end sm:justify-between">
+      <div className="evidence-report-screen-only mb-8 flex flex-col gap-4 border-y border-line py-4 sm:flex-row sm:items-end sm:justify-between">
         <fieldset>
           <legend className="label mb-1 text-fg-2">Organize by</legend>
           <div className="flex flex-wrap gap-x-4 gap-y-1">
-            {GROUP_MODE_OPTIONS.map((option) => (
+            {groupModeOptions.map((option) => (
               <label
                 key={option.value}
                 className="inline-flex min-h-11 items-center gap-2 text-sm text-fg lg:min-h-8"
@@ -337,13 +375,14 @@ export function StudentReportBody({
         records={includedRecords}
         totalCount={records.length}
         timeZone={timeZone}
+        multiStudent={multiStudent}
       />
 
       <section
-        className="student-report-print-root"
+        className="evidence-report-print-root"
         aria-labelledby="report-evidence-heading"
       >
-        <div className="student-report-print-context student-report-section-heading flex flex-wrap items-baseline justify-between gap-3 border-b border-line pb-3">
+        <div className="evidence-report-print-context evidence-report-section-heading flex flex-wrap items-baseline justify-between gap-3 border-b border-line pb-3">
           <h2
             id="report-evidence-heading"
             className="font-display text-2xl font-semibold text-fg"
@@ -365,7 +404,7 @@ export function StudentReportBody({
               type="button"
               variant="outline"
               size="sm"
-              className="student-report-screen-only mt-4"
+              className="evidence-report-screen-only mt-4"
               onClick={() => setExcludedIds(new Set())}
             >
               Include all
@@ -385,10 +424,10 @@ export function StudentReportBody({
               aria-labelledby={headingId}
               className={cn(
                 "mt-7",
-                groupIncludedCount === 0 && "student-report-excluded"
+                groupIncludedCount === 0 && "evidence-report-excluded"
               )}
             >
-              <div className="student-report-group-heading flex flex-wrap items-baseline justify-between gap-3 border-b border-line-2 pb-1.5">
+              <div className="evidence-report-group-heading flex flex-wrap items-baseline justify-between gap-3 border-b border-line-2 pb-1.5">
                 <h3
                   id={headingId}
                   className="font-display text-lg font-semibold text-fg"
@@ -405,6 +444,7 @@ export function StudentReportBody({
                     key={record.id}
                     record={record}
                     included={!excludedIds.has(record.id)}
+                    showStudent={multiStudent && groupMode !== "student"}
                     timeZone={timeZone}
                     onIncludedChange={(included) =>
                       setIncluded(record.id, included)
@@ -417,7 +457,7 @@ export function StudentReportBody({
         })}
       </section>
 
-      <p className="student-report-print-only mt-8 border-t border-line pt-3 text-xs text-fg-2">
+      <p className="evidence-report-print-only mt-8 border-t border-line pt-3 text-xs text-fg-2">
         Prepared by the teacher in ClassTrace from validated evidence.{" "}
         Includes {includedCount} of {entryCountLabel(records.length)} available
         for this report.
