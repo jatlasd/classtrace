@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, render, screen, within } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { StudentReportPage } from "@/components/students/student-report-page";
 
@@ -55,11 +55,40 @@ describe("StudentReportPage", () => {
     const evidence = screen.getByText(longEvidence);
     expect(evidence.className).toContain("overflow-wrap:anywhere");
     expect(screen.queryByText("Structured details:")).toBeNull();
-    expect(screen.getByText("Academic check-in")).toBeTruthy();
-    expect(screen.getByText("Review comprehension tomorrow")).toBeTruthy();
+    const evidenceSection = screen.getByRole("region", { name: "Evidence" });
+    expect(within(evidenceSection).getByText("Academic check-in")).toBeTruthy();
+    expect(
+      within(evidenceSection).getByText("Review comprehension tomorrow")
+    ).toBeTruthy();
+    expect(
+      within(screen.getByRole("region", { name: "Summary" })).getByText(
+        "Review comprehension tomorrow"
+      )
+    ).toBeTruthy();
+    expect(screen.getByText("All evidence")).toBeTruthy();
+    expect(screen.getByText("All 1 entry in this period")).toBeTruthy();
     expect(
       screen.getByRole("link", { name: "Capture something" }).getAttribute("href")
     ).toBe("/app/feed?student=student_mary");
+  });
+
+  it("labels a filtered period with readable dates", () => {
+    render(
+      <StudentReportPage
+        student={student}
+        dateRange={{
+          status: "valid",
+          start: "2026-09-01",
+          end: "2026-09-30",
+          startOffset: "240",
+          endOffset: "240",
+        }}
+        evidenceRecords={[]}
+      />
+    );
+
+    expect(screen.getByText("Sep 1 to Sep 30, 2026")).toBeTruthy();
+    expect(screen.getByText("No evidence in this range.")).toBeTruthy();
   });
 
   it("renders a useful empty state instead of an empty report", () => {

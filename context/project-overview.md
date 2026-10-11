@@ -51,7 +51,9 @@ The strongest early users are special education teachers, case managers, interve
 - Explore Evidence runs an explicit, unsaved, workspace-scoped question across
   active saved evidence and returns either paged evidence records or paged
   student groups with inspectable supporting records.
-- A student report can be filtered by teacher-local dates and printed.
+- A student report can be filtered by teacher-local dates, organized by month,
+  evidence type, or topic, narrowed to teacher-selected entries, and printed
+  with a deterministic count summary and follow-up list.
 - One student’s evidence can be exported as CSV.
 - Saved evidence supports intentional permanent deletion. Students and classes
   support archive paths, with restoration available from their archived views.

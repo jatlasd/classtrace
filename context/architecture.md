@@ -308,6 +308,8 @@ These limits protect resource usage and database hygiene; they are not substitut
   not logged or sent to telemetry. Query evaluation checks only the owned photo
   relation and reuses authenticated photo delivery for results.
 - Student timelines and reports remain student- and workspace-scoped.
+- Report grouping and entry selection are client-only page state; they are
+  never persisted, and the report summary counts only the included entries.
 - Report date boundaries include the browser’s offset for each boundary so daylight-saving changes and non-UTC teachers are interpreted correctly.
 - CSV export uses only validated records for the requested owned student and
   labels each row with the class relation stored when that evidence was saved.

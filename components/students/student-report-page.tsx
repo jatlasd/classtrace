@@ -1,10 +1,13 @@
 import Link from "next/link";
 import type { ReactElement } from "react";
-import { EvidenceRecordContent } from "@/components/evidence/evidence-record-content";
-import { ValidatedStamp } from "@/components/evidence/validated-stamp";
 import { Button } from "@/components/ui/button";
+import {
+  StudentReportBody,
+  StudentReportPreparedDate,
+} from "@/components/students/student-report-body";
 import { StudentReportDateRangeForm } from "@/components/students/student-report-date-range-form";
 import { StudentReportPrintAction } from "@/components/students/student-report-print-action";
+import { formatReportDateSpan } from "@/lib/evidence/student-report-summary";
 import { routes } from "@/lib/routes";
 import type {
   StudentReportDateRange,
@@ -20,31 +23,16 @@ type StudentReportPageProps = {
 
 type ReportHeaderProps = {
   student: StudentReportStudent;
-  evidenceCount: number;
   dateRange: StudentReportDateRange;
 };
 
-type ReportEvidenceListProps = {
-  records: StudentReportEvidenceRecord[];
-  dateRange: StudentReportDateRange;
-};
-
-type ReportEvidenceItemProps = {
-  record: StudentReportEvidenceRecord;
-};
-
-function formatReportDate(value: string): string {
-  const date = new Date(value);
-
-  if (Number.isNaN(date.getTime())) {
-    return "Recently";
+function calendarDate(value: string | undefined): Date | undefined {
+  if (!value) {
+    return undefined;
   }
 
-  return new Intl.DateTimeFormat("en", {
-    month: "long",
-    day: "numeric",
-    year: "numeric",
-  }).format(date);
+  const [year, month, day] = value.split("-").map(Number);
+  return new Date(Date.UTC(year, month - 1, day));
 }
 
 function getRangeLabel(dateRange: StudentReportDateRange): string {
@@ -52,26 +40,16 @@ function getRangeLabel(dateRange: StudentReportDateRange): string {
     return "Date range needs review";
   }
 
-  if (dateRange.start && dateRange.end) {
-    return `${dateRange.start} to ${dateRange.end}`;
-  }
-
-  if (dateRange.start) {
-    return `From ${dateRange.start}`;
-  }
-
-  if (dateRange.end) {
-    return `Through ${dateRange.end}`;
-  }
-
-  return "All evidence";
+  return (
+    formatReportDateSpan(
+      calendarDate(dateRange.start),
+      calendarDate(dateRange.end),
+      "UTC"
+    ) ?? "All evidence"
+  );
 }
 
-function ReportHeader({
-  student,
-  evidenceCount,
-  dateRange,
-}: ReportHeaderProps) {
+function ReportHeader({ student, dateRange }: ReportHeaderProps) {
   const metadata = [
     student.classGroupName ? `Class ${student.classGroupName}` : null,
     student.schoolLocalId ? `Local ID ${student.schoolLocalId}` : null,
@@ -106,43 +84,14 @@ function ReportHeader({
         </div>
 
         <div className="sm:text-right">
-          <p className="text-[15px] text-fg-2">
-            <span className="font-display text-3xl font-semibold leading-none text-fg">
-              {evidenceCount}
-            </span>{" "}
-            {evidenceCount === 1 ? "record" : "records"} shown
-          </p>
-          <p className="label mt-1 text-fg-3">
+          <p className="label text-fg-3">Period</p>
+          <p className="mt-1 font-display text-2xl font-semibold leading-tight text-fg">
             {getRangeLabel(dateRange)}
           </p>
+          <StudentReportPreparedDate className="label mt-1 text-fg-3" />
         </div>
       </div>
     </header>
-  );
-}
-
-function ReportEvidenceItem({ record }: ReportEvidenceItemProps) {
-  return (
-    <li className="border-b border-line last:border-b-0">
-      <article className="student-report-entry grid gap-3 py-5 sm:grid-cols-[10rem_minmax(0,1fr)_auto] sm:gap-6">
-        <div className="flex items-start justify-between gap-3 sm:block">
-          <time dateTime={record.evidenceDate} className="pt-0.5 text-[13px] font-semibold text-fg-2">
-            {formatReportDate(record.evidenceDate)}
-          </time>
-          <ValidatedStamp className="text-fg-3 sm:hidden" />
-        </div>
-        <div className="min-w-0">
-            <EvidenceRecordContent
-              record={record}
-              includeClassGroup
-              showStructuredSummary={false}
-              photoLoading="eager"
-              compact
-            />
-        </div>
-        <ValidatedStamp className="hidden self-start text-fg-3 sm:inline-flex" />
-      </article>
-    </li>
   );
 }
 
@@ -177,10 +126,11 @@ function ReportEmptyState({
   );
 }
 
-function ReportEvidenceList({
-  records,
+function ReportEmptyEvidence({
   dateRange,
-}: ReportEvidenceListProps) {
+}: {
+  dateRange: StudentReportDateRange;
+}) {
   return (
     <section
       className="student-report-print-root"
@@ -193,23 +143,8 @@ function ReportEvidenceList({
         >
           Evidence
         </h2>
-        <p className="label text-fg-3">
-          Oldest to newest
-        </p>
       </div>
-      <div className="min-w-0">
-        {records.length === 0 ? (
-          <ReportEmptyState
-            dateRange={dateRange}
-          />
-        ) : (
-          <ol>
-            {records.map((record) => (
-              <ReportEvidenceItem key={record.id} record={record} />
-            ))}
-          </ol>
-        )}
-      </div>
+      <ReportEmptyState dateRange={dateRange} />
     </section>
   );
 }
@@ -221,21 +156,18 @@ export function StudentReportPage({
 }: StudentReportPageProps): ReactElement {
   return (
     <div className="student-report-page mx-auto w-full max-w-[880px] px-4 py-8 sm:px-6 lg:px-8 lg:py-12">
-      <ReportHeader
-        student={student}
-        evidenceCount={evidenceRecords.length}
-        dateRange={dateRange}
-      />
+      <ReportHeader student={student} dateRange={dateRange} />
       <StudentReportDateRangeForm
         studentId={student.id}
         start={dateRange.start}
         end={dateRange.end}
         error={dateRange.status === "invalid" ? dateRange.error : undefined}
       />
-      <ReportEvidenceList
-        records={evidenceRecords}
-        dateRange={dateRange}
-      />
+      {evidenceRecords.length === 0 ? (
+        <ReportEmptyEvidence dateRange={dateRange} />
+      ) : (
+        <StudentReportBody records={evidenceRecords} />
+      )}
     </div>
   );
 }

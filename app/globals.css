@@ -316,6 +316,10 @@
 }
 
 
+.student-report-print-only {
+  display: none;
+}
+
 @media print {
   :root {
     --base: #ffffff;
@@ -339,8 +343,33 @@
 
   body:has(.student-report-page) .app-shell-navigation,
   .site-footer,
-  .student-report-screen-only {
+  .student-report-screen-only,
+  .student-report-excluded {
     display: none !important;
+  }
+
+  .student-report-print-only {
+    display: block !important;
+  }
+
+  body:has(.student-report-page) a[href="#main-content"] {
+    display: none !important;
+  }
+
+  .student-report-section-heading,
+  .student-report-group-heading {
+    break-after: avoid;
+    page-break-after: avoid;
+  }
+
+  .student-report-entry img,
+  .student-report-entry button:has(img) {
+    max-height: 3.5in !important;
+  }
+
+  .student-report-keep-together {
+    break-inside: avoid;
+    page-break-inside: avoid;
   }
 
   .app-shell-workspace {

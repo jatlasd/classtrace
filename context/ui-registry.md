@@ -347,7 +347,8 @@ each dense management row an independently floating card.
 ## Student timeline and report
 
 Files: `components/students/student-timeline-page.tsx`,
-`components/students/student-report-page.tsx`
+`components/students/student-report-page.tsx`,
+`components/students/student-report-body.tsx`
 
 - Both use an `880px` work area.
 - The timeline opens with Students/class breadcrumb context, a large student
@@ -375,10 +376,21 @@ Files: `components/students/student-timeline-page.tsx`,
   retrieval controls. A filtered trace with no matches instead offers a clear
   action. Header summary, report, and export always describe full history.
 - The report uses a strong ruled header (student name, then an "Evidence report"
-  line with handle and class), date-filter controls, oldest-to-newest
-  divided evidence rows, and an explicit Validated stamp.
-- Print removes shell/footer controls, flattens colors, hides trace decoration,
-  expands images appropriately, and prevents entry splitting.
+  line with handle and class; the readable Period and Prepared date sit at the
+  right), date-filter controls, then a screen-only ruled
+  bar with an "Organize by" radio group (Date by month, Evidence type, Topic),
+  the included-entry count, and Include all / Include none.
+- A Summary section follows: Entries, Date span, With photo, and Follow-ups
+  facts; dot-leader count lists for evidence type, performance, behavior, and
+  tags (empty lists are omitted); and a dated follow-up list. Counts cover only
+  included entries. No charts.
+- Evidence renders as ruled groups, oldest to newest within each group. Each
+  entry keeps the explicit Validated stamp and a screen-only labeled Include
+  checkbox; excluded entries dim on screen. Each entry appears in one group.
+- Print removes shell/footer controls, the organize/include controls, excluded
+  entries, and fully excluded groups; flattens colors; hides trace decoration;
+  expands images appropriately; prevents entry splitting; keeps group headings
+  with their entries; and adds a plain included-of-total footer line.
 
 ## Landing page
 
