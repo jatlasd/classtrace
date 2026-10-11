@@ -315,7 +315,8 @@ Files: `components/explore/explore-evidence-page.tsx`,
   into an in-page report view (no URL change): "Evidence report" heading, the
   question in words, matching count, Prepared date, a printed notice when the
   300-entry cap truncates, then the shared report body (summary, Organize by
-  with Student as the default for multi-student reports, include controls,
+  with Student as the default; Explore reports always name students, even
+  when one student matches; include controls,
   print rules). Back to results restores the same results and refocuses Print
   report.
 

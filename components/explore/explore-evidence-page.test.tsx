@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
@@ -223,6 +223,29 @@ describe("ExploreEvidencePage", () => {
     fireEvent.click(screen.getByRole("button", { name: "Back to results" }));
     expect(screen.getByRole("heading", { name: "Matching evidence" })).toBeTruthy();
     expect(mocks.runExploreEvidenceQuery).not.toHaveBeenCalled();
+  });
+
+  it("names the student in a report even when only one student matches", async () => {
+    mocks.runExploreReportQuery.mockResolvedValue({
+      success: true,
+      records: [record],
+      totalCount: 1,
+    });
+    renderPage(evidenceResults, false);
+
+    fireEvent.click(screen.getByRole("button", { name: "Print report" }));
+    await screen.findByRole("heading", { level: 1, name: "Evidence report" });
+
+    expect((screen.getByRole("radio", { name: "Student" }) as HTMLInputElement).checked).toBe(true);
+    expect(screen.getByRole("heading", { level: 3, name: "Mary" })).toBeTruthy();
+    const summary = screen.getByRole("region", { name: "Summary" });
+    expect(within(summary).getByText("Students").nextSibling?.textContent).toBe("1");
+
+    fireEvent.click(screen.getByRole("radio", { name: "Date" }));
+    expect(
+      screen.getByRole("checkbox", { name: "Include Mary entry from June 16, 2026" })
+    ).toBeTruthy();
+    expect(screen.getByText("Mary", { selector: "p" })).toBeTruthy();
   });
 
   it("shows a safe error when the report cannot be prepared", async () => {

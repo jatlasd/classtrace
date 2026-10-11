@@ -98,7 +98,7 @@ describe("EvidenceReportBody", () => {
   it("groups multi-student reports by student and names students in other groupings", () => {
     render(
       <EvidenceReportBody
-        multiStudent
+        showStudents
         records={[
           { ...records[0], rosterStudentId: "s_mary", studentDisplayName: "Mary" },
           { ...records[1], rosterStudentId: "s_jeremy", studentDisplayName: "Jeremy" },

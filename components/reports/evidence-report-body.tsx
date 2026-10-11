@@ -19,7 +19,7 @@ import { cn } from "@/lib/utils";
 
 type EvidenceReportBodyProps = {
   records: ReportEvidenceRecord[];
-  multiStudent?: boolean;
+  showStudents?: boolean;
 };
 
 const STUDENT_GROUP_OPTION = { value: "student", label: "Student" } as const;
@@ -125,12 +125,12 @@ function ReportSummary({
   records,
   totalCount,
   timeZone,
-  multiStudent,
+  showStudents,
 }: {
   records: ReportEvidenceRecord[];
   totalCount: number;
   timeZone: string;
-  multiStudent: boolean;
+  showStudents: boolean;
 }) {
   const summary = summarizeReportEvidence(records);
   const followUps = records.filter(hasReportFollowUp);
@@ -169,12 +169,12 @@ function ReportSummary({
       <dl
         className={cn(
           "evidence-report-keep-together grid grid-cols-2 border-b border-line",
-          multiStudent
+          showStudents
             ? "sm:grid-cols-[1fr_1fr_1.75fr_1fr_1fr]"
             : "sm:grid-cols-[1fr_1.75fr_1fr_1fr]"
         )}
       >
-        {multiStudent ? (
+        {showStudents ? (
           <SummaryFact term="Students" value={String(summary.studentCount)} />
         ) : null}
         <SummaryFact term="Entries" value={String(summary.entryCount)} />
@@ -206,7 +206,7 @@ function ReportSummary({
                   {formatEvidenceCalendarDate(record.evidenceDate, timeZone)}
                 </time>
                 <span className="min-w-0 break-words text-fg [overflow-wrap:anywhere]">
-                  {multiStudent && record.studentDisplayName ? (
+                  {showStudents && record.studentDisplayName ? (
                     <span className="font-semibold">
                       {record.studentDisplayName}:{" "}
                     </span>
@@ -289,14 +289,14 @@ function ReportEvidenceItem({
 
 export function EvidenceReportBody({
   records,
-  multiStudent = false,
+  showStudents = false,
 }: EvidenceReportBodyProps): ReactElement {
   const groupModeName = useId();
   const timeZone = useBrowserTimeZone();
   const [groupMode, setGroupMode] = useState<EvidenceReportGroupMode>(
-    multiStudent ? "student" : "date"
+    showStudents ? "student" : "date"
   );
-  const groupModeOptions = multiStudent
+  const groupModeOptions = showStudents
     ? [STUDENT_GROUP_OPTION, ...GROUP_MODE_OPTIONS]
     : GROUP_MODE_OPTIONS;
   const [excludedIds, setExcludedIds] = useState<Set<string>>(() => new Set());
@@ -375,7 +375,7 @@ export function EvidenceReportBody({
         records={includedRecords}
         totalCount={records.length}
         timeZone={timeZone}
-        multiStudent={multiStudent}
+        showStudents={showStudents}
       />
 
       <section
@@ -444,7 +444,7 @@ export function EvidenceReportBody({
                     key={record.id}
                     record={record}
                     included={!excludedIds.has(record.id)}
-                    showStudent={multiStudent && groupMode !== "student"}
+                    showStudent={showStudents && groupMode !== "student"}
                     timeZone={timeZone}
                     onIncludedChange={(included) =>
                       setIncluded(record.id, included)

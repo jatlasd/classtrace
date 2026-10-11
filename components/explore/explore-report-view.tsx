@@ -21,8 +21,6 @@ export function ExploreReportView({
   onBack: () => void;
 }): ReactElement {
   const headingRef = useRef<HTMLHeadingElement>(null);
-  const studentCount = new Set(records.map((record) => record.rosterStudentId))
-    .size;
   const truncated = records.length < totalCount;
 
   useEffect(() => {
@@ -89,7 +87,7 @@ export function ExploreReportView({
           </p>
         </div>
       ) : (
-        <EvidenceReportBody records={records} multiStudent={studentCount > 1} />
+        <EvidenceReportBody records={records} showStudents />
       )}
     </div>
   );
