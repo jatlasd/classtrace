@@ -81,6 +81,11 @@ export type StudentTimelineDatabase = {
     studentId: string,
     limit: number
   ): Promise<string[]>;
+  listStudentTopics(
+    workspaceId: string,
+    studentId: string,
+    limit: number
+  ): Promise<string[]>;
   countFollowUps(where: StudentTimelineWhere): Promise<number>;
   listTopStudentTags(
     workspaceId: string,
@@ -137,9 +142,12 @@ export type StudentTimelineResult = {
     hasNewer: boolean;
     hasOlder: boolean;
   };
-  options: {
-    tags: string[];
-  };
+  options: StudentEvidenceFilterOptions;
+};
+
+export type StudentEvidenceFilterOptions = {
+  tags: string[];
+  topics: string[];
 };
 
 const evidenceSelect = {
@@ -158,6 +166,45 @@ const evidenceSelect = {
   createdAt: true,
   photo: { select: { id: true, width: true, height: true } },
 } as const;
+
+export const studentEvidenceOptionQueries: Pick<
+  StudentTimelineDatabase,
+  "listStudentTags" | "listStudentTopics"
+> = {
+  listStudentTags: async (workspaceId, studentId, limit) => {
+    const rows = await prisma.$queryRaw<{ value: string }[]>(Prisma.sql`
+      SELECT DISTINCT lower(regexp_replace(btrim(tag.value), '^#', '')) AS value
+      FROM "EvidenceRecord" evidence
+      JOIN "RosterStudent" student
+        ON student."workspaceId" = evidence."workspaceId"
+       AND student.id = evidence."rosterStudentId"
+      CROSS JOIN LATERAL unnest(evidence.tags) AS tag(value)
+      WHERE evidence."workspaceId" = ${workspaceId}
+        AND evidence."rosterStudentId" = ${studentId}
+        AND evidence."archivedAt" IS NULL
+        AND student."archivedAt" IS NULL
+        AND btrim(tag.value) <> ''
+      ORDER BY value ASC
+      LIMIT ${limit}
+    `);
+
+    return rows.map((row) => row.value);
+  },
+  listStudentTopics: async (workspaceId, studentId, limit) => {
+    const rows = await prisma.evidenceRecord.findMany({
+      where: {
+        ...activeStudentEvidenceWhere(workspaceId, studentId),
+        topic: { not: null },
+      },
+      distinct: ["topic"],
+      orderBy: { topic: "asc" },
+      select: { topic: true },
+      take: limit,
+    });
+
+    return rows.flatMap((row) => (row.topic ? [row.topic] : []));
+  },
+};
 
 const studentTimelineDatabase: StudentTimelineDatabase = {
   rosterStudent: {
@@ -183,25 +230,7 @@ const studentTimelineDatabase: StudentTimelineDatabase = {
       ],
       select: evidenceSelect,
     }),
-  listStudentTags: async (workspaceId, studentId, limit) => {
-    const rows = await prisma.$queryRaw<{ value: string }[]>(Prisma.sql`
-      SELECT DISTINCT lower(regexp_replace(btrim(tag.value), '^#', '')) AS value
-      FROM "EvidenceRecord" evidence
-      JOIN "RosterStudent" student
-        ON student."workspaceId" = evidence."workspaceId"
-       AND student.id = evidence."rosterStudentId"
-      CROSS JOIN LATERAL unnest(evidence.tags) AS tag(value)
-      WHERE evidence."workspaceId" = ${workspaceId}
-        AND evidence."rosterStudentId" = ${studentId}
-        AND evidence."archivedAt" IS NULL
-        AND student."archivedAt" IS NULL
-        AND btrim(tag.value) <> ''
-      ORDER BY value ASC
-      LIMIT ${limit}
-    `);
-
-    return rows.map((row) => row.value);
-  },
+  ...studentEvidenceOptionQueries,
   countFollowUps: (where) =>
     prisma.evidenceRecord.count({ where: { ...where, followUpNeeded: true } }),
   listTopStudentTags: async (workspaceId, studentId, limit) => {
@@ -290,6 +319,9 @@ export function buildStudentTimelineWhere(
   }
 
   if (filters.evidenceType) where.evidenceType = filters.evidenceType;
+  if (filters.topic) {
+    where.topic = { equals: filters.topic, mode: "insensitive" };
+  }
   if (filters.tags.length > 0) where.tags = { hasSome: filters.tags };
   if (
     (filters.from && filters.fromOffsetMinutes !== undefined) ||
@@ -372,6 +404,49 @@ function normalizeStudentTags(tags: string[]): string[] {
     .slice(0, INPUT_LIMITS.exploreTagOptions);
 }
 
+function normalizeStudentTopics(topics: string[]): string[] {
+  const byKey = new Map<string, string>();
+
+  for (const topic of topics) {
+    const trimmed = topic.trim();
+    const key = trimmed.toLocaleLowerCase("en");
+    if (trimmed && !byKey.has(key)) byKey.set(key, trimmed);
+  }
+
+  return [...byKey.values()]
+    .sort((left, right) =>
+      left.localeCompare(right, "en", { sensitivity: "base" })
+    )
+    .slice(0, INPUT_LIMITS.exploreTopicOptions);
+}
+
+export async function getStudentEvidenceFilterOptions(
+  workspaceId: string,
+  studentId: string,
+  database: Pick<
+    StudentTimelineDatabase,
+    "listStudentTags" | "listStudentTopics"
+  > = studentEvidenceOptionQueries
+): Promise<StudentEvidenceFilterOptions> {
+  const [tags, topics] = await Promise.all([
+    database.listStudentTags(
+      workspaceId,
+      studentId,
+      INPUT_LIMITS.exploreTagOptions
+    ),
+    database.listStudentTopics(
+      workspaceId,
+      studentId,
+      INPUT_LIMITS.exploreTopicOptions
+    ),
+  ]);
+
+  return {
+    tags: normalizeStudentTags(tags),
+    topics: normalizeStudentTopics(topics),
+  };
+}
+
 export async function getStudentTimelineRecordsForWorkspace(
   workspaceId: string,
   studentId: string,
@@ -414,15 +489,11 @@ export async function getStudentTimelineRecordsForWorkspace(
     student.id,
     normalizedInput
   );
-  const [summary, totalMatches, tagRows, followUpCount, topTags] =
+  const [summary, totalMatches, options, followUpCount, topTags] =
     await Promise.all([
       database.aggregateEvidence(allEvidenceWhere),
       database.countEvidence(filteredWhere),
-      database.listStudentTags(
-        workspaceId,
-        student.id,
-        INPUT_LIMITS.exploreTagOptions
-      ),
+      getStudentEvidenceFilterOptions(workspaceId, student.id, database),
       database.countFollowUps(allEvidenceWhere),
       database.listTopStudentTags(
         workspaceId,
@@ -461,8 +532,6 @@ export async function getStudentTimelineRecordsForWorkspace(
       hasNewer: page > 1,
       hasOlder: page * STUDENT_TIMELINE_PAGE_SIZE < totalMatches,
     },
-    options: {
-      tags: normalizeStudentTags(tagRows),
-    },
+    options,
   };
 }

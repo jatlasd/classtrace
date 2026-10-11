@@ -1,14 +1,19 @@
 // @vitest-environment jsdom
 
-import { cleanup, render, screen, within } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { StudentReportPage } from "@/components/students/student-report-page";
 
+const mocks = vi.hoisted(() => ({ push: vi.fn() }));
+
 vi.mock("next/navigation", () => ({
-  useRouter: () => ({ push: vi.fn() }),
+  useRouter: () => ({ push: mocks.push }),
 }));
 
-afterEach(cleanup);
+afterEach(() => {
+  cleanup();
+  mocks.push.mockClear();
+});
 
 const student = {
   id: "student_mary",
@@ -17,13 +22,8 @@ const student = {
   classGroupName: "Reading",
 };
 
-const allEvidence = {
-  status: "valid" as const,
-  start: undefined,
-  end: undefined,
-  startOffset: undefined,
-  endOffset: undefined,
-};
+const noFilters = { query: "", tags: [] };
+const options = { tags: ["math", "reading"], topics: ["reading"] };
 
 describe("StudentReportPage", () => {
   it("renders teacher-approved evidence without repeating structured context", () => {
@@ -32,7 +32,9 @@ describe("StudentReportPage", () => {
     render(
       <StudentReportPage
         student={student}
-        dateRange={allEvidence}
+        filters={noFilters}
+        options={options}
+        totalEvidenceCount={1}
         evidenceRecords={[
           {
             id: "evidence_1",
@@ -66,36 +68,74 @@ describe("StudentReportPage", () => {
       )
     ).toBeTruthy();
     expect(screen.getByText("All evidence")).toBeTruthy();
-    expect(screen.getByText("All 1 entry in this period")).toBeTruthy();
+    expect(screen.getByText("Covers 1 entry")).toBeTruthy();
     expect(
       screen.getByRole("link", { name: "Capture something" }).getAttribute("href")
     ).toBe("/app/feed?student=student_mary");
   });
 
-  it("labels a filtered period with readable dates", () => {
+  it("states the filters and match count on a filtered report", () => {
     render(
       <StudentReportPage
         student={student}
-        dateRange={{
-          status: "valid",
-          start: "2026-09-01",
-          end: "2026-09-30",
-          startOffset: "240",
-          endOffset: "240",
+        filters={{
+          query: "warmup",
+          evidenceType: "Behavior observation",
+          topic: "decimal addition",
+          tags: ["math", "focus"],
+          from: "2026-09-01",
+          to: "2026-09-30",
+          fromOffsetMinutes: 240,
+          toOffsetMinutes: 240,
         }}
+        options={options}
+        totalEvidenceCount={40}
         evidenceRecords={[]}
       />
     );
 
     expect(screen.getByText("Sep 1 to Sep 30, 2026")).toBeTruthy();
-    expect(screen.getByText("No evidence in this range.")).toBeTruthy();
+    expect(
+      screen.getByText(
+        "Behavior observation \u00b7 Topic: decimal addition \u00b7 #math or #focus \u00b7 Matching \u201cwarmup\u201d"
+      )
+    ).toBeTruthy();
+    expect(screen.getByText(/0 of 40 entries match/)).toBeTruthy();
+    expect(screen.getByText("No evidence matches these filters.")).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Clear filters" })).toBeTruthy();
+  });
+
+  it("submits report filters as timeline-style URL params", () => {
+    render(
+      <StudentReportPage
+        student={student}
+        filters={noFilters}
+        options={options}
+        totalEvidenceCount={1}
+        evidenceRecords={[]}
+      />
+    );
+
+    fireEvent.change(screen.getByLabelText("Topic"), {
+      target: { value: "reading" },
+    });
+    fireEvent.change(screen.getByLabelText("Type"), {
+      target: { value: "Academic check-in" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Apply filters" }));
+
+    expect(mocks.push).toHaveBeenCalledWith(
+      "/app/students/student_mary/report?type=Academic+check-in&topic=reading"
+    );
   });
 
   it("renders a useful empty state instead of an empty report", () => {
     render(
       <StudentReportPage
         student={student}
-        dateRange={allEvidence}
+        filters={noFilters}
+        options={options}
+        totalEvidenceCount={1}
         evidenceRecords={[]}
       />
     );
@@ -107,7 +147,9 @@ describe("StudentReportPage", () => {
     render(
       <StudentReportPage
         student={student}
-        dateRange={allEvidence}
+        filters={noFilters}
+        options={options}
+        totalEvidenceCount={1}
         evidenceRecords={[
           {
             id: "evidence_photo",

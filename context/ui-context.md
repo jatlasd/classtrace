@@ -95,7 +95,8 @@ small lower-right node is amber. There is no `CT` tile.
 - A student timeline keeps the student's identity and all-time summary primary,
   then offers low-emphasis URL-backed search and optional type, tag, and date
   filters above the month-grouped saved trace. Reports use print-safe ruled
-  rows and are not narrowed by timeline filters.
+  rows. The header Print report covers full history; a filtered timeline adds
+  Print these results, which opens the report with the same applied filters.
 
 These patterns are contextual. Do not impose a blanket “all cards” or “all
 ledgers” rule: active/provisional work belongs in Plates, secondary controls in

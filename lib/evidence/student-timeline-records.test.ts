@@ -75,6 +75,7 @@ function buildDatabase({
     count: [] as unknown[],
     list: [] as { where: unknown; skip: number; take: number }[],
     tags: [] as unknown[],
+    topics: [] as unknown[],
     followUps: [] as unknown[],
     topTags: [] as unknown[],
   };
@@ -104,6 +105,10 @@ function buildDatabase({
     listStudentTags: async (workspaceId, studentId, limit) => {
       calls.tags.push({ workspaceId, studentId, limit });
       return tags;
+    },
+    listStudentTopics: async (workspaceId, studentId, limit) => {
+      calls.topics.push({ workspaceId, studentId, limit });
+      return [" Fractions ", "reading fluency", "Reading Fluency", ""];
     },
     countFollowUps: async (where) => {
       calls.followUps.push(where);
@@ -157,6 +162,23 @@ describe("buildStudentTimelineWhere", () => {
       { tags: { has: "reading" } },
     ]);
     expect(JSON.stringify(where.OR)).not.toMatch(/displayName|mentionHandle|classGroup/);
+  });
+
+  it("matches a topic case-insensitively and exactly", () => {
+    const where = buildStudentTimelineWhere("workspace_1", "student_mary", {
+      query: "",
+      topic: "Decimal Addition",
+      tags: [],
+    });
+
+    expect(where).toMatchObject({
+      workspaceId: "workspace_1",
+      rosterStudentId: "student_mary",
+      topic: { equals: "Decimal Addition", mode: "insensitive" },
+    });
+    expect(
+      buildStudentTimelineWhere("workspace_1", "student_mary", emptyInput)
+    ).not.toHaveProperty("topic");
   });
 
   it("combines exact type, any-selected tags, and inclusive local date boundaries", () => {
@@ -321,6 +343,14 @@ describe("getStudentTimelineRecordsForWorkspace", () => {
     expect(calls.followUps[0]).not.toHaveProperty("tags");
     expect(result?.results.totalMatches).toBe(4);
     expect(result?.options.tags).toEqual(["independent", "prompt", "reading"]);
+    expect(result?.options.topics).toEqual(["Fractions", "reading fluency"]);
+    expect(calls.topics).toEqual([
+      {
+        workspaceId: "workspace_1",
+        studentId: "student_mary",
+        limit: INPUT_LIMITS.exploreTopicOptions,
+      },
+    ]);
   });
 
   it.each([

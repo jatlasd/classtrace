@@ -10,6 +10,7 @@ describe("student timeline URL state", () => {
     const parsed = parseStudentTimelineSearchParams({
       q: "  reading strategy  ",
       type: "Academic check-in",
+      topic: "  decimal addition  ",
       tag: ["#Reading", " reading ", "Independent"],
       from: "2026-03-08",
       to: "2026-03-09",
@@ -23,6 +24,7 @@ describe("student timeline URL state", () => {
         page: 3,
         query: "reading strategy",
         evidenceType: "Academic check-in",
+        topic: "decimal addition",
         tags: ["reading", "independent"],
         from: "2026-03-08",
         to: "2026-03-09",
@@ -31,7 +33,7 @@ describe("student timeline URL state", () => {
       },
     });
     expect(serializeStudentTimelineSearchParams(parsed.input).toString()).toBe(
-      "q=reading+strategy&type=Academic+check-in&tag=reading&tag=independent&from=2026-03-08&fromOffset=300&to=2026-03-09&toOffset=240&page=3"
+      "q=reading+strategy&type=Academic+check-in&topic=decimal+addition&tag=reading&tag=independent&from=2026-03-08&fromOffset=300&to=2026-03-09&toOffset=240&page=3"
     );
   });
 
@@ -48,6 +50,15 @@ describe("student timeline URL state", () => {
     expect(parsed.input.tags).toHaveLength(MAX_STUDENT_TIMELINE_TAGS);
     expect(parsed.input.tags[0]).toBe("tag-0");
     expect(parsed.input.page).toBe(1);
+  });
+
+  it("bounds topic text and drops a blank topic", () => {
+    expect(
+      parseStudentTimelineSearchParams({ topic: "t".repeat(1_200) }).input.topic
+    ).toHaveLength(1_000);
+    expect(
+      parseStudentTimelineSearchParams({ topic: "   " }).input
+    ).not.toHaveProperty("topic");
   });
 
   it("keeps a valid one-sided date while explaining an invalid boundary", () => {

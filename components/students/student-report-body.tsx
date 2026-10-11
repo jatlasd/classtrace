@@ -155,8 +155,8 @@ function ReportSummary({
         </h2>
         <p className="label text-fg-3">
           {records.length === totalCount
-            ? `All ${entryCountLabel(totalCount)} in this period`
-            : `${records.length} of ${entryCountLabel(totalCount)} in this period`}
+            ? `Covers ${totalCount === 1 ? "" : "all "}${entryCountLabel(totalCount)}`
+            : `Covers ${records.length} of ${entryCountLabel(totalCount)}`}
         </p>
       </div>
 
@@ -419,8 +419,8 @@ export function StudentReportBody({
 
       <p className="student-report-print-only mt-8 border-t border-line pt-3 text-xs text-fg-2">
         Prepared by the teacher in ClassTrace from validated evidence.{" "}
-        {includedCount} of {entryCountLabel(records.length)} in this period
-        included.
+        Includes {includedCount} of {entryCountLabel(records.length)} available
+        for this report.
       </p>
     </>
   );

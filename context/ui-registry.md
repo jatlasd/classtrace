@@ -348,7 +348,9 @@ each dense management row an independently floating card.
 
 Files: `components/students/student-timeline-page.tsx`,
 `components/students/student-report-page.tsx`,
-`components/students/student-report-body.tsx`
+`components/students/student-report-body.tsx`,
+`components/students/student-report-filters.tsx`,
+`components/students/student-evidence-filter-fields.tsx`
 
 - Both use an `880px` work area.
 - The timeline opens with Students/class breadcrumb context, a large student
@@ -360,10 +362,13 @@ Files: `components/students/student-timeline-page.tsx`,
   links (with counts) to the timeline filtered by that tag.
 - One search row follows (visually hidden “Find in this timeline” heading and
   label): full-rounded search, Search, and a Filters pill (icon-only below
-  `sm`). Type, student-specific tag multi-select, and From/To inputs sit in the
-  Filters disclosure and apply explicitly. Only applied state enters the URL.
+  `sm`). Type, student-specific Topic, tag multi-select, and From/To inputs sit
+  in the Filters disclosure and apply explicitly. Only applied state enters the
+  URL. The same filter fields are shared with the report.
 - The Evidence heading shows the matching count and compact Newer/Older paging;
-  full paging repeats below the trace. Explicit retrieval navigation moves
+  a filtered timeline with matches adds an outline Print these results link
+  that carries the applied filters (without page) to the report. Full paging
+  repeats below the trace. Explicit retrieval navigation moves
   focus to that heading and announces its result count and page.
 - Timeline, empty-state, and report Capture actions preserve the active student
   in the Capture URL. The feed validates that value within the current
@@ -374,10 +379,14 @@ Files: `components/students/student-timeline-page.tsx`,
   photo, and follow-up; the saved trace itself establishes permanence.
 - A student with no history retains the capture-oriented empty state without
   retrieval controls. A filtered trace with no matches instead offers a clear
-  action. Header summary, report, and export always describe full history.
+  action. Header summary, header Print report, and export always describe full
+  history.
 - The report uses a strong ruled header (student name, then an "Evidence report"
   line with handle and class; the readable Period and Prepared date sit at the
-  right), date-filter controls, then a screen-only ruled
+  right; a filtered report adds a printed "Filtered to" line naming type,
+  topic, tags as "#a or #b", and search text with the match count), a
+  screen-only filter Well (search text plus the shared filter fields, Apply
+  filters, Clear filters), then a screen-only ruled
   bar with an "Organize by" radio group (Date by month, Evidence type, Topic),
   the included-entry count, and Include all / Include none.
 - A Summary section follows: Entries, Date span, With photo, and Follow-ups

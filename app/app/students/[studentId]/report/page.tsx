@@ -3,48 +3,31 @@ import type { ReactElement } from "react";
 import { StudentReportPage } from "@/components/students/student-report-page";
 import { Button } from "@/components/ui/button";
 import { getCurrentAppWorkspace } from "@/lib/auth/get-current-workspace";
+import { getStudentReportRecordsForWorkspace } from "@/lib/evidence/student-report-records";
 import {
-  getStudentReportRecordsForWorkspace,
-  parseStudentReportDateRange,
-} from "@/lib/evidence/student-report-records";
+  parseStudentTimelineSearchParams,
+  type StudentTimelineRawSearchParams,
+} from "@/lib/evidence/student-timeline-query";
 import { routes } from "@/lib/routes";
 
 type StudentReportRouteProps = {
   params: Promise<{ studentId: string }>;
-  searchParams: Promise<{
-    start?: string | string[];
-    end?: string | string[];
-    startOffset?: string | string[];
-    endOffset?: string | string[];
-  }>;
+  searchParams: Promise<StudentTimelineRawSearchParams>;
 };
-
-function firstSearchParam(value: string | string[] | undefined): string | undefined {
-  if (Array.isArray(value)) {
-    return value[0];
-  }
-
-  return value;
-}
 
 export default async function StudentReportRoute({
   params,
   searchParams,
 }: StudentReportRouteProps): Promise<ReactElement> {
   const { studentId } = await params;
-  const query = await searchParams;
   const workspace = await getCurrentAppWorkspace();
-  const dateRange = parseStudentReportDateRange({
-    start: firstSearchParam(query.start),
-    end: firstSearchParam(query.end),
-    startOffset: firstSearchParam(query.startOffset),
-    endOffset: firstSearchParam(query.endOffset),
-  });
-
+  const { input, dateError } = parseStudentTimelineSearchParams(
+    await searchParams
+  );
   const report = await getStudentReportRecordsForWorkspace(
     workspace.workspaceId,
     studentId,
-    dateRange
+    input
   );
 
   if (!report) {
@@ -69,7 +52,10 @@ export default async function StudentReportRoute({
     <StudentReportPage
       student={report.student}
       evidenceRecords={report.evidenceRecords}
-      dateRange={report.dateRange}
+      totalEvidenceCount={report.totalEvidenceCount}
+      options={report.options}
+      filters={input}
+      dateError={dateError}
     />
   );
 }

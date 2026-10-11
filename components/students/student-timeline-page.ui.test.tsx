@@ -3,10 +3,8 @@
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { StudentQuickJumpProvider } from "@/components/students/student-quick-jump";
-import {
-  dateBoundaryOffset,
-  StudentTimelinePage,
-} from "@/components/students/student-timeline-page";
+import { dateBoundaryOffset } from "@/components/students/student-evidence-filter-fields";
+import { StudentTimelinePage } from "@/components/students/student-timeline-page";
 import type { StudentTimelineResult } from "@/lib/evidence/student-timeline-records";
 import type { StudentTimelineInput } from "@/lib/evidence/student-timeline-query";
 
@@ -82,7 +80,10 @@ function buildTimeline(
       hasOlder: totalEvidenceCount > 20,
       ...overrides,
     },
-    options: { tags: ["fluency", "reading", "support"] },
+    options: {
+      tags: ["fluency", "reading", "support"],
+      topics: ["Decimal addition", "Reading fluency"],
+    },
   };
 }
 
@@ -150,6 +151,48 @@ describe("StudentTimelinePage", () => {
       { target: { value: "Stacy" } }
     );
     expect(screen.getByRole("option", { name: /Stacy/ })).toBeTruthy();
+  });
+
+  it("prints filtered results through the report with the applied filters", () => {
+    renderPage(buildTimeline({ totalMatches: 2, page: 2 }), {
+      ...emptyFilters,
+      page: 2,
+      evidenceType: "Academic check-in",
+      topic: "Reading fluency",
+      tags: ["reading"],
+    });
+
+    expect(
+      screen.getByRole("link", { name: "Print these results" }).getAttribute("href")
+    ).toBe(
+      "/app/students/student_mary/report?type=Academic+check-in&topic=Reading+fluency&tag=reading"
+    );
+  });
+
+  it("offers Print these results only for a filtered timeline with matches", () => {
+    renderPage();
+    expect(screen.queryByRole("link", { name: "Print these results" })).toBeNull();
+
+    cleanup();
+    renderPage(buildTimeline({ totalMatches: 0, records: [] }), {
+      ...emptyFilters,
+      query: "nothing",
+    });
+    expect(screen.queryByRole("link", { name: "Print these results" })).toBeNull();
+  });
+
+  it("applies a topic from the student's topic options", () => {
+    renderPage();
+
+    fireEvent.click(screen.getByRole("button", { name: /Filters/ }));
+    fireEvent.change(screen.getByLabelText("Topic"), {
+      target: { value: "Decimal addition" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Apply filters" }));
+
+    expect(mocks.push).toHaveBeenCalledWith(
+      "/app/students/student_mary?topic=Decimal+addition#student-evidence-heading"
+    );
   });
 
   it("keeps filter drafts local and searches with currently applied filters", () => {

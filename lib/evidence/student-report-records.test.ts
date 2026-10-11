@@ -8,16 +8,30 @@ vi.mock("@/lib/db/prisma", () => ({
     },
     evidenceRecord: {
       findMany: vi.fn(),
+      count: vi.fn(),
     },
   },
 }));
 
 import {
   getStudentReportRecordsForWorkspace,
-  parseStudentReportDateRange,
   type StudentReportDatabase,
 } from "@/lib/evidence/student-report-records";
+import type { StudentTimelineFilters } from "@/lib/evidence/student-timeline-query";
 import { INPUT_LIMITS } from "@/lib/validation/input-limits";
+
+const NO_FILTERS: StudentTimelineFilters = { query: "", tags: [] };
+
+const ACTIVE_MARY_EVIDENCE = {
+  workspaceId: "workspace_1",
+  rosterStudentId: "student_mary",
+  archivedAt: null,
+  rosterStudent: {
+    workspaceId: "workspace_1",
+    id: "student_mary",
+    archivedAt: null,
+  },
+};
 
 function buildStudent(): {
   id: string;
@@ -92,7 +106,17 @@ function buildDatabase({
 } = {}) {
   const studentCalls: unknown[] = [];
   const evidenceCalls: unknown[] = [];
+  const countCalls: unknown[] = [];
+  const optionCalls: unknown[] = [];
   const database = {
+    listStudentTags: async (...args) => {
+      optionCalls.push(["tags", ...args]);
+      return ["Reading", "prompt", "reading"];
+    },
+    listStudentTopics: async (...args) => {
+      optionCalls.push(["topics", ...args]);
+      return ["reading", "Reading", "fluency"];
+    },
     rosterStudent: {
       findFirst: async (args) => {
         studentCalls.push(args);
@@ -104,112 +128,25 @@ function buildDatabase({
         evidenceCalls.push(args);
         return evidenceRecords;
       },
+      count: async (args) => {
+        countCalls.push(args);
+        return 9;
+      },
     },
   } satisfies StudentReportDatabase;
 
-  return { database, studentCalls, evidenceCalls };
+  return { database, studentCalls, evidenceCalls, countCalls, optionCalls };
 }
-
-describe("parseStudentReportDateRange", () => {
-  it("accepts a blank all-evidence range", () => {
-    expect(parseStudentReportDateRange({})).toEqual({ status: "valid" });
-  });
-
-  it("validates date-only input and rejects impossible dates", () => {
-    expect(parseStudentReportDateRange({ start: "2026-02-30" })).toEqual({
-      status: "invalid",
-      start: "2026-02-30",
-      end: undefined,
-      error: "Use a valid start date.",
-    });
-    expect(parseStudentReportDateRange({ end: "not-a-date" })).toEqual({
-      status: "invalid",
-      start: undefined,
-      end: "not-a-date",
-      error: "Use a valid end date.",
-    });
-  });
-
-  it("rejects start dates after end dates", () => {
-    expect(
-      parseStudentReportDateRange({
-        start: "2026-07-02",
-        end: "2026-07-01",
-        startOffset: "240",
-        endOffset: "240",
-      })
-    ).toEqual({
-      status: "invalid",
-      start: "2026-07-02",
-      end: "2026-07-01",
-      error: "Choose a start date before the end date.",
-    });
-  });
-
-  it("uses explicit browser offsets for teacher-local calendar boundaries", () => {
-    const range = parseStudentReportDateRange({
-      start: "2026-07-03",
-      end: "2026-07-03",
-      startOffset: "240",
-      endOffset: "240",
-    });
-
-    expect(range.status).toBe("valid");
-    if (range.status !== "valid") {
-      throw new Error("Expected a valid report range.");
-    }
-
-    const easternEveningObservation = new Date("2026-07-04T03:30:00.000Z");
-
-    expect(range.startDate).toEqual(new Date("2026-07-03T04:00:00.000Z"));
-    expect(range.endExclusiveDate).toEqual(
-      new Date("2026-07-04T04:00:00.000Z")
-    );
-    expect(easternEveningObservation.getTime()).toBeGreaterThanOrEqual(
-      range.startDate?.getTime() ?? 0
-    );
-    expect(easternEveningObservation.getTime()).toBeLessThan(
-      range.endExclusiveDate?.getTime() ?? 0
-    );
-  });
-
-  it("uses the offset at each boundary so a DST transition keeps full local days", () => {
-    const range = parseStudentReportDateRange({
-      start: "2026-10-31",
-      end: "2026-11-01",
-      startOffset: "240",
-      endOffset: "300",
-    });
-
-    expect(range).toMatchObject({
-      status: "valid",
-      startDate: new Date("2026-10-31T04:00:00.000Z"),
-      endExclusiveDate: new Date("2026-11-02T05:00:00.000Z"),
-    });
-  });
-
-  it("requires valid browser offsets when a date boundary is present", () => {
-    expect(parseStudentReportDateRange({ start: "2026-07-03" })).toMatchObject({
-      status: "invalid",
-      error: "Apply the date range again so ClassTrace can use your local day.",
-    });
-    expect(
-      parseStudentReportDateRange({ end: "2026-07-03", endOffset: "900" })
-    ).toMatchObject({
-      status: "invalid",
-      error: "Apply the date range again so ClassTrace can use your local day.",
-    });
-  });
-});
 
 describe("getStudentReportRecordsForWorkspace", () => {
   it("verifies the selected active student inside the workspace before reading evidence", async () => {
-    const { database, studentCalls, evidenceCalls } = buildDatabase();
+    const { database, studentCalls, evidenceCalls, countCalls, optionCalls } =
+      buildDatabase();
 
     const result = await getStudentReportRecordsForWorkspace(
       "workspace_1",
       "student_mary",
-      parseStudentReportDateRange({}),
+      NO_FILTERS,
       database
     );
 
@@ -233,13 +170,14 @@ describe("getStudentReportRecordsForWorkspace", () => {
         },
       },
     ]);
+    expect(countCalls).toEqual([{ where: ACTIVE_MARY_EVIDENCE }]);
+    expect(optionCalls).toEqual([
+      ["tags", "workspace_1", "student_mary", INPUT_LIMITS.exploreTagOptions],
+      ["topics", "workspace_1", "student_mary", INPUT_LIMITS.exploreTopicOptions],
+    ]);
     expect(evidenceCalls).toEqual([
       {
-        where: {
-          workspaceId: "workspace_1",
-          rosterStudentId: "student_mary",
-          archivedAt: null,
-        },
+        where: ACTIVE_MARY_EVIDENCE,
         orderBy: [{ evidenceDate: "asc" }, { createdAt: "asc" }],
         select: {
           id: true,
@@ -291,7 +229,11 @@ describe("getStudentReportRecordsForWorkspace", () => {
           classGroupName: "Reading group",
         },
       ],
-      dateRange: { status: "valid" },
+      totalEvidenceCount: 9,
+      options: {
+        tags: ["prompt", "reading"],
+        topics: ["fluency", "reading"],
+      },
     });
   });
 
@@ -301,7 +243,7 @@ describe("getStudentReportRecordsForWorkspace", () => {
     const result = await getStudentReportRecordsForWorkspace(
       "workspace_1",
       "student_elsewhere",
-      parseStudentReportDateRange({}),
+      NO_FILTERS,
       database
     );
 
@@ -315,7 +257,7 @@ describe("getStudentReportRecordsForWorkspace", () => {
     const result = await getStudentReportRecordsForWorkspace(
       "workspace_1",
       "x".repeat(INPUT_LIMITS.identifier + 1),
-      parseStudentReportDateRange({}),
+      NO_FILTERS,
       database
     );
 
@@ -324,82 +266,41 @@ describe("getStudentReportRecordsForWorkspace", () => {
     expect(evidenceCalls).toEqual([]);
   });
 
-  it("applies start-only, end-only, and inclusive start/end evidence date bounds", async () => {
-    const startOnly = buildDatabase();
+  it("applies type, topic, tag, text, and teacher-local date filters inside the student boundary", async () => {
+    const { database, evidenceCalls, countCalls } = buildDatabase();
+
     await getStudentReportRecordsForWorkspace(
       "workspace_1",
       "student_mary",
-      parseStudentReportDateRange({ start: "2026-07-01", startOffset: "240" }),
-      startOnly.database
-    );
-    expect(startOnly.evidenceCalls[0]).toMatchObject({
-      where: {
-        evidenceDate: {
-          gte: new Date("2026-07-01T04:00:00.000Z"),
-        },
+      {
+        query: "warmup",
+        evidenceType: "Behavior observation",
+        topic: "Decimal Addition",
+        tags: ["math", "focus"],
+        from: "2026-07-01",
+        to: "2026-07-03",
+        fromOffsetMinutes: 240,
+        toOffsetMinutes: 240,
       },
-    });
-
-    const endOnly = buildDatabase();
-    await getStudentReportRecordsForWorkspace(
-      "workspace_1",
-      "student_mary",
-      parseStudentReportDateRange({ end: "2026-07-03", endOffset: "240" }),
-      endOnly.database
-    );
-    expect(endOnly.evidenceCalls[0]).toMatchObject({
-      where: {
-        evidenceDate: {
-          lt: new Date("2026-07-04T04:00:00.000Z"),
-        },
-      },
-    });
-
-    const both = buildDatabase();
-    await getStudentReportRecordsForWorkspace(
-      "workspace_1",
-      "student_mary",
-      parseStudentReportDateRange({
-        start: "2026-07-01",
-        end: "2026-07-03",
-        startOffset: "240",
-        endOffset: "240",
-      }),
-      both.database
-    );
-    expect(both.evidenceCalls[0]).toMatchObject({
-      where: {
-        evidenceDate: {
-          gte: new Date("2026-07-01T04:00:00.000Z"),
-          lt: new Date("2026-07-04T04:00:00.000Z"),
-        },
-      },
-    });
-  });
-
-  it("returns a date error without querying evidence for an invalid range", async () => {
-    const { database, evidenceCalls } = buildDatabase();
-
-    const result = await getStudentReportRecordsForWorkspace(
-      "workspace_1",
-      "student_mary",
-      parseStudentReportDateRange({
-        start: "2026-07-04",
-        end: "2026-07-01",
-        startOffset: "240",
-        endOffset: "240",
-      }),
       database
     );
 
-    expect(evidenceCalls).toEqual([]);
-    expect(result?.dateRange).toEqual({
-      status: "invalid",
-      start: "2026-07-04",
-      end: "2026-07-01",
-      error: "Choose a start date before the end date.",
+    expect(evidenceCalls[0]).toMatchObject({
+      where: {
+        ...ACTIVE_MARY_EVIDENCE,
+        evidenceType: "Behavior observation",
+        topic: { equals: "Decimal Addition", mode: "insensitive" },
+        tags: { hasSome: ["math", "focus"] },
+        evidenceDate: {
+          gte: new Date("2026-07-01T04:00:00.000Z"),
+          lt: new Date("2026-07-04T04:00:00.000Z"),
+        },
+        OR: expect.arrayContaining([
+          { evidenceNote: { contains: "warmup", mode: "insensitive" } },
+        ]),
+      },
     });
-    expect(result?.evidenceRecords).toEqual([]);
+    expect(countCalls).toEqual([{ where: ACTIVE_MARY_EVIDENCE }]);
   });
 
   it("returns a client-safe model without ownership or raw draft fields and does not fabricate notes", async () => {
@@ -427,7 +328,7 @@ describe("getStudentReportRecordsForWorkspace", () => {
     const result = await getStudentReportRecordsForWorkspace(
       "workspace_1",
       "student_mary",
-      parseStudentReportDateRange({}),
+      NO_FILTERS,
       database
     );
 

@@ -12,6 +12,7 @@ const DATE_ONLY_PATTERN = /^(\d{4})-(\d{2})-(\d{2})$/;
 export type StudentTimelineFilters = {
   query: string;
   evidenceType?: string;
+  topic?: string;
   tags: string[];
   from?: string;
   to?: string;
@@ -26,6 +27,7 @@ export type StudentTimelineInput = StudentTimelineFilters & {
 export type StudentTimelineRawSearchParams = {
   q?: string | string[];
   type?: string | string[];
+  topic?: string | string[];
   tag?: string | string[];
   from?: string | string[];
   to?: string | string[];
@@ -106,6 +108,7 @@ export function normalizeStudentTimelineInput(
   const savedClassification = evidenceType
     ? getSavedEvidenceClassificationByLabel(evidenceType)
     : undefined;
+  const topic = input.topic?.trim().slice(0, INPUT_LIMITS.evidenceField);
   const tags = normalizeTags(input.tags);
   const from = input.from && isValidStudentTimelineDate(input.from)
     ? input.from
@@ -128,6 +131,7 @@ export function normalizeStudentTimelineInput(
     ...(savedClassification
       ? { evidenceType: savedClassification.label }
       : {}),
+    ...(topic ? { topic } : {}),
     ...(fromUsable && from ? { from, fromOffsetMinutes } : {}),
     ...(toUsable && to ? { to, toOffsetMinutes } : {}),
   };
@@ -170,6 +174,7 @@ export function parseStudentTimelineSearchParams(
     page: normalizePage(firstValue(searchParams.page)),
     query: firstValue(searchParams.q),
     evidenceType: firstValue(searchParams.type),
+    topic: firstValue(searchParams.topic),
     tags: normalizeTags(allValues(searchParams.tag)),
     from,
     to,
@@ -187,6 +192,7 @@ export function serializeStudentTimelineSearchParams(
   const params = new URLSearchParams();
   if (normalized.query) params.set("q", normalized.query);
   if (normalized.evidenceType) params.set("type", normalized.evidenceType);
+  if (normalized.topic) params.set("topic", normalized.topic);
   for (const tag of normalized.tags) params.append("tag", tag);
   if (normalized.from) {
     params.set("from", normalized.from);
@@ -206,6 +212,7 @@ export function hasStudentTimelineFilters(
   return Boolean(
     filters.query ||
       filters.evidenceType ||
+      filters.topic ||
       filters.tags.length > 0 ||
       filters.from ||
       filters.to
