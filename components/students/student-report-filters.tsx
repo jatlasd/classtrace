@@ -43,6 +43,16 @@ export function StudentReportFilters({
   const [query, setQuery] = useState(filters.query);
   const [draft, setDraft] = useState(() => filterDraftFrom(filters));
   const [localDateError, setLocalDateError] = useState<string | null>(null);
+  const appliedSignature = studentReportHref(studentId, filters);
+  const [previousAppliedSignature, setPreviousAppliedSignature] =
+    useState(appliedSignature);
+
+  if (previousAppliedSignature !== appliedSignature) {
+    setPreviousAppliedSignature(appliedSignature);
+    setQuery(filters.query);
+    setDraft(filterDraftFrom(filters));
+    setLocalDateError(null);
+  }
 
   function navigate(next: StudentTimelineFilters): void {
     startTransition(() => {

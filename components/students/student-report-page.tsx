@@ -10,6 +10,7 @@ import { StudentReportPrintAction } from "@/components/students/student-report-p
 import type { StudentEvidenceFilterOptions } from "@/lib/evidence/student-timeline-records";
 import {
   hasStudentTimelineFilters,
+  serializeStudentTimelineSearchParams,
   type StudentTimelineFilters,
 } from "@/lib/evidence/student-timeline-query";
 import { formatReportDateSpan } from "@/lib/evidence/student-report-summary";
@@ -196,7 +197,13 @@ export function StudentReportPage({
       {evidenceRecords.length === 0 ? (
         <ReportEmptyEvidence filtered={hasStudentTimelineFilters(filters)} />
       ) : (
-        <StudentReportBody records={evidenceRecords} />
+        <StudentReportBody
+          key={serializeStudentTimelineSearchParams({
+            ...filters,
+            page: 1,
+          }).toString()}
+          records={evidenceRecords}
+        />
       )}
     </div>
   );
