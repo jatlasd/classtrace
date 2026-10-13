@@ -95,7 +95,7 @@ describe("EvidenceReportBody", () => {
     expect(screen.getByText("2 of 2 entries included")).toBeTruthy();
   });
 
-  it("groups multi-student reports by student and names students in other groupings", () => {
+  it("groups multi-student reports by student and names the student on every entry", () => {
     render(
       <EvidenceReportBody
         showStudents
@@ -109,13 +109,25 @@ describe("EvidenceReportBody", () => {
     expect(groupHeadings()).toEqual(["Jeremy", "Mary"]);
     expect(within(summarySection()).getByText("Students").nextSibling?.textContent).toBe("2");
     expect(
-      screen.getByRole("checkbox", { name: "Include entry from June 2, 2026" })
+      screen.getByRole("checkbox", { name: "Include Jeremy entry from June 2, 2026" })
     ).toBeTruthy();
+    const printedNames = screen.getAllByText(/^(Jeremy|Mary)$/, { selector: "p" });
+    expect(printedNames.map((name) => name.textContent)).toEqual(["Jeremy", "Mary"]);
+    expect(
+      printedNames.every((name) =>
+        name.classList.contains("evidence-report-print-only")
+      )
+    ).toBe(true);
 
     fireEvent.click(screen.getByRole("radio", { name: "Date" }));
     expect(groupHeadings()).toEqual(["May 2026", "June 2026"]);
     expect(
       screen.getByRole("checkbox", { name: "Include Jeremy entry from June 2, 2026" })
     ).toBeTruthy();
+    expect(
+      screen
+        .getAllByText(/^(Jeremy|Mary)$/, { selector: "p" })
+        .some((name) => name.classList.contains("evidence-report-print-only"))
+    ).toBe(false);
   });
 });

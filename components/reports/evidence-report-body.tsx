@@ -226,12 +226,14 @@ function ReportEvidenceItem({
   record,
   included,
   showStudent,
+  studentPrintOnly,
   timeZone,
   onIncludedChange,
 }: {
   record: ReportEvidenceRecord;
   included: boolean;
   showStudent: boolean;
+  studentPrintOnly: boolean;
   timeZone: string;
   onIncludedChange: (included: boolean) => void;
 }) {
@@ -252,6 +254,11 @@ function ReportEvidenceItem({
           >
             {date}
           </time>
+          {showStudent && studentPrintOnly && record.studentDisplayName ? (
+            <p className="evidence-report-print-only mt-1 text-[13px] font-semibold text-fg">
+              {record.studentDisplayName}
+            </p>
+          ) : null}
           <label className="evidence-report-screen-only inline-flex min-h-11 items-center gap-2 text-[13px] text-fg-2 sm:mt-1 lg:min-h-8">
             <input
               type="checkbox"
@@ -268,7 +275,7 @@ function ReportEvidenceItem({
           </label>
         </div>
         <div className={cn("min-w-0", !included && "opacity-45")}>
-          {showStudent && record.studentDisplayName ? (
+          {showStudent && !studentPrintOnly && record.studentDisplayName ? (
             <p className="text-[13px] font-semibold text-fg">
               {record.studentDisplayName}
             </p>
@@ -444,7 +451,8 @@ export function EvidenceReportBody({
                     key={record.id}
                     record={record}
                     included={!excludedIds.has(record.id)}
-                    showStudent={showStudents && groupMode !== "student"}
+                    showStudent={showStudents}
+                    studentPrintOnly={groupMode === "student"}
                     timeZone={timeZone}
                     onIncludedChange={(included) =>
                       setIncluded(record.id, included)

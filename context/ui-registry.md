@@ -316,7 +316,8 @@ Files: `components/explore/explore-evidence-page.tsx`,
   question in words, matching count, Prepared date, a printed notice when the
   300-entry cap truncates, then the shared report body (summary, Organize by
   with Student as the default; Explore reports always name students, even
-  when one student matches; include controls,
+  when one student matches, and every printed entry carries its student's name
+  under the date so continuation pages stay attributable; include controls,
   print rules). Back to results restores the same results and refocuses Print
   report.
 
