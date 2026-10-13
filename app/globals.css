@@ -316,6 +316,11 @@
 }
 
 
+.student-report-print-only,
+.student-report-unapplied-print {
+  display: none;
+}
+
 @media print {
   :root {
     --base: #ffffff;
@@ -327,6 +332,7 @@
     --fg-2: #333333;
     --fg-3: #666666;
     --live: #000000;
+    --live-bright: #000000;
     --live-fg: #ffffff;
     --live-soft: transparent;
     color-scheme: light;
@@ -339,8 +345,41 @@
 
   body:has(.student-report-page) .app-shell-navigation,
   .site-footer,
-  .student-report-screen-only {
+  .student-report-screen-only,
+  .student-report-excluded {
     display: none !important;
+  }
+
+  .student-report-print-only {
+    display: block !important;
+  }
+
+  .student-report-unapplied-print {
+    display: block !important;
+  }
+
+  body:has(.student-report-unapplied-print) .student-report-page {
+    display: none !important;
+  }
+
+  body:has(.student-report-page) a[href="#main-content"] {
+    display: none !important;
+  }
+
+  .student-report-section-heading,
+  .student-report-group-heading {
+    break-after: avoid;
+    page-break-after: avoid;
+  }
+
+  .student-report-entry img,
+  .student-report-entry button:has(img) {
+    max-height: 3.5in !important;
+  }
+
+  .student-report-keep-together {
+    break-inside: avoid;
+    page-break-inside: avoid;
   }
 
   .app-shell-workspace {
@@ -365,6 +404,8 @@
   }
 
   .student-report-entry {
+    grid-template-columns: 9rem minmax(0, 1fr) auto !important;
+    column-gap: 1rem !important;
     break-inside: avoid;
     box-shadow: none !important;
     page-break-inside: avoid;

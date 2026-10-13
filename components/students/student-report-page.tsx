@@ -1,13 +1,25 @@
 import Link from "next/link";
 import type { ReactElement } from "react";
-import { EvidenceRecordContent } from "@/components/evidence/evidence-record-content";
-import { ValidatedStamp } from "@/components/evidence/validated-stamp";
 import { Button } from "@/components/ui/button";
-import { StudentReportDateRangeForm } from "@/components/students/student-report-date-range-form";
+import {
+  StudentReportBody,
+  StudentReportPageIdentity,
+  StudentReportPreparedDate,
+} from "@/components/students/student-report-body";
+import {
+  StudentReportFilters,
+  StudentReportUnappliedFiltersProvider,
+} from "@/components/students/student-report-filters";
 import { StudentReportPrintAction } from "@/components/students/student-report-print-action";
+import type { StudentEvidenceFilterOptions } from "@/lib/evidence/student-timeline-records";
+import {
+  hasStudentTimelineFilters,
+  serializeStudentTimelineSearchParams,
+  type StudentTimelineFilters,
+} from "@/lib/evidence/student-timeline-query";
+import { formatReportDateSpan } from "@/lib/evidence/student-report-summary";
 import { routes } from "@/lib/routes";
 import type {
-  StudentReportDateRange,
   StudentReportEvidenceRecord,
   StudentReportStudent,
 } from "@/lib/evidence/student-report-records";
@@ -15,63 +27,56 @@ import type {
 type StudentReportPageProps = {
   student: StudentReportStudent;
   evidenceRecords: StudentReportEvidenceRecord[];
-  dateRange: StudentReportDateRange;
+  totalEvidenceCount: number;
+  options: StudentEvidenceFilterOptions;
+  filters: StudentTimelineFilters;
+  dateError?: string;
 };
 
 type ReportHeaderProps = {
   student: StudentReportStudent;
-  evidenceCount: number;
-  dateRange: StudentReportDateRange;
+  filters: StudentTimelineFilters;
+  matchingCount: number;
+  totalEvidenceCount: number;
 };
 
-type ReportEvidenceListProps = {
-  records: StudentReportEvidenceRecord[];
-  dateRange: StudentReportDateRange;
-};
-
-type ReportEvidenceItemProps = {
-  record: StudentReportEvidenceRecord;
-};
-
-function formatReportDate(value: string): string {
-  const date = new Date(value);
-
-  if (Number.isNaN(date.getTime())) {
-    return "Recently";
+function calendarDate(value: string | undefined): Date | undefined {
+  if (!value) {
+    return undefined;
   }
 
-  return new Intl.DateTimeFormat("en", {
-    month: "long",
-    day: "numeric",
-    year: "numeric",
-  }).format(date);
+  const [year, month, day] = value.split("-").map(Number);
+  return new Date(Date.UTC(year, month - 1, day));
 }
 
-function getRangeLabel(dateRange: StudentReportDateRange): string {
-  if (dateRange.status === "invalid") {
-    return "Date range needs review";
-  }
+function getRangeLabel(filters: StudentTimelineFilters): string {
+  return (
+    formatReportDateSpan(
+      calendarDate(filters.from),
+      calendarDate(filters.to),
+      "UTC"
+    ) ?? "All dates"
+  );
+}
 
-  if (dateRange.start && dateRange.end) {
-    return `${dateRange.start} to ${dateRange.end}`;
-  }
-
-  if (dateRange.start) {
-    return `From ${dateRange.start}`;
-  }
-
-  if (dateRange.end) {
-    return `Through ${dateRange.end}`;
-  }
-
-  return "All evidence";
+export function describeReportFilters(filters: StudentTimelineFilters): string[] {
+  return [
+    filters.evidenceType,
+    filters.topic ? `Topic: ${filters.topic}` : undefined,
+    filters.tags.length > 0
+      ? filters.tags.map((tag) => `#${tag}`).join(" or ")
+      : undefined,
+    filters.query ? `Matching \u201c${filters.query}\u201d` : undefined,
+  ].filter((item): item is string => Boolean(item));
 }
 
 function ReportHeader({
   student,
-  evidenceCount,
-  dateRange,
+  filters,
+  matchingCount,
+  totalEvidenceCount,
 }: ReportHeaderProps) {
+  const filterDescriptions = describeReportFilters(filters);
   const metadata = [
     student.classGroupName ? `Class ${student.classGroupName}` : null,
     student.schoolLocalId ? `Local ID ${student.schoolLocalId}` : null,
@@ -103,84 +108,34 @@ function ReportHeader({
               <span key={item}>{item}</span>
             ))}
           </div>
+          {filterDescriptions.length > 0 ? (
+            <p className="mt-3 max-w-[60ch] break-words text-[13px] leading-relaxed text-fg-2 [overflow-wrap:anywhere]">
+              <span className="label mr-2 text-fg-3">Filtered to</span>
+              <span className="font-semibold text-fg">
+                {filterDescriptions.join(" \u00b7 ")}
+              </span>
+              <span className="text-fg-3">
+                {" "}
+                ({matchingCount} of {totalEvidenceCount}{" "}
+                {totalEvidenceCount === 1 ? "entry" : "entries"} match)
+              </span>
+            </p>
+          ) : null}
         </div>
 
         <div className="sm:text-right">
-          <p className="text-[15px] text-fg-2">
-            <span className="font-display text-3xl font-semibold leading-none text-fg">
-              {evidenceCount}
-            </span>{" "}
-            {evidenceCount === 1 ? "record" : "records"} shown
+          <p className="label text-fg-3">Period</p>
+          <p className="mt-1 font-display text-2xl font-semibold leading-tight text-fg">
+            {getRangeLabel(filters)}
           </p>
-          <p className="label mt-1 text-fg-3">
-            {getRangeLabel(dateRange)}
-          </p>
+          <StudentReportPreparedDate className="label mt-1 text-fg-3" />
         </div>
       </div>
     </header>
   );
 }
 
-function ReportEvidenceItem({ record }: ReportEvidenceItemProps) {
-  return (
-    <li className="border-b border-line last:border-b-0">
-      <article className="student-report-entry grid gap-3 py-5 sm:grid-cols-[10rem_minmax(0,1fr)_auto] sm:gap-6">
-        <div className="flex items-start justify-between gap-3 sm:block">
-          <time dateTime={record.evidenceDate} className="pt-0.5 text-[13px] font-semibold text-fg-2">
-            {formatReportDate(record.evidenceDate)}
-          </time>
-          <ValidatedStamp className="text-fg-3 sm:hidden" />
-        </div>
-        <div className="min-w-0">
-            <EvidenceRecordContent
-              record={record}
-              includeClassGroup
-              showStructuredSummary={false}
-              photoLoading="eager"
-              compact
-            />
-        </div>
-        <ValidatedStamp className="hidden self-start text-fg-3 sm:inline-flex" />
-      </article>
-    </li>
-  );
-}
-
-function ReportEmptyState({
-  dateRange,
-}: {
-  dateRange: StudentReportDateRange;
-}) {
-  const isFiltered =
-    dateRange.status === "valid" && Boolean(dateRange.start || dateRange.end);
-
-  return (
-    <div className="plate px-6 py-12 text-center text-[15px] leading-relaxed text-fg-2">
-      {isFiltered || dateRange.status === "invalid" ? (
-        <>
-          <p className="font-display text-2xl font-semibold text-fg">No evidence in this range.</p>
-          <p className="mx-auto mt-2 max-w-[48ch]">
-            Try a wider date range or clear the dates to view all evidence for
-            this student.
-          </p>
-        </>
-      ) : (
-        <>
-          <p className="font-display text-2xl font-semibold text-fg">No validated evidence yet.</p>
-          <p className="mx-auto mt-2 max-w-[48ch]">
-            Capture a student-specific note, review it, and this report will
-            have evidence to show.
-          </p>
-        </>
-      )}
-    </div>
-  );
-}
-
-function ReportEvidenceList({
-  records,
-  dateRange,
-}: ReportEvidenceListProps) {
+function ReportEmptyEvidence({ filtered }: { filtered: boolean }) {
   return (
     <section
       className="student-report-print-root"
@@ -193,21 +148,28 @@ function ReportEvidenceList({
         >
           Evidence
         </h2>
-        <p className="label text-fg-3">
-          Oldest to newest
-        </p>
       </div>
-      <div className="min-w-0">
-        {records.length === 0 ? (
-          <ReportEmptyState
-            dateRange={dateRange}
-          />
+      <div className="plate px-6 py-12 text-center text-[15px] leading-relaxed text-fg-2">
+        {filtered ? (
+          <>
+            <p className="font-display text-2xl font-semibold text-fg">
+              No evidence matches these filters.
+            </p>
+            <p className="mx-auto mt-2 max-w-[48ch]">
+              Try fewer filters or clear them to view all evidence for this
+              student.
+            </p>
+          </>
         ) : (
-          <ol>
-            {records.map((record) => (
-              <ReportEvidenceItem key={record.id} record={record} />
-            ))}
-          </ol>
+          <>
+            <p className="font-display text-2xl font-semibold text-fg">
+              No validated evidence yet.
+            </p>
+            <p className="mx-auto mt-2 max-w-[48ch]">
+              Capture a student-specific note, review it, and this report will
+              have evidence to show.
+            </p>
+          </>
         )}
       </div>
     </section>
@@ -217,25 +179,40 @@ function ReportEvidenceList({
 export function StudentReportPage({
   student,
   evidenceRecords,
-  dateRange,
+  totalEvidenceCount,
+  options,
+  filters,
+  dateError,
 }: StudentReportPageProps): ReactElement {
+  const appliedKey = serializeStudentTimelineSearchParams({
+    ...filters,
+    page: 1,
+  }).toString();
+
   return (
-    <div className="student-report-page mx-auto w-full max-w-[880px] px-4 py-8 sm:px-6 lg:px-8 lg:py-12">
-      <ReportHeader
-        student={student}
-        evidenceCount={evidenceRecords.length}
-        dateRange={dateRange}
-      />
-      <StudentReportDateRangeForm
-        studentId={student.id}
-        start={dateRange.start}
-        end={dateRange.end}
-        error={dateRange.status === "invalid" ? dateRange.error : undefined}
-      />
-      <ReportEvidenceList
-        records={evidenceRecords}
-        dateRange={dateRange}
-      />
-    </div>
+    <StudentReportUnappliedFiltersProvider appliedKey={appliedKey}>
+      <div className="student-report-page mx-auto w-full max-w-[880px] px-4 py-8 sm:px-6 lg:px-8 lg:py-12">
+        <StudentReportPageIdentity
+          label={`${student.displayName} \u00b7 Evidence report`}
+        />
+        <ReportHeader
+          student={student}
+          filters={filters}
+          matchingCount={evidenceRecords.length}
+          totalEvidenceCount={totalEvidenceCount}
+        />
+        <StudentReportFilters
+          studentId={student.id}
+          filters={filters}
+          options={options}
+          dateError={dateError}
+        />
+        {evidenceRecords.length === 0 ? (
+          <ReportEmptyEvidence filtered={hasStudentTimelineFilters(filters)} />
+        ) : (
+          <StudentReportBody key={appliedKey} records={evidenceRecords} />
+        )}
+      </div>
+    </StudentReportUnappliedFiltersProvider>
   );
 }

@@ -90,28 +90,20 @@ test("keeps Explore Evidence in one overflow-free mobile column", async ({ page 
   await expect(page.getByRole("heading", { name: "Explore" })).toBeAttached();
   await expect(page.getByRole("button", { name: "Filters", exact: true })).toBeVisible();
   await expect(page.getByRole("region", { name: "Filter evidence" })).toBeHidden();
-  const firstEvidence = page.getByRole("article").first();
-  if (await firstEvidence.count()) {
-    const position = await firstEvidence.boundingBox();
-    const primaryNavigation = await page
-      .getByRole("navigation", { name: "Primary" })
-      .boundingBox();
-    expect(position).not.toBeNull();
-    expect(primaryNavigation).not.toBeNull();
-    expect(position!.y).toBeLessThan(primaryNavigation!.y);
-  }
+  await expect(page.getByRole("navigation", { name: "Primary" })).toBeHidden();
   expect(
     await renderedContrast(
       page.getByRole("group", { name: "Your question" }),
       page.locator("body")
     )
   ).toBeGreaterThanOrEqual(4.5);
-  expect(
-    await renderedContrast(
-      page.getByRole("link", { name: "Students" }),
-      page.locator("body")
-    )
-  ).toBeGreaterThanOrEqual(4.5);
+  await page.getByRole("button", { name: "Open navigation menu" }).click();
+  const primaryNavigation = page.getByRole("navigation", { name: "Primary" });
+  await expect(primaryNavigation).toBeVisible();
+  const studentsLink = primaryNavigation.getByRole("link", { name: "Students" });
+  expect(await renderedContrast(studentsLink, studentsLink)).toBeGreaterThanOrEqual(4.5);
+  await page.getByRole("button", { name: "Close navigation menu" }).click();
+  await expect(primaryNavigation).toBeHidden();
   await expect
     .poll(() =>
       page.evaluate(

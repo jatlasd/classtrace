@@ -1,14 +1,19 @@
 // @vitest-environment jsdom
 
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { StudentReportPage } from "@/components/students/student-report-page";
 
+const mocks = vi.hoisted(() => ({ push: vi.fn() }));
+
 vi.mock("next/navigation", () => ({
-  useRouter: () => ({ push: vi.fn() }),
+  useRouter: () => ({ push: mocks.push }),
 }));
 
-afterEach(cleanup);
+afterEach(() => {
+  cleanup();
+  mocks.push.mockClear();
+});
 
 const student = {
   id: "student_mary",
@@ -17,13 +22,12 @@ const student = {
   classGroupName: "Reading",
 };
 
-const allEvidence = {
-  status: "valid" as const,
-  start: undefined,
-  end: undefined,
-  startOffset: undefined,
-  endOffset: undefined,
-};
+const noFilters = { query: "", tags: [] };
+
+function openFilters(): void {
+  fireEvent.click(screen.getByRole("button", { name: "Filters" }));
+}
+const options = { tags: ["math", "reading"], topics: ["reading"] };
 
 describe("StudentReportPage", () => {
   it("renders teacher-approved evidence without repeating structured context", () => {
@@ -32,7 +36,9 @@ describe("StudentReportPage", () => {
     render(
       <StudentReportPage
         student={student}
-        dateRange={allEvidence}
+        filters={noFilters}
+        options={options}
+        totalEvidenceCount={1}
         evidenceRecords={[
           {
             id: "evidence_1",
@@ -55,18 +61,208 @@ describe("StudentReportPage", () => {
     const evidence = screen.getByText(longEvidence);
     expect(evidence.className).toContain("overflow-wrap:anywhere");
     expect(screen.queryByText("Structured details:")).toBeNull();
-    expect(screen.getByText("Academic check-in")).toBeTruthy();
-    expect(screen.getByText("Review comprehension tomorrow")).toBeTruthy();
+    const evidenceSection = screen.getByRole("region", { name: "Evidence" });
+    expect(within(evidenceSection).getByText("Academic check-in")).toBeTruthy();
+    expect(
+      within(evidenceSection).getByText("Review comprehension tomorrow")
+    ).toBeTruthy();
+    expect(
+      within(screen.getByRole("region", { name: "Summary" })).getByText(
+        "Review comprehension tomorrow"
+      )
+    ).toBeTruthy();
+    expect(screen.getByText("All dates")).toBeTruthy();
+    expect(screen.getByText("Covers 1 entry")).toBeTruthy();
     expect(
       screen.getByRole("link", { name: "Capture something" }).getAttribute("href")
     ).toBe("/app/feed?student=student_mary");
+  });
+
+  it("states the filters and match count on a filtered report", () => {
+    render(
+      <StudentReportPage
+        student={student}
+        filters={{
+          query: "warmup",
+          evidenceType: "Behavior observation",
+          topic: "decimal addition",
+          tags: ["math", "focus"],
+          from: "2026-09-01",
+          to: "2026-09-30",
+          fromOffsetMinutes: 240,
+          toOffsetMinutes: 240,
+        }}
+        options={options}
+        totalEvidenceCount={40}
+        evidenceRecords={[]}
+      />
+    );
+
+    expect(screen.getByText("Sep 1 to Sep 30, 2026")).toBeTruthy();
+    expect(
+      screen.getByText(
+        "Behavior observation \u00b7 Topic: decimal addition \u00b7 #math or #focus \u00b7 Matching \u201cwarmup\u201d"
+      )
+    ).toBeTruthy();
+    expect(screen.getByText(/0 of 40 entries match/)).toBeTruthy();
+    expect(screen.getByText("No evidence matches these filters.")).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Clear filters" })).toBeTruthy();
+  });
+
+  it("submits report filters as timeline-style URL params", () => {
+    render(
+      <StudentReportPage
+        student={student}
+        filters={noFilters}
+        options={options}
+        totalEvidenceCount={1}
+        evidenceRecords={[]}
+      />
+    );
+
+    const toggle = screen.getByRole("button", { name: "Filters" });
+    expect(toggle.getAttribute("aria-expanded")).toBe("false");
+    expect(screen.queryByRole("form", { name: "Filter this report" })).toBeNull();
+    openFilters();
+    expect(toggle.getAttribute("aria-expanded")).toBe("true");
+    fireEvent.change(screen.getByLabelText("Topic"), {
+      target: { value: "reading" },
+    });
+    fireEvent.change(screen.getByLabelText("Type"), {
+      target: { value: "Academic check-in" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Apply filters" }));
+
+    expect(mocks.push).toHaveBeenCalledWith(
+      "/app/students/student_mary/report?type=Academic+check-in&topic=reading"
+    );
+  });
+
+  it("blocks printing while filter edits are unapplied", () => {
+    const { rerender } = render(
+      <StudentReportPage
+        student={student}
+        filters={noFilters}
+        options={options}
+        totalEvidenceCount={0}
+        evidenceRecords={[]}
+      />
+    );
+    const print = screen.getByRole("button", { name: "Print / Save as PDF" });
+    openFilters();
+    const search = screen.getByLabelText("Search text");
+    expect((print as HTMLButtonElement).disabled).toBe(false);
+
+    fireEvent.change(search, { target: { value: "decimal" } });
+    expect((print as HTMLButtonElement).disabled).toBe(true);
+    expect(screen.getByRole("status").textContent).toBe(
+      "Filters changed. Apply filters before printing."
+    );
+    expect(screen.getByText("This report was not printed.")).toBeTruthy();
+
+    openFilters();
+    expect(screen.queryByLabelText("Search text")).toBeNull();
+    expect(screen.getByRole("status").textContent).toBe(
+      "Filters changed. Apply filters before printing."
+    );
+    openFilters();
+
+    fireEvent.change(screen.getByLabelText("Search text"), {
+      target: { value: " " },
+    });
+    expect((print as HTMLButtonElement).disabled).toBe(false);
+
+    fireEvent.change(screen.getByLabelText("Search text"), {
+      target: { value: "decimal" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Apply filters" }));
+    expect((print as HTMLButtonElement).disabled).toBe(true);
+
+    rerender(
+      <StudentReportPage
+        student={student}
+        filters={{ query: "decimal", tags: [] }}
+        options={options}
+        totalEvidenceCount={0}
+        evidenceRecords={[]}
+      />
+    );
+    expect((print as HTMLButtonElement).disabled).toBe(false);
+    expect(screen.getByRole("status").textContent).toBe("");
+    expect(screen.queryByText("This report was not printed.")).toBeNull();
+  });
+
+  it("syncs filter controls and resets entry selection when applied filters change", () => {
+    const records = [
+      {
+        id: "evidence_1",
+        evidenceDate: "2026-06-16T14:00:00.000Z",
+        evidenceNote: "Read the passage with one prompt.",
+        tags: ["reading"],
+        followUpNeeded: false,
+        validatedAt: "2026-06-16T14:05:00.000Z",
+        createdAt: "2026-06-16T14:06:00.000Z",
+      },
+    ];
+    const { rerender } = render(
+      <StudentReportPage
+        student={student}
+        filters={{ query: "", tags: [], topic: "reading" }}
+        options={options}
+        totalEvidenceCount={3}
+        evidenceRecords={records}
+      />
+    );
+    openFilters();
+    fireEvent.click(screen.getByRole("checkbox", { name: /^Include entry from/ }));
+    expect(screen.getByText("0 of 1 entries included")).toBeTruthy();
+
+    rerender(
+      <StudentReportPage
+        student={student}
+        filters={{ query: "", tags: ["math"], evidenceType: "Academic check-in" }}
+        options={options}
+        totalEvidenceCount={3}
+        evidenceRecords={records}
+      />
+    );
+
+    expect((screen.getByLabelText("Type") as HTMLSelectElement).value).toBe(
+      "Academic check-in"
+    );
+    expect(
+      (screen.getByRole("combobox", { name: "Topic" }) as HTMLSelectElement).value
+    ).toBe("");
+    expect(screen.getByRole("button", { name: "Remove #math" })).toBeTruthy();
+    expect(screen.getByText("1 of 1 entries included")).toBeTruthy();
+  });
+
+  it("repeats an escaped student identity and page number on printed pages", () => {
+    render(
+      <StudentReportPage
+        student={{ ...student, displayName: 'Mary "M" </style>' }}
+        filters={noFilters}
+        options={options}
+        totalEvidenceCount={0}
+        evidenceRecords={[]}
+      />
+    );
+
+    const css = document.querySelector("style")?.textContent ?? "";
+    expect(css).toContain(
+      'content: "Mary \\22 M\\22  \\3c \\2f style\\3e  \\b7  Evidence report";'
+    );
+    expect(css).toContain('content: "Page " counter(page) " of " counter(pages);');
+    expect(css).not.toContain("</style>");
   });
 
   it("renders a useful empty state instead of an empty report", () => {
     render(
       <StudentReportPage
         student={student}
-        dateRange={allEvidence}
+        filters={noFilters}
+        options={options}
+        totalEvidenceCount={1}
         evidenceRecords={[]}
       />
     );
@@ -78,7 +274,9 @@ describe("StudentReportPage", () => {
     render(
       <StudentReportPage
         student={student}
-        dateRange={allEvidence}
+        filters={noFilters}
+        options={options}
+        totalEvidenceCount={1}
         evidenceRecords={[
           {
             id: "evidence_photo",

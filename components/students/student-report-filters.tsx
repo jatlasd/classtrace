@@ -1,0 +1,271 @@
+"use client";
+
+import { SlidersHorizontal } from "lucide-react";
+import { useRouter } from "next/navigation";
+import {
+  createContext,
+  useContext,
+  useId,
+  useState,
+  useTransition,
+  type FormEvent,
+  type ReactElement,
+  type ReactNode,
+} from "react";
+import {
+  draftDateError,
+  filterDraftFrom,
+  filtersFromDraft,
+  StudentEvidenceFilterFields,
+  type StudentEvidenceFilterDraft,
+  type StudentEvidenceFilterOptionLists,
+} from "@/components/students/student-evidence-filter-fields";
+import { Button } from "@/components/ui/button";
+import {
+  hasStudentTimelineFilters,
+  serializeStudentTimelineSearchParams,
+  type StudentTimelineFilters,
+} from "@/lib/evidence/student-timeline-query";
+import { routes } from "@/lib/routes";
+import { INPUT_LIMITS } from "@/lib/validation/input-limits";
+
+export function studentReportHref(
+  studentId: string,
+  filters: StudentTimelineFilters
+): string {
+  const params = serializeStudentTimelineSearchParams({ ...filters, page: 1 });
+  return `${routes.studentReport(studentId)}${params.size ? `?${params}` : ""}`;
+}
+
+type UnappliedFiltersState = {
+  unapplied: boolean;
+  setUnapplied: (unapplied: boolean) => void;
+};
+
+const UnappliedFiltersContext = createContext<UnappliedFiltersState>({
+  unapplied: false,
+  setUnapplied: () => {},
+});
+
+export function StudentReportUnappliedFiltersProvider({
+  appliedKey,
+  children,
+}: {
+  appliedKey: string;
+  children: ReactNode;
+}): ReactElement {
+  const [unapplied, setUnapplied] = useState(false);
+  const [previousAppliedKey, setPreviousAppliedKey] = useState(appliedKey);
+
+  if (previousAppliedKey !== appliedKey) {
+    setPreviousAppliedKey(appliedKey);
+    setUnapplied(false);
+  }
+
+  return (
+    <UnappliedFiltersContext value={{ unapplied, setUnapplied }}>
+      {children}
+      {unapplied ? (
+        <div className="student-report-unapplied-print">
+          <p className="font-display text-2xl font-semibold">
+            This report was not printed.
+          </p>
+          <p className="mt-2 text-sm">
+            Its filters were changed but not applied. Apply or clear the filter
+            changes in ClassTrace, then print again.
+          </p>
+        </div>
+      ) : null}
+    </UnappliedFiltersContext>
+  );
+}
+
+export function useStudentReportUnappliedFilters(): boolean {
+  return useContext(UnappliedFiltersContext).unapplied;
+}
+
+function draftKey(query: string, draft: StudentEvidenceFilterDraft): string {
+  return JSON.stringify([
+    query.trim(),
+    draft.evidenceType,
+    draft.topic,
+    [...draft.tags].sort(),
+    draft.from,
+    draft.to,
+  ]);
+}
+
+export function StudentReportFilters({
+  studentId,
+  filters,
+  options,
+  dateError,
+}: {
+  studentId: string;
+  filters: StudentTimelineFilters;
+  options: StudentEvidenceFilterOptionLists;
+  dateError?: string;
+}): ReactElement {
+  const router = useRouter();
+  const searchId = useId();
+  const formId = useId();
+  const [open, setOpen] = useState(Boolean(dateError));
+  const [isPending, startTransition] = useTransition();
+  const { unapplied, setUnapplied } = useContext(UnappliedFiltersContext);
+  const [query, setQuery] = useState(filters.query);
+  const [draft, setDraft] = useState(() => filterDraftFrom(filters));
+  const [localDateError, setLocalDateError] = useState<string | null>(null);
+  const appliedSignature = studentReportHref(studentId, filters);
+  const [previousAppliedSignature, setPreviousAppliedSignature] =
+    useState(appliedSignature);
+
+  if (previousAppliedSignature !== appliedSignature) {
+    setPreviousAppliedSignature(appliedSignature);
+    setQuery(filters.query);
+    setDraft(filterDraftFrom(filters));
+    setLocalDateError(null);
+    if (dateError) setOpen(true);
+  }
+
+  function updateDraft(
+    nextQuery: string,
+    nextDraft: StudentEvidenceFilterDraft
+  ): void {
+    setQuery(nextQuery);
+    setDraft(nextDraft);
+    setUnapplied(
+      draftKey(nextQuery, nextDraft) !==
+        draftKey(filters.query, filterDraftFrom(filters))
+    );
+  }
+
+  function navigate(next: StudentTimelineFilters): void {
+    startTransition(() => {
+      router.push(studentReportHref(studentId, next));
+    });
+  }
+
+  function handleSubmit(event: FormEvent<HTMLFormElement>): void {
+    event.preventDefault();
+    const error = draftDateError(draft.from, draft.to);
+    setLocalDateError(error);
+    if (error) return;
+
+    navigate(
+      filtersFromDraft(
+        draft,
+        query.trim().slice(0, INPUT_LIMITS.evidenceSearch)
+      )
+    );
+  }
+
+  function handleClear(): void {
+    updateDraft("", filterDraftFrom({ query: "", tags: [] }));
+    setLocalDateError(null);
+    navigate({ query: "", tags: [] });
+  }
+
+  const hasFilters = hasStudentTimelineFilters(filters);
+
+  return (
+    <section
+      aria-label="Report filters"
+      className="student-report-screen-only mb-8"
+    >
+      <div className="flex flex-wrap items-center gap-2">
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          aria-expanded={open}
+          aria-controls={formId}
+          onClick={() => setOpen((current) => !current)}
+        >
+          <SlidersHorizontal className="size-3.5" strokeWidth={1.75} />
+          Filters
+        </Button>
+        {!open && hasFilters ? (
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={handleClear}
+            disabled={isPending}
+          >
+            Clear filters
+          </Button>
+        ) : null}
+      </div>
+      <div role="status">
+        {unapplied ? (
+          <p className="mt-3 rounded-md border-l-2 border-live-bright bg-live-soft px-3 py-2 text-[13px] leading-relaxed text-fg">
+            Filters changed. Apply filters before printing.
+          </p>
+        ) : null}
+      </div>
+      {open ? (
+        <form
+          id={formId}
+          aria-label="Filter this report"
+          onSubmit={handleSubmit}
+          className="well mt-3 p-4"
+        >
+          <div className="mb-4">
+            <label htmlFor={searchId} className="label mb-1.5 block text-fg-2">
+              Search text
+            </label>
+            <input
+              id={searchId}
+              type="search"
+              autoComplete="off"
+              maxLength={INPUT_LIMITS.evidenceSearch}
+              value={query}
+              onChange={(event) => updateDraft(event.target.value, draft)}
+              placeholder="Words in the note, topic, or follow-up"
+              className="field w-full text-sm"
+            />
+          </div>
+          <StudentEvidenceFilterFields
+            draft={draft}
+            onChange={(next) => {
+              updateDraft(query, next);
+              setLocalDateError(null);
+            }}
+            options={options}
+            dateError={localDateError}
+          />
+          {dateError ? (
+            <p
+              role="status"
+              className="mt-3 rounded-md border-l-2 border-live-bright bg-live-soft px-3 py-2 text-[13px] leading-relaxed text-fg-2"
+            >
+              {dateError}
+            </p>
+          ) : null}
+          <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-line pt-3">
+            <p className="text-xs leading-relaxed text-fg-3">
+              Selected tags match any one tag. Dates use this device&apos;s
+              timezone.
+            </p>
+            <div className="flex flex-wrap items-center gap-2">
+              {hasFilters ? (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleClear}
+                  disabled={isPending}
+                >
+                  Clear filters
+                </Button>
+              ) : null}
+              <Button type="submit" size="sm" disabled={isPending}>
+                {isPending ? "Applying…" : "Apply filters"}
+              </Button>
+            </div>
+          </div>
+        </form>
+      ) : null}
+    </section>
+  );
+}

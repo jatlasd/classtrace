@@ -46,12 +46,16 @@ The strongest early users are special education teachers, case managers, interve
 - Saving creates a permanent evidence record containing a reviewed note, one validated photo, or both; raw capture text and original photo data are not part of that record.
 - Every successful save produces transient confirmation that the observation was saved to the student's trace, with a direct link to open that trace. The first workspace save may use stronger copy without creating a separate onboarding state.
 - Saved records appear in a paged global feed and a paged student timeline. The
-  timeline supports deterministic text, classification, tag, and teacher-local
-  date retrieval without narrowing its all-time summary, report, or export.
+  timeline supports deterministic text, classification, topic, tag, and
+  teacher-local date retrieval without narrowing its all-time summary or export;
+  a filtered timeline can print exactly its applied filters as a report.
 - Explore Evidence runs an explicit, unsaved, workspace-scoped question across
   active saved evidence and returns either paged evidence records or paged
   student groups with inspectable supporting records.
-- A student report can be filtered by teacher-local dates and printed.
+- A student report can be filtered by text, evidence type, topic, tags, and
+  teacher-local dates, organized by month, evidence type, or topic, narrowed to
+  teacher-selected entries, and printed with a deterministic count summary and
+  follow-up list. A filtered report states its filters and match count.
 - One student’s evidence can be exported as CSV.
 - Saved evidence supports intentional permanent deletion. Students and classes
   support archive paths, with restoration available from their archived views.
@@ -87,7 +91,7 @@ These states must not be collapsed. In particular, a captured raw note must not 
 | `/app/explore` | Explicit multi-condition retrieval across active saved evidence |
 | `/app/roster` | Class-first roster management |
 | `/app/students/[studentId]` | Student timeline and export |
-| `/app/students/[studentId]/report` | Printable date-filtered report |
+| `/app/students/[studentId]/report` | Printable filtered report |
 | `/app/settings` | Account/workspace details, Help and Feedback, and sign out |
 | `/operator` | Direct-URL-only owner account directory, guarded demo seeding, and account administration |
 

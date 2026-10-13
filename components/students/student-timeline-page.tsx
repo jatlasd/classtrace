@@ -14,11 +14,16 @@ import {
 import { PenLine, Printer, Search, SlidersHorizontal } from "lucide-react";
 import { EvidenceRecordContent } from "@/components/evidence/evidence-record-content";
 import { RelativeDay } from "@/components/evidence/relative-day";
-import { ExploreMultiSelect } from "@/components/explore/explore-multi-select";
 import { StudentEvidenceExportAction } from "@/components/students/student-evidence-export-action";
+import {
+  draftDateError,
+  filterDraftFrom,
+  filtersFromDraft,
+  StudentEvidenceFilterFields,
+} from "@/components/students/student-evidence-filter-fields";
+import { studentReportHref } from "@/components/students/student-report-filters";
 import { StudentQuickJump } from "@/components/students/student-quick-jump";
 import { Button } from "@/components/ui/button";
-import { SAVED_EVIDENCE_CLASSIFICATION_LABELS } from "@/lib/evidence/evidence-classifications";
 import type {
   StudentTimelineEvidenceRecord,
   StudentTimelineResult,
@@ -26,7 +31,6 @@ import type {
 } from "@/lib/evidence/student-timeline-records";
 import {
   hasStudentTimelineFilters,
-  isValidStudentTimelineDate,
   serializeStudentTimelineSearchParams,
   type StudentTimelineInput,
 } from "@/lib/evidence/student-timeline-query";
@@ -116,30 +120,6 @@ function resultCountLabel(count: number, filtered: boolean): string {
 function timelineHref(studentId: string, input: StudentTimelineInput): string {
   const params = serializeStudentTimelineSearchParams(input);
   return `${routes.student(studentId)}${params.size ? `?${params}` : ""}#${EVIDENCE_HEADING_ID}`;
-}
-
-export function dateBoundaryOffset(
-  value: string,
-  endExclusive: boolean
-): number | undefined {
-  if (!value || !isValidStudentTimelineDate(value)) return undefined;
-  const [year, month, day] = value.split("-").map(Number);
-  const boundary = new Date(year, month - 1, day);
-  if (endExclusive) boundary.setDate(boundary.getDate() + 1);
-  return boundary.getTimezoneOffset();
-}
-
-function draftDateError(from: string, to: string): string | null {
-  if (
-    (from && !isValidStudentTimelineDate(from)) ||
-    (to && !isValidStudentTimelineDate(to))
-  ) {
-    return "Choose valid From and To dates.";
-  }
-  if (from && to && from > to) {
-    return "From must be on or before To.";
-  }
-  return null;
 }
 
 function firstName(displayName: string): string {
@@ -351,18 +331,13 @@ function StudentTimelineRetrieval({
 }: StudentTimelinePageProps) {
   const router = useRouter();
   const searchId = useId();
-  const typeId = useId();
-  const fromId = useId();
-  const toId = useId();
-  const localDateErrorId = useId();
   const navigationRequestedRef = useRef(false);
   const [isPending, startTransition] = useTransition();
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [draftQuery, setDraftQuery] = useState(appliedFilters.query);
-  const [draftType, setDraftType] = useState(appliedFilters.evidenceType ?? "");
-  const [draftTags, setDraftTags] = useState(appliedFilters.tags);
-  const [draftFrom, setDraftFrom] = useState(appliedFilters.from ?? "");
-  const [draftTo, setDraftTo] = useState(appliedFilters.to ?? "");
+  const [draftFilters, setDraftFilters] = useState(() =>
+    filterDraftFrom(appliedFilters)
+  );
   const [localDateError, setLocalDateError] = useState<string | null>(null);
   const [resultsAnnouncement, setResultsAnnouncement] = useState("");
   const appliedSignature = serializeStudentTimelineSearchParams(
@@ -373,17 +348,18 @@ function StudentTimelineRetrieval({
   const filtered = hasStudentTimelineFilters(appliedFilters);
   const { results } = timeline;
   const groups = groupByMonth(results.records);
-  const tagOptions = [...new Set([...timeline.options.tags, ...appliedFilters.tags])]
-    .sort((left, right) => left.localeCompare(right))
-    .map((tag) => ({ id: tag, label: `#${tag}` }));
+  const hasAppliedFieldFilters = Boolean(
+    appliedFilters.evidenceType ||
+      appliedFilters.topic ||
+      appliedFilters.tags.length > 0 ||
+      appliedFilters.from ||
+      appliedFilters.to
+  );
 
   if (previousAppliedSignature !== appliedSignature) {
     setPreviousAppliedSignature(appliedSignature);
     setDraftQuery(appliedFilters.query);
-    setDraftType(appliedFilters.evidenceType ?? "");
-    setDraftTags(appliedFilters.tags);
-    setDraftFrom(appliedFilters.from ?? "");
-    setDraftTo(appliedFilters.to ?? "");
+    setDraftFilters(filterDraftFrom(appliedFilters));
     setLocalDateError(null);
   }
 
@@ -427,29 +403,20 @@ function StudentTimelineRetrieval({
 
   function handleApplyFilters(event: FormEvent<HTMLFormElement>): void {
     event.preventDefault();
-    const error = draftDateError(draftFrom, draftTo);
+    const error = draftDateError(draftFilters.from, draftFilters.to);
     setLocalDateError(error);
     if (error) return;
 
     setFiltersOpen(false);
     navigate({
       page: 1,
-      query: appliedFilters.query,
-      evidenceType: draftType || undefined,
-      tags: draftTags,
-      from: draftFrom || undefined,
-      to: draftTo || undefined,
-      fromOffsetMinutes: dateBoundaryOffset(draftFrom, false),
-      toOffsetMinutes: dateBoundaryOffset(draftTo, true),
+      ...filtersFromDraft(draftFilters, appliedFilters.query),
     });
   }
 
   function handleClear(): void {
     setDraftQuery("");
-    setDraftType("");
-    setDraftTags([]);
-    setDraftFrom("");
-    setDraftTo("");
+    setDraftFilters(filterDraftFrom({ query: "", tags: [] }));
     setLocalDateError(null);
     setFiltersOpen(false);
     navigate({ page: 1, query: "", tags: [] });
@@ -537,22 +504,12 @@ function StudentTimelineRetrieval({
             aria-expanded={filtersOpen}
             aria-controls="student-timeline-filters"
             onClick={() => setFiltersOpen((open) => !open)}
-            aria-label={
-              appliedFilters.evidenceType ||
-              appliedFilters.tags.length > 0 ||
-              appliedFilters.from ||
-              appliedFilters.to
-                ? "Filters, applied"
-                : "Filters"
-            }
+            aria-label={hasAppliedFieldFilters ? "Filters, applied" : "Filters"}
             className="flex h-11 items-center gap-2 rounded-full border border-line-2 px-3.5 text-sm font-semibold text-fg-2 outline-none transition-colors hover:bg-plate hover:text-fg aria-expanded:bg-plate aria-expanded:text-fg focus-visible:ring-2 focus-visible:ring-live-bright focus-visible:ring-offset-2 lg:h-10"
           >
             <SlidersHorizontal aria-hidden="true" className="size-4" />
             <span aria-hidden="true" className="max-sm:hidden">Filters</span>
-            {appliedFilters.evidenceType ||
-            appliedFilters.tags.length > 0 ||
-            appliedFilters.from ||
-            appliedFilters.to ? (
+            {hasAppliedFieldFilters ? (
               <span className="rounded-full bg-live-soft px-2 py-0.5 text-xs text-live">
                 Applied
               </span>
@@ -578,77 +535,15 @@ function StudentTimelineRetrieval({
             onSubmit={handleApplyFilters}
             className="well mt-3 p-4"
           >
-            <div className="grid gap-4 md:grid-cols-2">
-              <div>
-                <label htmlFor={typeId} className="label mb-1.5 block text-fg-2">
-                  Type
-                </label>
-                <select
-                  id={typeId}
-                  value={draftType}
-                  onChange={(event) => setDraftType(event.target.value)}
-                  className="field w-full text-sm"
-                >
-                  <option value="">All types</option>
-                  {SAVED_EVIDENCE_CLASSIFICATION_LABELS.map((label) => (
-                    <option key={label} value={label}>
-                      {label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <ExploreMultiSelect
-                label="Tags"
-                options={tagOptions}
-                selectedIds={draftTags}
-                onChange={setDraftTags}
-                placeholder="Choose tags"
-                emptyMessage="No other tags are available for this student."
-              />
-              <div>
-                <label htmlFor={fromId} className="label mb-1.5 block text-fg-2">
-                  From
-                </label>
-                <input
-                  id={fromId}
-                  type="date"
-                  value={draftFrom}
-                  onChange={(event) => {
-                    setDraftFrom(event.target.value);
-                    setLocalDateError(null);
-                  }}
-                  aria-invalid={localDateError ? true : undefined}
-                  aria-describedby={localDateError ? localDateErrorId : undefined}
-                  className="field w-full text-sm"
-                />
-              </div>
-              <div>
-                <label htmlFor={toId} className="label mb-1.5 block text-fg-2">
-                  To
-                </label>
-                <input
-                  id={toId}
-                  type="date"
-                  value={draftTo}
-                  onChange={(event) => {
-                    setDraftTo(event.target.value);
-                    setLocalDateError(null);
-                  }}
-                  aria-invalid={localDateError ? true : undefined}
-                  aria-describedby={localDateError ? localDateErrorId : undefined}
-                  className="field w-full text-sm"
-                />
-              </div>
-            </div>
-            {localDateError ? (
-              <p
-                id={localDateErrorId}
-                role="status"
-                className="mt-3 text-[13px] font-medium text-danger"
-              >
-                {localDateError}
-              </p>
-            ) : null}
+            <StudentEvidenceFilterFields
+              draft={draftFilters}
+              onChange={(draft) => {
+                setDraftFilters(draft);
+                setLocalDateError(null);
+              }}
+              options={timeline.options}
+              dateError={localDateError}
+            />
             <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-line pt-3">
               <p className="text-xs leading-relaxed text-fg-3">
                 Selected tags match any one tag. Dates use this device&apos;s
@@ -687,7 +582,17 @@ function StudentTimelineRetrieval({
               Newest first
             </p>
           </div>
-          {renderPager("heading")}
+          <div className="flex flex-wrap items-center justify-end gap-2">
+            {filtered && results.totalMatches > 0 ? (
+              <Button asChild variant="outline" size="sm">
+                <Link href={studentReportHref(timeline.student.id, appliedFilters)}>
+                  <Printer aria-hidden="true" />
+                  Print these results
+                </Link>
+              </Button>
+            ) : null}
+            {renderPager("heading")}
+          </div>
         </div>
 
         <p className="sr-only" role="status" aria-live="polite">

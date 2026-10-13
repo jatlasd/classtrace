@@ -6,10 +6,7 @@ vi.mock("@/lib/db/prisma", () => ({ prisma: {} }));
 import { resolveCaptureStudents } from "../lib/students/resolve-capture-students.ts";
 import { getEvidenceFeedPageForWorkspace } from "../lib/evidence/evidence-feed-records.ts";
 import { getStudentTimelineRecordsForWorkspace } from "../lib/evidence/student-timeline-records.ts";
-import {
-  getStudentReportRecordsForWorkspace,
-  parseStudentReportDateRange,
-} from "../lib/evidence/student-report-records.ts";
+import { getStudentReportRecordsForWorkspace } from "../lib/evidence/student-report-records.ts";
 import { exportStudentEvidenceForWorkspace } from "../lib/evidence/export-student-evidence.ts";
 import { DEMO_DATASET } from "../lib/demo/demo-data.ts";
 
@@ -41,6 +38,8 @@ function matchesContains(value, filter) {
 function matchesWhere(record, where) {
   if (where.rosterStudentId && record.rosterStudentId !== where.rosterStudentId) return false;
   if (where.evidenceType && record.evidenceType !== where.evidenceType) return false;
+  if (where.topic?.equals &&
+      record.topic?.toLowerCase() !== where.topic.equals.toLowerCase()) return false;
   if (where.evidenceDate?.gte && record.evidenceDate < where.evidenceDate.gte) return false;
   if (where.evidenceDate?.lt && record.evidenceDate >= where.evidenceDate.lt) return false;
   if (where.tags?.has && !record.tags.includes(where.tags.has)) return false;
@@ -85,16 +84,15 @@ const database = {
     async findMany({ where, orderBy, skip = 0, take }) {
       expect(where.workspaceId).toBe(workspaceId);
       expect(where.archivedAt).toBeNull();
-      const matching = records.filter((record) =>
-        (!where.rosterStudentId || record.rosterStudentId === where.rosterStudentId) &&
-        (!where.evidenceDate?.gte || record.evidenceDate >= where.evidenceDate.gte) &&
-        (!where.evidenceDate?.lt || record.evidenceDate < where.evidenceDate.lt)
-      );
+      const matching = matchingRecords(where);
       matching.sort((left, right) =>
         (left.evidenceDate - right.evidenceDate || left.createdAt - right.createdAt) *
         (orderBy[0].evidenceDate === "desc" ? -1 : 1)
       );
       return matching.slice(skip, take === undefined ? undefined : skip + take);
+    },
+    async count({ where }) {
+      return matchingRecords(where).length;
     },
   },
   async aggregateEvidence(where) {
@@ -123,6 +121,13 @@ const database = {
       records
         .filter((record) => record.rosterStudentId === studentId)
         .flatMap((record) => record.tags)
+    )].toSorted().slice(0, limit);
+  },
+  async listStudentTopics(_workspaceId, studentId, limit) {
+    return [...new Set(
+      records
+        .filter((record) => record.rosterStudentId === studentId && record.topic)
+        .map((record) => record.topic)
     )].toSorted().slice(0, limit);
   },
   async countFollowUps(where) {
@@ -220,9 +225,10 @@ describe("canonical demo data in product read models", () => {
     const report = await getStudentReportRecordsForWorkspace(
       workspaceId,
       student.id,
-      parseStudentReportDateRange({
-        start: "2026-08-31", end: "2026-09-15", startOffset: "240", endOffset: "240",
-      }),
+      {
+        query: "", tags: [],
+        from: "2026-08-31", to: "2026-09-15", fromOffsetMinutes: 240, toOffsetMinutes: 240,
+      },
       database
     );
     const exported = await exportStudentEvidenceForWorkspace({
@@ -252,13 +258,46 @@ describe("canonical demo data in product read models", () => {
     const result = await getStudentReportRecordsForWorkspace(
       workspaceId,
       "demo_student_jeremy_2026",
-      parseStudentReportDateRange({
-        start: "2026-09-01", end: "2026-09-15", startOffset: "240", endOffset: "240",
-      }),
+      {
+        query: "", tags: [],
+        from: "2026-09-01", to: "2026-09-15", fromOffsetMinutes: 240, toOffsetMinutes: 240,
+      },
       database
     );
     expect(result.evidenceRecords).toHaveLength(16);
     expect(result.evidenceRecords[0].id).toBe("demo_evidence_jeremy_02");
     expect(result.evidenceRecords.at(-1).id).toBe("demo_evidence_jeremy_17");
+    expect(result.totalEvidenceCount).toBe(17);
+  });
+
+  it("narrows Jeremy's report to one tag or topic without leaving his records", async () => {
+    const tagged = await getStudentReportRecordsForWorkspace(
+      workspaceId,
+      "demo_student_jeremy_2026",
+      { query: "", tags: ["focus"] },
+      database
+    );
+    const expectedTagged = DEMO_DATASET.evidence.filter(
+      (record) => record.studentId === "demo_student_jeremy_2026" && record.tags.includes("focus")
+    );
+    expect(expectedTagged.length).toBeGreaterThan(0);
+    expect(tagged.evidenceRecords.map((record) => record.id)).toEqual(
+      expectedTagged.map((record) => record.id)
+    );
+
+    const topic = DEMO_DATASET.evidence.find(
+      (record) => record.studentId === "demo_student_jeremy_2026" && record.topic
+    ).topic;
+    const byTopic = await getStudentReportRecordsForWorkspace(
+      workspaceId,
+      "demo_student_jeremy_2026",
+      { query: "", tags: [], topic: topic.toUpperCase() },
+      database
+    );
+    expect(byTopic.evidenceRecords.length).toBeGreaterThan(0);
+    expect(byTopic.evidenceRecords.every(
+      (record) => record.topic.toLowerCase() === topic.toLowerCase()
+    )).toBe(true);
+    expect(byTopic.options.topics).toContain(topic);
   });
 });

@@ -1,12 +1,18 @@
 import "server-only";
 
 import { prisma } from "@/lib/db/prisma";
+import type { Prisma } from "@/lib/generated/prisma/client";
+import type { StudentTimelineFilters } from "@/lib/evidence/student-timeline-query";
+import {
+  buildStudentTimelineWhere,
+  getStudentEvidenceFilterOptions,
+  studentEvidenceOptionQueries,
+  type StudentEvidenceFilterOptions,
+  type StudentTimelineDatabase,
+} from "@/lib/evidence/student-timeline-records";
 import { INPUT_LIMITS } from "@/lib/validation/input-limits";
 
-type StudentReportDateWhere = {
-  gte?: Date;
-  lt?: Date;
-};
+type EvidenceWhere = Prisma.EvidenceRecordWhereInput;
 
 type RosterStudentFindFirstArgs = {
   where: {
@@ -28,12 +34,7 @@ type RosterStudentFindFirstArgs = {
 };
 
 type EvidenceRecordFindManyArgs = {
-  where: {
-    workspaceId: string;
-    rosterStudentId: string;
-    archivedAt: null;
-    evidenceDate?: StudentReportDateWhere;
-  };
+  where: EvidenceWhere;
   orderBy: [{ evidenceDate: "asc" }, { createdAt: "asc" }];
   select: {
     id: true;
@@ -84,7 +85,10 @@ type ReportEvidenceFromDatabase = {
   photo?: { id: string; width: number; height: number } | null;
 };
 
-export type StudentReportDatabase = {
+export type StudentReportDatabase = Pick<
+  StudentTimelineDatabase,
+  "listStudentTags" | "listStudentTopics"
+> & {
   rosterStudent: {
     findFirst(
       args: RosterStudentFindFirstArgs
@@ -94,6 +98,7 @@ export type StudentReportDatabase = {
     findMany(
       args: EvidenceRecordFindManyArgs
     ): Promise<ReportEvidenceFromDatabase[]>;
+    count(args: { where: EvidenceWhere }): Promise<number>;
   };
 };
 
@@ -125,213 +130,27 @@ export type StudentReportEvidenceRecord = {
   classGroupName?: string;
 };
 
-export type StudentReportDateRange =
-  | {
-      status: "valid";
-      start?: string;
-      end?: string;
-      startOffset?: string;
-      endOffset?: string;
-      startDate?: Date;
-      endExclusiveDate?: Date;
-    }
-  | {
-      status: "invalid";
-      start?: string;
-      end?: string;
-      startOffset?: string;
-      endOffset?: string;
-      error: string;
-    };
-
 export type StudentReportRecordsResult = {
   student: StudentReportStudent;
   evidenceRecords: StudentReportEvidenceRecord[];
-  dateRange: StudentReportDateRange;
+  totalEvidenceCount: number;
+  options: StudentEvidenceFilterOptions;
 };
 
 const studentReportDatabase: StudentReportDatabase = {
+  ...studentEvidenceOptionQueries,
   rosterStudent: {
     findFirst: (args) => prisma.rosterStudent.findFirst(args),
   },
   evidenceRecord: {
     findMany: (args) => prisma.evidenceRecord.findMany(args),
+    count: (args) => prisma.evidenceRecord.count(args),
   },
 };
-
-const DATE_ONLY_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
-const MIN_TIMEZONE_OFFSET_MINUTES = -14 * 60;
-const MAX_TIMEZONE_OFFSET_MINUTES = 14 * 60;
 
 function optionalText(value: string | null): string | undefined {
   const trimmed = value?.trim();
   return trimmed || undefined;
-}
-
-function parseDateOnlyParts(value: string): {
-  year: number;
-  monthIndex: number;
-  day: number;
-} | null {
-  if (!DATE_ONLY_PATTERN.test(value)) {
-    return null;
-  }
-
-  const [yearText, monthText, dayText] = value.split("-");
-  const year = Number(yearText);
-  const monthIndex = Number(monthText) - 1;
-  const day = Number(dayText);
-  const date = new Date(Date.UTC(year, monthIndex, day));
-
-  if (
-    date.getUTCFullYear() !== year ||
-    date.getUTCMonth() !== monthIndex ||
-    date.getUTCDate() !== day
-  ) {
-    return null;
-  }
-
-  return { year, monthIndex, day };
-}
-
-function parseTimezoneOffset(value: string | undefined): number | null {
-  if (value === undefined || !/^-?\d{1,4}$/.test(value)) {
-    return null;
-  }
-
-  const offset = Number(value);
-  if (
-    !Number.isInteger(offset) ||
-    offset < MIN_TIMEZONE_OFFSET_MINUTES ||
-    offset > MAX_TIMEZONE_OFFSET_MINUTES
-  ) {
-    return null;
-  }
-
-  return offset;
-}
-
-function boundaryDate(
-  parts: { year: number; monthIndex: number; day: number },
-  offsetMinutes: number,
-  addDays: number
-): Date {
-  return new Date(
-    Date.UTC(parts.year, parts.monthIndex, parts.day + addDays) +
-      offsetMinutes * 60_000
-  );
-}
-
-export function parseStudentReportDateRange(input: {
-  start?: string;
-  end?: string;
-  startOffset?: string;
-  endOffset?: string;
-}): StudentReportDateRange {
-  const start = input.start?.trim() || undefined;
-  const end = input.end?.trim() || undefined;
-  const startOffset = input.startOffset?.trim() || undefined;
-  const endOffset = input.endOffset?.trim() || undefined;
-
-  if (!start && !end) {
-    return { status: "valid" };
-  }
-
-  const startParts = start ? parseDateOnlyParts(start) : undefined;
-  const endParts = end ? parseDateOnlyParts(end) : undefined;
-
-  if (start && !startParts) {
-    return { status: "invalid", start, end, error: "Use a valid start date." };
-  }
-
-  if (end && !endParts) {
-    return { status: "invalid", start, end, error: "Use a valid end date." };
-  }
-
-  const startOffsetMinutes = start
-    ? parseTimezoneOffset(startOffset)
-    : undefined;
-  const endOffsetMinutes = end ? parseTimezoneOffset(endOffset) : undefined;
-
-  if (start && startOffsetMinutes === null) {
-    return {
-      status: "invalid",
-      start,
-      end,
-      startOffset,
-      endOffset,
-      error: "Apply the date range again so ClassTrace can use your local day.",
-    };
-  }
-
-  if (end && endOffsetMinutes === null) {
-    return {
-      status: "invalid",
-      start,
-      end,
-      startOffset,
-      endOffset,
-      error: "Apply the date range again so ClassTrace can use your local day.",
-    };
-  }
-
-  if (
-    startParts &&
-    endParts &&
-    Date.UTC(startParts.year, startParts.monthIndex, startParts.day) >
-      Date.UTC(endParts.year, endParts.monthIndex, endParts.day)
-  ) {
-    return {
-      status: "invalid",
-      start,
-      end,
-      error: "Choose a start date before the end date.",
-    };
-  }
-
-  const range: StudentReportDateRange = {
-    status: "valid",
-  };
-
-  if (start) {
-    range.start = start;
-  }
-  if (end) {
-    range.end = end;
-  }
-  if (start && startOffset) {
-    range.startOffset = startOffset;
-  }
-  if (end && endOffset) {
-    range.endOffset = endOffset;
-  }
-  if (startParts && startOffsetMinutes !== undefined && startOffsetMinutes !== null) {
-    range.startDate = boundaryDate(startParts, startOffsetMinutes, 0);
-  }
-  if (endParts && endOffsetMinutes !== undefined && endOffsetMinutes !== null) {
-    range.endExclusiveDate = boundaryDate(endParts, endOffsetMinutes, 1);
-  }
-
-  return range;
-}
-
-function buildEvidenceDateWhere(
-  dateRange: StudentReportDateRange
-): StudentReportDateWhere | undefined {
-  if (dateRange.status === "invalid") {
-    return undefined;
-  }
-
-  const evidenceDate: StudentReportDateWhere = {};
-
-  if (dateRange.startDate) {
-    evidenceDate.gte = dateRange.startDate;
-  }
-  if (dateRange.endExclusiveDate) {
-    evidenceDate.lt = dateRange.endExclusiveDate;
-  }
-
-  return Object.keys(evidenceDate).length > 0 ? evidenceDate : undefined;
 }
 
 function toReportStudent(
@@ -414,7 +233,7 @@ function toReportEvidence(
 export async function getStudentReportRecordsForWorkspace(
   workspaceId: string,
   studentId: string,
-  dateRange: StudentReportDateRange,
+  filters: StudentTimelineFilters,
   database: StudentReportDatabase = studentReportDatabase
 ): Promise<StudentReportRecordsResult | null> {
   const normalizedStudentId = studentId.trim();
@@ -448,54 +267,45 @@ export async function getStudentReportRecordsForWorkspace(
     return null;
   }
 
-  if (dateRange.status === "invalid") {
-    return {
-      student: toReportStudent(student),
-      evidenceRecords: [],
-      dateRange,
-    };
-  }
-
-  const evidenceDate = buildEvidenceDateWhere(dateRange);
-  const where: EvidenceRecordFindManyArgs["where"] = {
-    workspaceId,
-    rosterStudentId: student.id,
-    archivedAt: null,
-  };
-
-  if (evidenceDate) {
-    where.evidenceDate = evidenceDate;
-  }
-
-  const evidenceRecords = await database.evidenceRecord.findMany({
-    where,
-    orderBy: [{ evidenceDate: "asc" }, { createdAt: "asc" }],
-    select: {
-      id: true,
-      evidenceDate: true,
-      evidenceNote: true,
-      summary: true,
-      evidenceType: true,
-      topic: true,
-      performance: true,
-      behavior: true,
-      tags: true,
-      followUpNeeded: true,
-      followUpNotes: true,
-      validatedAt: true,
-      createdAt: true,
-      classGroup: {
-        select: {
-          name: true,
+  const [evidenceRecords, totalEvidenceCount, options] = await Promise.all([
+    database.evidenceRecord.findMany({
+      where: buildStudentTimelineWhere(workspaceId, student.id, filters),
+      orderBy: [{ evidenceDate: "asc" }, { createdAt: "asc" }],
+      select: {
+        id: true,
+        evidenceDate: true,
+        evidenceNote: true,
+        summary: true,
+        evidenceType: true,
+        topic: true,
+        performance: true,
+        behavior: true,
+        tags: true,
+        followUpNeeded: true,
+        followUpNotes: true,
+        validatedAt: true,
+        createdAt: true,
+        classGroup: {
+          select: {
+            name: true,
+          },
         },
+        photo: { select: { id: true, width: true, height: true } },
       },
-      photo: { select: { id: true, width: true, height: true } },
-    },
-  });
+    }),
+    database.evidenceRecord.count({
+      where: buildStudentTimelineWhere(workspaceId, student.id, {
+        query: "",
+        tags: [],
+      }),
+    }),
+    getStudentEvidenceFilterOptions(workspaceId, student.id, database),
+  ]);
 
   return {
     student: toReportStudent(student),
     evidenceRecords: evidenceRecords.map(toReportEvidence),
-    dateRange,
+    totalEvidenceCount,
+    options,
   };
 }

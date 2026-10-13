@@ -347,7 +347,10 @@ each dense management row an independently floating card.
 ## Student timeline and report
 
 Files: `components/students/student-timeline-page.tsx`,
-`components/students/student-report-page.tsx`
+`components/students/student-report-page.tsx`,
+`components/students/student-report-body.tsx`,
+`components/students/student-report-filters.tsx`,
+`components/students/student-evidence-filter-fields.tsx`
 
 - Both use an `880px` work area.
 - The timeline opens with Students/class breadcrumb context, a large student
@@ -359,10 +362,13 @@ Files: `components/students/student-timeline-page.tsx`,
   links (with counts) to the timeline filtered by that tag.
 - One search row follows (visually hidden “Find in this timeline” heading and
   label): full-rounded search, Search, and a Filters pill (icon-only below
-  `sm`). Type, student-specific tag multi-select, and From/To inputs sit in the
-  Filters disclosure and apply explicitly. Only applied state enters the URL.
+  `sm`). Type, student-specific Topic, tag multi-select, and From/To inputs sit
+  in the Filters disclosure and apply explicitly. Only applied state enters the
+  URL. The same filter fields are shared with the report.
 - The Evidence heading shows the matching count and compact Newer/Older paging;
-  full paging repeats below the trace. Explicit retrieval navigation moves
+  a filtered timeline with matches adds an outline Print these results link
+  that carries the applied filters (without page) to the report. Full paging
+  repeats below the trace. Explicit retrieval navigation moves
   focus to that heading and announces its result count and page.
 - Timeline, empty-state, and report Capture actions preserve the active student
   in the Capture URL. The feed validates that value within the current
@@ -373,12 +379,35 @@ Files: `components/students/student-timeline-page.tsx`,
   photo, and follow-up; the saved trace itself establishes permanence.
 - A student with no history retains the capture-oriented empty state without
   retrieval controls. A filtered trace with no matches instead offers a clear
-  action. Header summary, report, and export always describe full history.
+  action. Header summary, header Print report, and export always describe full
+  history.
 - The report uses a strong ruled header (student name, then an "Evidence report"
-  line with handle and class), date-filter controls, oldest-to-newest
-  divided evidence rows, and an explicit Validated stamp.
-- Print removes shell/footer controls, flattens colors, hides trace decoration,
-  expands images appropriately, and prevents entry splitting.
+  line with handle and class; the readable Period and Prepared date sit at the
+  right, with "All dates" when no date range applies; a filtered report adds
+  a printed "Filtered to" line naming type, topic, tags as "#a or #b", and
+  search text with the match count), a screen-only Filters toggle (collapsed
+  unless the server reports a date error, with Clear filters beside it when
+  filters apply) that opens the filter Well (search text plus the shared
+  filter fields, Apply filters, Clear filters). While edits are unapplied, a
+  status line under the toggle says so, Print / Save as PDF is disabled, and a
+  browser print shows only a "This report was not printed" notice. Then a
+  screen-only ruled
+  bar with an "Organize by" radio group (Date by month, Evidence type, Topic),
+  the included-entry count, and Include all / Include none.
+- A Summary section follows: Entries, Date span, With photo, and Follow-ups
+  facts; dot-leader count lists for evidence type, performance, behavior, and
+  tags (empty lists are omitted); and a dated follow-up list. Counts cover only
+  included entries. No charts.
+- Evidence renders as ruled groups, oldest to newest within each group. Each
+  entry keeps the explicit Validated stamp and a screen-only labeled Include
+  checkbox; excluded entries dim on screen. Each entry appears in one group.
+- Print removes shell/footer controls, the organize/include controls, excluded
+  entries, and fully excluded groups; flattens colors; hides trace decoration;
+  expands images appropriately; prevents entry splitting; keeps group headings
+  with their entries; narrows the date column; and adds a plain
+  included-of-total footer line that stays on the page with the final entry.
+  Browsers that support page margin boxes repeat "<Student> · Evidence report"
+  and "Page N of M" at the foot of every printed page.
 
 ## Landing page
 

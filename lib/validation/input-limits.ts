@@ -21,6 +21,7 @@ export const INPUT_LIMITS = {
   tagsPerEvidence: 20,
   exploreSelectionsPerCondition: 50,
   exploreTagOptions: 200,
+  exploreTopicOptions: 200,
   behaviorItem: 250,
   behaviorItemsPerEvidence: 20,
   followUpItem: 1_000,
