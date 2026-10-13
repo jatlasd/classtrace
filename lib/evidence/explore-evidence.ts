@@ -11,6 +11,8 @@ import type {
   ExploreEvidenceRecord,
   ExploreQueryActionResult,
   ExploreQueryRequest,
+  ExploreReportActionResult,
+  ExploreReportRequest,
   ExploreStudentGroup,
   ExploreSupportingEvidenceActionResult,
   ExploreSupportingEvidenceRequest,
@@ -18,10 +20,13 @@ import type {
 import {
   EXPLORE_EVIDENCE_PAGE_SIZE,
   EXPLORE_QUERY_VERSION,
+  EXPLORE_REPORT_MAX_RECORDS,
   EXPLORE_STUDENT_PAGE_SIZE,
   EXPLORE_SUPPORTING_PAGE_SIZE,
   MAX_EXPLORE_PAGE,
 } from "@/lib/evidence/explore-evidence-contract";
+import { getSavedEvidenceClassificationByLabel } from "@/lib/evidence/evidence-classifications";
+import { normalizeTopicOptions } from "@/lib/evidence/topic-options";
 import { normalizeTag } from "@/lib/format-tag";
 import { INPUT_LIMITS } from "@/lib/validation/input-limits";
 
@@ -92,6 +97,11 @@ export type ExploreEvidenceDatabase = {
     activeEvidenceWhere: EvidenceWhere
   ): Promise<ClassOptionFromDatabase[]>;
   listActiveTags(workspaceId: string, limit: number): Promise<string[]>;
+  listActiveTopics(workspaceId: string, limit: number): Promise<string[]>;
+  listReportEvidence(
+    where: EvidenceWhere,
+    take: number
+  ): Promise<EvidenceRecordFromDatabase[]>;
 };
 
 const evidenceSelect = {
@@ -198,6 +208,29 @@ const exploreEvidenceDatabase: ExploreEvidenceDatabase = {
 
     return rows.map((row) => row.value);
   },
+  listActiveTopics: async (workspaceId, limit) => {
+    const rows = await prisma.evidenceRecord.findMany({
+      where: {
+        workspaceId,
+        archivedAt: null,
+        rosterStudent: { workspaceId, archivedAt: null },
+        topic: { not: null },
+      },
+      distinct: ["topic"],
+      orderBy: { topic: "asc" },
+      select: { topic: true },
+      take: limit,
+    });
+
+    return rows.flatMap((row) => (row.topic ? [row.topic] : []));
+  },
+  listReportEvidence: (where, take) =>
+    prisma.evidenceRecord.findMany({
+      where,
+      take,
+      orderBy: [{ evidenceDate: "asc" }, { createdAt: "asc" }, { id: "asc" }],
+      select: evidenceSelect,
+    }),
 };
 
 type NormalizedExploreRequest = {
@@ -227,7 +260,7 @@ function hasOnlyKeys(
 
 function normalizeStringList(
   value: unknown,
-  options: { tags?: boolean } = {}
+  options: { tags?: boolean; text?: boolean } = {}
 ): string[] | null {
   if (
     !Array.isArray(value) ||
@@ -243,10 +276,15 @@ function normalizeStringList(
     const normalized = options.tags
       ? normalizeTag(item).trim().toLowerCase()
       : item.trim();
-    const limit = options.tags ? INPUT_LIMITS.tag : INPUT_LIMITS.identifier;
+    const limit = options.tags
+      ? INPUT_LIMITS.tag
+      : options.text
+        ? INPUT_LIMITS.evidenceField
+        : INPUT_LIMITS.identifier;
     if (!normalized || normalized.length > limit) return null;
-    if (!seen.has(normalized)) {
-      seen.add(normalized);
+    const key = options.text ? normalized.toLocaleLowerCase("en") : normalized;
+    if (!seen.has(key)) {
+      seen.add(key);
       values.push(normalized);
     }
   }
@@ -319,6 +357,8 @@ function normalizeExploreRequest(input: unknown): ValidationResult {
       "resultView",
       "studentIds",
       "tags",
+      "evidenceTypes",
+      "topics",
       "date",
       "classIds",
       "photo",
@@ -347,6 +387,10 @@ function normalizeExploreRequest(input: unknown): ValidationResult {
     tags: true,
   });
   const exclude = normalizeStringList(input.query.tags.exclude, { tags: true });
+  const evidenceTypes = normalizeStringList(input.query.evidenceTypes, {
+    text: true,
+  });
+  const topics = normalizeStringList(input.query.topics, { text: true });
   const date = normalizeDateCondition(input.query.date);
   const currentOffsetMinutes = normalizeOffset(
     input.dateContext.currentOffsetMinutes
@@ -362,6 +406,11 @@ function normalizeExploreRequest(input: unknown): ValidationResult {
     !includeAny ||
     !includeAll ||
     !exclude ||
+    !evidenceTypes ||
+    evidenceTypes.some(
+      (label) => getSavedEvidenceClassificationByLabel(label) === undefined
+    ) ||
+    !topics ||
     !date ||
     currentOffsetMinutes === null ||
     startOffsetMinutes === null ||
@@ -378,6 +427,8 @@ function normalizeExploreRequest(input: unknown): ValidationResult {
         resultView: input.query.resultView as ExploreEvidenceQuery["resultView"],
         studentIds,
         tags: { includeAny, includeAll, exclude },
+        evidenceTypes,
+        topics,
         date,
         classIds,
         photo: input.query.photo as ExploreEvidenceQuery["photo"],
@@ -482,6 +533,16 @@ export function buildExploreEvidenceWhere(
     ...(Object.keys(tags).length > 0 ? { tags } : {}),
     ...(query.tags.exclude.length > 0
       ? { NOT: { tags: { hasSome: query.tags.exclude } } }
+      : {}),
+    ...(query.evidenceTypes.length > 0
+      ? { evidenceType: { in: query.evidenceTypes } }
+      : {}),
+    ...(query.topics.length > 0
+      ? {
+          OR: query.topics.map((topic) => ({
+            topic: { equals: topic, mode: "insensitive" as const },
+          })),
+        }
       : {}),
     ...(dateRange ? { evidenceDate: dateRange } : {}),
     ...(query.photo === "with"
@@ -669,6 +730,43 @@ export async function queryExploreSupportingEvidenceForWorkspace(
   };
 }
 
+export async function queryExploreReportForWorkspace(
+  args: {
+    workspaceId: string;
+    input: ExploreReportRequest | unknown;
+    now?: Date;
+  },
+  database: ExploreEvidenceDatabase = exploreEvidenceDatabase
+): Promise<ExploreReportActionResult> {
+  if (!isObject(args.input) || !hasOnlyKeys(args.input, ["query", "dateContext"])) {
+    return { success: false, error: "Review the question and try again." };
+  }
+
+  const normalized = normalizeExploreRequest({
+    query: args.input.query,
+    page: 1,
+    dateContext: args.input.dateContext,
+  });
+  if (!normalized.success) return normalized;
+
+  const where = buildExploreEvidenceWhere(
+    args.workspaceId,
+    normalized.request.query,
+    normalized.request.dateContext,
+    args.now
+  );
+  const [totalCount, records] = await Promise.all([
+    database.countEvidence(where),
+    database.listReportEvidence(where, EXPLORE_REPORT_MAX_RECORDS),
+  ]);
+
+  return {
+    success: true,
+    records: records.map(toExploreRecord),
+    totalCount,
+  };
+}
+
 export async function getExploreEvidenceOptionsForWorkspace(
   workspaceId: string,
   database: ExploreEvidenceDatabase = exploreEvidenceDatabase
@@ -678,10 +776,11 @@ export async function getExploreEvidenceOptionsForWorkspace(
     archivedAt: null,
     rosterStudent: { workspaceId, archivedAt: null },
   };
-  const [students, classes, tags] = await Promise.all([
+  const [students, classes, tags, topics] = await Promise.all([
     database.listActiveStudents(workspaceId),
     database.listReferencedClasses(workspaceId, activeEvidenceWhere),
     listExistingEvidenceTagsForWorkspace(workspaceId, database),
+    database.listActiveTopics(workspaceId, INPUT_LIMITS.exploreTopicOptions),
   ]);
 
   return {
@@ -703,6 +802,10 @@ export async function getExploreEvidenceOptionsForWorkspace(
       })
     ),
     tags: tags.map((tag) => ({ id: tag, label: `#${tag}` })),
+    topics: normalizeTopicOptions(
+      topics,
+      INPUT_LIMITS.exploreTopicOptions
+    ).map((topic) => ({ id: topic, label: topic })),
   };
 }
 

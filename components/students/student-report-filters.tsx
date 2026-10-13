@@ -66,7 +66,7 @@ export function StudentReportUnappliedFiltersProvider({
     <UnappliedFiltersContext value={{ unapplied, setUnapplied }}>
       {children}
       {unapplied ? (
-        <div className="student-report-unapplied-print">
+        <div className="evidence-report-unapplied-print">
           <p className="font-display text-2xl font-semibold">
             This report was not printed.
           </p>
@@ -170,7 +170,7 @@ export function StudentReportFilters({
   return (
     <section
       aria-label="Report filters"
-      className="student-report-screen-only mb-8"
+      className="evidence-report-screen-only mb-8"
     >
       <div className="flex flex-wrap items-center gap-2">
         <Button

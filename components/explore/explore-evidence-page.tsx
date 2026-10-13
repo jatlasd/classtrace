@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronDown, ChevronUp, SlidersHorizontal, X } from "lucide-react";
+import { ChevronDown, ChevronUp, Printer, SlidersHorizontal, X } from "lucide-react";
 import Link from "next/link";
 import {
   useId,
@@ -11,6 +11,7 @@ import {
 } from "react";
 import {
   runExploreEvidenceQuery,
+  runExploreReportQuery,
   runExploreSupportingEvidenceQuery,
 } from "@/actions/explore-evidence";
 import {
@@ -18,6 +19,7 @@ import {
   type ExploreSelectOption,
 } from "@/components/explore/explore-multi-select";
 import { EvidenceRecordContent } from "@/components/evidence/evidence-record-content";
+import { ExploreReportView } from "@/components/explore/explore-report-view";
 import { Button } from "@/components/ui/button";
 import type {
   ExploreDateCondition,
@@ -29,6 +31,7 @@ import type {
   ExploreStudentGroup,
 } from "@/lib/evidence/explore-evidence-contract";
 import { DEFAULT_EXPLORE_QUERY } from "@/lib/evidence/explore-evidence-contract";
+import { SAVED_EVIDENCE_CLASSIFICATION_LABELS } from "@/lib/evidence/evidence-classifications";
 import { routes } from "@/lib/routes";
 
 type TagMatchMode = "all" | "any";
@@ -67,12 +70,59 @@ const REVEAL_ACTION_CLASS =
 
 const SECTION_HEADING_CLASS = "label text-fg-3";
 
-type FilterTarget = "student" | "class" | "tags" | "exclude" | "date" | "photo";
+type FilterTarget =
+  | "student"
+  | "class"
+  | "type"
+  | "topic"
+  | "tags"
+  | "exclude"
+  | "date"
+  | "photo";
+
+type ExploreReportState = {
+  question: string;
+  records: ExploreEvidenceRecord[];
+  totalCount: number;
+};
+
+const EVIDENCE_TYPE_OPTIONS: ExploreSelectOption[] =
+  SAVED_EVIDENCE_CLASSIFICATION_LABELS.map((label) => ({ id: label, label }));
 
 function listNames(ids: string[], choices: { id: string; label: string; }[], joiner = "and"): string {
   const names = ids.map((id) => choices.find((choice) => choice.id === id)?.label ?? id);
   if (names.length <= 2) return names.join(` ${joiner} `);
   return `${names.slice(0, 2).join(", ")} ${joiner} ${names.length - 2} more`;
+}
+
+function joinAll(names: string[], joiner: string): string {
+  if (names.length <= 2) return names.join(` ${joiner} `);
+  return `${names.slice(0, -1).join(", ")}, ${joiner} ${names.at(-1)}`;
+}
+
+function describeQuestion(
+  query: ExploreEvidenceQuery,
+  options: ExploreEvidenceOptions
+): string {
+  const names = (ids: string[], choices: { id: string; label: string; }[]) =>
+    ids.map((id) => choices.find((choice) => choice.id === id)?.label ?? id);
+  const tagParts = [
+    query.tags.includeAll.length ? joinAll(names(query.tags.includeAll, options.tags), "and") : null,
+    query.tags.includeAny.length ? joinAll(names(query.tags.includeAny, options.tags), "or") : null,
+  ].filter(Boolean);
+
+  return [
+    "Evidence for ",
+    query.studentIds.length ? joinAll(names(query.studentIds, options.students), "or") : "any student",
+    query.classIds.length ? ` in ${joinAll(names(query.classIds, options.classes), "or")}` : "",
+    query.evidenceTypes.length ? ` as ${joinAll(query.evidenceTypes, "or")}` : "",
+    query.topics.length ? ` about ${joinAll(query.topics, "or")}` : "",
+    tagParts.length ? ` tagged ${tagParts.join(" plus ")}` : "",
+    query.tags.exclude.length ? ` but not ${joinAll(names(query.tags.exclude, options.tags), "or")}` : "",
+    ` from ${describeDateSlot(query.date)}`,
+    query.photo === "with" ? " with a photo" : query.photo === "without" ? " without a photo" : "",
+    ".",
+  ].join("");
 }
 
 function describeDateSlot(date: ExploreDateCondition): string {
@@ -98,6 +148,8 @@ function describeFilters(query: ExploreEvidenceQuery, options: ExploreEvidenceOp
     ids.map((id) => choices.find((choice) => choice.id === id)?.label ?? id).join(", ");
   if (query.studentIds.length) labels.push(`Student: ${names(query.studentIds, options.students)}`);
   if (query.classIds.length) labels.push(`Class at capture: ${names(query.classIds, options.classes)}`);
+  if (query.evidenceTypes.length) labels.push(`Type: ${query.evidenceTypes.join(", ")}`);
+  if (query.topics.length) labels.push(`Topic: ${query.topics.join(", ")}`);
   if (query.tags.includeAll.length) labels.push(`Tags${query.tags.includeAll.length > 1 ? " (all)" : ""}: ${names(query.tags.includeAll, options.tags)}`);
   if (query.tags.includeAny.length) labels.push(`Tags (any): ${names(query.tags.includeAny, options.tags)}`);
   if (query.tags.exclude.length) labels.push(`Without tags: ${names(query.tags.exclude, options.tags)}`);
@@ -203,6 +255,8 @@ function Slot({
   const names: Record<FilterTarget, string> = {
     student: "Filter by student",
     class: "Filter by class",
+    type: "Filter by evidence type",
+    topic: "Filter by topic",
     tags: "Filter by tags",
     exclude: "Filter by excluded tags",
     date: "Filter by date",
@@ -355,11 +409,17 @@ export function ExploreEvidencePage({
   const [supporting, setSupporting] = useState<Record<string, SupportingState>>({});
   const [expandedStudents, setExpandedStudents] = useState<string[]>([]);
   const [supportingPendingStudentId, setSupportingPendingStudentId] = useState<string | null>(null);
+  const [report, setReport] = useState<ExploreReportState | null>(null);
+  const [reportError, setReportError] = useState<string | null>(null);
+  const [isReportPending, startReportTransition] = useTransition();
+  const printReportButtonRef = useRef<HTMLButtonElement>(null);
   const [isPending, startQueryTransition] = useTransition();
   const [isSupportingPending, startSupportingTransition] = useTransition();
   const filterButtonRef = useRef<HTMLButtonElement>(null);
   const studentInputRef = useRef<HTMLInputElement>(null);
   const classInputRef = useRef<HTMLInputElement>(null);
+  const typeInputRef = useRef<HTMLInputElement>(null);
+  const topicInputRef = useRef<HTMLInputElement>(null);
   const excludeInputRef = useRef<HTMLInputElement>(null);
   const photoRef = useRef<HTMLSelectElement>(null);
   const resultsHeadingRef = useRef<HTMLHeadingElement>(null);
@@ -395,6 +455,8 @@ export function ExploreEvidencePage({
 
   const studentSlot = draftQuery.studentIds.length ? listNames(draftQuery.studentIds, options.students, "or") : "any student";
   const classSlot = draftQuery.classIds.length ? listNames(draftQuery.classIds, options.classes, "or") : null;
+  const typeSlot = draftQuery.evidenceTypes.length ? listNames(draftQuery.evidenceTypes, EVIDENCE_TYPE_OPTIONS, "or") : null;
+  const topicSlot = draftQuery.topics.length ? listNames(draftQuery.topics, options.topics, "or") : null;
   const tagSlotParts = [
     primaryTags.length ? listNames(primaryTags, options.tags, tagMatchMode === "all" ? "and" : "or") : null,
     secondaryTags.length ? `plus ${listNames(secondaryTags, options.tags, tagMatchMode === "all" ? "or" : "and")}` : null,
@@ -447,6 +509,8 @@ export function ExploreEvidencePage({
         : target === "exclude" ? excludeInputRef.current
         : target === "date" ? dateRuleRef.current
         : target === "class" ? classInputRef.current
+        : target === "type" ? typeInputRef.current
+        : target === "topic" ? topicInputRef.current
         : target === "photo" ? photoRef.current
         : studentInputRef.current;
       control?.focus();
@@ -538,6 +602,31 @@ export function ExploreEvidencePage({
     });
   }
 
+  function openReport(): void {
+    setReportError(null);
+    startReportTransition(async () => {
+      const response = await runExploreReportQuery({
+        query: appliedQuery,
+        dateContext: dateContextForQuery(appliedQuery),
+      });
+      if (!response.success) {
+        setReportError(response.error);
+        return;
+      }
+
+      setReport({
+        question: describeQuestion(appliedQuery, options),
+        records: response.records,
+        totalCount: response.totalCount,
+      });
+    });
+  }
+
+  function closeReport(): void {
+    setReport(null);
+    window.setTimeout(() => printReportButtonRef.current?.focus(), 0);
+  }
+
   function toggleStudent(student: ExploreStudentGroup): void {
     const isExpanded = expandedStudents.includes(student.id);
     if (isExpanded) {
@@ -546,6 +635,17 @@ export function ExploreEvidencePage({
     }
     setExpandedStudents((ids) => [...ids, student.id]);
     if (!supporting[student.id]) loadSupportingEvidence(student.id);
+  }
+
+  if (report) {
+    return (
+      <ExploreReportView
+        question={report.question}
+        records={report.records}
+        totalCount={report.totalCount}
+        onBack={closeReport}
+      />
+    );
   }
 
   return (
@@ -560,6 +660,8 @@ export function ExploreEvidencePage({
           Show me evidence for{" "}
           <Slot target="student" set={draftQuery.studentIds.length > 0} onOpen={openFilters}>{studentSlot}</Slot>
           {classSlot ? <>{" "}in{" "}<Slot target="class" set onOpen={openFilters}>{classSlot}</Slot></> : null}
+          {typeSlot ? <>{" "}as{" "}<Slot target="type" set onOpen={openFilters}>{typeSlot}</Slot></> : null}
+          {topicSlot ? <>{" "}about{" "}<Slot target="topic" set onOpen={openFilters}>{topicSlot}</Slot></> : null}
           {" "}tagged{" "}
           <Slot target="tags" set={tagSlotParts.length > 0} onOpen={openFilters}>{tagSlot}</Slot>
           {excludeSlot ? <>{" "}but not{" "}<Slot target="exclude" set onOpen={openFilters}>{excludeSlot}</Slot></> : null}
@@ -725,6 +827,26 @@ export function ExploreEvidencePage({
                     ) : null}
                   </div>
                 ) : null}
+                <div className="mt-5 space-y-4">
+                  <ExploreMultiSelect
+                    label="Evidence type"
+                    inputRef={typeInputRef}
+                    options={EVIDENCE_TYPE_OPTIONS}
+                    selectedIds={draftQuery.evidenceTypes}
+                    onChange={(evidenceTypes) => updateQuery((query) => ({ ...query, evidenceTypes }))}
+                    placeholder="Any type"
+                    emptyMessage="No other types match."
+                  />
+                  <ExploreMultiSelect
+                    label="Topic"
+                    inputRef={topicInputRef}
+                    options={options.topics}
+                    selectedIds={draftQuery.topics}
+                    onChange={(topics) => updateQuery((query) => ({ ...query, topics }))}
+                    placeholder="Any topic"
+                    emptyMessage="No saved topics match."
+                  />
+                </div>
                 <div className="mt-5">
                   <label htmlFor="explore-photo" className={FIELD_LABEL_CLASS}>Photo</label>
                   <select
@@ -886,10 +1008,28 @@ export function ExploreEvidencePage({
             <h2 ref={resultsHeadingRef} tabIndex={-1} id="explore-results-heading" className="rounded-sm font-display text-2xl font-semibold text-fg outline-none focus-visible:ring-2 focus-visible:ring-live-bright">
               {results.view === "students" ? "Students with evidence" : appliedFilters.length ? "Matching evidence" : "All evidence"}
             </h2>
-            <p aria-live="polite" className="label text-fg-2">
-              {isPending ? "Updating results…" : <><span className="tabular-nums text-fg">{results.counts.evidence}</span>{" "}{plural(results.counts.evidence, "record")}<span aria-hidden="true" className="px-2 text-fg-3">·</span><span className="tabular-nums text-fg">{results.counts.students}</span>{" "}{plural(results.counts.students, "student")}</>}
-            </p>
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+              <p aria-live="polite" className="label text-fg-2">
+                {isPending ? "Updating results…" : <><span className="tabular-nums text-fg">{results.counts.evidence}</span>{" "}{plural(results.counts.evidence, "record")}<span aria-hidden="true" className="px-2 text-fg-3">·</span><span className="tabular-nums text-fg">{results.counts.students}</span>{" "}{plural(results.counts.students, "student")}</>}
+              </p>
+              <Button
+                ref={printReportButtonRef}
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={isPending || isReportPending || hasUnappliedChanges || results.counts.evidence === 0}
+                onClick={openReport}
+              >
+                <Printer aria-hidden="true" />
+                {isReportPending ? "Preparing report…" : "Print report"}
+              </Button>
+            </div>
           </div>
+          {reportError ? (
+            <p role="alert" className="mt-2 text-[13px] font-medium text-danger">{reportError}</p>
+          ) : hasUnappliedChanges ? (
+            <p className="mt-2 text-[13px] text-fg-3">Update results before printing a report.</p>
+          ) : null}
           <p className="mt-1 text-[13px] text-fg-3">
             {results.view === "evidence" ? "Newest first" : "Alphabetical · open a student to see their matching evidence"}
             {appliedQuery.studentIds.length === 0 && appliedQuery.classIds.length === 0 ? " · all students" : null}

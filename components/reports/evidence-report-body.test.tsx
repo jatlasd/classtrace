@@ -2,12 +2,12 @@
 
 import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
-import { StudentReportBody } from "@/components/students/student-report-body";
-import type { StudentReportEvidenceRecord } from "@/lib/evidence/student-report-records";
+import { EvidenceReportBody } from "@/components/reports/evidence-report-body";
+import type { ReportEvidenceRecord } from "@/lib/evidence/evidence-report-summary";
 
 afterEach(cleanup);
 
-const records: StudentReportEvidenceRecord[] = [
+const records: ReportEvidenceRecord[] = [
   {
     id: "evidence_1",
     evidenceDate: "2026-05-04T15:00:00.000Z",
@@ -17,8 +17,6 @@ const records: StudentReportEvidenceRecord[] = [
     performance: "improving",
     tags: ["reading"],
     followUpNeeded: false,
-    validatedAt: "2026-05-04T15:05:00.000Z",
-    createdAt: "2026-05-04T15:05:00.000Z",
   },
   {
     id: "evidence_2",
@@ -30,8 +28,6 @@ const records: StudentReportEvidenceRecord[] = [
     tags: ["math"],
     followUpNeeded: true,
     followUpNotes: "Try the number line next week",
-    validatedAt: "2026-06-02T15:05:00.000Z",
-    createdAt: "2026-06-02T15:05:00.000Z",
   },
 ];
 
@@ -42,13 +38,13 @@ function summarySection(): HTMLElement {
 function groupHeadings(): string[] {
   return screen
     .getAllByRole("heading", { level: 3 })
-    .filter((heading) => heading.closest(".student-report-print-root"))
+    .filter((heading) => heading.closest(".evidence-report-print-root"))
     .map((heading) => heading.textContent ?? "");
 }
 
-describe("StudentReportBody", () => {
+describe("EvidenceReportBody", () => {
   it("summarizes the included entries and lists follow-ups", () => {
-    render(<StudentReportBody records={records} />);
+    render(<EvidenceReportBody records={records} />);
 
     const summary = summarySection();
     expect(within(summary).getByText("Entries").nextSibling?.textContent).toBe("2");
@@ -58,7 +54,7 @@ describe("StudentReportBody", () => {
   });
 
   it("regroups the evidence by evidence type and topic", () => {
-    render(<StudentReportBody records={records} />);
+    render(<EvidenceReportBody records={records} />);
 
     expect(groupHeadings()).toEqual(["May 2026", "June 2026"]);
 
@@ -70,7 +66,7 @@ describe("StudentReportBody", () => {
   });
 
   it("excludes an entry from the summary and marks it for print removal", () => {
-    render(<StudentReportBody records={records} />);
+    render(<EvidenceReportBody records={records} />);
 
     const checkbox = screen.getByRole("checkbox", {
       name: "Include entry from June 2, 2026",
@@ -81,14 +77,14 @@ describe("StudentReportBody", () => {
     const summary = summarySection();
     expect(within(summary).getByText("Entries").nextSibling?.textContent).toBe("1");
     expect(within(summary).queryByText("Try the number line next week")).toBeNull();
-    expect(checkbox.closest("li")?.className).toContain("student-report-excluded");
+    expect(checkbox.closest("li")?.className).toContain("evidence-report-excluded");
     expect(
       screen.getByText("Needed counters for subtraction facts.")
     ).toBeTruthy();
   });
 
   it("shows an all-excluded state that can restore every entry", () => {
-    render(<StudentReportBody records={records} />);
+    render(<EvidenceReportBody records={records} />);
 
     fireEvent.click(screen.getByRole("button", { name: "Include none" }));
     expect(screen.getByText("No entries are included.")).toBeTruthy();
@@ -97,5 +93,41 @@ describe("StudentReportBody", () => {
     fireEvent.click(screen.getAllByRole("button", { name: "Include all" })[0]);
     expect(screen.queryByText("No entries are included.")).toBeNull();
     expect(screen.getByText("2 of 2 entries included")).toBeTruthy();
+  });
+
+  it("groups multi-student reports by student and names the student on every entry", () => {
+    render(
+      <EvidenceReportBody
+        showStudents
+        records={[
+          { ...records[0], rosterStudentId: "s_mary", studentDisplayName: "Mary" },
+          { ...records[1], rosterStudentId: "s_jeremy", studentDisplayName: "Jeremy" },
+        ]}
+      />
+    );
+
+    expect(groupHeadings()).toEqual(["Jeremy", "Mary"]);
+    expect(within(summarySection()).getByText("Students").nextSibling?.textContent).toBe("2");
+    expect(
+      screen.getByRole("checkbox", { name: "Include Jeremy entry from June 2, 2026" })
+    ).toBeTruthy();
+    const printedNames = screen.getAllByText(/^(Jeremy|Mary)$/, { selector: "p" });
+    expect(printedNames.map((name) => name.textContent)).toEqual(["Jeremy", "Mary"]);
+    expect(
+      printedNames.every((name) =>
+        name.classList.contains("evidence-report-print-only")
+      )
+    ).toBe(true);
+
+    fireEvent.click(screen.getByRole("radio", { name: "Date" }));
+    expect(groupHeadings()).toEqual(["May 2026", "June 2026"]);
+    expect(
+      screen.getByRole("checkbox", { name: "Include Jeremy entry from June 2, 2026" })
+    ).toBeTruthy();
+    expect(
+      screen
+        .getAllByText(/^(Jeremy|Mary)$/, { selector: "p" })
+        .some((name) => name.classList.contains("evidence-report-print-only"))
+    ).toBe(false);
   });
 });

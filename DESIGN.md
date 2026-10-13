@@ -290,7 +290,8 @@ do not update until Show results or Update results. Unapplied edits use an amber
 status panel. Results return to the open ink trace, or to an alphabetical
 student list whose supporting evidence opens in a Well. Counts stay with the
 result heading. Do not replace the question with dashboard metrics, charts, or
-a spreadsheet grid.
+a spreadsheet grid. Print report turns the applied question into the same ruled
+printable report used for students, stating the question in words.
 
 ### Students and student trace
 

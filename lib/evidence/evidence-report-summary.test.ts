@@ -1,23 +1,21 @@
 import { describe, expect, it } from "vitest";
-import type { StudentReportEvidenceRecord } from "./student-report-records";
+import type { ReportEvidenceRecord } from "./evidence-report-summary";
 import {
   formatReportDateSpan,
   groupReportEvidence,
   summarizeReportEvidence,
-} from "./student-report-summary";
+} from "./evidence-report-summary";
 
 function record(
   id: string,
   evidenceDate: string,
-  fields: Partial<StudentReportEvidenceRecord> = {}
-): StudentReportEvidenceRecord {
+  fields: Partial<ReportEvidenceRecord> = {}
+): ReportEvidenceRecord {
   return {
     id,
     evidenceDate,
     tags: [],
     followUpNeeded: false,
-    validatedAt: evidenceDate,
-    createdAt: evidenceDate,
     ...fields,
   };
 }
@@ -53,6 +51,7 @@ describe("summarizeReportEvidence", () => {
   it("counts only the supplied records with stable ordering", () => {
     expect(summarizeReportEvidence(records)).toEqual({
       entryCount: 4,
+      studentCount: 0,
       photoCount: 1,
       followUpCount: 1,
       firstEvidenceDate: "2026-05-04T15:00:00.000Z",
@@ -93,6 +92,7 @@ describe("summarizeReportEvidence", () => {
   it("returns an empty summary for no records", () => {
     expect(summarizeReportEvidence([])).toEqual({
       entryCount: 0,
+      studentCount: 0,
       photoCount: 0,
       followUpCount: 0,
       evidenceTypes: [],
@@ -104,7 +104,7 @@ describe("summarizeReportEvidence", () => {
 });
 
 describe("groupReportEvidence", () => {
-  function groupIds(mode: "date" | "type" | "topic", timeZone = "UTC") {
+  function groupIds(mode: "date" | "type" | "topic" | "student", timeZone = "UTC") {
     return groupReportEvidence(records, mode, timeZone).map((group) => [
       group.label,
       group.records.map(({ id }) => id),
@@ -145,8 +145,27 @@ describe("groupReportEvidence", () => {
     ]);
   });
 
+  it("groups multi-student records alphabetically by student and counts students", () => {
+    const multi = [
+      record("m1", "2026-05-04T15:00:00.000Z", { rosterStudentId: "s_mary", studentDisplayName: "Mary" }),
+      record("j1", "2026-05-05T15:00:00.000Z", { rosterStudentId: "s_jeremy", studentDisplayName: "Jeremy" }),
+      record("m2", "2026-05-06T15:00:00.000Z", { rosterStudentId: "s_mary", studentDisplayName: "Mary" }),
+    ];
+
+    expect(
+      groupReportEvidence(multi, "student", "UTC").map((group) => [
+        group.label,
+        group.records.map(({ id }) => id),
+      ])
+    ).toEqual([
+      ["Jeremy", ["j1"]],
+      ["Mary", ["m1", "m2"]],
+    ]);
+    expect(summarizeReportEvidence(multi).studentCount).toBe(2);
+  });
+
   it("places every record in exactly one group for each mode", () => {
-    for (const mode of ["date", "type", "topic"] as const) {
+    for (const mode of ["date", "type", "topic", "student"] as const) {
       const ids = groupReportEvidence(records, mode, "UTC").flatMap((group) =>
         group.records.map(({ id }) => id)
       );

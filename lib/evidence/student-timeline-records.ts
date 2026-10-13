@@ -9,6 +9,7 @@ import {
   type StudentTimelineFilters,
   type StudentTimelineInput,
 } from "@/lib/evidence/student-timeline-query";
+import { normalizeTopicOptions } from "@/lib/evidence/topic-options";
 import { INPUT_LIMITS } from "@/lib/validation/input-limits";
 
 type StudentTimelineWhere = Prisma.EvidenceRecordWhereInput;
@@ -404,22 +405,6 @@ function normalizeStudentTags(tags: string[]): string[] {
     .slice(0, INPUT_LIMITS.exploreTagOptions);
 }
 
-function normalizeStudentTopics(topics: string[]): string[] {
-  const byKey = new Map<string, string>();
-
-  for (const topic of topics) {
-    const trimmed = topic.trim();
-    const key = trimmed.toLocaleLowerCase("en");
-    if (trimmed && !byKey.has(key)) byKey.set(key, trimmed);
-  }
-
-  return [...byKey.values()]
-    .sort((left, right) =>
-      left.localeCompare(right, "en", { sensitivity: "base" })
-    )
-    .slice(0, INPUT_LIMITS.exploreTopicOptions);
-}
-
 export async function getStudentEvidenceFilterOptions(
   workspaceId: string,
   studentId: string,
@@ -443,7 +428,7 @@ export async function getStudentEvidenceFilterOptions(
 
   return {
     tags: normalizeStudentTags(tags),
-    topics: normalizeStudentTopics(topics),
+    topics: normalizeTopicOptions(topics, INPUT_LIMITS.exploreTopicOptions),
   };
 }
 

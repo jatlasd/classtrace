@@ -21,6 +21,7 @@ const SAFE_OPERATIONS = [
   "evidence.delete",
   "evidence.export",
   "evidence.explore",
+  "evidence.explore.report",
   "evidence.explore.supporting",
   "evidence.photo-read",
   "evidence.save",
