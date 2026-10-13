@@ -23,6 +23,10 @@ const student = {
 };
 
 const noFilters = { query: "", tags: [] };
+
+function openFilters(): void {
+  fireEvent.click(screen.getByRole("button", { name: "Filters" }));
+}
 const options = { tags: ["math", "reading"], topics: ["reading"] };
 
 describe("StudentReportPage", () => {
@@ -67,7 +71,7 @@ describe("StudentReportPage", () => {
         "Review comprehension tomorrow"
       )
     ).toBeTruthy();
-    expect(screen.getByText("All evidence")).toBeTruthy();
+    expect(screen.getByText("All dates")).toBeTruthy();
     expect(screen.getByText("Covers 1 entry")).toBeTruthy();
     expect(
       screen.getByRole("link", { name: "Capture something" }).getAttribute("href")
@@ -116,6 +120,11 @@ describe("StudentReportPage", () => {
       />
     );
 
+    const toggle = screen.getByRole("button", { name: "Filters" });
+    expect(toggle.getAttribute("aria-expanded")).toBe("false");
+    expect(screen.queryByRole("form", { name: "Filter this report" })).toBeNull();
+    openFilters();
+    expect(toggle.getAttribute("aria-expanded")).toBe("true");
     fireEvent.change(screen.getByLabelText("Topic"), {
       target: { value: "reading" },
     });
@@ -140,6 +149,7 @@ describe("StudentReportPage", () => {
       />
     );
     const print = screen.getByRole("button", { name: "Print / Save as PDF" });
+    openFilters();
     const search = screen.getByLabelText("Search text");
     expect((print as HTMLButtonElement).disabled).toBe(false);
 
@@ -148,11 +158,23 @@ describe("StudentReportPage", () => {
     expect(screen.getByRole("status").textContent).toBe(
       "Filters changed. Apply filters before printing."
     );
+    expect(screen.getByText("This report was not printed.")).toBeTruthy();
 
-    fireEvent.change(search, { target: { value: " " } });
+    openFilters();
+    expect(screen.queryByLabelText("Search text")).toBeNull();
+    expect(screen.getByRole("status").textContent).toBe(
+      "Filters changed. Apply filters before printing."
+    );
+    openFilters();
+
+    fireEvent.change(screen.getByLabelText("Search text"), {
+      target: { value: " " },
+    });
     expect((print as HTMLButtonElement).disabled).toBe(false);
 
-    fireEvent.change(search, { target: { value: "decimal" } });
+    fireEvent.change(screen.getByLabelText("Search text"), {
+      target: { value: "decimal" },
+    });
     fireEvent.click(screen.getByRole("button", { name: "Apply filters" }));
     expect((print as HTMLButtonElement).disabled).toBe(true);
 
@@ -167,6 +189,7 @@ describe("StudentReportPage", () => {
     );
     expect((print as HTMLButtonElement).disabled).toBe(false);
     expect(screen.getByRole("status").textContent).toBe("");
+    expect(screen.queryByText("This report was not printed.")).toBeNull();
   });
 
   it("syncs filter controls and resets entry selection when applied filters change", () => {
@@ -190,6 +213,7 @@ describe("StudentReportPage", () => {
         evidenceRecords={records}
       />
     );
+    openFilters();
     fireEvent.click(screen.getByRole("checkbox", { name: /^Include entry from/ }));
     expect(screen.getByText("0 of 1 entries included")).toBeTruthy();
 
@@ -211,6 +235,25 @@ describe("StudentReportPage", () => {
     ).toBe("");
     expect(screen.getByRole("button", { name: "Remove #math" })).toBeTruthy();
     expect(screen.getByText("1 of 1 entries included")).toBeTruthy();
+  });
+
+  it("repeats an escaped student identity and page number on printed pages", () => {
+    render(
+      <StudentReportPage
+        student={{ ...student, displayName: 'Mary "M" </style>' }}
+        filters={noFilters}
+        options={options}
+        totalEvidenceCount={0}
+        evidenceRecords={[]}
+      />
+    );
+
+    const css = document.querySelector("style")?.textContent ?? "";
+    expect(css).toContain(
+      'content: "Mary \\22 M\\22  \\3c \\2f style\\3e  \\b7  Evidence report";'
+    );
+    expect(css).toContain('content: "Page " counter(page) " of " counter(pages);');
+    expect(css).not.toContain("</style>");
   });
 
   it("renders a useful empty state instead of an empty report", () => {

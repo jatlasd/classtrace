@@ -1,5 +1,6 @@
 "use client";
 
+import { SlidersHorizontal } from "lucide-react";
 import { useRouter } from "next/navigation";
 import {
   createContext,
@@ -64,6 +65,17 @@ export function StudentReportUnappliedFiltersProvider({
   return (
     <UnappliedFiltersContext value={{ unapplied, setUnapplied }}>
       {children}
+      {unapplied ? (
+        <div className="student-report-unapplied-print">
+          <p className="font-display text-2xl font-semibold">
+            This report was not printed.
+          </p>
+          <p className="mt-2 text-sm">
+            Its filters were changed but not applied. Apply or clear the filter
+            changes in ClassTrace, then print again.
+          </p>
+        </div>
+      ) : null}
     </UnappliedFiltersContext>
   );
 }
@@ -96,6 +108,8 @@ export function StudentReportFilters({
 }): ReactElement {
   const router = useRouter();
   const searchId = useId();
+  const formId = useId();
+  const [open, setOpen] = useState(Boolean(dateError));
   const [isPending, startTransition] = useTransition();
   const { unapplied, setUnapplied } = useContext(UnappliedFiltersContext);
   const [query, setQuery] = useState(filters.query);
@@ -110,6 +124,7 @@ export function StudentReportFilters({
     setQuery(filters.query);
     setDraft(filterDraftFrom(filters));
     setLocalDateError(null);
+    if (dateError) setOpen(true);
   }
 
   function updateDraft(
@@ -137,7 +152,10 @@ export function StudentReportFilters({
     if (error) return;
 
     navigate(
-      filtersFromDraft(draft, query.trim().slice(0, INPUT_LIMITS.evidenceSearch))
+      filtersFromDraft(
+        draft,
+        query.trim().slice(0, INPUT_LIMITS.evidenceSearch)
+      )
     );
   }
 
@@ -147,44 +165,37 @@ export function StudentReportFilters({
     navigate({ query: "", tags: [] });
   }
 
+  const hasFilters = hasStudentTimelineFilters(filters);
+
   return (
-    <form
-      aria-label="Filter this report"
-      onSubmit={handleSubmit}
-      className="student-report-screen-only well mb-8 p-4"
+    <section
+      aria-label="Report filters"
+      className="student-report-screen-only mb-8"
     >
-      <div className="mb-4">
-        <label htmlFor={searchId} className="label mb-1.5 block text-fg-2">
-          Search text
-        </label>
-        <input
-          id={searchId}
-          type="search"
-          autoComplete="off"
-          maxLength={INPUT_LIMITS.evidenceSearch}
-          value={query}
-          onChange={(event) => updateDraft(event.target.value, draft)}
-          placeholder="Words in the note, topic, or follow-up"
-          className="field w-full text-sm"
-        />
-      </div>
-      <StudentEvidenceFilterFields
-        draft={draft}
-        onChange={(next) => {
-          updateDraft(query, next);
-          setLocalDateError(null);
-        }}
-        options={options}
-        dateError={localDateError}
-      />
-      {dateError ? (
-        <p
-          role="status"
-          className="mt-3 rounded-md border-l-2 border-live-bright bg-live-soft px-3 py-2 text-[13px] leading-relaxed text-fg-2"
+      <div className="flex flex-wrap items-center gap-2">
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          aria-expanded={open}
+          aria-controls={formId}
+          onClick={() => setOpen((current) => !current)}
         >
-          {dateError}
-        </p>
-      ) : null}
+          <SlidersHorizontal className="size-3.5" strokeWidth={1.75} />
+          Filters
+        </Button>
+        {!open && hasFilters ? (
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={handleClear}
+            disabled={isPending}
+          >
+            Clear filters
+          </Button>
+        ) : null}
+      </div>
       <div role="status">
         {unapplied ? (
           <p className="mt-3 rounded-md border-l-2 border-live-bright bg-live-soft px-3 py-2 text-[13px] leading-relaxed text-fg">
@@ -192,28 +203,69 @@ export function StudentReportFilters({
           </p>
         ) : null}
       </div>
-      <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-line pt-3">
-        <p className="text-xs leading-relaxed text-fg-3">
-          Selected tags match any one tag. Dates use this device&apos;s
-          timezone.
-        </p>
-        <div className="flex flex-wrap items-center gap-2">
-          {hasStudentTimelineFilters(filters) ? (
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={handleClear}
-              disabled={isPending}
+      {open ? (
+        <form
+          id={formId}
+          aria-label="Filter this report"
+          onSubmit={handleSubmit}
+          className="well mt-3 p-4"
+        >
+          <div className="mb-4">
+            <label htmlFor={searchId} className="label mb-1.5 block text-fg-2">
+              Search text
+            </label>
+            <input
+              id={searchId}
+              type="search"
+              autoComplete="off"
+              maxLength={INPUT_LIMITS.evidenceSearch}
+              value={query}
+              onChange={(event) => updateDraft(event.target.value, draft)}
+              placeholder="Words in the note, topic, or follow-up"
+              className="field w-full text-sm"
+            />
+          </div>
+          <StudentEvidenceFilterFields
+            draft={draft}
+            onChange={(next) => {
+              updateDraft(query, next);
+              setLocalDateError(null);
+            }}
+            options={options}
+            dateError={localDateError}
+          />
+          {dateError ? (
+            <p
+              role="status"
+              className="mt-3 rounded-md border-l-2 border-live-bright bg-live-soft px-3 py-2 text-[13px] leading-relaxed text-fg-2"
             >
-              Clear filters
-            </Button>
+              {dateError}
+            </p>
           ) : null}
-          <Button type="submit" size="sm" disabled={isPending}>
-            {isPending ? "Applying…" : "Apply filters"}
-          </Button>
-        </div>
-      </div>
-    </form>
+          <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-line pt-3">
+            <p className="text-xs leading-relaxed text-fg-3">
+              Selected tags match any one tag. Dates use this device&apos;s
+              timezone.
+            </p>
+            <div className="flex flex-wrap items-center gap-2">
+              {hasFilters ? (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleClear}
+                  disabled={isPending}
+                >
+                  Clear filters
+                </Button>
+              ) : null}
+              <Button type="submit" size="sm" disabled={isPending}>
+                {isPending ? "Applying…" : "Apply filters"}
+              </Button>
+            </div>
+          </div>
+        </form>
+      ) : null}
+    </section>
   );
 }

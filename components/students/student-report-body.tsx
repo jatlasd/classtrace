@@ -1,7 +1,7 @@
 "use client";
 
 import { useId, useMemo, useState, useSyncExternalStore } from "react";
-import type { ReactElement } from "react";
+import type { ReactElement, ReactNode } from "react";
 import { EvidenceRecordContent } from "@/components/evidence/evidence-record-content";
 import { ValidatedStamp } from "@/components/evidence/validated-stamp";
 import { Button } from "@/components/ui/button";
@@ -48,6 +48,39 @@ function useToday(): string | null {
     subscribe,
     () => new Date().toDateString(),
     () => null
+  );
+}
+
+function cssString(value: string): string {
+  const escaped = Array.from(value, (character) =>
+    /[A-Za-z0-9 .,:-]/.test(character)
+      ? character
+      : `\\${character.codePointAt(0)!.toString(16)} `
+  ).join("");
+  return `"${escaped}"`;
+}
+
+export function StudentReportPageIdentity({
+  label,
+}: {
+  label: string;
+}): ReactElement {
+  return (
+    <style>{`@media print {
+  @page {
+    margin: 0.5in 0.5in 0.65in;
+    @bottom-left {
+      content: ${cssString(label)};
+      font-size: 8pt;
+      color: #555555;
+    }
+    @bottom-right {
+      content: "Page " counter(page) " of " counter(pages);
+      font-size: 8pt;
+      color: #555555;
+    }
+  }
+}`}</style>
   );
 }
 
@@ -205,11 +238,13 @@ function ReportEvidenceItem({
   record,
   included,
   timeZone,
+  closing,
   onIncludedChange,
 }: {
   record: StudentReportEvidenceRecord;
   included: boolean;
   timeZone: string;
+  closing?: ReactNode;
   onIncludedChange: (included: boolean) => void;
 }) {
   const date = formatEvidenceCalendarDate(record.evidenceDate, timeZone);
@@ -250,6 +285,7 @@ function ReportEvidenceItem({
           />
         </div>
         <ValidatedStamp className="self-start text-fg-3" />
+        {closing}
       </article>
     </li>
   );
@@ -271,6 +307,17 @@ export function StudentReportBody({
     [records, groupMode, timeZone]
   );
   const includedCount = includedRecords.length;
+  const lastIncludedId = groups
+    .flatMap((group) => group.records)
+    .filter((record) => !excludedIds.has(record.id))
+    .at(-1)?.id;
+  const closing = (
+    <p className="student-report-print-only mt-1 border-t border-line pt-2 text-xs text-fg-2 sm:col-span-3">
+      Prepared by the teacher in ClassTrace from validated evidence.{" "}
+      Includes {includedCount} of {entryCountLabel(records.length)} available
+      for this report.
+    </p>
+  );
 
   function setIncluded(id: string, included: boolean): void {
     setExcludedIds((current) => {
@@ -406,6 +453,7 @@ export function StudentReportBody({
                     record={record}
                     included={!excludedIds.has(record.id)}
                     timeZone={timeZone}
+                    closing={record.id === lastIncludedId ? closing : undefined}
                     onIncludedChange={(included) =>
                       setIncluded(record.id, included)
                     }
@@ -415,12 +463,6 @@ export function StudentReportBody({
             </section>
           );
         })}
-
-        <p className="student-report-print-only student-report-closing mt-4 border-t border-line pt-2 text-xs text-fg-2">
-          Prepared by the teacher in ClassTrace from validated evidence.{" "}
-          Includes {includedCount} of {entryCountLabel(records.length)} available
-          for this report.
-        </p>
       </section>
     </>
   );

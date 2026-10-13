@@ -3,6 +3,7 @@ import type { ReactElement } from "react";
 import { Button } from "@/components/ui/button";
 import {
   StudentReportBody,
+  StudentReportPageIdentity,
   StudentReportPreparedDate,
 } from "@/components/students/student-report-body";
 import {
@@ -54,7 +55,7 @@ function getRangeLabel(filters: StudentTimelineFilters): string {
       calendarDate(filters.from),
       calendarDate(filters.to),
       "UTC"
-    ) ?? "All evidence"
+    ) ?? "All dates"
   );
 }
 
@@ -191,6 +192,9 @@ export function StudentReportPage({
   return (
     <StudentReportUnappliedFiltersProvider appliedKey={appliedKey}>
       <div className="student-report-page mx-auto w-full max-w-[880px] px-4 py-8 sm:px-6 lg:px-8 lg:py-12">
+        <StudentReportPageIdentity
+          label={`${student.displayName} \u00b7 Evidence report`}
+        />
         <ReportHeader
           student={student}
           filters={filters}
