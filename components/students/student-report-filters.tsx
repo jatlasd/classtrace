@@ -1,12 +1,22 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useId, useState, useTransition, type FormEvent, type ReactElement } from "react";
+import {
+  createContext,
+  useContext,
+  useId,
+  useState,
+  useTransition,
+  type FormEvent,
+  type ReactElement,
+  type ReactNode,
+} from "react";
 import {
   draftDateError,
   filterDraftFrom,
   filtersFromDraft,
   StudentEvidenceFilterFields,
+  type StudentEvidenceFilterDraft,
   type StudentEvidenceFilterOptionLists,
 } from "@/components/students/student-evidence-filter-fields";
 import { Button } from "@/components/ui/button";
@@ -26,6 +36,53 @@ export function studentReportHref(
   return `${routes.studentReport(studentId)}${params.size ? `?${params}` : ""}`;
 }
 
+type UnappliedFiltersState = {
+  unapplied: boolean;
+  setUnapplied: (unapplied: boolean) => void;
+};
+
+const UnappliedFiltersContext = createContext<UnappliedFiltersState>({
+  unapplied: false,
+  setUnapplied: () => {},
+});
+
+export function StudentReportUnappliedFiltersProvider({
+  appliedKey,
+  children,
+}: {
+  appliedKey: string;
+  children: ReactNode;
+}): ReactElement {
+  const [unapplied, setUnapplied] = useState(false);
+  const [previousAppliedKey, setPreviousAppliedKey] = useState(appliedKey);
+
+  if (previousAppliedKey !== appliedKey) {
+    setPreviousAppliedKey(appliedKey);
+    setUnapplied(false);
+  }
+
+  return (
+    <UnappliedFiltersContext value={{ unapplied, setUnapplied }}>
+      {children}
+    </UnappliedFiltersContext>
+  );
+}
+
+export function useStudentReportUnappliedFilters(): boolean {
+  return useContext(UnappliedFiltersContext).unapplied;
+}
+
+function draftKey(query: string, draft: StudentEvidenceFilterDraft): string {
+  return JSON.stringify([
+    query.trim(),
+    draft.evidenceType,
+    draft.topic,
+    [...draft.tags].sort(),
+    draft.from,
+    draft.to,
+  ]);
+}
+
 export function StudentReportFilters({
   studentId,
   filters,
@@ -40,6 +97,7 @@ export function StudentReportFilters({
   const router = useRouter();
   const searchId = useId();
   const [isPending, startTransition] = useTransition();
+  const { unapplied, setUnapplied } = useContext(UnappliedFiltersContext);
   const [query, setQuery] = useState(filters.query);
   const [draft, setDraft] = useState(() => filterDraftFrom(filters));
   const [localDateError, setLocalDateError] = useState<string | null>(null);
@@ -52,6 +110,18 @@ export function StudentReportFilters({
     setQuery(filters.query);
     setDraft(filterDraftFrom(filters));
     setLocalDateError(null);
+  }
+
+  function updateDraft(
+    nextQuery: string,
+    nextDraft: StudentEvidenceFilterDraft
+  ): void {
+    setQuery(nextQuery);
+    setDraft(nextDraft);
+    setUnapplied(
+      draftKey(nextQuery, nextDraft) !==
+        draftKey(filters.query, filterDraftFrom(filters))
+    );
   }
 
   function navigate(next: StudentTimelineFilters): void {
@@ -72,8 +142,7 @@ export function StudentReportFilters({
   }
 
   function handleClear(): void {
-    setQuery("");
-    setDraft(filterDraftFrom({ query: "", tags: [] }));
+    updateDraft("", filterDraftFrom({ query: "", tags: [] }));
     setLocalDateError(null);
     navigate({ query: "", tags: [] });
   }
@@ -94,7 +163,7 @@ export function StudentReportFilters({
           autoComplete="off"
           maxLength={INPUT_LIMITS.evidenceSearch}
           value={query}
-          onChange={(event) => setQuery(event.target.value)}
+          onChange={(event) => updateDraft(event.target.value, draft)}
           placeholder="Words in the note, topic, or follow-up"
           className="field w-full text-sm"
         />
@@ -102,7 +171,7 @@ export function StudentReportFilters({
       <StudentEvidenceFilterFields
         draft={draft}
         onChange={(next) => {
-          setDraft(next);
+          updateDraft(query, next);
           setLocalDateError(null);
         }}
         options={options}
@@ -116,6 +185,13 @@ export function StudentReportFilters({
           {dateError}
         </p>
       ) : null}
+      <div role="status">
+        {unapplied ? (
+          <p className="mt-3 rounded-md border-l-2 border-live-bright bg-live-soft px-3 py-2 text-[13px] leading-relaxed text-fg">
+            Filters changed. Apply filters before printing.
+          </p>
+        ) : null}
+      </div>
       <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-line pt-3">
         <p className="text-xs leading-relaxed text-fg-3">
           Selected tags match any one tag. Dates use this device&apos;s

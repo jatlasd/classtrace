@@ -129,6 +129,46 @@ describe("StudentReportPage", () => {
     );
   });
 
+  it("blocks printing while filter edits are unapplied", () => {
+    const { rerender } = render(
+      <StudentReportPage
+        student={student}
+        filters={noFilters}
+        options={options}
+        totalEvidenceCount={0}
+        evidenceRecords={[]}
+      />
+    );
+    const print = screen.getByRole("button", { name: "Print / Save as PDF" });
+    const search = screen.getByLabelText("Search text");
+    expect((print as HTMLButtonElement).disabled).toBe(false);
+
+    fireEvent.change(search, { target: { value: "decimal" } });
+    expect((print as HTMLButtonElement).disabled).toBe(true);
+    expect(screen.getByRole("status").textContent).toBe(
+      "Filters changed. Apply filters before printing."
+    );
+
+    fireEvent.change(search, { target: { value: " " } });
+    expect((print as HTMLButtonElement).disabled).toBe(false);
+
+    fireEvent.change(search, { target: { value: "decimal" } });
+    fireEvent.click(screen.getByRole("button", { name: "Apply filters" }));
+    expect((print as HTMLButtonElement).disabled).toBe(true);
+
+    rerender(
+      <StudentReportPage
+        student={student}
+        filters={{ query: "decimal", tags: [] }}
+        options={options}
+        totalEvidenceCount={0}
+        evidenceRecords={[]}
+      />
+    );
+    expect((print as HTMLButtonElement).disabled).toBe(false);
+    expect(screen.getByRole("status").textContent).toBe("");
+  });
+
   it("syncs filter controls and resets entry selection when applied filters change", () => {
     const records = [
       {

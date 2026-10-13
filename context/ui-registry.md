@@ -398,7 +398,8 @@ Files: `components/students/student-timeline-page.tsx`,
   right; a filtered report adds a printed "Filtered to" line naming type,
   topic, tags as "#a or #b", and search text with the match count), a
   screen-only filter Well (search text plus the shared filter fields, Apply
-  filters, Clear filters), then a screen-only ruled
+  filters, Clear filters; while edits are unapplied, a status line says so and
+  Print / Save as PDF is disabled), then a screen-only ruled
   bar with an "Organize by" radio group (Date by month, Evidence type, Topic),
   the included-entry count, and Include all / Include none.
 - A Summary section follows: Entries, Date span, With photo, and Follow-ups
@@ -411,7 +412,8 @@ Files: `components/students/student-timeline-page.tsx`,
 - Print removes shell/footer controls, the organize/include controls, excluded
   entries, and fully excluded groups; flattens colors; hides trace decoration;
   expands images appropriately; prevents entry splitting; keeps group headings
-  with their entries; and adds a plain included-of-total footer line.
+  with their entries; and adds a plain included-of-total footer line that
+  stays on the page with the final entry.
 
 ## Landing page
 

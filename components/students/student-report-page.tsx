@@ -5,7 +5,10 @@ import {
   EvidenceReportBody,
   EvidenceReportPreparedDate,
 } from "@/components/reports/evidence-report-body";
-import { StudentReportFilters } from "@/components/students/student-report-filters";
+import {
+  StudentReportFilters,
+  StudentReportUnappliedFiltersProvider,
+} from "@/components/students/student-report-filters";
 import { StudentReportPrintAction } from "@/components/students/student-report-print-action";
 import type { StudentEvidenceFilterOptions } from "@/lib/evidence/student-timeline-records";
 import {
@@ -180,31 +183,32 @@ export function StudentReportPage({
   filters,
   dateError,
 }: StudentReportPageProps): ReactElement {
+  const appliedKey = serializeStudentTimelineSearchParams({
+    ...filters,
+    page: 1,
+  }).toString();
+
   return (
-    <div className="evidence-report-page mx-auto w-full max-w-[880px] px-4 py-8 sm:px-6 lg:px-8 lg:py-12">
-      <ReportHeader
-        student={student}
-        filters={filters}
-        matchingCount={evidenceRecords.length}
-        totalEvidenceCount={totalEvidenceCount}
-      />
-      <StudentReportFilters
-        studentId={student.id}
-        filters={filters}
-        options={options}
-        dateError={dateError}
-      />
-      {evidenceRecords.length === 0 ? (
-        <ReportEmptyEvidence filtered={hasStudentTimelineFilters(filters)} />
-      ) : (
-        <EvidenceReportBody
-          key={serializeStudentTimelineSearchParams({
-            ...filters,
-            page: 1,
-          }).toString()}
-          records={evidenceRecords}
+    <StudentReportUnappliedFiltersProvider appliedKey={appliedKey}>
+      <div className="evidence-report-page mx-auto w-full max-w-[880px] px-4 py-8 sm:px-6 lg:px-8 lg:py-12">
+        <ReportHeader
+          student={student}
+          filters={filters}
+          matchingCount={evidenceRecords.length}
+          totalEvidenceCount={totalEvidenceCount}
         />
-      )}
-    </div>
+        <StudentReportFilters
+          studentId={student.id}
+          filters={filters}
+          options={options}
+          dateError={dateError}
+        />
+        {evidenceRecords.length === 0 ? (
+          <ReportEmptyEvidence filtered={hasStudentTimelineFilters(filters)} />
+        ) : (
+          <EvidenceReportBody key={appliedKey} records={evidenceRecords} />
+        )}
+      </div>
+    </StudentReportUnappliedFiltersProvider>
   );
 }

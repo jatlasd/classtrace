@@ -362,6 +362,11 @@
     page-break-after: avoid;
   }
 
+  .evidence-report-closing {
+    break-before: avoid;
+    page-break-before: avoid;
+  }
+
   .evidence-report-entry img,
   .evidence-report-entry button:has(img) {
     max-height: 3.5in !important;
