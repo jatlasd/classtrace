@@ -415,13 +415,13 @@ export function StudentReportBody({
             </section>
           );
         })}
-      </section>
 
-      <p className="student-report-print-only student-report-closing mt-4 border-t border-line pt-2 text-xs text-fg-2">
-        Prepared by the teacher in ClassTrace from validated evidence.{" "}
-        Includes {includedCount} of {entryCountLabel(records.length)} available
-        for this report.
-      </p>
+        <p className="student-report-print-only student-report-closing mt-4 border-t border-line pt-2 text-xs text-fg-2">
+          Prepared by the teacher in ClassTrace from validated evidence.{" "}
+          Includes {includedCount} of {entryCountLabel(records.length)} available
+          for this report.
+        </p>
+      </section>
     </>
   );
 }
