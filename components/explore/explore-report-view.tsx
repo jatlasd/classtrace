@@ -3,6 +3,7 @@
 import { useEffect, useRef, type ReactElement } from "react";
 import {
   EvidenceReportBody,
+  EvidenceReportPageIdentity,
   EvidenceReportPreparedDate,
 } from "@/components/reports/evidence-report-body";
 import { StudentReportPrintAction } from "@/components/students/student-report-print-action";
@@ -29,6 +30,7 @@ export function ExploreReportView({
 
   return (
     <div className="evidence-report-page mx-auto w-full max-w-[880px] px-4 py-8 sm:px-6 lg:px-8 lg:py-12">
+      <EvidenceReportPageIdentity label="Evidence report" />
       <header className="mb-6 border-b-2 border-fg pb-6">
         <div className="evidence-report-screen-only mb-3 flex flex-wrap items-center justify-between gap-3">
           <Button
@@ -57,12 +59,12 @@ export function ExploreReportView({
             </p>
           </div>
 
-          <div className="sm:text-right">
+          <div className="sm:shrink-0 sm:text-right">
             <p className="label text-fg-3">Matching entries</p>
             <p className="mt-1 font-display text-2xl font-semibold leading-tight text-fg">
               {totalCount}
             </p>
-            <EvidenceReportPreparedDate className="label mt-1 text-fg-3" />
+            <EvidenceReportPreparedDate className="label mt-1 whitespace-nowrap text-fg-3" />
           </div>
         </div>
       </header>

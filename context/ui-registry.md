@@ -317,7 +317,8 @@ Files: `components/explore/explore-evidence-page.tsx`,
   300-entry cap truncates, then the shared report body (summary, Organize by
   with Student as the default; Explore reports always name students, even
   when one student matches, and every printed entry carries its student's name
-  under the date so continuation pages stay attributable; include controls,
+  under the date so continuation pages stay attributable; printed pages repeat
+  "Evidence report" and "Page N of M" in the foot margin; include controls,
   print rules). Back to results restores the same results and refocuses Print
   report.
 
@@ -396,11 +397,15 @@ Files: `components/students/student-timeline-page.tsx`,
   history.
 - The report uses a strong ruled header (student name, then an "Evidence report"
   line with handle and class; the readable Period and Prepared date sit at the
-  right; a filtered report adds a printed "Filtered to" line naming type,
-  topic, tags as "#a or #b", and search text with the match count), a
-  screen-only filter Well (search text plus the shared filter fields, Apply
-  filters, Clear filters; while edits are unapplied, a status line says so and
-  Print / Save as PDF is disabled), then a screen-only ruled
+  right, with "All dates" when no date range applies; a filtered report adds
+  a printed "Filtered to" line naming type, topic, tags as "#a or #b", and
+  search text with the match count), a screen-only Filters toggle (collapsed
+  unless the server reports a date error, with Clear filters beside it when
+  filters apply) that opens the filter Well (search text plus the shared
+  filter fields, Apply filters, Clear filters). While edits are unapplied, a
+  status line under the toggle says so, Print / Save as PDF is disabled, and a
+  browser print shows only a "This report was not printed" notice. Then a
+  screen-only ruled
   bar with an "Organize by" radio group (Date by month, Evidence type, Topic),
   the included-entry count, and Include all / Include none.
 - A Summary section follows: Entries, Date span, With photo, and Follow-ups
@@ -413,8 +418,10 @@ Files: `components/students/student-timeline-page.tsx`,
 - Print removes shell/footer controls, the organize/include controls, excluded
   entries, and fully excluded groups; flattens colors; hides trace decoration;
   expands images appropriately; prevents entry splitting; keeps group headings
-  with their entries; and adds a plain included-of-total footer line that
-  stays on the page with the final entry.
+  with their entries; narrows the date column; and adds a plain
+  included-of-total footer line that stays on the page with the final entry.
+  Browsers that support page margin boxes repeat "<Student> · Evidence report"
+  and "Page N of M" at the foot of every printed page.
 
 ## Landing page
 
