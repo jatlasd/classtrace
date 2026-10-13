@@ -455,13 +455,13 @@ export function EvidenceReportBody({
             </section>
           );
         })}
-      </section>
 
-      <p className="evidence-report-print-only evidence-report-closing mt-4 border-t border-line pt-2 text-xs text-fg-2">
-        Prepared by the teacher in ClassTrace from validated evidence.{" "}
-        Includes {includedCount} of {entryCountLabel(records.length)} available
-        for this report.
-      </p>
+        <p className="evidence-report-print-only evidence-report-closing mt-4 border-t border-line pt-2 text-xs text-fg-2">
+          Prepared by the teacher in ClassTrace from validated evidence.{" "}
+          Includes {includedCount} of {entryCountLabel(records.length)} available
+          for this report.
+        </p>
+      </section>
     </>
   );
 }
